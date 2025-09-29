@@ -24,7 +24,14 @@ Farmers can quickly upload photos and a short description of symptoms and receiv
 - **User Support**: Three roles
   - Farmers (submit reports, receive vet advice)  
   - Veterinary professionals (review regional cases, escalate)  
-  - Veterinary authorities (monitor reports, manage crisis data)  
+  - Veterinary authorities (monitor reports, manage crisis data)
+- **Authentication & Endorsement**
+  - **Veterinary professionals**: create accounts that are initially tagged as *“not verified.”* Authorities can later verify them to *“verified.”*  
+  - **Farmers**:  
+    - May register independently, but are tagged as *“non-endorsed”* until linked with a veterinarian.  
+    - A vet can generate **invitation codes** tied to a farmer’s name. When the farmer registers with this code, their account becomes *“endorsed by vet.”*  
+    - If a farmer registers alone and requests to link with a vet, the vet can choose to confirm or refuse endorsement.  
+  - **Authorities**: have oversight to verify veterinarians and supervise endorsement networks.   
 - **Sensor Use**: Camera for photos, GPS for outbreak localization  
 - **Offline Mode**: Farmers and vets can create/review reports offline, with syncing when online  
 
