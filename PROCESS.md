@@ -58,7 +58,7 @@ The `main` branch is always deployable.
   - **Product Owner (PO)**: Manages backlog, clarifies priorities, aligns features with goals.
 - Both SM and PO also contribute as Developers.
 - Rotation: Roles will rotate every Sprint to ensure all members gain experience.
-- Before each sprint meeting the team decides together whats the SM and PO of the week will say during the meeting.
+- Before each sprint meeting the team decides together what the SM and PO of the week will say during the meeting.
 
 ---
 
@@ -72,7 +72,7 @@ The `main` branch is always deployable.
 
 ---
 
-## 9. Definition of Done
+## 7. Definition of Done
 
 A task/feature is considered **Done** when:
 - Code is implemented and reviewed.
