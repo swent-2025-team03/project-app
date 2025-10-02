@@ -53,4 +53,4 @@ Farmers can quickly upload photos and a short description of symptoms and receiv
 ---
 
 ## Figma
-- **Figma link**: https://www.figma.com/design/OvhQWMAV3EWeE1MDD9GKlL/AgriHealth?node-id=0-1&p=f
+- **Figma link**: https://www.figma.com/design/c57y3MH6zUHQA119zAUud8/AgriHealth-Premium?node-id=0-1&p=f&t=GHzDq8QCPL3GDJvy-0
