@@ -38,6 +38,6 @@ jobs:
         working-directory: ./AgriHealth-Alert-main
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          JAVA_TOOL_OPTIONS: "-Djavax.net.ssl.trustStore=$JAVA_HOME/lib/security/cacerts"
         run:
-          export JAVA_TOOL_OPTIONS="-Djavax.net.ssl.trustStore=$JAVA_HOME/lib/security/cacerts"
           ./gradlew build sonarqube --info
