@@ -32,6 +32,7 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle
 
       - name: Make gradlew executable
+        working-directory: ./AgriHealth-Alert-main
         run: chmod +x gradlew
 
       - name: Build and analyze
