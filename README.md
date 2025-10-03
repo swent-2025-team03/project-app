@@ -19,24 +19,6 @@ Farmers can quickly upload photos and a short description of symptoms and receiv
 
 ---
 
-## Requirements
-- **Split App Model**: Local storage for reports and offline functionality; profiles, history, and outbreak data stored in Firebase  
-- **User Support**: Three roles
-  - Farmers (submit reports, receive vet advice)  
-  - Veterinary professionals (review regional cases, escalate)  
-  - Veterinary authorities (monitor reports, manage crisis data)
-- **Authentication & Endorsement**
-  - **Veterinary professionals**: create accounts that are initially tagged as *“not verified.”* Authorities can later verify them to *“verified.”*  
-  - **Farmers**:  
-    - May register independently, but are tagged as *“non-endorsed”* until linked with a veterinarian.  
-    - A vet can generate **invitation codes** tied to a farmer’s name. When the farmer registers with this code, their account becomes *“endorsed by vet.”*  
-    - If a farmer registers alone and requests to link with a vet, the vet can choose to confirm or refuse endorsement.  
-  - **Authorities**: have oversight to verify veterinarians and supervise endorsement networks.   
-- **Sensor Use**: Camera for photos, GPS for outbreak localization  
-- **Offline Mode**: Farmers and vets can create/review reports offline, with syncing when online  
-
----
-
 ## Usage Examples
 -  A pack of wolves attacks a farmer’s sheep. The farmer posts an alert to inform nearby farmers and simultaneously requests veterinary assistance. The veterinarian advises on immediate care and escalates if necessary.  
 -  A farmer notices unusual skin lesions on cows. They send a private report to a nearby vet, who may escalate to authorities if a contagious disease is suspected.  
@@ -52,5 +34,6 @@ Farmers can quickly upload photos and a short description of symptoms and receiv
 
 ---
 
-## Figma
-- **Figma link**: https://www.figma.com/design/c57y3MH6zUHQA119zAUud8/AgriHealth-Premium?node-id=0-1&p=f&t=GHzDq8QCPL3GDJvy-0
+## Ressources
+- [Our Figma](https://www.figma.com/design/c57y3MH6zUHQA119zAUud8/AgriHealth-Premium?node-id=0-1&p=f&t=GHzDq8QCPL3GDJvy-0)
+- [Our Wiki](https://github.com/swent-2025-team03/project-app/wiki)
