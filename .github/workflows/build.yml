@@ -32,11 +32,12 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle
 
       - name: Make gradlew executable
-        working-directory: ./AgriHealth-Alert-main
-        run: chmod +x gradlew
+        run: chmod +x ./AgriHealth-Alert-main/gradlew
 
       - name: Build and analyze
         working-directory: ./AgriHealth-Alert-main
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew build sonar
+        run:
+          export JAVA_TOOL_OPTIONS="-Djavax.net.ssl.trustStore=$JAVA_HOME/lib/security/cacerts"
+          ./gradlew build sonarqube --info
