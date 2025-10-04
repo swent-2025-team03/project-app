@@ -38,6 +38,9 @@ jobs:
         working-directory: ./AgriHealth-Alert-main
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          JAVA_TOOL_OPTIONS: "-Djavax.net.ssl.trustStore=$JAVA_HOME/lib/security/cacerts"
-        run:
-          ./gradlew build sonarqube --info
+        run: |
+          ./gradlew build sonarqube --info \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.organization=swent-2025-team03 \
+          -Dsonar.projectKey=swent-2025-team03_project-app
+          -Dsonar.login=$SONAR_TOKEN
