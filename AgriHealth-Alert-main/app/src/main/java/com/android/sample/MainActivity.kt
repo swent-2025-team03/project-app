@@ -14,9 +14,15 @@ import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import com.android.sample.resources.C
 import com.android.sample.ui.theme.SampleAppTheme
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
+    Firebase.firestore.useEmulator("10.0.2.2", 8080)
+    Firebase.auth.useEmulator("10.0.2.2", 9099)
+
     super.onCreate(savedInstanceState)
     setContent {
       SampleAppTheme {
