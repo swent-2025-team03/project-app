@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.sonar)
+    id("com.google.gms.google-services")
     id("jacoco")
 }
 
