@@ -1,15 +1,25 @@
 package com.android.agrihealth.data.model.authentification
 
-/** Represents a repository that manages public User item. * */
+/** Represents a repository that manages public User item and its data. * */
 interface UserRepository {
-
-  /** Generates a new unique identifier for a User item. */
-  fun getNewUid(): String
-
   /**
    * Adds a new User item to the repository.
    *
    * @param user The User to add.
    */
   suspend fun addUser(user: User)
+
+  /**
+   * Updates an existing User item to the repository.
+   *
+   * @param user The new User data to replace the old one.
+   */
+  suspend fun updateUser(user: User)
+
+  /**
+   * Removes a User from the repository. Note that this only removes the user data, not the account
+   *
+   * @param uid The ID of the user to delete.
+   */
+  suspend fun deleteUser(uid: String)
 }

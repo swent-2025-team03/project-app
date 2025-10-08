@@ -5,6 +5,7 @@ data class User(
     val name: String,
     val surname: String,
     val role: UserRole,
+    val email: String
 )
 
 enum class UserRole {
