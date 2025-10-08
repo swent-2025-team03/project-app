@@ -1,12 +1,10 @@
 package com.android.agrihealth.data.model.authentification
 
-import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.tasks.await
-import kotlin.math.log
 
 class AuthRepositoryFirebase(private val auth: FirebaseAuth = Firebase.auth) : AuthRepository {
 
