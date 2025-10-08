@@ -48,19 +48,7 @@ open class NavigationActions(
         launchSingleTop = true
         popUpTo(screen.route) { inclusive = true }
       }
-      //      restoreState = true
-      //      restoreState = true
-      //      if (screen.isTopLevelDestination) {
-      //        // Pop up to the start destination of the graph to
-      //        // avoid building up a large stack of destinations
-      //        popUpTo(navController.graph.findStartDestination().id) {
-      //          saveState = true
-      //          inclusive = true
-      //        }
-      //        // Avoid multiple copies of the same destination when reselecting same item
-      //        launchSingleTop = true
-      //      }
-      //
+
       if (screen !is Screen.Auth) {
         // Restore state when reselecting a previously selected item
         restoreState = true
