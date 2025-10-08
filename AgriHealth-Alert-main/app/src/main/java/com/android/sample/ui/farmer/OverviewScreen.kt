@@ -41,9 +41,11 @@ fun OverviewScreen(
       content = { pd ->
         Column {
           Text(text = "Overview Screen")
-          Button(onClick = onAddReport, modifier = Modifier.padding(pd)) {
-            Text(text = "Add Report")
-          }
+          Button(
+              onClick = onAddReport,
+              modifier = Modifier.padding(pd).testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
+                Text(text = "Add Report")
+              }
           Button(onClick = onSignedOut, modifier = Modifier.padding(pd)) { Text(text = "Sign Out") }
         }
       })

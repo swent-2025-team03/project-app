@@ -11,6 +11,7 @@ import com.android.sample.ui.authentification.SignInScreenTestTags
 import com.android.sample.ui.farmer.OverviewScreenTestTags
 import com.android.sample.ui.navigation.NavigationTestTags
 import com.android.sample.ui.navigation.Screen
+import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -88,5 +89,32 @@ class NavigationSprint1Test {
         .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
         .assertIsDisplayed()
         .assertTextContains(Screen.Overview.name)
+  }
+
+  @Test
+  fun addReportScreen_navigateToOverviewUsingSystemBack() {
+    // Navigate to the Add Report screen
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON).performClick()
+    composeTestRule
+        .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
+        .assertIsDisplayed()
+        .assertTextContains(Screen.AddReport.name)
+    // Simulate system back press
+    pressBack(false)
+    // Assert that the Overview screen is displayed
+    composeTestRule
+        .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
+        .assertIsDisplayed()
+        .assertTextContains(Screen.Overview.name)
+  }
+
+  private fun pressBack(shouldFinish: Boolean) {
+    composeTestRule.activityRule.scenario.onActivity { activity ->
+      activity.onBackPressedDispatcher.onBackPressed()
+    }
+    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+      composeTestRule.activity.isFinishing == shouldFinish
+    }
+    assertEquals(shouldFinish, composeTestRule.activity.isFinishing)
   }
 }
