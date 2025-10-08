@@ -18,6 +18,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.android.sample.resources.C
 import com.android.sample.ui.authentification.SignInScreen
+import com.android.sample.ui.authentification.SignUpScreen
 import com.android.sample.ui.farmer.AddReportScreen
 import com.android.sample.ui.farmer.MapScreen
 import com.android.sample.ui.farmer.OverviewScreen
@@ -58,7 +59,12 @@ fun AgriHealthApp() {
         route = Screen.Auth.name,
     ) {
       composable(Screen.Auth.route) {
-        SignInScreen(onSignedIn = { navigationActions.navigateTo(Screen.Overview) })
+        SignInScreen(
+            onSignedIn = { navigationActions.navigateTo(Screen.Overview) },
+            goToSignUp = { navigationActions.navigateTo(Screen.SignUp) })
+      }
+      composable(Screen.SignUp.route) {
+        SignUpScreen(onSignedUp = { navigationActions.navigateTo(Screen.Overview) })
       }
     }
 

@@ -26,6 +26,8 @@ sealed class Screen(
   object AddReport : Screen(route = "add_report", name = "Create a new report")
 
   object Map : Screen(route = "map", name = "Map", isTopLevelDestination = true)
+
+  object SignUp : Screen(route = "sign_up", name = "Sign Up")
 }
 
 open class NavigationActions(
