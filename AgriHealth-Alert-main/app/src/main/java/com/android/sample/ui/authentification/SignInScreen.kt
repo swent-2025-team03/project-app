@@ -12,17 +12,16 @@ import androidx.compose.ui.tooling.preview.Preview
 fun SignInScreen(
     onSignedIn: () -> Unit,
 ) {
-    Scaffold(
-        content = { padding ->
-            Button(onClick = onSignedIn, modifier = Modifier.padding(padding)) {
-                Text(text = "Sign In")
-            }
+  Scaffold(
+      content = { padding ->
+        Button(onClick = onSignedIn, modifier = Modifier.padding(padding)) {
+          Text(text = "Sign In")
         }
-    )
+      })
 }
 
 @Preview
 @Composable
 fun SignInScreenPreview() {
-    SignInScreen(onSignedIn = {})
+  SignInScreen(onSignedIn = {})
 }
