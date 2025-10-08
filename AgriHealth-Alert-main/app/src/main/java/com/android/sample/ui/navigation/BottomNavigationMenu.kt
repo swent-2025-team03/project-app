@@ -37,11 +37,11 @@ private val tabs =
 /**
  * A reusable Bottom Navigation Bar built with Material 3 [NavigationBar].
  *
- * This composable provides a simple way to add a consistent bottom navigation menu
- * across multiple screens in your app.
+ * This composable provides a simple way to add a consistent bottom navigation menu across multiple
+ * screens in your app.
  *
- * It displays navigation items (icons and labels) and highlights the currently selected route.
- * Each item triggers navigation when clicked.
+ * It displays navigation items (icons and labels) and highlights the currently selected route. Each
+ * item triggers navigation when clicked.
  *
  * Example usage:
  * ```
@@ -58,12 +58,10 @@ private val tabs =
  * }
  * ```
  *
- * @param selectedTab The route (or destination) that is currently active.
- * Used to highlight the selected navigation item.
- *
- * @param onTabSelected Callback triggered when a navigation item is clicked.
- * Receives the target route as a parameter.
- *
+ * @param selectedTab The route (or destination) that is currently active. Used to highlight the
+ *   selected navigation item.
+ * @param onTabSelected Callback triggered when a navigation item is clicked. Receives the target
+ *   route as a parameter.
  * @param modifier Optional [Modifier] for styling or to add test tags.
  */
 @Composable

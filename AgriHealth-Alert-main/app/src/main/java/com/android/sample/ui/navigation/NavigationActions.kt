@@ -5,14 +5,14 @@ import androidx.navigation.NavHostController
 // file taken from https://github.com/swent-epfl/bootcamp-25-B3-Solution/tree/main
 
 /**
- * Sealed class representing different screens in the app's navigation.
- * Each screen has a route, a display name, and a flag indicating if it's a top-level destination.
- *
+ * Sealed class representing different screens in the app's navigation. Each screen has a route, a
+ * display name, and a flag indicating if it's a top-level destination.
  *
  * @property route The unique route string used for navigation within the NavHost.
- * @property name A human-readable label for the screen, typically shown in UI elements like the top bar.
- * @property isTopLevelDestination Whether this screen is considered a top-level destination
- * (e.g., shown in a BottomNavigationBar).
+ * @property name A human-readable label for the screen, typically shown in UI elements like the top
+ *   bar.
+ * @property isTopLevelDestination Whether this screen is considered a top-level destination (e.g.,
+ *   shown in a BottomNavigationBar).
  */
 sealed class Screen(
     val route: String,
