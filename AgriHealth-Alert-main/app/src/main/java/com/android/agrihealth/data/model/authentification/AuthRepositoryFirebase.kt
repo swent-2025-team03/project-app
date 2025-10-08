@@ -33,7 +33,7 @@ class AuthRepositoryFirebase(private val auth: FirebaseAuth = Firebase.auth) : A
           val creationResult = auth.createUserWithEmailAndPassword(email, password).await()
           val user = creationResult.user ?: return Result.failure(NullPointerException("Account creation failed"))
 
-          userRepository.addUser(userData.copy(uid = user.uid))
+          userRepository.addUser(userData.copy(uid = user.uid, email = email))
 
           Result.success(user)
       } catch (e: Exception) {
@@ -48,5 +48,20 @@ class AuthRepositoryFirebase(private val auth: FirebaseAuth = Firebase.auth) : A
     } catch (e: Exception) {
         Result.failure(e)
     }
+  }
+
+  override suspend fun deleteAccount(): Result<Unit> {
+      val userRepository = UserRepositoryProvider.repository
+
+      return try {
+          val user = auth.currentUser ?: return Result.failure(NullPointerException("User not logged in"))
+
+          userRepository.deleteUser(user.uid)
+          user.delete()
+
+          Result.success(Unit)
+      } catch (e: Exception) {
+          Result.failure(e)
+      }
   }
 }
