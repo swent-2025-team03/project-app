@@ -1,9 +1,12 @@
 package com.android.agrihealth.data.model.authentification
 
+import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
+import kotlinx.coroutines.tasks.await
+import kotlin.math.log
 
 class AuthRepositoryFirebase(private val auth: FirebaseAuth = Firebase.auth) : AuthRepository {
 
@@ -11,7 +14,14 @@ class AuthRepositoryFirebase(private val auth: FirebaseAuth = Firebase.auth) : A
       email: String,
       password: String
   ): Result<FirebaseUser> {
-    TODO("Not yet implemented")
+    return try {
+        val loginResult = auth.signInWithEmailAndPassword(email, password).await()
+        val user = loginResult.user ?: return Result.failure(NullPointerException("Log in failed"))
+
+        Result.success(user)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
   }
 
   override suspend fun signUpWithEmailAndPassword(
@@ -19,10 +29,26 @@ class AuthRepositoryFirebase(private val auth: FirebaseAuth = Firebase.auth) : A
       password: String,
       userData: User
   ): Result<FirebaseUser> {
-    TODO("Not yet implemented")
+      val userRepository = UserRepositoryProvider.repository
+
+      return try {
+          val creationResult = auth.createUserWithEmailAndPassword(email, password).await()
+          val user = creationResult.user ?: return Result.failure(NullPointerException("Account creation failed"))
+
+          userRepository.addUser(userData.copy(uid = user.uid))
+
+          Result.success(user)
+      } catch (e: Exception) {
+          Result.failure(e)
+      }
   }
 
   override fun signOut(): Result<Unit> {
-    TODO("Not yet implemented")
+    return try {
+        auth.signOut()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
   }
 }
