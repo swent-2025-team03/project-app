@@ -1,15 +1,17 @@
 package com.android.sample.ui.authentification
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.android.sample.data.model.authentification.AuthRepository
 import com.android.sample.data.model.authentification.AuthRepositoryProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 data class SignInUIState(
-    val email: String = "",
-    val password: String = "",
-)
+    override val email: String = "",
+    override val password: String = "",
+) : SignInAndSignUpCommons
 
 class SignInViewModel(private val repository: AuthRepository = AuthRepositoryProvider.repository) :
     ViewModel() {
@@ -27,6 +29,10 @@ class SignInViewModel(private val repository: AuthRepository = AuthRepositoryPro
 
   /** initiates the sign in using available credentials * */
   fun signIn() {
-    TODO("not yet implemented")
+    if (_uiState.value.isValid()) {
+      viewModelScope.launch {
+        repository.signInWithEmailAndPassword(_uiState.value.email, _uiState.value.password)
+      }
+    }
   }
 }

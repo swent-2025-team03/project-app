@@ -6,10 +6,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.tasks.await
 
-class AuthRepositoryFirebase(
-    private val auth: FirebaseAuth = Firebase.auth,
-    private val userRepo: UserRepository = UsersRepositoryProvider.repository
-) : AuthRepository {
+class AuthRepositoryFirebase(private val auth: FirebaseAuth = Firebase.auth) : AuthRepository {
 
   override suspend fun signInWithEmailAndPassword(
       email: String,
@@ -32,20 +29,12 @@ class AuthRepositoryFirebase(
   override suspend fun signUpWithEmailAndPassword(
       email: String,
       password: String,
-      userData: User
   ): Result<FirebaseUser> {
     return try {
       val user =
           auth.createUserWithEmailAndPassword(email, password).await().user
               ?: return Result.failure(
                   IllegalStateException("Sign up failed : Could not create account for user"))
-
-      try {
-        userRepo.addUser(userData)
-      } catch (e: Exception) {
-        return Result.failure(
-            IllegalStateException("Sign Up failed : Could not create user document"))
-      }
 
       Result.success(user)
     } catch (e: Exception) {
