@@ -8,6 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 
+object SignInScreenTestTags {
+  const val SIGN_IN_BUTTON = "signInButton"
+}
+
 @Composable
 fun SignInScreen(
     onSignedIn: () -> Unit,

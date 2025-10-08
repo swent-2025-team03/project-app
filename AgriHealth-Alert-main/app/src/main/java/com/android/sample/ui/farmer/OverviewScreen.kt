@@ -1,6 +1,7 @@
 package com.android.sample.ui.farmer
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
@@ -14,6 +15,11 @@ import com.android.sample.ui.navigation.NavigationActions
 import com.android.sample.ui.navigation.NavigationTestTags
 import com.android.sample.ui.navigation.Tab
 
+object OverviewScreenTestTags {
+  const val ADD_REPORT_BUTTON = "addReportFab"
+  const val LOGOUT_BUTTON = "logoutButton"
+}
+
 @Preview
 @Composable
 fun OverviewScreen(
@@ -23,6 +29,9 @@ fun OverviewScreen(
 ) {
   // temp implementation for testing
   Scaffold(
+      topBar = {
+        Row { Text("Overview", modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE)) }
+      },
       bottomBar = {
         BottomNavigationMenu(
             selectedTab = Tab.Overview,

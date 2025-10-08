@@ -24,7 +24,5 @@ fun MapScreen(
             onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
             modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
       },
-      content = { pd ->
-        Column { Text(text = "Map Screen", modifier = Modifier.padding(pd)) }
-      })
+      content = { pd -> Column { Text(text = "Map Screen", modifier = Modifier.padding(pd)) } })
 }

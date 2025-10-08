@@ -47,7 +47,7 @@ fun AgriHealthApp() {
   val navigationActions = NavigationActions(navController)
   val startDestination =
       // TODO replace by real authentication check
-      if (true
+      if (false
       // needs to be replaced with the condition of a user being already signed in
       ) Screen.Auth.name
       else Screen.Overview.route
