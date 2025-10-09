@@ -1,7 +1,9 @@
 package com.android.agrihealth.data.model.authentification
 
+import kotlin.enums.enumEntries
+
 data class User(
-    val uid: String,
+    val uid: String = "placeholder",
     val name: String,
     val surname: String,
     val role: UserRole,
@@ -20,3 +22,8 @@ enum class UserRole {
  */
 fun UserRole.displayString(): String =
     name.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+
+fun roleFromDisplayString(role: String): UserRole {
+    return UserRole.entries.firstOrNull { it.displayString().lowercase() == role.lowercase() }
+        ?: throw IllegalArgumentException("Invalid role")
+}
