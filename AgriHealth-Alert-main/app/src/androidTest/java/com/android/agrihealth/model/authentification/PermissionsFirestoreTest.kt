@@ -16,26 +16,26 @@ class PermissionsFirestoreTest {
 
     @Test
     fun canAccessOwnData() {
-
+        TODO()
     }
 
     @Test
     fun failToAccessOtherUsersData() {
-
+        TODO()
     }
 
     @Test
     fun failToAccessDataWhileLoggedOut() {
-
+        TODO()
     }
 
     @Test
     fun failToUpdateOwnRole() {
-
+        TODO()
     }
 
     @Test
     fun failToDeleteWhileLoggedOut() = runTest {
-
+        TODO()
     }
 }

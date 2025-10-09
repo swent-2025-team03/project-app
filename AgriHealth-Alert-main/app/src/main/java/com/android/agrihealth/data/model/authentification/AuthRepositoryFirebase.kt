@@ -57,7 +57,7 @@ class AuthRepositoryFirebase(private val auth: FirebaseAuth = Firebase.auth) : A
           val user = auth.currentUser ?: return Result.failure(NullPointerException("User not logged in"))
 
           userRepository.deleteUser(user.uid)
-          user.delete()
+          user.delete().await()
 
           Result.success(Unit)
       } catch (e: Exception) {
