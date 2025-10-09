@@ -48,6 +48,7 @@ class UserRepositoryFirestoreTest {
             .get()
             .await()
 
+        // Inspired from bootcamp
         if (usersCollection.count() > 0) {
             val batch = Firebase.firestore.batch()
             usersCollection.documents.forEach { batch.delete(it.reference) }
@@ -65,7 +66,7 @@ class UserRepositoryFirestoreTest {
             Firebase.firestore.useEmulator("10.0.2.2", 8080)
             emulatorInitialized = true
         }
-        
+
         runTest {
             clearUsers()
         }
