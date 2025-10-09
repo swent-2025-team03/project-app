@@ -62,6 +62,7 @@ class UserRepositoryFirestoreTest {
 
     @Before
     fun setUp() {
+        // TODO: centralize emulator initialization in a parent class like bootcamp
         if (!emulatorInitialized) {
             Firebase.firestore.useEmulator("10.0.2.2", 8080)
             emulatorInitialized = true
