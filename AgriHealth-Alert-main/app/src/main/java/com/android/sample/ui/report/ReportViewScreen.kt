@@ -1,6 +1,7 @@
 package com.android.sample.ui.report
 
 // Preview imports
+// For tests
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -67,11 +69,13 @@ fun ReportViewScreen(navController: NavController, userRole: UserRole, viewModel
                             Modifier.background(
                                     color = statusColor(selectedStatus),
                                     shape = MaterialTheme.shapes.small)
-                                .padding(horizontal = 12.dp, vertical = 6.dp)) {
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                .testTag("StatusBadgeBox")) {
                           Text(
                               text = selectedStatus.name.replace("_", " "),
                               style = MaterialTheme.typography.labelLarge,
-                              color = MaterialTheme.colorScheme.onSurface)
+                              color = MaterialTheme.colorScheme.onSurface,
+                              modifier = Modifier.testTag("StatusBadgeText"))
                         }
                   }
             },
@@ -131,14 +135,17 @@ fun ReportViewScreen(navController: NavController, userRole: UserRole, viewModel
                     value = answerText,
                     onValueChange = { viewModel.onAnswerChange(it) },
                     placeholder = { Text("Write your answer here...") },
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp))
+                    modifier =
+                        Modifier.fillMaxWidth().heightIn(min = 100.dp).testTag("AnswerField"))
               }
 
               // ---- Status dropdown (Vet only) ----
               if (userRole == UserRole.VET) {
                 var expanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(
-                    expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded },
+                    modifier = Modifier.testTag("StatusDropdownBox")) {
                       OutlinedTextField(
                           value = selectedStatus.name.replace("_", " "),
                           onValueChange = {},
@@ -147,9 +154,11 @@ fun ReportViewScreen(navController: NavController, userRole: UserRole, viewModel
                           trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                           },
-                          modifier = Modifier.menuAnchor())
+                          modifier = Modifier.menuAnchor().testTag("StatusDropdownField"))
                       ExposedDropdownMenu(
-                          expanded = expanded, onDismissRequest = { expanded = false }) {
+                          expanded = expanded,
+                          onDismissRequest = { expanded = false },
+                          modifier = Modifier.testTag("StatusDropdownMenu")) {
                             listOf(
                                     ReportStatus.PENDING,
                                     ReportStatus.IN_PROGRESS,
@@ -160,7 +169,8 @@ fun ReportViewScreen(navController: NavController, userRole: UserRole, viewModel
                                       onClick = {
                                         viewModel.onStatusChange(status)
                                         expanded = false
-                                      })
+                                      },
+                                      modifier = Modifier.testTag("StatusOption_${status.name}"))
                                 }
                           }
                     }
@@ -173,7 +183,7 @@ fun ReportViewScreen(navController: NavController, userRole: UserRole, viewModel
                     colors =
                         ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error),
-                    modifier = Modifier.fillMaxWidth()) {
+                    modifier = Modifier.fillMaxWidth().testTag("EscalateButton")) {
                       Text("Escalate to Authorities")
                     }
               }
