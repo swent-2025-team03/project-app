@@ -1,6 +1,6 @@
 [versions]
-agp = "8.3.0"
-kotlin = "1.8.10"
+agp = "8.13.0"
+kotlin = "2.2.20"
 coreKtx = "1.12.0"
 ktfmt = "0.17.0"
 junit = "4.13.2"
@@ -16,9 +16,15 @@ kaspresso = "1.5.5"
 robolectric = "4.11.1"
 sonar = "6.3.1.5724"
 navigationCompose = "2.7.7"
+firebaseAuth = "24.0.1"
+firebaseDatabase = "22.0.1"
+firebaseFirestore = "26.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuth" }
+firebase-database = { module = "com.google.firebase:firebase-database", version.ref = "firebaseDatabase" }
+firebase-firestore = { module = "com.google.firebase:firebase-firestore", version.ref = "firebaseFirestore" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -46,5 +52,6 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlinCompose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
 sonar = { id = "org.sonarqube", version.ref = "sonar" }
