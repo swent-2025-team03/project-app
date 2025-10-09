@@ -1,7 +1,5 @@
 package com.android.agrihealth.data.model.authentification
 
-import kotlin.enums.enumEntries
-
 data class User(
     val uid: String = "placeholder",
     val name: String,

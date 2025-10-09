@@ -7,12 +7,10 @@ import com.android.agrihealth.data.model.authentification.UserRole
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
@@ -57,9 +55,17 @@ class UserRepositoryFirestoreTest {
         }
     }
 
+    companion object {
+        var emulatorInitialized = false
+    }
+
     @Before
     fun setUp() {
-        Firebase.firestore.useEmulator("10.0.2.2", 8080)
+        if (!emulatorInitialized) {
+            Firebase.firestore.useEmulator("10.0.2.2", 8080)
+            emulatorInitialized = true
+        }
+        
         runTest {
             clearUsers()
         }
