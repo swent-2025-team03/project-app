@@ -139,6 +139,9 @@ fun ReportViewScreen(navController: NavController, userRole: UserRole, viewModel
                         Modifier.fillMaxWidth().heightIn(min = 100.dp).testTag("AnswerField"))
               }
 
+              // TODO : implement automatic Status logic (PENDING -> IN_PROGRESS when Vet type
+              // answer)
+
               // ---- Status dropdown (Vet only) ----
               if (userRole == UserRole.VET) {
                 var expanded by remember { mutableStateOf(false) }
@@ -154,7 +157,8 @@ fun ReportViewScreen(navController: NavController, userRole: UserRole, viewModel
                           trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                           },
-                          modifier = Modifier.menuAnchor().testTag("StatusDropdownField"))
+                          modifier =
+                              Modifier.menuAnchor().fillMaxWidth().testTag("StatusDropdownField"))
                       ExposedDropdownMenu(
                           expanded = expanded,
                           onDismissRequest = { expanded = false },
@@ -222,7 +226,10 @@ fun ReportViewScreen(navController: NavController, userRole: UserRole, viewModel
                           Text("View on Map")
                         }
 
-                    Button(onClick = { viewModel.onSave() }) { Text("Save") }
+                    // ---- Save Button (Vet only) ----
+                    if (userRole == UserRole.VET) {
+                      Button(onClick = { viewModel.onSave() }) { Text("Save") }
+                    }
                   }
             }
       }
