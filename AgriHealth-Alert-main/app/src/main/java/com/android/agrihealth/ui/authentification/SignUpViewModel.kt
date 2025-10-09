@@ -2,13 +2,12 @@ package com.android.agrihealth.ui.authentification
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.sample.data.model.authentification.AuthRepository
-import com.android.sample.data.model.authentification.AuthRepositoryProvider
-import com.android.sample.data.model.authentification.User
-import com.android.sample.data.model.authentification.UserRepository
-import com.android.sample.data.model.authentification.UserRole
-import com.android.sample.data.model.authentification.UsersRepositoryProvider
-import com.android.sample.ui.authentification.SignInAndSignUpCommons
+import com.android.agrihealth.data.model.authentification.AuthRepository
+import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
+import com.android.agrihealth.data.model.authentification.User
+import com.android.agrihealth.data.model.authentification.UserRepository
+import com.android.agrihealth.data.model.authentification.UserRole
+import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -28,7 +27,7 @@ data class SignUpUIState(
 }
 
 class SignUpViewModel(
-    private val userRepository: UserRepository = UsersRepositoryProvider.repository,
+    private val userRepository: UserRepository = UserRepositoryProvider.repository,
     private val authRepository: AuthRepository = AuthRepositoryProvider.repository
 ) : ViewModel() {
 
@@ -67,16 +66,12 @@ class SignUpViewModel(
     if (_uiState.value.isValid()) {
       viewModelScope.launch {
         authRepository
-            .signUpWithEmailAndPassword(_uiState.value.email, _uiState.value.password)
-            .fold({ user ->
-              val userInstance =
-                  User(
-                      userRepository.getNewUid(),
-                      _uiState.value.name,
-                      _uiState.value.surname,
-                      _uiState.value.role!!)
-            }) { failure ->
-            }
+            .signUpWithEmailAndPassword(_uiState.value.email, _uiState.value.password,User(
+                "",
+                _uiState.value.name,
+                _uiState.value.surname,
+                _uiState.value.role!!,
+                _uiState.value.email ))
       }
     }
   }

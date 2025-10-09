@@ -11,7 +11,7 @@ import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.farmer.OverviewScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
-import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -21,7 +21,8 @@ import org.junit.Test
  * screen of AgrihealthApp is Overview.
  */
 class NavigationSprint1Test {
-  @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+  @get:Rule
+  val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
   @Before
   fun setUp() {
@@ -115,6 +116,6 @@ class NavigationSprint1Test {
     composeTestRule.waitUntil(timeoutMillis = 5_000) {
       composeTestRule.activity.isFinishing == shouldFinish
     }
-    assertEquals(shouldFinish, composeTestRule.activity.isFinishing)
+      TestCase.assertEquals(shouldFinish, composeTestRule.activity.isFinishing)
   }
 }

@@ -2,9 +2,8 @@ package com.android.agrihealth.ui.authentification
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.sample.data.model.authentification.AuthRepository
-import com.android.sample.data.model.authentification.AuthRepositoryProvider
-import com.android.sample.ui.authentification.SignInAndSignUpCommons
+import com.android.agrihealth.data.model.authentification.AuthRepository
+import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
