@@ -1,4 +1,4 @@
-package com.android.sample.screen.navigation
+package com.android.agrihealth.screen.navigation
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
@@ -6,11 +6,11 @@ import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import com.android.sample.AgriHealthApp
-import com.android.sample.ui.authentification.SignInScreenTestTags
-import com.android.sample.ui.farmer.OverviewScreenTestTags
-import com.android.sample.ui.navigation.NavigationTestTags
-import com.android.sample.ui.navigation.Screen
+import com.android.agrihealth.AgriHealthApp
+import com.android.agrihealth.ui.authentification.SignInScreenTestTags
+import com.android.agrihealth.ui.farmer.OverviewScreenTestTags
+import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.navigation.Screen
 import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Rule
