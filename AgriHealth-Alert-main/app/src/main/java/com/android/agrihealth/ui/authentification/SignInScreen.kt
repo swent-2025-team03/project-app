@@ -1,4 +1,4 @@
-package com.android.agrihealth.ui.authentification
+package com.android.sample.ui.authentification
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,31 +9,39 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 private val FieldBg  = Color(0xFFF0F6F1)
 private val ButtonBg = Color(0xFF9BB9B4)
 private val TitleColor = Color(0xFF000000)
+private val LogInButtonTestTag = "LogInButton"
+private val SignUpButtonTestTag = "SignUpButton"
+private val TitleTestTag = "LoginTitle"
+private val EmailFieldTestTag = "EmailField"
+private val PasswordFieldTestTag = "PasswordField"
+private val ForgotPasswordTestTag = "ForgotPassword"
+private val DividerTestTag = "LoginDivider"
 
 @Composable
-fun SignInScreen(
+fun LoginScreen(
     modifier: Modifier = Modifier,
     onForgotPasswordClick: () -> Unit = {},
     onLoginInClick: () -> Unit = {},
-    onSignUpClick: () -> Unit = {},
-    viewModel: SignInViewModel = viewModel()
+    onSignUpClick: () -> Unit = {}
+    /* Todo add viewModel */
+    /* Todo Add Context Manager */
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+
+    /* To delete after viewModel integration*/
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    /* End To delete after viewModel integration*/
 
     Box(
         modifier = modifier
@@ -53,14 +61,15 @@ fun SignInScreen(
                 text = "AgriHealth",
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Medium,
-                color = TitleColor
+                color = TitleColor,
+                modifier = Modifier.testTag(TitleTestTag)
             )
 
             Spacer(Modifier.height(56.dp))
 
             TextField(
-                value = uiState.email,
-                onValueChange = { viewModel.setEmail(it) },
+                value = email,
+                onValueChange = { email = it },
                 placeholder = { Text("Email") },
                 singleLine = true,
                 shape = RoundedCornerShape(28.dp),
@@ -74,13 +83,14 @@ fun SignInScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
+                    .testTag(EmailFieldTestTag)
             )
 
             Spacer(Modifier.height(16.dp))
 
             TextField(
-                value = uiState.password,
-                onValueChange = { viewModel.setPassword(it) },
+                value = password,
+                onValueChange = { password = it },
                 placeholder = { Text("Password") },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
@@ -95,6 +105,7 @@ fun SignInScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
+                    .testTag(PasswordFieldTestTag)
             )
 
             Spacer(Modifier.height(8.dp))
@@ -104,13 +115,12 @@ fun SignInScreen(
                 Text(
                     text = "Password forget",
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    style = LocalTextStyle.current.copy(textDecoration = TextDecoration.Underline),
+                    color = Color.Black,
                     textAlign = TextAlign.End,
                     modifier = Modifier
                         .padding(top = 4.dp)
-                        .semantics { role = Role.Button }
                         .clickable { onForgotPasswordClick() }
+                        .testTag(ForgotPasswordTestTag)
                 )
             }
 
@@ -119,21 +129,21 @@ fun SignInScreen(
             HorizontalDivider(
                 color = Color.Black,
                 thickness = 1.dp,
-                modifier = Modifier.fillMaxWidth(0.8f)
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .testTag(DividerTestTag)
             )
 
             Spacer(Modifier.height(24.dp))
 
             Button(
-                onClick = {
-                    viewModel.signIn()
-                    onLoginInClick()
-                },
+                onClick = onLoginInClick,
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = ButtonBg),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
+                    .testTag(LogInButtonTestTag)
             ) {
                 Text("Log in", fontSize = 24.sp, color = Color.Black)
             }
@@ -147,6 +157,7 @@ fun SignInScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
+                    .testTag(SignUpButtonTestTag)
             ) {
                 Text("Sign up", fontSize = 24.sp, color = ButtonBg)
             }
@@ -157,5 +168,5 @@ fun SignInScreen(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun SignInScreenPreview() {
-    MaterialTheme { SignInScreen(viewModel = SignInViewModel()) }
+    MaterialTheme { LoginScreen() }
 }

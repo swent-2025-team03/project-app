@@ -1,5 +1,5 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
-package com.android.agrihealth.ui.authentification
+package com.android.sample.ui.authentification
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -11,31 +11,52 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.ui.authentification.SignUpViewModel
-import com.android.agrihealth.data.model.authentification.UserRole
 
 
 private val FieldBg  = Color(0xFFF0F6F1)
 
+enum class Role { Farmer, Vet }
+
+// Test tags provisoires (privés)
+private val BackButtonTestTag = "BackButton"
+private val TitleTestTag = "SignUpTitle"
+private val NameFieldTestTag = "NameField"
+private val SurnameFieldTestTag = "SurnameField"
+private val EmailFieldTestTag = "EmailField"
+private val PasswordFieldTestTag = "PasswordField"
+private val ConfirmPasswordFieldTestTag = "ConfirmPasswordField"
+private val SaveButtonTestTag = "SaveButton"
+private val FarmerPillTestTag = "FarmerPill"
+private val VetPillTestTag = "VetPill"
+
 @Composable
 fun SignUpScreen(
     onBack: () -> Unit = {},
-    onSave: () -> Unit = {},
-    viewModel: SignUpViewModel = viewModel()
+    onSave: () -> Unit = {}
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    /* To delete after viewModel integration*/
+    var name by remember { mutableStateOf("") }
+    var surname by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var pwd by remember { mutableStateOf("") }
+    var confirm by remember { mutableStateOf("") }
+    var role by remember { mutableStateOf<Role?>(null) }
+    /* End To delete after viewModel integration*/
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier.testTag(BackButtonTestTag)
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
@@ -54,34 +75,36 @@ fun SignUpScreen(
             Text(
                 "Create An Account",
                 fontSize = 36.sp,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.testTag(TitleTestTag)
             )
             Spacer(Modifier.height(24.dp))
 
-            Field(uiState.name, { viewModel.setName(it) }, "Name")
-            Field(uiState.surname, { viewModel.setSurname(it) }, "Surname")
-            Field(uiState.email, { viewModel.setEmail(it) }, "Email")
-            Field(uiState.password, { viewModel.setPassword(it) }, "Password")
-            Field(uiState.cnfPassword, { viewModel.setCnfPassword(it) }, "Confirm Password")
+            Field(name, { name = it }, "Name", modifier = Modifier.testTag(NameFieldTestTag))
+            Field(surname, { surname = it }, "Surname", modifier = Modifier.testTag(SurnameFieldTestTag))
+            Field(email, { email = it }, "Email", modifier = Modifier.testTag(EmailFieldTestTag))
+            Field(pwd, { pwd = it }, "Password", modifier = Modifier.testTag(PasswordFieldTestTag))
+            Field(confirm, { confirm = it }, "Confirm Password", modifier = Modifier.testTag(ConfirmPasswordFieldTestTag))
 
             Spacer(Modifier.height(16.dp))
             Text("Are you a vet or a farmer ?", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(12.dp))
 
             RoleSelector(
-                selected = uiState.role,
-                onSelected = { viewModel.onSelected(it) }
+                selected = role,
+                onSelected = { role = it }
             )
 
             Spacer(Modifier.height(28.dp))
             Button(
                 onClick = {
-                    viewModel.signUp()
+                    val r = role ?: Role.Farmer
                     onSave()
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(56.dp)
+                    .testTag(SaveButtonTestTag),
                 shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF96B7B1))
             ) {
@@ -94,19 +117,21 @@ fun SignUpScreen(
 
 @Composable
 private fun RoleSelector(
-    selected: UserRole?,
-    onSelected: (UserRole) -> Unit
+    selected: Role?,
+    onSelected: (Role) -> Unit
 ) {
     Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
         SelectablePill(
             text = "Farmer",
-            selected = selected == UserRole.FARMER,
-            onClick = { onSelected(UserRole.FARMER) }
+            selected = selected == Role.Farmer,
+            onClick = { onSelected(Role.Farmer) },
+            modifier = Modifier.testTag(FarmerPillTestTag)
         )
         SelectablePill(
             text = "Vet",
-            selected = selected == UserRole.VETERINARIAN,
-            onClick = { onSelected(UserRole.VETERINARIAN) }
+            selected = selected == Role.Vet,
+            onClick = { onSelected(Role.Vet) },
+            modifier = Modifier.testTag(VetPillTestTag)
         )
     }
 }
@@ -116,14 +141,15 @@ private val SelectedColor = Color(0xFF96B7B1) // vert
 private fun SelectablePill(
     text: String,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val bg = if (selected) SelectedColor else UnselectedColor // vert / gris
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(24.dp),
         color = bg,
-        modifier = Modifier
+        modifier = modifier
             .width(140.dp)
             .height(56.dp)
     ) {
@@ -139,7 +165,8 @@ private val focusedFieldColor = Color(0xFFF0F7F1)
 private fun Field(
     value: String,
     onValueChange: (String) -> Unit,
-    placeholder: String
+    placeholder: String,
+    modifier: Modifier = Modifier
 ) {
     OutlinedTextField(
         value = value,
@@ -147,7 +174,7 @@ private fun Field(
         placeholder = { Text(placeholder) },
         singleLine = true,
         shape = RoundedCornerShape(28.dp),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         colors = OutlinedTextFieldDefaults.colors(
@@ -162,5 +189,5 @@ private fun Field(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun SignUpScreenPreview() {
-    MaterialTheme { SignUpScreen(viewModel = SignUpViewModel()) }
+    MaterialTheme { SignUpScreen() }
 }
