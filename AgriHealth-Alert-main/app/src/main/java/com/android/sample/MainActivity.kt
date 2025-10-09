@@ -20,10 +20,14 @@ import com.android.sample.ui.authentification.SignInScreen
 import com.android.sample.ui.authentification.SignUpScreen
 import com.android.sample.ui.farmer.AddReportScreen
 import com.android.sample.ui.farmer.MapScreen
-import com.android.sample.ui.farmer.OverviewScreen
+import com.android.sample.ui.overview.OverviewScreen
 import com.android.sample.ui.navigation.NavigationActions
 import com.android.sample.ui.navigation.Screen
 import com.android.sample.ui.theme.SampleAppTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.sample.data.model.UserRole
+import com.android.sample.ui.overview.OverviewViewModel
+
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,9 +76,21 @@ fun AgriHealthApp() {
         route = Screen.Overview.name,
     ) {
       composable(Screen.Overview.route) {
+          val overviewViewModel: OverviewViewModel = viewModel()
+
+          //TODO: Get the information from logged in user
+          val currentUserRole = UserRole.FARMER
+          val currentUserId = "FARMER_001"
+
+          val reportsForUser = overviewViewModel.getReportsForUser(currentUserRole, currentUserId)
+
         OverviewScreen(
+            userRole = currentUserRole,
+            reports = reportsForUser,
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
             onSignedOut = { navigationActions.navigateTo(Screen.Auth) },
+            // Temporarily commented out because the ViewReport screen has not been merged yet.
+            //onReportClick = {navigationActions.navigateTo(Screen,ViewReport)},
             navigationActions = navigationActions,
         )
       }
