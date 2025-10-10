@@ -104,7 +104,7 @@ fun OverviewScreen(
                 Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
                 Spacer(modifier = Modifier.height(12.dp))
                 LazyColumn {
-                    items(reports) { report ->
+                    items(reports, key = { it.id }) { report ->
                         ReportItem(
                             report = report,
                             onClick = { onReportClick() }
@@ -158,9 +158,9 @@ fun ReportItem(report: Report, onClick: () -> Unit) {
             Text(report.title, fontSize = 18.sp, fontWeight = FontWeight.Medium)
             Text("Farmer ID: ${report.farmerId}")
             Text(
-                text = report.description?.let {
+                text = report.description.let {
                     if (it.length > 50) it.take(50) + "..." else it
-                }?:"",
+                },
                 style = MaterialTheme.typography.bodySmall,
                 maxLines = 1
             )
