@@ -50,15 +50,12 @@ fun OverviewScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Overview", style = MaterialTheme.typography.titleLarge) },
-                navigationIcon = {
+                actions = {
                     IconButton(
                         onClick = { onSignedOut() },
                         modifier = Modifier.testTag(OverviewScreenTestTags.LOGOUT_BUTTON)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.ExitToApp,
-                            contentDescription = "Logout"
-                        )
+                        Icon(Icons.Default.ExitToApp, contentDescription = "Sign Out")
                     }
                 }
             )
@@ -197,3 +194,43 @@ fun StatusTag(status: ReportStatus) {
     }
 }
 
+/**
+ * Preview of the OverviewScreen with dummy data.
+ */
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewOverviewScreen() {
+    val dummyReports = listOf(
+        Report(
+            id = "1",
+            title = "Cow coughing",
+            description = "Coughing and nasal discharge observed",
+            photoUri = null,
+            farmerId = "farmer_001",
+            vetId = null,
+            status = ReportStatus.IN_PROGRESS,
+            answer = null,
+            location = null
+        ),
+        Report(
+            id = "2",
+            title = "Sheep limping",
+            description = "Limping observed in the rear leg; mild swelling noted",
+            photoUri = null,
+            farmerId = "farmer_002",
+            vetId = null,
+            status = ReportStatus.PENDING,
+            answer = null,
+            location = null
+        )
+    )
+
+    OverviewScreen(
+        userRole = UserRole.FARMER,
+        reports = dummyReports,
+        onAddReport = {},
+        onReportClick = {},
+        navigationActions = null
+    )
+}
