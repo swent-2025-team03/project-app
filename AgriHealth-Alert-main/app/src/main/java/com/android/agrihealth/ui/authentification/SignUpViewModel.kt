@@ -25,7 +25,6 @@ data class SignUpUIState(
     return super.isValid() && password == cnfPassword && role != null
   }
 }
-
 class SignUpViewModel(
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
     private val authRepository: AuthRepository = AuthRepositoryProvider.repository
