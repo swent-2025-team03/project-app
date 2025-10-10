@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.android.sample"
+    namespace = "com.android.agrihealth"
     compileSdk = 34
 
     defaultConfig {
