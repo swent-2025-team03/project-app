@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.data.model.UserRole
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -22,6 +23,8 @@ import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.data.model.Report
 import com.android.agrihealth.data.model.ReportStatus
 import com.android.agrihealth.ui.navigation.Tab
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 object OverviewScreenTestTags {
     const val ADD_REPORT_BUTTON = "addReportFab"
@@ -42,8 +45,7 @@ fun OverviewScreen(
     reports: List<Report>,
     onAddReport: () -> Unit = {},
     onReportClick: () -> Unit = {},
-    onSignedOut: () -> Unit = {},
-    navigationActions: NavigationActions? = null
+    navigationActions: NavigationActions
 ) {
     Scaffold(
         // -- Top App Bar with logout icon --
@@ -52,7 +54,10 @@ fun OverviewScreen(
                 title = { Text("Overview", style = MaterialTheme.typography.titleLarge) },
                 actions = {
                     IconButton(
-                        onClick = { onSignedOut() },
+                        onClick = {
+                            Firebase.auth.signOut()
+                            navigationActions.navigateToAuthAndClear()
+                        },
                         modifier = Modifier.testTag(OverviewScreenTestTags.LOGOUT_BUTTON)
                     ) {
                         Icon(Icons.Default.ExitToApp, contentDescription = "Sign Out")
@@ -201,6 +206,9 @@ fun StatusTag(status: ReportStatus) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewOverviewScreen() {
+    val dummyNavController = rememberNavController()
+    val dummyNavigationActions = NavigationActions(dummyNavController)
+
     val dummyReports = listOf(
         Report(
             id = "1",
@@ -231,6 +239,6 @@ fun PreviewOverviewScreen() {
         reports = dummyReports,
         onAddReport = {},
         onReportClick = {},
-        navigationActions = null
+        navigationActions = dummyNavigationActions
     )
 }

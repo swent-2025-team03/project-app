@@ -22,7 +22,6 @@ import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
 import com.android.agrihealth.ui.farmer.AddReportScreen
 import com.android.agrihealth.ui.farmer.MapScreen
-import com.android.agrihealth.ui.farmer.OverviewScreen
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
@@ -55,8 +54,7 @@ class MainActivity : ComponentActivity() {
 fun AgriHealthApp() {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
-  val startDestination =
-      if (Firebase.auth.currentUser == null) Screen.Auth.name else Screen.Overview.route
+  val startDestination = Screen.Auth.name
 
   NavHost(navController = navController, startDestination = startDestination) {
     navigation(
@@ -90,7 +88,6 @@ fun AgriHealthApp() {
             userRole = currentUserRole,
             reports = reportsForUser,
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
-            onSignedOut = { navigationActions.navigateTo(Screen.Auth) },
             // Temporarily commented out because the ViewReport screen has not been merged yet.
             //onReportClick = {navigationActions.navigateTo(Screen,ViewReport)},
             navigationActions = navigationActions,
