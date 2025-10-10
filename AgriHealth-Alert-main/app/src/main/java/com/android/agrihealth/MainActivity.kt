@@ -52,9 +52,7 @@ fun AgriHealthApp() {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
   val startDestination =
-      // TODO replace by real authentication check
-      if (false
-      // needs to be replaced with the condition of a user being already signed in
+      if (Firebase.auth.currentUser == null
       ) Screen.Auth.name
       else Screen.Overview.route
 
