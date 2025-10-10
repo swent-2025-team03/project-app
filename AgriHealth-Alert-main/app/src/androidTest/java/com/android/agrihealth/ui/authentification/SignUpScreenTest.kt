@@ -1,4 +1,4 @@
-package com.android.sample.ui.authentification
+package com.android.agrihealth.ui.authentification
 
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
