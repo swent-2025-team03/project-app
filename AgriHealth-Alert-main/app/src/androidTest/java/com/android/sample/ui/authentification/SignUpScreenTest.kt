@@ -5,29 +5,24 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import com.android.agrihealth.ui.authentification.SignUpScreen
 import org.junit.Rule
 import org.junit.Test
 
 class SignUpScreenTest {
 
-    @get:Rule
-    val composeRule = createAndroidComposeRule<ComponentActivity>()
+  @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    @Test
-    fun signup_fields_and_actions_are_displayed() {
-        composeRule.setContent {
-            MaterialTheme {
-                SignUpScreen()
-            }
-        }
+  @Test
+  fun signup_fields_and_actions_are_displayed() {
+    composeRule.setContent { MaterialTheme { SignUpScreen() } }
 
-        composeRule.onNodeWithTag("SignUpTitle", useUnmergedTree = true).assertIsDisplayed()
-        composeRule.onNodeWithTag("NameField", useUnmergedTree = true).assertIsDisplayed()
-        composeRule.onNodeWithTag("SurnameField", useUnmergedTree = true).assertIsDisplayed()
-        composeRule.onNodeWithTag("EmailField", useUnmergedTree = true).assertIsDisplayed()
-        composeRule.onNodeWithTag("PasswordField", useUnmergedTree = true).assertIsDisplayed()
-        composeRule.onNodeWithTag("ConfirmPasswordField", useUnmergedTree = true).assertIsDisplayed()
-        composeRule.onNodeWithTag("SaveButton", useUnmergedTree = true).assertIsDisplayed()
-    }
+    composeRule.onNodeWithTag("SignUpTitle", useUnmergedTree = true).assertIsDisplayed()
+    composeRule.onNodeWithTag("NameField", useUnmergedTree = true).assertIsDisplayed()
+    composeRule.onNodeWithTag("SurnameField", useUnmergedTree = true).assertIsDisplayed()
+    composeRule.onNodeWithTag("EmailField", useUnmergedTree = true).assertIsDisplayed()
+    composeRule.onNodeWithTag("PasswordField", useUnmergedTree = true).assertIsDisplayed()
+    composeRule.onNodeWithTag("ConfirmPasswordField", useUnmergedTree = true).assertIsDisplayed()
+    composeRule.onNodeWithTag("SaveButton", useUnmergedTree = true).assertIsDisplayed()
+  }
 }
-

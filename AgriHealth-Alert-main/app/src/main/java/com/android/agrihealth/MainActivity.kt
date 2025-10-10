@@ -16,7 +16,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.resources.C
-import com.android.agrihealth.ui.theme.SampleAppTheme
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
 import com.android.agrihealth.ui.farmer.AddReportScreen
@@ -24,6 +23,7 @@ import com.android.agrihealth.ui.farmer.MapScreen
 import com.android.agrihealth.ui.farmer.OverviewScreen
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.theme.SampleAppTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
@@ -52,11 +52,7 @@ fun AgriHealthApp() {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
   val startDestination =
-      // TODO replace by real authentication check
-      if (false
-      // needs to be replaced with the condition of a user being already signed in
-      ) Screen.Auth.name
-      else Screen.Overview.route
+      if (Firebase.auth.currentUser == null) Screen.Auth.name else Screen.Overview.route
 
   NavHost(navController = navController, startDestination = startDestination) {
     navigation(
