@@ -6,15 +6,18 @@ import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.User
 import com.android.agrihealth.data.model.authentification.UserRepository
-import com.android.agrihealth.data.model.authentification.UserRole
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.data.model.authentification.UserRole
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class SignUpUIState(
     override val email: String = "",
     override val password: String = "",
+    override val user: FirebaseUser? = null,
     val name: String = "",
     val surname: String = "",
     val cnfPassword: String = "",
@@ -25,6 +28,7 @@ data class SignUpUIState(
     return super.isValid() && password == cnfPassword && role != null
   }
 }
+
 class SignUpViewModel(
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
     private val authRepository: AuthRepository = AuthRepositoryProvider.repository
@@ -65,12 +69,16 @@ class SignUpViewModel(
     if (_uiState.value.isValid()) {
       viewModelScope.launch {
         authRepository
-            .signUpWithEmailAndPassword(_uiState.value.email, _uiState.value.password,User(
-                "",
-                _uiState.value.name,
-                _uiState.value.surname,
-                _uiState.value.role!!,
-                _uiState.value.email ))
+            .signUpWithEmailAndPassword(
+                _uiState.value.email,
+                _uiState.value.password,
+                User(
+                    "",
+                    _uiState.value.name,
+                    _uiState.value.surname,
+                    _uiState.value.role!!,
+                    _uiState.value.email))
+            .fold({ user -> _uiState.update { it.copy(user = user) } }) { failure -> }
       }
     }
   }

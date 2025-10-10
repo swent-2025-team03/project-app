@@ -52,9 +52,7 @@ fun AgriHealthApp() {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
   val startDestination =
-      if (Firebase.auth.currentUser == null
-      ) Screen.Auth.name
-      else Screen.Overview.route
+      if (Firebase.auth.currentUser == null) Screen.Auth.name else Screen.Overview.route
 
   NavHost(navController = navController, startDestination = startDestination) {
     navigation(
