@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.authentification
 
+import androidx.lifecycle.ViewModel
 import com.android.agrihealth.data.model.authentification.UserRole
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,7 @@ data class SignUpUIState(
     get() = true
 }
 
-class SignUpViewModel {
+class SignUpViewModel : ViewModel() {
   private val _uiState = MutableStateFlow(SignUpUIState())
   val uiState: StateFlow<SignUpUIState> = _uiState
 
