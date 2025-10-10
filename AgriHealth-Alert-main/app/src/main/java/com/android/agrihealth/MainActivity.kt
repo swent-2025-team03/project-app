@@ -26,10 +26,15 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
+import com.android.agrihealth.ui.report.ReportViewModel
+import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.theme.SampleAppTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,7 +94,7 @@ fun AgriHealthApp() {
             reports = reportsForUser,
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
             // Temporarily commented out because the ViewReport screen has not been merged yet.
-            //onReportClick = {navigationActions.navigateTo(Screen,ViewReport)},
+            onReportClick = {navigationActions.navigateTo(Screen.ViewReport)},
             navigationActions = navigationActions,
         )
       }
@@ -98,9 +103,26 @@ fun AgriHealthApp() {
             onDone = { navigationActions.navigateTo(Screen.Overview) },
             onGoBack = { navigationActions.goBack() })
       }
+        composable(
+            route = Screen.ViewReport.route,
+            arguments = listOf(navArgument("reportId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val reportId = backStackEntry.arguments?.getString("reportId") ?: ""
+
+            // You might fetch the report by ID here
+            val viewModel: ReportViewModel = viewModel()
+            val userRole = UserRole.VET // TODO: retrieve actual user role dynamically
+
+            ReportViewScreen(
+                navController = navController,
+                userRole = userRole,
+                viewModel = viewModel
+            )
+        }
     }
 
-    navigation(
+
+      navigation(
         startDestination = Screen.Map.route,
         route = Screen.Map.name,
     ) {
