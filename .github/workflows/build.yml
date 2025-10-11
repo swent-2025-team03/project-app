@@ -4,13 +4,11 @@ on:
   push:
     branches:
       - main
-      - feature/*
+      - Feature/*
   pull_request:
       - opened
       - synchronize
       - reopened
-  branches:
-      - main
 
 jobs:
   build:
