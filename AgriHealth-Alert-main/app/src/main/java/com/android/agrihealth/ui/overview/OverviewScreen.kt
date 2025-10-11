@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.data.model.UserRole
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
@@ -42,11 +43,15 @@ object OverviewScreenTestTags {
 @Composable
 fun OverviewScreen(
     userRole: UserRole,
-    reports: List<Report>,
+    overviewViewModel: OverviewViewModel = viewModel(),
     onAddReport: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
-    navigationActions: NavigationActions
+    navigationActions: NavigationActions? = null
 ) {
+
+    val uiState by overviewViewModel.uiState.collectAsState()
+    val reports = uiState.reports
+
     Scaffold(
         // -- Top App Bar with logout icon --
         topBar = {
@@ -56,7 +61,7 @@ fun OverviewScreen(
                     IconButton(
                         onClick = {
                             Firebase.auth.signOut()
-                            navigationActions.navigateToAuthAndClear()
+                            navigationActions?.navigateToAuthAndClear()
                         },
                         modifier = Modifier.testTag(OverviewScreenTestTags.LOGOUT_BUTTON)
                     ) {
@@ -236,7 +241,6 @@ fun PreviewOverviewScreen() {
 
     OverviewScreen(
         userRole = UserRole.FARMER,
-        reports = dummyReports,
         onAddReport = {},
         onReportClick = {},
         navigationActions = dummyNavigationActions

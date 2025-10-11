@@ -101,11 +101,9 @@ fun AgriHealthApp() {
           val currentUserRole = userViewModel.userRole
           val currentUserId = userViewModel.userId
 
-          val reportsForUser = overviewViewModel.getReportsForUser(currentUserRole, currentUserId)
-
         OverviewScreen(
             userRole = currentUserRole,
-            reports = reportsForUser,
+            overviewViewModel = overviewViewModel,
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
             // TODO: Pass the selected report to the ViewReportScreen
             onReportClick = {navigationActions.navigateTo(Screen.ViewReport)},
