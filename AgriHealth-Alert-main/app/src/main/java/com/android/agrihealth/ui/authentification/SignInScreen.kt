@@ -1,4 +1,4 @@
-package com.android.sample.ui.authentification
+package com.android.agrihealth.ui.authentification
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,16 +20,18 @@ import androidx.compose.ui.unit.sp
 private val FieldBg  = Color(0xFFF0F6F1)
 private val ButtonBg = Color(0xFF9BB9B4)
 private val TitleColor = Color(0xFF000000)
-private val LogInButtonTestTag = "LogInButton"
-private val SignUpButtonTestTag = "SignUpButton"
-private val TitleTestTag = "LoginTitle"
-private val EmailFieldTestTag = "EmailField"
-private val PasswordFieldTestTag = "PasswordField"
-private val ForgotPasswordTestTag = "ForgotPassword"
-private val DividerTestTag = "LoginDivider"
 
+object SignInScreenTestTags {
+     const val LOGIN_BUTTON = "loginButton"
+     const val SIGN_UP_BUTTON = "signUpButton"
+     const val LOGIN_TITLE = "loginTitle"
+     const val EMAIL_FIELD = "emailField"
+     const val PASSWORD_FIELD = "passwordField"
+     const val FORGOT_PASSWORD = "forgotPassword"
+     const val LOGIN_DIVIDER = "loginDivider"
+}
 @Composable
-fun LoginScreen(
+fun SignInScreen(
     modifier: Modifier = Modifier,
     onForgotPasswordClick: () -> Unit = {},
     onLoginInClick: () -> Unit = {},
@@ -62,7 +64,7 @@ fun LoginScreen(
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Medium,
                 color = TitleColor,
-                modifier = Modifier.testTag(TitleTestTag)
+                modifier = Modifier.testTag(SignInScreenTestTags.LOGIN_TITLE)
             )
 
             Spacer(Modifier.height(56.dp))
@@ -83,7 +85,7 @@ fun LoginScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
-                    .testTag(EmailFieldTestTag)
+                    .testTag(SignInScreenTestTags.EMAIL_FIELD)
             )
 
             Spacer(Modifier.height(16.dp))
@@ -105,7 +107,7 @@ fun LoginScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
-                    .testTag(PasswordFieldTestTag)
+                    .testTag(SignInScreenTestTags.PASSWORD_FIELD)
             )
 
             Spacer(Modifier.height(8.dp))
@@ -120,7 +122,7 @@ fun LoginScreen(
                     modifier = Modifier
                         .padding(top = 4.dp)
                         .clickable { onForgotPasswordClick() }
-                        .testTag(ForgotPasswordTestTag)
+                        .testTag(SignInScreenTestTags.FORGOT_PASSWORD)
                 )
             }
 
@@ -131,7 +133,7 @@ fun LoginScreen(
                 thickness = 1.dp,
                 modifier = Modifier
                     .fillMaxWidth(0.8f)
-                    .testTag(DividerTestTag)
+                    .testTag(SignInScreenTestTags.LOGIN_DIVIDER)
             )
 
             Spacer(Modifier.height(24.dp))
@@ -143,7 +145,7 @@ fun LoginScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
-                    .testTag(LogInButtonTestTag)
+                    .testTag(SignInScreenTestTags.LOGIN_BUTTON)
             ) {
                 Text("Log in", fontSize = 24.sp, color = Color.Black)
             }
@@ -157,7 +159,7 @@ fun LoginScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
-                    .testTag(SignUpButtonTestTag)
+                    .testTag(SignInScreenTestTags.SIGN_UP_BUTTON)
             ) {
                 Text("Sign up", fontSize = 24.sp, color = ButtonBg)
             }
@@ -168,5 +170,5 @@ fun LoginScreen(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun SignInScreenPreview() {
-    MaterialTheme { LoginScreen() }
+    MaterialTheme { SignInScreen() }
 }

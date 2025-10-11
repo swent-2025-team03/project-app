@@ -28,6 +28,8 @@ sealed class Screen(
   object Map : Screen(route = "map", name = "Map", isTopLevelDestination = true)
 
   object SignUp : Screen(route = "sign_up", name = "Sign Up")
+
+  object SignIn : Screen(route = "sign_in", name = "Sign In")
 }
 
 open class NavigationActions(

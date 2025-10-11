@@ -1,5 +1,5 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
-package com.android.sample.ui.authentification
+package com.android.agrihealth.ui.authentification
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -7,7 +7,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,38 +18,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.authentification.UserRole
 
 private val FieldBg  = Color(0xFFF0F6F1)
 
-enum class Role { Farmer, Vet }
-
-// Test tags provisoires (privés)
-private val BackButtonTestTag = "BackButton"
-private val TitleTestTag = "SignUpTitle"
-private val NameFieldTestTag = "NameField"
-private val SurnameFieldTestTag = "SurnameField"
-private val EmailFieldTestTag = "EmailField"
-private val PasswordFieldTestTag = "PasswordField"
-private val ConfirmPasswordFieldTestTag = "ConfirmPasswordField"
-private val SaveButtonTestTag = "SaveButton"
-private val FarmerPillTestTag = "FarmerPill"
-private val VetPillTestTag = "VetPill"
+object SignUpScreenTestTags {
+    const val BACK_BUTTON = "BackButton"
+    const val TITLE = "SignUpTitle"
+    const val NAME_FIELD = "NameField"
+    const val SURNAME_FIELD = "SurnameField"
+    const val EMAIL_FIELD = "EmailField"
+    const val PASSWORD_FIELD = "PasswordField"
+    const val CONFIRM_PASSWORD_FIELD = "ConfirmPasswordField"
+    const val SAVE_BUTTON = "SaveButton"
+    const val FARMER_PILL = "FarmerPill"
+    const val VET_PILL = "VetPill"
+}
 
 @Composable
 fun SignUpScreen(
     onBack: () -> Unit = {},
-    onSave: () -> Unit = {}
+    onSignedUp: () -> Unit = {},
+    viewModel: SignUpViewModel = viewModel()
 ) {
-    /* To delete after viewModel integration*/
-    var name by remember { mutableStateOf("") }
-    var surname by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var pwd by remember { mutableStateOf("") }
-    var confirm by remember { mutableStateOf("") }
-    var role by remember { mutableStateOf<Role?>(null) }
-    /* End To delete after viewModel integration*/
-
+    val uiState by viewModel.uiState.collectAsState()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -55,7 +50,7 @@ fun SignUpScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = onBack,
-                        modifier = Modifier.testTag(BackButtonTestTag)
+                        modifier = Modifier.testTag(SignUpScreenTestTags.BACK_BUTTON)
                     ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
@@ -76,35 +71,35 @@ fun SignUpScreen(
                 "Create An Account",
                 fontSize = 36.sp,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.testTag(TitleTestTag)
+                modifier = Modifier.testTag(SignUpScreenTestTags.TITLE)
             )
             Spacer(Modifier.height(24.dp))
 
-            Field(name, { name = it }, "Name", modifier = Modifier.testTag(NameFieldTestTag))
-            Field(surname, { surname = it }, "Surname", modifier = Modifier.testTag(SurnameFieldTestTag))
-            Field(email, { email = it }, "Email", modifier = Modifier.testTag(EmailFieldTestTag))
-            Field(pwd, { pwd = it }, "Password", modifier = Modifier.testTag(PasswordFieldTestTag))
-            Field(confirm, { confirm = it }, "Confirm Password", modifier = Modifier.testTag(ConfirmPasswordFieldTestTag))
+            Field(uiState.name, viewModel::setName, "Name", modifier = Modifier.testTag(SignUpScreenTestTags.NAME_FIELD))
+            Field(uiState.surname, viewModel::setSurname, "Surname", modifier = Modifier.testTag(SignUpScreenTestTags.SURNAME_FIELD))
+            Field(uiState.email, viewModel::setEmail, "Email", modifier = Modifier.testTag(SignUpScreenTestTags.EMAIL_FIELD))
+            Field(uiState.password, viewModel::setPassword, "Password", modifier = Modifier.testTag(SignUpScreenTestTags.PASSWORD_FIELD))
+            Field(uiState.cnfPassword, viewModel::setCnfPassword, "Confirm Password", modifier = Modifier.testTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD))
 
             Spacer(Modifier.height(16.dp))
             Text("Are you a vet or a farmer ?", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(12.dp))
 
             RoleSelector(
-                selected = role,
-                onSelected = { role = it }
+                selected = uiState.role,
+                onSelected = viewModel::onSelected
             )
 
             Spacer(Modifier.height(28.dp))
             Button(
                 onClick = {
-                    val r = role ?: Role.Farmer
-                    onSave()
+                    viewModel.signUp()
+                    onSignedUp()
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
-                    .testTag(SaveButtonTestTag),
+                    .testTag(SignUpScreenTestTags.SAVE_BUTTON),
                 shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF96B7B1))
             ) {
@@ -117,26 +112,26 @@ fun SignUpScreen(
 
 @Composable
 private fun RoleSelector(
-    selected: Role?,
-    onSelected: (Role) -> Unit
+    selected: UserRole?,
+    onSelected: (UserRole) -> Unit
 ) {
     Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
         SelectablePill(
             text = "Farmer",
-            selected = selected == Role.Farmer,
-            onClick = { onSelected(Role.Farmer) },
-            modifier = Modifier.testTag(FarmerPillTestTag)
+            selected = selected == UserRole.FARMER,
+            onClick = { onSelected(UserRole.FARMER) },
+            modifier = Modifier.testTag(SignUpScreenTestTags.FARMER_PILL)
         )
         SelectablePill(
             text = "Vet",
-            selected = selected == Role.Vet,
-            onClick = { onSelected(Role.Vet) },
-            modifier = Modifier.testTag(VetPillTestTag)
+            selected = selected == UserRole.VETERINARIAN,
+            onClick = { onSelected(UserRole.VETERINARIAN) },
+            modifier = Modifier.testTag(SignUpScreenTestTags.VET_PILL)
         )
     }
 }
 private val UnselectedColor = Color(0xFFE5E5E5)
-private val SelectedColor = Color(0xFF96B7B1) // vert
+private val SelectedColor = Color(0xFF96B7B1)
 @Composable
 private fun SelectablePill(
     text: String,
@@ -144,7 +139,7 @@ private fun SelectablePill(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val bg = if (selected) SelectedColor else UnselectedColor // vert / gris
+    val bg = if (selected) SelectedColor else UnselectedColor
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(24.dp),
