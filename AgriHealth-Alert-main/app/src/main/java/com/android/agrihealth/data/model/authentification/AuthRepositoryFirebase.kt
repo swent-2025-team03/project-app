@@ -13,12 +13,12 @@ class AuthRepositoryFirebase(private val auth: FirebaseAuth = Firebase.auth) : A
       password: String
   ): Result<FirebaseUser> {
     return try {
-        val loginResult = auth.signInWithEmailAndPassword(email, password).await()
-        val user = loginResult.user ?: return Result.failure(NullPointerException("Log in failed"))
+      val loginResult = auth.signInWithEmailAndPassword(email, password).await()
+      val user = loginResult.user ?: return Result.failure(NullPointerException("Log in failed"))
 
-        Result.success(user)
+      Result.success(user)
     } catch (e: Exception) {
-        Result.failure(e)
+      Result.failure(e)
     }
   }
 
@@ -27,46 +27,49 @@ class AuthRepositoryFirebase(private val auth: FirebaseAuth = Firebase.auth) : A
       password: String,
       userData: User
   ): Result<FirebaseUser> {
-      val userRepository = UserRepositoryProvider.repository
+    val userRepository = UserRepositoryProvider.repository
 
-      return try {
-          val creationResult = auth.createUserWithEmailAndPassword(email, password).await()
-          val user = creationResult.user ?: return Result.failure(NullPointerException("Account creation failed"))
+    return try {
+      val creationResult = auth.createUserWithEmailAndPassword(email, password).await()
+      val user =
+          creationResult.user
+              ?: return Result.failure(NullPointerException("Account creation failed"))
 
-          try {
-              userRepository.addUser(userData.copy(uid = user.uid, email = email))
-          } catch (e: Exception) {
-              user.delete().await()
-              Result.failure<FirebaseUser>(NullPointerException("Account creation failed"))
-          }
-
-          Result.success(user)
+      try {
+        userRepository.addUser(userData.copy(uid = user.uid, email = email))
       } catch (e: Exception) {
-          Result.failure(e)
+        user.delete().await()
+        Result.failure<FirebaseUser>(NullPointerException("Account creation failed"))
       }
+
+      Result.success(user)
+    } catch (e: Exception) {
+      Result.failure(e)
+    }
   }
 
   override fun signOut(): Result<Unit> {
     return try {
-        auth.signOut()
-        Result.success(Unit)
+      auth.signOut()
+      Result.success(Unit)
     } catch (e: Exception) {
-        Result.failure(e)
+      Result.failure(e)
     }
   }
 
   override suspend fun deleteAccount(): Result<Unit> {
-      val userRepository = UserRepositoryProvider.repository
+    val userRepository = UserRepositoryProvider.repository
 
-      return try {
-          val user = auth.currentUser ?: return Result.failure(NullPointerException("User not logged in"))
+    return try {
+      val user =
+          auth.currentUser ?: return Result.failure(NullPointerException("User not logged in"))
 
-          userRepository.deleteUser(user.uid)
-          user.delete().await()
+      userRepository.deleteUser(user.uid)
+      user.delete().await()
 
-          Result.success(Unit)
-      } catch (e: Exception) {
-          Result.failure(e)
-      }
+      Result.success(Unit)
+    } catch (e: Exception) {
+      Result.failure(e)
+    }
   }
 }

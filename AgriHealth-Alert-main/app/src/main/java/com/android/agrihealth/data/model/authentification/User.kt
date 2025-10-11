@@ -22,6 +22,6 @@ fun UserRole.displayString(): String =
     name.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 
 fun roleFromDisplayString(role: String): UserRole {
-    return UserRole.entries.firstOrNull { it.displayString().lowercase() == role.lowercase() }
-        ?: throw IllegalArgumentException("Invalid role")
+  return UserRole.entries.firstOrNull { it.displayString().lowercase() == role.lowercase() }
+      ?: throw IllegalArgumentException("Invalid role")
 }

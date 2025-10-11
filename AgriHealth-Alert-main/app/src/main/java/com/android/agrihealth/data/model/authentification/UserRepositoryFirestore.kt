@@ -7,7 +7,8 @@ import kotlinx.coroutines.tasks.await
 
 const val USERS_COLLECTION_PATH = "users"
 
-class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.firestore) : UserRepository {
+class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.firestore) :
+    UserRepository {
   override suspend fun addUser(user: User) {
     val map = mapFromUser(user)
     db.collection(USERS_COLLECTION_PATH).document(user.uid).set(map).await()
@@ -32,7 +33,6 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
       val user = userFromData(uid, data)
 
       Result.success(user)
-
     } catch (e: Exception) {
       Result.failure(e)
     }
@@ -40,18 +40,17 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
 
   private fun mapFromUser(user: User): Map<String, String> {
     return mapOf(
-      "name" to user.name,
-      "surname" to user.surname,
-      "role" to user.role.displayString(),
-      "email" to user.email
-    )
+        "name" to user.name,
+        "surname" to user.surname,
+        "role" to user.role.displayString(),
+        "email" to user.email)
   }
 
   private fun userFromData(uid: String, data: Map<String, Any>): User {
-    val name =    data["name"]    as? String ?: throw Exception("Missing name")
+    val name = data["name"] as? String ?: throw Exception("Missing name")
     val surname = data["surname"] as? String ?: throw Exception("Missing surname")
-    val email =   data["email"]   as? String ?: throw Exception("Missing email")
-    val roleStr = data["role"]    as? String ?: throw Exception("Missing role")
+    val email = data["email"] as? String ?: throw Exception("Missing email")
+    val roleStr = data["role"] as? String ?: throw Exception("Missing role")
     val role = roleFromDisplayString(roleStr)
 
     return User(uid, name, surname, role, email)

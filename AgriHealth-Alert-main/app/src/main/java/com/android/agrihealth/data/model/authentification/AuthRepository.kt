@@ -28,10 +28,10 @@ interface AuthRepository {
    */
   fun signOut(): Result<Unit>
 
-    /**
-     * Deletes the account of the authenticated user along with their data.
-     *
-     * @return A [Result] indicating success or failure.
-     */
+  /**
+   * Deletes the account of the authenticated user along with their data.
+   *
+   * @return A [Result] indicating success or failure.
+   */
   suspend fun deleteAccount(): Result<Unit>
 }
