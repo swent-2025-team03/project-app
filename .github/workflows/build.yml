@@ -6,7 +6,10 @@ on:
       - main
       - feature/*
   pull_request:
-    branches:
+      - opened
+      - synchronize
+      - reopened
+  branches:
       - main
 
 jobs:
