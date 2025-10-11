@@ -11,6 +11,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+/**
+ * Represents the UI state for viewing and editing a single report.
+ * This data class allows for less subscribing to individual state variables in the ViewModel.
+ *
+ * @property report The `Report` being viewed or edited. Defaults to a sample report.
+ * @property answerText The current text of the answer input field. Defaults to an empty string.
+ * @property status The current status of the report. Defaults to `ReportStatus.PENDING`.
+ */
 data class ReportsViewUIState(
     val report: Report =
         Report(
