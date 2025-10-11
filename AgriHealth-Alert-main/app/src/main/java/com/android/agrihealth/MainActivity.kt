@@ -76,20 +76,20 @@ fun AgriHealthApp() {
         route = Screen.Overview.name,
     ) {
       composable(Screen.Overview.route) {
-          val overviewViewModel: OverviewViewModel = viewModel()
+        val overviewViewModel: OverviewViewModel = viewModel()
 
-          //TODO: Get the information from logged in user
-          val currentUserRole = UserRole.FARMER
-          val currentUserId = "FARMER_001"
+        // TODO: Get the information from logged in user
+        val currentUserRole = UserRole.FARMER
+        val currentUserId = "FARMER_001"
 
-          val reportsForUser = overviewViewModel.getReportsForUser(currentUserRole, currentUserId)
+        val reportsForUser = overviewViewModel.getReportsForUser(currentUserRole, currentUserId)
 
         OverviewScreen(
             userRole = currentUserRole,
             reports = reportsForUser,
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
             // Temporarily commented out because the ViewReport screen has not been merged yet.
-            //onReportClick = {navigationActions.navigateTo(Screen,ViewReport)},
+            // onReportClick = {navigationActions.navigateTo(Screen,ViewReport)},
             navigationActions = navigationActions,
         )
       }
