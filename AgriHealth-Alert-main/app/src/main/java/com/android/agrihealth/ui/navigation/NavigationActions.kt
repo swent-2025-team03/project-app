@@ -32,7 +32,6 @@ sealed class Screen(
   object ViewReport : Screen(route = "view_report/{reportId}", name = "View Report") {
     fun createRoute(reportId: String) = "view_report/$reportId"
   }
-
 }
 
 open class NavigationActions(
@@ -75,12 +74,8 @@ open class NavigationActions(
     return navController.currentDestination?.route ?: ""
   }
 
-  /**
-   * Navigate to the sign in screen and clear the backstack.
-   */
+  /** Navigate to the sign in screen and clear the backstack. */
   open fun navigateToAuthAndClear() {
-    navController.navigate(Screen.Auth.route) {
-      popUpTo(0)
-    }
+    navController.navigate(Screen.Auth.route) { popUpTo(0) }
   }
 }
