@@ -32,8 +32,6 @@ class ReportRepositoryLocalTest {
 
     @Before
     fun setup() {
-        //MockitoAnnotations.openMocks(this)
-
         reportRepositoryLocal = ReportRepositoryLocal()
     }
 
