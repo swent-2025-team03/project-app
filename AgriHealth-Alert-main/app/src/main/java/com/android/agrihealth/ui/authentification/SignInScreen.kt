@@ -97,7 +97,7 @@ fun SignInScreen(
               Row(Modifier.fillMaxWidth()) {
                 Spacer(Modifier.weight(1f))
                 Text(
-                    text = "Password forget",
+                    text = "Forgot password",
                     fontSize = 14.sp,
                     color = Color.Black,
                     textAlign = TextAlign.End,
