@@ -28,6 +28,11 @@ sealed class Screen(
   object Map : Screen(route = "map", name = "Map", isTopLevelDestination = true)
 
   object SignUp : Screen(route = "sign_up", name = "Sign Up")
+
+  object ViewReport : Screen(route = "view_report/{reportId}", name = "View Report") {
+    fun createRoute(reportId: String) = "view_report/$reportId"
+  }
+
 }
 
 open class NavigationActions(

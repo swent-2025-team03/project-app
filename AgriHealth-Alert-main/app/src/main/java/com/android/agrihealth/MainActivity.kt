@@ -26,10 +26,16 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
+import com.android.agrihealth.ui.report.ReportViewModel
+import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.theme.SampleAppTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.android.agrihealth.ui.user.UserViewModel
+
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,23 +60,37 @@ class MainActivity : ComponentActivity() {
 fun AgriHealthApp() {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
+
+  // Shared ViewModel (lives across navigation destinations)
+  val userViewModel: UserViewModel = viewModel()
+
   val startDestination = Screen.Auth.name
 
   NavHost(navController = navController, startDestination = startDestination) {
+    // --- Auth Graph ---
     navigation(
         startDestination = Screen.Auth.route,
         route = Screen.Auth.name,
     ) {
       composable(Screen.Auth.route) {
         SignInScreen(
-            onSignedIn = { navigationActions.navigateTo(Screen.Overview) },
+            onSignedIn = {
+                // TODO: Get user data from Firebase after login
+                userViewModel.userRole = UserRole.FARMER
+                userViewModel.userId = "FARMER_001"
+                navigationActions.navigateTo(Screen.Overview) },
             goToSignUp = { navigationActions.navigateTo(Screen.SignUp) })
       }
       composable(Screen.SignUp.route) {
-        SignUpScreen(onSignedUp = { navigationActions.navigateTo(Screen.Overview) })
+        SignUpScreen(onSignedUp = {
+            // TODO: After signup, set user info
+            userViewModel.userRole = UserRole.FARMER
+            userViewModel.userId = "FARMER_001"
+            navigationActions.navigateTo(Screen.Overview) })
       }
     }
 
+    // --- Overview Graph ---
     navigation(
         startDestination = Screen.Overview.route,
         route = Screen.Overview.name,
@@ -78,9 +98,8 @@ fun AgriHealthApp() {
       composable(Screen.Overview.route) {
           val overviewViewModel: OverviewViewModel = viewModel()
 
-          //TODO: Get the information from logged in user
-          val currentUserRole = UserRole.FARMER
-          val currentUserId = "FARMER_001"
+          val currentUserRole = userViewModel.userRole
+          val currentUserId = userViewModel.userId
 
           val reportsForUser = overviewViewModel.getReportsForUser(currentUserRole, currentUserId)
 
@@ -88,8 +107,8 @@ fun AgriHealthApp() {
             userRole = currentUserRole,
             reports = reportsForUser,
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
-            // Temporarily commented out because the ViewReport screen has not been merged yet.
-            //onReportClick = {navigationActions.navigateTo(Screen,ViewReport)},
+            // TODO: Pass the selected report to the ViewReportScreen
+            onReportClick = {navigationActions.navigateTo(Screen.ViewReport)},
             navigationActions = navigationActions,
         )
       }
@@ -98,9 +117,27 @@ fun AgriHealthApp() {
             onDone = { navigationActions.navigateTo(Screen.Overview) },
             onGoBack = { navigationActions.goBack() })
       }
+        composable(
+            route = Screen.ViewReport.route,
+            arguments = listOf(navArgument("reportId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val reportId = backStackEntry.arguments?.getString("reportId") ?: ""
+
+            // You might fetch the report by ID here
+            val viewModel: ReportViewModel = viewModel()
+
+            val currentUserRole = userViewModel.userRole
+
+            ReportViewScreen(
+                navController = navController,
+                userRole = currentUserRole,
+                viewModel = viewModel
+            )
+        }
     }
 
-    navigation(
+
+      navigation(
         startDestination = Screen.Map.route,
         route = Screen.Map.name,
     ) {

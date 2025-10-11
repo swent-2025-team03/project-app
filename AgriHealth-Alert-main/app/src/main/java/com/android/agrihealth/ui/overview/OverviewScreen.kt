@@ -44,7 +44,7 @@ fun OverviewScreen(
     userRole: UserRole,
     reports: List<Report>,
     onAddReport: () -> Unit = {},
-    onReportClick: () -> Unit = {},
+    onReportClick: (String) -> Unit = {},
     navigationActions: NavigationActions
 ) {
     Scaffold(
@@ -112,7 +112,7 @@ fun OverviewScreen(
                     items(reports, key = { it.id }) { report ->
                         ReportItem(
                             report = report,
-                            onClick = { onReportClick() }
+                            onClick = { onReportClick(report.id) }
                         )
                         Divider()
                     }
