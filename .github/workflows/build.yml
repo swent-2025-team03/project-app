@@ -93,7 +93,7 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 1080x2400
           disable-animations: true
-          script: ./gradlew connectedCheck --parallel --build-cache
+          script: bash ./gradlew connectedCheck --parallel --build-cache
 
       - name: Cache SonarCloud packages
         uses: actions/cache@v3
