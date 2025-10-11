@@ -132,7 +132,9 @@ fun SignInScreen(
                   modifier =
                       Modifier.fillMaxWidth()
                           .height(56.dp)
-                          .testTag(SignInScreenTestTags.LOGIN_BUTTON)) {}
+                          .testTag(SignInScreenTestTags.LOGIN_BUTTON)) {
+                    Text("Log In", color = Color.Black)
+                  }
 
               Spacer(Modifier.height(16.dp))
 
@@ -143,7 +145,9 @@ fun SignInScreen(
                   modifier =
                       Modifier.fillMaxWidth()
                           .height(56.dp)
-                          .testTag(SignInScreenTestTags.SIGN_UP_BUTTON)) {}
+                          .testTag(SignInScreenTestTags.SIGN_UP_BUTTON)) {
+                    Text("Create an account", color = Color.Black)
+                  }
             }
       }
 }

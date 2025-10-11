@@ -25,7 +25,6 @@ import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Tab
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-@OptIn(ExperimentalMaterial3Api::class)
 
 object OverviewScreenTestTags {
   const val ADD_REPORT_BUTTON = "addReportFab"
@@ -37,6 +36,7 @@ object OverviewScreenTestTags {
  * Button for creating a new report will only be displayed for farmer accounts. For the list,
  * farmers can view only reports made by their own; vets can view all the reports.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OverviewScreen(
     userRole: UserRole,
