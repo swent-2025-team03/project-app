@@ -106,7 +106,8 @@ fun AgriHealthApp() {
             overviewViewModel = overviewViewModel,
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
             // TODO: Pass the selected report to the ViewReportScreen
-            onReportClick = {navigationActions.navigateTo(Screen.ViewReport)},
+            onReportClick = { reportId ->
+                navigationActions.navigateTo(Screen.ViewReport(reportId)) },
             navigationActions = navigationActions,
         )
       }
@@ -129,7 +130,8 @@ fun AgriHealthApp() {
             ReportViewScreen(
                 navController = navController,
                 userRole = currentUserRole,
-                viewModel = viewModel
+                viewModel = viewModel,
+                reportId = reportId
             )
         }
     }
