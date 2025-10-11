@@ -5,15 +5,15 @@ on:
     branches:
       - '**'
   pull_request:
-      - opened
-      - synchronize
-      - reopened
+    - opened
+    - synchronize
+    - reopened
 
 jobs:
   build:
     name: Build and Analyze
     runs-on: ubuntu-latest
-  defaults:
+    defaults:
       run:
         working-directory: ./AgriHealth-Alert-main
 
