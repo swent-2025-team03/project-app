@@ -1,11 +1,10 @@
-package com.android.sample.ui.authentification
+package com.android.agrihealth.ui.authentification
 
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import com.android.agrihealth.ui.authentification.SignUpScreen
 import org.junit.Rule
 import org.junit.Test
 
