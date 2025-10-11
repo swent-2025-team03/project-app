@@ -3,8 +3,7 @@ name: CI with SonarCloud
 on:
   push:
     branches:
-      - main
-      - Feature/*
+      - '**'
   pull_request:
       - opened
       - synchronize
