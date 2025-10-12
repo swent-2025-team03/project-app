@@ -21,13 +21,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 private val FieldBg = Color(0xFFF0F6F1)
 private val ButtonBg = Color(0xFF9BB9B4)
 private val TitleColor = Color(0xFF000000)
-private val LogInButtonTestTag = "LogInButton"
-private val SignUpButtonTestTag = "SignUpButton"
-private val TitleTestTag = "LoginTitle"
-private val EmailFieldTestTag = "EmailField"
-private val PasswordFieldTestTag = "PasswordField"
-private val ForgotPasswordTestTag = "ForgotPassword"
-private val DividerTestTag = "LoginDivider"
+
+object SignInScreenTestTags {
+  const val LOGIN_BUTTON = "loginButton"
+  const val SIGN_UP_BUTTON = "signUpButton"
+  const val LOGIN_TITLE = "loginTitle"
+  const val EMAIL_FIELD = "emailField"
+  const val PASSWORD_FIELD = "passwordField"
+  const val FORGOT_PASSWORD = "forgotPassword"
+  const val LOGIN_DIVIDER = "loginDivider"
+}
 
 @Composable
 fun SignInScreen(
@@ -55,7 +58,7 @@ fun SignInScreen(
                   fontSize = 40.sp,
                   fontWeight = FontWeight.Medium,
                   color = TitleColor,
-                  modifier = Modifier.testTag(TitleTestTag))
+                  modifier = Modifier.testTag(SignInScreenTestTags.LOGIN_TITLE))
 
               Spacer(Modifier.height(56.dp))
 
@@ -72,7 +75,10 @@ fun SignInScreen(
                           disabledContainerColor = FieldBg,
                           focusedIndicatorColor = Color.Transparent,
                           unfocusedIndicatorColor = Color.Transparent),
-                  modifier = Modifier.fillMaxWidth().height(56.dp).testTag(EmailFieldTestTag))
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .height(56.dp)
+                          .testTag(SignInScreenTestTags.EMAIL_FIELD))
 
               Spacer(Modifier.height(16.dp))
 
@@ -90,21 +96,24 @@ fun SignInScreen(
                           disabledContainerColor = FieldBg,
                           focusedIndicatorColor = Color.Transparent,
                           unfocusedIndicatorColor = Color.Transparent),
-                  modifier = Modifier.fillMaxWidth().height(56.dp).testTag(PasswordFieldTestTag))
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .height(56.dp)
+                          .testTag(SignInScreenTestTags.PASSWORD_FIELD))
 
               Spacer(Modifier.height(8.dp))
 
               Row(Modifier.fillMaxWidth()) {
                 Spacer(Modifier.weight(1f))
                 Text(
-                    text = "Password forget",
+                    text = "Forgot password",
                     fontSize = 14.sp,
                     color = Color.Black,
                     textAlign = TextAlign.End,
                     modifier =
                         Modifier.padding(top = 4.dp)
                             .clickable { onForgotPasswordClick() }
-                            .testTag(ForgotPasswordTestTag))
+                            .testTag(SignInScreenTestTags.FORGOT_PASSWORD))
               }
 
               Spacer(Modifier.height(16.dp))
@@ -112,16 +121,20 @@ fun SignInScreen(
               HorizontalDivider(
                   color = Color.Black,
                   thickness = 1.dp,
-                  modifier = Modifier.fillMaxWidth(0.8f).testTag(DividerTestTag))
-
+                  modifier =
+                      Modifier.fillMaxWidth(0.8f)
+                          .testTag(SignInScreenTestTags.LOGIN_DIVIDER))
               Spacer(Modifier.height(24.dp))
 
               Button(
                   onClick = { signInViewModel.signIn() },
                   shape = RoundedCornerShape(28.dp),
                   colors = ButtonDefaults.buttonColors(containerColor = ButtonBg),
-                  modifier = Modifier.fillMaxWidth().height(56.dp).testTag(LogInButtonTestTag)) {
-                    Text("Log in", fontSize = 24.sp, color = Color.Black)
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .height(56.dp)
+                          .testTag(SignInScreenTestTags.LOGIN_BUTTON)) {
+                    Text("Log In", color = Color.Black)
                   }
 
               Spacer(Modifier.height(16.dp))
@@ -130,8 +143,11 @@ fun SignInScreen(
                   onClick = goToSignUp,
                   shape = RoundedCornerShape(28.dp),
                   colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                  modifier = Modifier.fillMaxWidth().height(56.dp).testTag(SignUpButtonTestTag)) {
-                    Text("Sign up", fontSize = 24.sp, color = ButtonBg)
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .height(56.dp)
+                          .testTag(SignInScreenTestTags.SIGN_UP_BUTTON)) {
+                    Text("Create an account", color = Color.Black)
                   }
             }
       }
