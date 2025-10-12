@@ -43,13 +43,13 @@ fun OverviewScreen(
     reports: List<Report>,
     onAddReport: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
-    navigationActions: NavigationActions
+    navigationActions: NavigationActions = NavigationActions(rememberNavController())
 ) {
   Scaffold(
       // -- Top App Bar with logout icon --
       topBar = {
         TopAppBar(
-            title = { Text("Overview", style = MaterialTheme.typography.titleLarge) },
+            title = { Text("Overview", style = MaterialTheme.typography.titleLarge, modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE)) },
             actions = {
               IconButton(
                   onClick = {
@@ -66,7 +66,7 @@ fun OverviewScreen(
       bottomBar = {
         BottomNavigationMenu(
             selectedTab = Tab.Overview,
-            onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
+            onTabSelected = { tab -> navigationActions.navigateTo(tab.destination) },
             modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
       },
 

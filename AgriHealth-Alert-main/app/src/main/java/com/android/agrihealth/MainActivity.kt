@@ -63,7 +63,7 @@ fun AgriHealthApp() {
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
 
-  val startDestination = Screen.Auth.name
+  val startDestination = if (Firebase.auth.currentUser != null) Screen.Overview.name else Screen.Auth.name
 
   NavHost(navController = navController, startDestination = startDestination) {
     // --- Auth Graph ---

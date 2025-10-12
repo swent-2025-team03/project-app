@@ -1,6 +1,7 @@
 package com.android.agrihealth.ui.farmer
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -10,6 +11,7 @@ import androidx.compose.ui.platform.testTag
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
 
 @Composable
@@ -18,6 +20,10 @@ fun MapScreen(
 ) {
   // Temp Implementation of the Map Screen
   Scaffold(
+      topBar = {
+          Row {
+              Text(Screen.Map.name, modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE))}
+      },
       bottomBar = {
         BottomNavigationMenu(
             selectedTab = Tab.Map,
