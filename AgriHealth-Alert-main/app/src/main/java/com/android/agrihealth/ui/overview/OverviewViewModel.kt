@@ -1,22 +1,18 @@
 package com.android.agrihealth.ui.overview
 
 import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.*
 import com.android.agrihealth.data.repository.ReportRepository
-import com.android.agrihealth.data.repository.ReportRepositoryLocal
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
-import com.android.agrihealth.ui.user.UserViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 // Mock data for testing
-val repo1 = Report(
+val report1 = Report(
     id = "RPT001",
     title = "Cow coughing",
     description = "Coughing and nasal discharge observed in the barn.",
@@ -27,7 +23,7 @@ val repo1 = Report(
     answer = null,
     location = Location(46.5191, 6.5668, "Lausanne Farm")
 )
-val repo2 =  Report(
+val report2 =  Report(
     id = "RPT002",
     title = "Sheep lost appetite",
     description = "One sheep has not eaten for two days.",
@@ -65,8 +61,8 @@ class OverviewViewModel(
         //---Add some mock reports for testing---
         viewModelScope.launch {
             try {
-                reportRepository.addReport(repo1)
-                reportRepository.addReport(repo2)
+                reportRepository.addReport(report1)
+                reportRepository.addReport(report2)
             } catch (e: Exception) {
                 Log.e("OverviewViewModel", "Error fetching reports", e)
             }
@@ -84,7 +80,7 @@ class OverviewViewModel(
                 //TODO: Replace with actual user ID from authentication
                 val reports = reportRepository.getAllReports("FARMER_001")
                 _uiState.value = OverviewUIState(reports = reports)
-            } catch (e: Exception) {
+            } catch (e: NoSuchElementException) {
                 Log.e("OverviewViewModel", "Error fetching reports", e)
             }
         }

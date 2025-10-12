@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
  * @property answerText The current text of the answer input field. Defaults to an empty string.
  * @property status The current status of the report. Defaults to `ReportStatus.PENDING`.
  */
-data class ReportsViewUIState(
+data class ReportViewUIState(
     val report: Report =
         Report(
             id = "RPT001",
@@ -43,8 +43,8 @@ class ReportViewModel(
     private val repository: ReportRepository = ReportRepositoryProvider.repository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ReportsViewUIState())
-    val uiState: StateFlow<ReportsViewUIState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(ReportViewUIState())
+    val uiState: StateFlow<ReportViewUIState> = _uiState.asStateFlow()
 
     /**
      * Loads a Report by its ID and updates the _report.
@@ -56,7 +56,7 @@ class ReportViewModel(
             try {
                 val fetchedReport = repository.getReportById(reportID)
                 if(fetchedReport != null) {
-                    _uiState.value = ReportsViewUIState(
+                    _uiState.value = ReportViewUIState(
                         report = fetchedReport,
                         answerText = fetchedReport.answer ?: "",
                         status = fetchedReport.status
