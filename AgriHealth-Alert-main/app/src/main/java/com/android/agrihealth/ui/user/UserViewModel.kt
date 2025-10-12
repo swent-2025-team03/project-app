@@ -5,6 +5,6 @@ import com.android.agrihealth.data.model.UserRole
 
 // TODO: connect to Firebase Auth
 class UserViewModel : ViewModel() {
-    var userRole: UserRole = UserRole.FARMER
-    var userId: String = "FARMER_001"
+  var userRole: UserRole = UserRole.FARMER
+  var userId: String = "FARMER_001"
 }
