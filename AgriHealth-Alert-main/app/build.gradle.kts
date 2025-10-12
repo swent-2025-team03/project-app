@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
-    alias(libs.plugins.kotlinCompose)   // ← plugin Compose réactivé
+    alias(libs.plugins.kotlinCompose)   // ← plugin Compose reactivated
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.sonar)
     id("com.google.gms.google-services")

@@ -122,7 +122,8 @@ fun SignInScreen(
                   color = Color.Black,
                   thickness = 1.dp,
                   modifier =
-                      Modifier.fillMaxWidth(0.8f).testTag(SignInScreenTestTags.LOGIN_DIVIDER))
+                      Modifier.fillMaxWidth(0.8f)
+                          .testTag(SignInScreenTestTags.LOGIN_DIVIDER))
               Spacer(Modifier.height(24.dp))
 
               Button(

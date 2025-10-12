@@ -1,7 +1,7 @@
 [versions]
 agp = "8.7.2"
 kotlin = "2.0.21"
-kotlin-compose = "2.0.21"   # même version
+kotlin-compose = "2.0.21"   # Same version
 coreKtx = "1.12.0"
 ktfmt = "0.17.0"
 junit = "4.13.2"
