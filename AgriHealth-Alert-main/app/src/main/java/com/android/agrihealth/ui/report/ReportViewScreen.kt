@@ -35,7 +35,7 @@ fun ReportViewScreen(
     navController: NavController,
     userRole: UserRole,
     viewModel: ReportViewModel,
-    reportId: String
+    reportId: String = ""
 ) {
     LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
 

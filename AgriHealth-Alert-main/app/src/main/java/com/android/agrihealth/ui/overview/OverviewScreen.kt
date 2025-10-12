@@ -38,6 +38,8 @@ object OverviewScreenTestTags {
  * Button for creating a new report will only be displayed for farmer accounts.
  * For the list, farmers can view only reports made by their own;
  * vets can view all the reports.
+ *
+ * @param reports List of report to display kept only for backward compatibility and shouldn't be used
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,7 +48,8 @@ fun OverviewScreen(
     overviewViewModel: OverviewViewModel = viewModel(),
     onAddReport: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
-    navigationActions: NavigationActions? = null
+    navigationActions: NavigationActions? = null,
+    reports: List<Report> = overviewViewModel.uiState.collectAsState().value.reports,
 ) {
 
     val uiState by overviewViewModel.uiState.collectAsState()
