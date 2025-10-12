@@ -33,6 +33,10 @@ jobs:
       - name: Validate google-services.json
         run: jq . AgriHealth-Alert-main/app/google-services.json
 
+      - name: Verify google-services.json structure
+        run: |
+            head -n 8 AgriHealth-Alert-main/app/google-services.json
+
       #Build the debug APK
       - name: Build APK
         run: cd AgriHealth-Alert-main && ./gradlew assembleDebug
