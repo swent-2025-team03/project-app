@@ -30,14 +30,17 @@ class NavigationSprint1Test {
   @Before
   fun setUp() {
     // Set the content to the Overview screen before each test
-      if(Firebase.auth.currentUser == null) {
-          runTest { try {Firebase.auth.createUserWithEmailAndPassword("navigation@test.ff", "123456").await()}
-          catch (e: Exception){
-              Firebase.auth.signInWithEmailAndPassword("navigation@test.ff", "123456").await()
-          }}
+    if (Firebase.auth.currentUser == null) {
+      runTest {
+        try {
+          Firebase.auth.createUserWithEmailAndPassword("navigation@test.ff", "123456").await()
+        } catch (e: Exception) {
+          Firebase.auth.signInWithEmailAndPassword("navigation@test.ff", "123456").await()
+        }
       }
-      assert(Firebase.auth.currentUser != null)
-      composeTestRule.setContent { AgriHealthApp() }
+    }
+    assert(Firebase.auth.currentUser != null)
+    composeTestRule.setContent { AgriHealthApp() }
     composeTestRule
         .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
         .assertIsDisplayed()

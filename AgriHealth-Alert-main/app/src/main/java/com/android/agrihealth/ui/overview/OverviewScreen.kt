@@ -49,7 +49,12 @@ fun OverviewScreen(
       // -- Top App Bar with logout icon --
       topBar = {
         TopAppBar(
-            title = { Text("Overview", style = MaterialTheme.typography.titleLarge, modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE)) },
+            title = {
+              Text(
+                  "Overview",
+                  style = MaterialTheme.typography.titleLarge,
+                  modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE))
+            },
             actions = {
               IconButton(
                   onClick = {

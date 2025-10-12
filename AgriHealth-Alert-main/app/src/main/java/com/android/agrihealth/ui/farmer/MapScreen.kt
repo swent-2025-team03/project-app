@@ -21,8 +21,7 @@ fun MapScreen(
   // Temp Implementation of the Map Screen
   Scaffold(
       topBar = {
-          Row {
-              Text(Screen.Map.name, modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE))}
+        Row { Text(Screen.Map.name, modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE)) }
       },
       bottomBar = {
         BottomNavigationMenu(

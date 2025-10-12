@@ -1,13 +1,11 @@
 package com.android.agrihealth
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
@@ -34,10 +32,8 @@ import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.theme.SampleAppTheme
 import com.android.agrihealth.ui.user.UserViewModel
-import com.google.firebase.BuildConfig
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.google.firebase.firestore.firestore
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,7 +59,8 @@ fun AgriHealthApp() {
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
 
-  val startDestination = if (Firebase.auth.currentUser != null) Screen.Overview.name else Screen.Auth.name
+  val startDestination =
+      if (Firebase.auth.currentUser != null) Screen.Overview.name else Screen.Auth.name
 
   NavHost(navController = navController, startDestination = startDestination) {
     // --- Auth Graph ---
