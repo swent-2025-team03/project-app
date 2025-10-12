@@ -13,22 +13,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout the repository
+      #Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️⃣ Set up Java JDK 17
+      #Set up Java JDK 17
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      # 3️⃣ Build the debug APK
+      #Add google services file
+      - name: Add google services json
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > AgriHealth-Alert-main/app/google-services.json
+
+      #Build the debug APK
       - name: Build APK
         run: cd AgriHealth-Alert-main && ./gradlew assembleDebug
 
-      # 4️⃣ Upload the APK as artifact
+      #Upload the APK as artifact
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
