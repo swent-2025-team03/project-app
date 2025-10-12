@@ -31,10 +31,19 @@ import com.android.agrihealth.data.model.*
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReportViewScreen(navController: NavController, userRole: UserRole, viewModel: ReportViewModel) {
-  val report by viewModel.report
-  val answerText by viewModel.answerText
-  val selectedStatus by viewModel.status
+fun ReportViewScreen(
+    navController: NavController,
+    userRole: UserRole,
+    viewModel: ReportViewModel,
+    reportId: String = ""
+) {
+    LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
+
+    val uiState by viewModel.uiState.collectAsState()
+
+  val report = uiState.report
+  val answerText = uiState.answerText
+  val selectedStatus = uiState.status
   val context = LocalContext.current
 
   var isEscalateDialogOpen by remember { mutableStateOf(false) }
@@ -246,7 +255,7 @@ fun PreviewReportViewFarmer() {
     val navController = rememberNavController()
     val viewModel = ReportViewModel()
     ReportViewScreen(
-        navController = navController, userRole = UserRole.FARMER, viewModel = viewModel)
+        navController = navController, userRole = UserRole.FARMER, viewModel = viewModel, reportId = "RPT001")
   }
 }
 
@@ -256,6 +265,6 @@ fun PreviewReportViewVet() {
   MaterialTheme {
     val navController = rememberNavController()
     val viewModel = ReportViewModel()
-    ReportViewScreen(navController = navController, userRole = UserRole.VET, viewModel = viewModel)
+    ReportViewScreen(navController = navController, userRole = UserRole.VET, viewModel = viewModel, reportId = "RPT001")
   }
 }
