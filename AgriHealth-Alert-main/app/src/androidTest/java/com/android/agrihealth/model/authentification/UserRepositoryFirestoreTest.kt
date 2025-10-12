@@ -1,13 +1,6 @@
 package com.android.agrihealth.model.authentification
 
-import com.android.agrihealth.data.model.authentification.USERS_COLLECTION_PATH
-import com.android.agrihealth.data.model.authentification.User
-import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
-import com.android.agrihealth.data.model.authentification.UserRole
-import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestoreException
-import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
