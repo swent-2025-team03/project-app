@@ -1,13 +1,11 @@
 package com.android.agrihealth
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
@@ -34,7 +32,6 @@ import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.theme.SampleAppTheme
 import com.android.agrihealth.ui.user.UserViewModel
-import com.google.firebase.BuildConfig
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
@@ -42,6 +39,14 @@ import com.google.firebase.firestore.firestore
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
+    //TODO: Remove useEmulator() lines when the app goes in production
+    val url = getString(R.string.FIREBASE_EMULATORS_URL)
+    val firestorePort = resources.getInteger(R.integer.FIREBASE_EMULATORS_FIRESTORE_PORT)
+    val authPort = resources.getInteger(R.integer.FIREBASE_EMULATORS_AUTH_PORT)
+    Firebase.firestore.useEmulator(url, firestorePort)
+    Firebase.auth.useEmulator(url, authPort)
+
     setContent {
       SampleAppTheme {
         // A surface container using the 'background' color from the theme
