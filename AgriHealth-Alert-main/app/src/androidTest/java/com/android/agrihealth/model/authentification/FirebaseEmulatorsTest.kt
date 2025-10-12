@@ -1,5 +1,6 @@
 package com.android.agrihealth.model.authentification
 
+import com.android.agrihealth.R
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.USERS_COLLECTION_PATH
 import com.android.agrihealth.data.model.authentification.User
@@ -34,16 +35,19 @@ open class FirebaseEmulatorsTest {
     }
     companion object {
         var emulatorInitialized = false
-        const val FIREBASE_EMULATORS_URL = "firebase.okau.moe"
-        const val FIREBASE_EMULATORS_FIRESTORE_PORT = 8081
-        const val FIREBASE_EMULATORS_AUTH_PORT = 9099
     }
 
     @Before
     open fun setUp() {
         if (!emulatorInitialized) {
-            Firebase.firestore.useEmulator(FIREBASE_EMULATORS_URL, FIREBASE_EMULATORS_FIRESTORE_PORT)
-            Firebase.auth.useEmulator(FIREBASE_EMULATORS_URL, FIREBASE_EMULATORS_AUTH_PORT)
+            val context = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
+            val url = context.getString(R.string.FIREBASE_EMULATORS_URL)
+            val firestorePort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_FIRESTORE_PORT)
+            val authPort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_AUTH_PORT)
+
+            Firebase.firestore.useEmulator(url, firestorePort)
+            Firebase.auth.useEmulator(url, authPort)
+
             emulatorInitialized = true
         }
 
