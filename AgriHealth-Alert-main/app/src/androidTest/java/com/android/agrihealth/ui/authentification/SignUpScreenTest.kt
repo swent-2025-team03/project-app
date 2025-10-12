@@ -13,15 +13,18 @@ class SignUpScreenTest {
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
   @Test
-  fun signup_fields_and_actions_are_displayed() {
+  fun displayAllComponents() {
     composeRule.setContent { MaterialTheme { SignUpScreen() } }
 
-    composeRule.onNodeWithTag("SignUpTitle", useUnmergedTree = true).assertIsDisplayed()
-    composeRule.onNodeWithTag("NameField", useUnmergedTree = true).assertIsDisplayed()
-    composeRule.onNodeWithTag("SurnameField", useUnmergedTree = true).assertIsDisplayed()
-    composeRule.onNodeWithTag("EmailField", useUnmergedTree = true).assertIsDisplayed()
-    composeRule.onNodeWithTag("PasswordField", useUnmergedTree = true).assertIsDisplayed()
-    composeRule.onNodeWithTag("ConfirmPasswordField", useUnmergedTree = true).assertIsDisplayed()
-    composeRule.onNodeWithTag("SaveButton", useUnmergedTree = true).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignUpScreenTestTags.BACK_BUTTON).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignUpScreenTestTags.TITLE).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignUpScreenTestTags.NAME_FIELD).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignUpScreenTestTags.SURNAME_FIELD).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignUpScreenTestTags.EMAIL_FIELD).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignUpScreenTestTags.PASSWORD_FIELD).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignUpScreenTestTags.FARMER_PILL).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignUpScreenTestTags.VET_PILL).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).assertIsDisplayed()
   }
 }

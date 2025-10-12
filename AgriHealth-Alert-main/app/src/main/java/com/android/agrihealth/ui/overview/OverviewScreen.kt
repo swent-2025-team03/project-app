@@ -42,8 +42,8 @@ fun OverviewScreen(
     userRole: UserRole,
     reports: List<Report>,
     onAddReport: () -> Unit = {},
-    onReportClick: () -> Unit = {},
-    navigationActions: NavigationActions = NavigationActions(rememberNavController())
+    onReportClick: (String) -> Unit = {},
+    navigationActions: NavigationActions
 ) {
   Scaffold(
       // -- Top App Bar with logout icon --
@@ -100,7 +100,7 @@ fun OverviewScreen(
           Spacer(modifier = Modifier.height(12.dp))
           LazyColumn {
             items(reports, key = { it.id }) { report ->
-              ReportItem(report = report, onClick = { onReportClick() })
+              ReportItem(report = report, onClick = { onReportClick(report.id) })
               Divider()
             }
           }

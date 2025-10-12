@@ -8,18 +8,18 @@ import androidx.compose.ui.test.onNodeWithTag
 import org.junit.Rule
 import org.junit.Test
 
-class LoginScreenTest {
+class SignInScreenTest {
 
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
   @Test
-  fun login_title_and_buttons_are_displayed() {
+  fun displayAllComponents() {
     composeRule.setContent { MaterialTheme { SignInScreen() } }
-
-    composeRule.onNodeWithTag("LoginTitle", useUnmergedTree = true).assertIsDisplayed()
-    composeRule.onNodeWithTag("EmailField", useUnmergedTree = true).assertIsDisplayed()
-    composeRule.onNodeWithTag("PasswordField", useUnmergedTree = true).assertIsDisplayed()
-    composeRule.onNodeWithTag("LogInButton", useUnmergedTree = true).assertIsDisplayed()
-    composeRule.onNodeWithTag("SignUpButton", useUnmergedTree = true).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignInScreenTestTags.SIGN_UP_BUTTON).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignInScreenTestTags.EMAIL_FIELD).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignInScreenTestTags.FORGOT_PASSWORD).assertIsDisplayed()
+    composeRule.onNodeWithTag(SignInScreenTestTags.LOGIN_DIVIDER).assertIsDisplayed()
   }
 }

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "56441775769",
+    "project_id": "agrihealth-alert",
+    "storage_bucket": "agrihealth-alert.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:56441775769:android:e5153c0e5bdfa1edfc3a08",
+        "android_client_info": {
+          "package_name": "com.android.agrihealth"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsKCRpPo9QuGE0Xsec6AMdz1wwJffRL5A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:56441775769:android:e165ecd08e6a746bfc3a08",
+        "android_client_info": {
+          "package_name": "com.swent25.agrihealth"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsKCRpPo9QuGE0Xsec6AMdz1wwJffRL5A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

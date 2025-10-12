@@ -22,17 +22,18 @@ import com.android.agrihealth.data.model.authentification.UserRole
 
 private val FieldBg = Color(0xFFF0F6F1)
 
-// Test tags provisoires (privés)
-private val BackButtonTestTag = "BackButton"
-private val TitleTestTag = "SignUpTitle"
-private val NameFieldTestTag = "NameField"
-private val SurnameFieldTestTag = "SurnameField"
-private val EmailFieldTestTag = "EmailField"
-private val PasswordFieldTestTag = "PasswordField"
-private val ConfirmPasswordFieldTestTag = "ConfirmPasswordField"
-private val SaveButtonTestTag = "SaveButton"
-private val FarmerPillTestTag = "FarmerPill"
-private val VetPillTestTag = "VetPill"
+object SignUpScreenTestTags {
+  const val BACK_BUTTON = "BackButton"
+  const val TITLE = "SignUpTitle"
+  const val NAME_FIELD = "NameField"
+  const val SURNAME_FIELD = "SurnameField"
+  const val EMAIL_FIELD = "EmailField"
+  const val PASSWORD_FIELD = "PasswordField"
+  const val CONFIRM_PASSWORD_FIELD = "ConfirmPasswordField"
+  const val SAVE_BUTTON = "SaveButton"
+  const val FARMER_PILL = "FarmerPill"
+  const val VET_PILL = "VetPill"
+}
 
 @Composable
 fun SignUpScreen(
@@ -49,9 +50,10 @@ fun SignUpScreen(
         TopAppBar(
             title = {},
             navigationIcon = {
-              IconButton(onClick = onBack, modifier = Modifier.testTag(BackButtonTestTag)) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-              }
+              IconButton(
+                  onClick = onBack, modifier = Modifier.testTag(SignUpScreenTestTags.BACK_BUTTON)) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                  }
             })
       }) { padding ->
         Column(
@@ -62,34 +64,34 @@ fun SignUpScreen(
                   "Create An Account",
                   fontSize = 36.sp,
                   fontWeight = FontWeight.SemiBold,
-                  modifier = Modifier.testTag(TitleTestTag))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.TITLE))
               Spacer(Modifier.height(24.dp))
 
               Field(
                   signUpUIState.name,
                   { signUpViewModel.setName(it) },
                   "Name",
-                  modifier = Modifier.testTag(NameFieldTestTag))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.NAME_FIELD))
               Field(
                   signUpUIState.surname,
                   { signUpViewModel.setSurname(it) },
                   "Surname",
-                  modifier = Modifier.testTag(SurnameFieldTestTag))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.SURNAME_FIELD))
               Field(
                   signUpUIState.email,
                   { signUpViewModel.setEmail(it) },
                   "Email",
-                  modifier = Modifier.testTag(EmailFieldTestTag))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.EMAIL_FIELD))
               Field(
                   signUpUIState.password,
                   { signUpViewModel.setPassword(it) },
                   "Password",
-                  modifier = Modifier.testTag(PasswordFieldTestTag))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.PASSWORD_FIELD))
               Field(
                   signUpUIState.cnfPassword,
                   { signUpViewModel.setCnfPassword(it) },
                   "Confirm Password",
-                  modifier = Modifier.testTag(ConfirmPasswordFieldTestTag))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD))
 
               Spacer(Modifier.height(16.dp))
               Text(
@@ -102,7 +104,10 @@ fun SignUpScreen(
               Spacer(Modifier.height(28.dp))
               Button(
                   onClick = { signUpViewModel.signUp() },
-                  modifier = Modifier.fillMaxWidth().height(56.dp).testTag(SaveButtonTestTag),
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .height(56.dp)
+                          .testTag(SignUpScreenTestTags.SAVE_BUTTON),
                   shape = RoundedCornerShape(20.dp),
                   colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF96B7B1))) {
                     Text("Save", fontSize = 24.sp)
@@ -119,12 +124,12 @@ private fun RoleSelector(selected: UserRole?, onSelected: (UserRole) -> Unit) {
         text = "Farmer",
         selected = selected == UserRole.FARMER,
         onClick = { onSelected(UserRole.FARMER) },
-        modifier = Modifier.testTag(FarmerPillTestTag))
+        modifier = Modifier.testTag(SignUpScreenTestTags.FARMER_PILL))
     SelectablePill(
         text = "Vet",
         selected = selected == UserRole.VETERINARIAN,
         onClick = { onSelected(UserRole.VETERINARIAN) },
-        modifier = Modifier.testTag(VetPillTestTag))
+        modifier = Modifier.testTag(SignUpScreenTestTags.VET_PILL))
   }
 }
 
