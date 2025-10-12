@@ -34,6 +34,14 @@ import com.google.firebase.firestore.firestore
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
+    //TODO: Remove useEmulator() lines when the app goes in production
+    val url = getString(R.string.FIREBASE_EMULATORS_URL)
+    val firestorePort = resources.getInteger(R.integer.FIREBASE_EMULATORS_FIRESTORE_PORT)
+    val authPort = resources.getInteger(R.integer.FIREBASE_EMULATORS_AUTH_PORT)
+    Firebase.firestore.useEmulator(url, firestorePort)
+    Firebase.auth.useEmulator(url, authPort)
+
     setContent {
       SampleAppTheme {
         // A surface container using the 'background' color from the theme
