@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.data.model.Report
 import com.android.agrihealth.data.model.ReportStatus
@@ -32,35 +33,46 @@ object OverviewScreenTestTags {
 }
 
 /**
- * Composable screen displaying the Overview UI. Shows latest alerts and a list of past reports.
- * Button for creating a new report will only be displayed for farmer accounts. For the list,
- * farmers can view only reports made by their own; vets can view all the reports.
+ * Composable screen displaying the Overview UI.
+ * Shows latest alerts and a list of past reports.
+ * Button for creating a new report will only be displayed for farmer accounts.
+ * For the list, farmers can view only reports made by their own;
+ * vets can view all the reports.
+ *
+ * @param reports List of report to display kept only for backward compatibility and shouldn't be used
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OverviewScreen(
     userRole: UserRole,
-    reports: List<Report>,
+    overviewViewModel: OverviewViewModel = viewModel(),
     onAddReport: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
-    navigationActions: NavigationActions
+    navigationActions: NavigationActions? = null,
+    reports: List<Report> = overviewViewModel.uiState.collectAsState().value.reports,
 ) {
-  Scaffold(
-      // -- Top App Bar with logout icon --
-      topBar = {
-        TopAppBar(
-            title = { Text("Overview", style = MaterialTheme.typography.titleLarge) },
-            actions = {
-              IconButton(
-                  onClick = {
-                    Firebase.auth.signOut()
-                    navigationActions.navigateToAuthAndClear()
-                  },
-                  modifier = Modifier.testTag(OverviewScreenTestTags.LOGOUT_BUTTON)) {
-                    Icon(Icons.Default.ExitToApp, contentDescription = "Sign Out")
-                  }
-            })
-      },
+
+    val uiState by overviewViewModel.uiState.collectAsState()
+    val reports = uiState.reports
+
+    Scaffold(
+        // -- Top App Bar with logout icon --
+        topBar = {
+            TopAppBar(
+                title = { Text("Overview", style = MaterialTheme.typography.titleLarge) },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            Firebase.auth.signOut()
+                            navigationActions?.navigateToAuthAndClear()
+                        },
+                        modifier = Modifier.testTag(OverviewScreenTestTags.LOGOUT_BUTTON)
+                    ) {
+                        Icon(Icons.Default.ExitToApp, contentDescription = "Sign Out")
+                    }
+                }
+            )
+        },
 
       // -- Bottom navigation menu --
       bottomBar = {
@@ -207,10 +219,11 @@ fun PreviewOverviewScreen() {
               answer = null,
               location = null))
 
-  OverviewScreen(
-      userRole = UserRole.FARMER,
-      reports = dummyReports,
-      onAddReport = {},
-      onReportClick = {},
-      navigationActions = dummyNavigationActions)
+    OverviewScreen(
+        userRole = UserRole.FARMER,
+        onAddReport = {},
+        onReportClick = {},
+        navigationActions = dummyNavigationActions,
+        reports = dummyReports,
+    )
 }

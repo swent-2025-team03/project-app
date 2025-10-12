@@ -29,8 +29,11 @@ sealed class Screen(
 
   object SignUp : Screen(route = "sign_up", name = "Sign Up")
 
-  object ViewReport : Screen(route = "view_report/{reportId}", name = "View Report") {
-    fun createRoute(reportId: String) = "view_report/$reportId"
+  data class ViewReport(val reportId: String) :
+    Screen(route = "view_report/${reportId}", name = "view_report") {
+    companion object{
+        const val route = "view_report/{reportId}"
+    }
   }
 }
 
