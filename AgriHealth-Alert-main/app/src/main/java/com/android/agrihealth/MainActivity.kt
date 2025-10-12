@@ -1,21 +1,25 @@
 package com.android.agrihealth
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.android.agrihealth.data.model.UserRole
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.SignInScreen
@@ -29,19 +33,14 @@ import com.android.agrihealth.ui.overview.OverviewViewModel
 import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.theme.SampleAppTheme
+import com.android.agrihealth.ui.user.UserViewModel
+import com.google.firebase.BuildConfig
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
-import com.android.agrihealth.ui.user.UserViewModel
-
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
-    Firebase.firestore.useEmulator("10.0.2.2", 8080)
-    Firebase.auth.useEmulator("10.0.2.2", 9099)
-
     super.onCreate(savedInstanceState)
     setContent {
       SampleAppTheme {
@@ -75,18 +74,21 @@ fun AgriHealthApp() {
       composable(Screen.Auth.route) {
         SignInScreen(
             onSignedIn = {
-                // TODO: Get user data from Firebase after login
-                userViewModel.userRole = UserRole.FARMER
-                userViewModel.userId = "FARMER_001"
-                navigationActions.navigateTo(Screen.Overview) },
+              // TODO: Get user data from Firebase after login
+              userViewModel.userRole = UserRole.FARMER
+              userViewModel.userId = "FARMER_001"
+              navigationActions.navigateTo(Screen.Overview)
+            },
             goToSignUp = { navigationActions.navigateTo(Screen.SignUp) })
       }
       composable(Screen.SignUp.route) {
-        SignUpScreen(onSignedUp = {
-            // TODO: After signup, set user info
-            userViewModel.userRole = UserRole.FARMER
-            userViewModel.userId = "FARMER_001"
-            navigationActions.navigateTo(Screen.Overview) })
+        SignUpScreen(
+            onSignedUp = {
+              // TODO: After signup, set user info
+              userViewModel.userRole = UserRole.FARMER
+              userViewModel.userId = "FARMER_001"
+              navigationActions.navigateTo(Screen.Overview)
+            })
       }
     }
 
@@ -96,10 +98,10 @@ fun AgriHealthApp() {
         route = Screen.Overview.name,
     ) {
       composable(Screen.Overview.route) {
-          val overviewViewModel: OverviewViewModel = viewModel()
+        val overviewViewModel: OverviewViewModel = viewModel()
 
-          val currentUserRole = userViewModel.userRole
-          val currentUserId = userViewModel.userId
+        val currentUserRole = userViewModel.userRole
+        val currentUserId = userViewModel.userId
 
         OverviewScreen(
             userRole = currentUserRole,
@@ -116,10 +118,10 @@ fun AgriHealthApp() {
             onDone = { navigationActions.navigateTo(Screen.Overview) },
             onGoBack = { navigationActions.goBack() })
       }
-        composable(
-            route = Screen.ViewReport.route,
-            arguments = listOf(navArgument("reportId") { type = NavType.StringType })
-        ) { backStackEntry ->
+      composable(
+          route = Screen.ViewReport.route,
+          arguments = listOf(navArgument("reportId") { type = NavType.StringType })) {
+              backStackEntry ->
             val reportId = backStackEntry.arguments?.getString("reportId") ?: ""
 
             // You might fetch the report by ID here
@@ -136,8 +138,7 @@ fun AgriHealthApp() {
         }
     }
 
-
-      navigation(
+    navigation(
         startDestination = Screen.Map.route,
         route = Screen.Map.name,
     ) {

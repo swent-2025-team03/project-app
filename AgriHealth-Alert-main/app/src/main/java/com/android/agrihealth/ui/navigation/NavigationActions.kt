@@ -77,12 +77,8 @@ open class NavigationActions(
     return navController.currentDestination?.route ?: ""
   }
 
-  /**
-   * Navigate to the sign in screen and clear the backstack.
-   */
+  /** Navigate to the sign in screen and clear the backstack. */
   open fun navigateToAuthAndClear() {
-    navController.navigate(Screen.Auth.route) {
-      popUpTo(0)
-    }
+    navController.navigate(Screen.Auth.route) { popUpTo(0) }
   }
 }
