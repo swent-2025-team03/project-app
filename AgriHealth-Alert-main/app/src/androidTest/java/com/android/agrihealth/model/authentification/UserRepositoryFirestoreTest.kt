@@ -16,38 +16,11 @@ import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 
-class UserRepositoryFirestoreTest {
-
-  val userRepository = UserRepositoryProvider.repository
-
-  val user1 = User("abc123", "Rushia", "Uruha", UserRole.FARMER, "email1@thing.com")
-  val user2 = User("def456", "mike", "neko", UserRole.FARMER, "email2@aaaaa.balls")
-  val user3 = User("ghj789", "Nazuna", "Amemiya", UserRole.VETERINARIAN, "email3@kms.josh")
-
-  private suspend fun clearUsers() {
-    val usersCollection = Firebase.firestore.collection(USERS_COLLECTION_PATH).get().await()
-
-    // Inspired from bootcamp
-    if (usersCollection.count() > 0) {
-      val batch = Firebase.firestore.batch()
-      usersCollection.documents.forEach { batch.delete(it.reference) }
-      batch.commit().await()
-    }
-  }
-
-  companion object {
-    var emulatorInitialized = false
-  }
+class UserRepositoryFirestoreTest: FirebaseEmulatorsTest() {
 
   @Before
-  fun setUp() {
-    // TODO: centralize emulator initialization in a parent class like bootcamp
-    if (!emulatorInitialized) {
-      Firebase.firestore.useEmulator("10.0.2.2", 8080)
-      emulatorInitialized = true
-    }
-
-    runTest { clearUsers() }
+  override fun setUp() {
+    super.setUp()
   }
 
   @Test
