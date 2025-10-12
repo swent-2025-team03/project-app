@@ -24,7 +24,7 @@ class ReportRepositoryLocal : ReportRepository {
 
   override suspend fun getReportById(reportId: String): Report? {
     return reports.find { it.id == reportId }
-        ?: throw Exception("ReportRepositoryLocal: Report not found")
+        ?: throw NoSuchElementException("ReportRepositoryLocal: Report not found")
   }
 
   override suspend fun addReport(report: Report) {
@@ -36,7 +36,7 @@ class ReportRepositoryLocal : ReportRepository {
     if (index != -1) {
       reports[index] = newReport
     } else {
-      throw Exception("ReportRepositoryLocal: Report not found")
+      throw NoSuchElementException("ReportRepositoryLocal: Report not found")
     }
   }
 
@@ -45,7 +45,7 @@ class ReportRepositoryLocal : ReportRepository {
     if (index != -1) {
       reports.removeAt(index)
     } else {
-      throw Exception("ReportRepositoryLocal: Report not found")
+      throw NoSuchElementException("ReportRepositoryLocal: Report not found")
     }
   }
 }
