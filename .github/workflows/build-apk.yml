@@ -30,7 +30,8 @@ jobs:
 
       # 4️⃣ Upload the APK as artifact
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: M1-APK
           path: AgriHealth-Alert-main/app/build/outputs/apk/debug/app-debug.apk
+          overwrite: true
