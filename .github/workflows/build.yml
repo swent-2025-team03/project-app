@@ -94,10 +94,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 1080x2400
           disable-animations: true
           script: |
-            echo "Listing current directory:"
-            pwd
-            ls -alh
-            echo "Running connectedCheck..." 
+            cd AgriHealth-Alert-main
             ./gradlew connectedCheck --parallel --build-cache
 
       - name: Cache SonarCloud packages
