@@ -95,6 +95,7 @@ jobs:
           disable-animations: true
           script: |
             cd AgriHealth-Alert-main
+            ls -alh
             ./gradlew connectedCheck --parallel --build-cache
 
       - name: Cache SonarCloud packages
