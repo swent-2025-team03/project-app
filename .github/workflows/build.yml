@@ -106,7 +106,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Coverage report
-          path: app/build/reports/jacoco/jacocoTestReport
+          path: app/build/reports/coverage/andoidTest/debug/connected
 
       - name: Cache SonarCloud packages
         uses: actions/cache@v3
