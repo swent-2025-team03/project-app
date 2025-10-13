@@ -6,7 +6,8 @@ on:
       - main
       - Feature/*
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches:
+      - main
 
 jobs:
   build:
@@ -63,13 +64,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
+          
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
 
       - name: Assemble
         run: ./gradlew assembleDebug lint --parallel --build-cache
 
       - name: Run tests
         run: ./gradlew check --parallel --build-cache
+
+      - name: Start Firebase emulators
+        run: |
+          if [ -e "firebase.json" ] && jq -e '.emulators' firebase.json >/dev/null; then
+            echo "Starting Firebase emulators for instrumentation tests..."
+            firebase emulators:start --only auth,firestore --project demo-project &
+            echo "Firebase emulators started"
+          else
+            echo "Firebase emulators not configured, skipping emulator startup..."
+          fi
           
       - name: Run instrumentation tests
         timeout-minutes: 25
