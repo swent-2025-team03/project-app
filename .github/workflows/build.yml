@@ -98,6 +98,16 @@ jobs:
             ls -alh
             ./gradlew connectedCheck --parallel --build-cache
 
+      - name: Generate coverage
+        run: |
+          ./gradlew jacocoTestReport
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: Coverage report
+          path: app/build/reports/jacoco/jacocoTestReport
+
       - name: Cache SonarCloud packages
         uses: actions/cache@v3
         with:
