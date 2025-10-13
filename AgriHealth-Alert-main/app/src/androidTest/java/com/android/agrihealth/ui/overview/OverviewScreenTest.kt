@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import com.android.agrihealth.data.model.Location
 import com.android.agrihealth.data.model.Report
 import com.android.agrihealth.data.model.ReportStatus
 import com.android.agrihealth.data.model.UserRole
@@ -22,25 +23,25 @@ class OverviewScreenTest {
   private val dummyReports =
       listOf(
           Report(
-              id = "1",
+              id = "RPT001",
               title = "Cow coughing",
-              description = "Coughing and nasal discharge observed",
+              description = "Coughing and nasal discharge observed in the barn.",
               photoUri = null,
-              farmerId = "farmer_001",
+              farmerId = "FARMER_001",
               vetId = null,
               status = ReportStatus.IN_PROGRESS,
               answer = null,
-              location = null),
+              location = Location(46.5191, 6.5668, "Lausanne Farm")),
           Report(
-              id = "2",
-              title = "Sheep limping",
-              description = "Limping observed in the rear leg; mild swelling noted",
+              id = "RPT002",
+              title = "Sheep lost appetite",
+              description = "One sheep has not eaten for two days.",
               photoUri = null,
-              farmerId = "farmer_002",
-              vetId = null,
+              farmerId = "FARMER_001",
+              vetId = "VET_001",
               status = ReportStatus.PENDING,
               answer = null,
-              location = null))
+              location = Location(46.5210, 6.5650, "Vaud Farm")))
 
   // --- Helper functions to set up screens ---
   private fun setFarmerScreen() {

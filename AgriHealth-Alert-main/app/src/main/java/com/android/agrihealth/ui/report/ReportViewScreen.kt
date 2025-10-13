@@ -37,9 +37,9 @@ fun ReportViewScreen(
     viewModel: ReportViewModel,
     reportId: String = ""
 ) {
-    LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
+  LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
 
-    val uiState by viewModel.uiState.collectAsState()
+  val uiState by viewModel.uiState.collectAsState()
 
   val report = uiState.report
   val answerText = uiState.answerText
@@ -255,7 +255,10 @@ fun PreviewReportViewFarmer() {
     val navController = rememberNavController()
     val viewModel = ReportViewModel()
     ReportViewScreen(
-        navController = navController, userRole = UserRole.FARMER, viewModel = viewModel, reportId = "RPT001")
+        navController = navController,
+        userRole = UserRole.FARMER,
+        viewModel = viewModel,
+        reportId = "RPT001")
   }
 }
 
@@ -265,6 +268,10 @@ fun PreviewReportViewVet() {
   MaterialTheme {
     val navController = rememberNavController()
     val viewModel = ReportViewModel()
-    ReportViewScreen(navController = navController, userRole = UserRole.VET, viewModel = viewModel, reportId = "RPT001")
+    ReportViewScreen(
+        navController = navController,
+        userRole = UserRole.VET,
+        viewModel = viewModel,
+        reportId = "RPT001")
   }
 }

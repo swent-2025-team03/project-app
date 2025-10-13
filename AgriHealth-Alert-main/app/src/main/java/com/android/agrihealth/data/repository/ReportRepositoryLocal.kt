@@ -2,9 +2,7 @@ package com.android.agrihealth.data.repository
 
 import com.android.agrihealth.data.model.Report
 
-/**
- * Local in-memory implementation of ReportRepository for testing and development purposes.
- */
+/** Local in-memory implementation of ReportRepository for testing and development purposes. */
 class ReportRepositoryLocal : ReportRepository {
   private val reports: MutableList<Report> = mutableListOf()
 
@@ -28,7 +26,11 @@ class ReportRepositoryLocal : ReportRepository {
   }
 
   override suspend fun addReport(report: Report) {
-    reports.add(report)
+    try {
+      (getReportById(report.id))
+    } catch (e: Exception) {
+      reports.add(report)
+    }
   }
 
   override suspend fun editReport(reportId: String, newReport: Report) {
