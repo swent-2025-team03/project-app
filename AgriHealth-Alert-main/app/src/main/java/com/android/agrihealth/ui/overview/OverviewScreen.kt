@@ -28,8 +28,10 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
 object OverviewScreenTestTags {
-  const val ADD_REPORT_BUTTON = "addReportFab"
-  const val LOGOUT_BUTTON = "logoutButton"
+
+    const val TOP_APP_BAR_TITLE = "topAppBarTitle"
+    const val ADD_REPORT_BUTTON = "addReportFab"
+    const val LOGOUT_BUTTON = "logoutButton"
 }
 
 /**
@@ -59,7 +61,7 @@ fun OverviewScreen(
         // -- Top App Bar with logout icon --
         topBar = {
             TopAppBar(
-                title = { Text("Overview", style = MaterialTheme.typography.titleLarge) },
+                title = { Text("Overview", style = MaterialTheme.typography.titleLarge, modifier = Modifier.testTag("topAppBarTitle")) },
                 actions = {
                     IconButton(
                         onClick = {
@@ -84,7 +86,10 @@ fun OverviewScreen(
 
       // -- Main content area --
       content = { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp)) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .padding(16.dp)) {
           // -- Latest alert section --
           Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
 
@@ -99,7 +104,8 @@ fun OverviewScreen(
             Button(
                 onClick = onAddReport,
                 modifier =
-                    Modifier.align(Alignment.CenterHorizontally)
+                    Modifier
+                        .align(Alignment.CenterHorizontally)
                         .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
                   Text("Create a new report")
                 }
@@ -151,7 +157,10 @@ fun LatestAlertCard() {
 @Composable
 fun ReportItem(report: Report, onClick: () -> Unit) {
   Row(
-      modifier = Modifier.fillMaxWidth().clickable { onClick() }.padding(vertical = 8.dp),
+      modifier = Modifier
+          .fillMaxWidth()
+          .clickable { onClick() }
+          .padding(vertical = 8.dp),
       verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
           Text(report.title, fontSize = 18.sp, fontWeight = FontWeight.Medium)
