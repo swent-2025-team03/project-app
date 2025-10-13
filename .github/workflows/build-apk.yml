@@ -27,7 +27,7 @@ jobs:
       #Add google services file
       - name: Add google services json
         run: |
-          echo "${{ secrets.GOOGLE_SERVICES }}" | base64 --decode > AgriHealth-Alert-main/app/google-services.jsonRe
+          echo "${{ secrets.GOOGLE_SERVICES }}" | base64 --decode > AgriHealth-Alert-main/app/google-services.json
 
       #Build the debug APK
       - name: Build APK
