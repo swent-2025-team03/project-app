@@ -14,6 +14,9 @@ class UserRepositoryFirestoreTest: FirebaseEmulatorsTest() {
   @Before
   override fun setUp() {
     super.setUp()
+    runTest {
+      authRepository.signUpWithEmailAndPassword(user1.email, password1, user1)
+    }
   }
 
   @Test
@@ -61,11 +64,12 @@ class UserRepositoryFirestoreTest: FirebaseEmulatorsTest() {
 
   @Test
   fun failToUpdateNonExistingAccount() = runTest {
+    userRepository.deleteUser(user1.uid)
     try {
       userRepository.updateUser(user1)
       fail("Expected FirebaseFirestoreException, but code ran fine")
-    } catch (e: FirebaseFirestoreException) {
-      assertEquals(e.code, FirebaseFirestoreException.Code.NOT_FOUND)
+    } catch (e: NullPointerException) {
+      assertEquals(e.message, "No such user found")
     }
   }
 }

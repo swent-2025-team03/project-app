@@ -54,16 +54,6 @@ open class FirebaseEmulatorsTest {
         assert(response.isSuccessful) { "Failed to clear emulator at $endpoint" }
     }
 
-    private suspend fun clearUsers() {
-        val usersCollection = Firebase.firestore.collection(USERS_COLLECTION_PATH).get().await()
-
-        // Inspired from bootcamp
-        if (usersCollection.count() > 0) {
-            val batch = Firebase.firestore.batch()
-            usersCollection.documents.forEach { batch.delete(it.reference) }
-            batch.commit().await()
-        }
-    }
     companion object {
         var emulatorInitialized = false
     }
@@ -73,7 +63,6 @@ open class FirebaseEmulatorsTest {
         if (!emulatorInitialized) {
             val context = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
             val url = context.getString(R.string.FIREBASE_EMULATORS_URL)
-            //val url = "localhost"
             val firestorePort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_FIRESTORE_PORT)
             val authPort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_AUTH_PORT)
 
@@ -84,7 +73,6 @@ open class FirebaseEmulatorsTest {
         }
 
         runTest {
-            //clearUsers()
             clearEmulator(authEndpoint)
             clearEmulator(firestoreEndpoint)
         }
