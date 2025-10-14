@@ -30,16 +30,18 @@ import com.google.firebase.auth.auth
 object OverviewScreenTestTags {
   const val ADD_REPORT_BUTTON = "addReportFab"
   const val LOGOUT_BUTTON = "logoutButton"
+  const val SCREEN = "OverviewScreen"
+  // Nouveau: tag commun pour chaque item de rapport (pour les tests E2E)
+  const val REPORT_ITEM = "reportItem"
 }
 
 /**
- * Composable screen displaying the Overview UI.
- * Shows latest alerts and a list of past reports.
- * Button for creating a new report will only be displayed for farmer accounts.
- * For the list, farmers can view only reports made by their own;
- * vets can view all the reports.
+ * Composable screen displaying the Overview UI. Shows latest alerts and a list of past reports.
+ * Button for creating a new report will only be displayed for farmer accounts. For the list,
+ * farmers can view only reports made by their own; vets can view all the reports.
  *
- * @param reports List of report to display kept only for backward compatibility and shouldn't be used
+ * @param reports List of report to display kept only for backward compatibility and shouldn't be
+ *   used
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,27 +54,25 @@ fun OverviewScreen(
     reports: List<Report> = overviewViewModel.uiState.collectAsState().value.reports,
 ) {
 
-    val uiState by overviewViewModel.uiState.collectAsState()
-    val reports = uiState.reports
+  val uiState by overviewViewModel.uiState.collectAsState()
+  val reports = uiState.reports
 
-    Scaffold(
-        // -- Top App Bar with logout icon --
-        topBar = {
-            TopAppBar(
-                title = { Text("Overview", style = MaterialTheme.typography.titleLarge) },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            Firebase.auth.signOut()
-                            navigationActions?.navigateToAuthAndClear()
-                        },
-                        modifier = Modifier.testTag(OverviewScreenTestTags.LOGOUT_BUTTON)
-                    ) {
-                        Icon(Icons.Default.ExitToApp, contentDescription = "Sign Out")
-                    }
-                }
-            )
-        },
+  Scaffold(
+      // -- Top App Bar with logout icon --
+      topBar = {
+        TopAppBar(
+            title = { Text("Overview", style = MaterialTheme.typography.titleLarge) },
+            actions = {
+              IconButton(
+                  onClick = {
+                    Firebase.auth.signOut()
+                    navigationActions?.navigateToAuthAndClear()
+                  },
+                  modifier = Modifier.testTag(OverviewScreenTestTags.LOGOUT_BUTTON)) {
+                    Icon(Icons.Default.ExitToApp, contentDescription = "Sign Out")
+                  }
+            })
+      },
 
       // -- Bottom navigation menu --
       bottomBar = {
@@ -84,39 +84,49 @@ fun OverviewScreen(
 
       // -- Main content area --
       content = { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp)) {
-          // -- Latest alert section --
-          Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
+        Column(
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp)
+                    .testTag(OverviewScreenTestTags.SCREEN) // ← tag stable sur le conteneur racine
+            ) {
+              // -- Latest alert section --
+              Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
 
-          Spacer(modifier = Modifier.height(12.dp))
-          LatestAlertCard()
+              Spacer(modifier = Modifier.height(12.dp))
+              LatestAlertCard()
 
-          Spacer(modifier = Modifier.height(24.dp))
+              Spacer(modifier = Modifier.height(24.dp))
 
-          // -- Create a new report buton --
-          // Display the button only if the user role is FARMER
-          if (userRole == UserRole.FARMER) {
-            Button(
-                onClick = onAddReport,
-                modifier =
-                    Modifier.align(Alignment.CenterHorizontally)
-                        .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
-                  Text("Create a new report")
+              // -- Create a new report buton --
+              // Display the button only if the user role is FARMER
+              if (userRole == UserRole.FARMER) {
+                Button(
+                    onClick = onAddReport,
+                    modifier =
+                        Modifier.align(Alignment.CenterHorizontally)
+                            .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
+                      Text("Create a new report")
+                    }
+              }
+
+              Spacer(modifier = Modifier.height(15.dp))
+
+              // -- Past reports list --
+              Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
+              Spacer(modifier = Modifier.height(12.dp))
+              LazyColumn {
+                items(reports, key = { it.id }) { report ->
+                  // Ajout du testTag pour chaque item cliquable
+                  ReportItem(
+                      report = report,
+                      onClick = { onReportClick(report.id) },
+                  )
+                  Divider()
                 }
-          }
-
-          Spacer(modifier = Modifier.height(15.dp))
-
-          // -- Past reports list --
-          Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
-          Spacer(modifier = Modifier.height(12.dp))
-          LazyColumn {
-            items(reports, key = { it.id }) { report ->
-              ReportItem(report = report, onClick = { onReportClick(report.id) })
-              Divider()
+              }
             }
-          }
-        }
       })
 }
 
@@ -151,7 +161,11 @@ fun LatestAlertCard() {
 @Composable
 fun ReportItem(report: Report, onClick: () -> Unit) {
   Row(
-      modifier = Modifier.fillMaxWidth().clickable { onClick() }.padding(vertical = 8.dp),
+      modifier =
+          Modifier.fillMaxWidth()
+              .testTag(OverviewScreenTestTags.REPORT_ITEM)
+              .clickable { onClick() }
+              .padding(vertical = 8.dp),
       verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
           Text(report.title, fontSize = 18.sp, fontWeight = FontWeight.Medium)
@@ -219,11 +233,11 @@ fun PreviewOverviewScreen() {
               answer = null,
               location = null))
 
-    OverviewScreen(
-        userRole = UserRole.FARMER,
-        onAddReport = {},
-        onReportClick = {},
-        navigationActions = dummyNavigationActions,
-        reports = dummyReports,
-    )
+  OverviewScreen(
+      userRole = UserRole.FARMER,
+      onAddReport = {},
+      onReportClick = {},
+      navigationActions = dummyNavigationActions,
+      reports = dummyReports,
+  )
 }

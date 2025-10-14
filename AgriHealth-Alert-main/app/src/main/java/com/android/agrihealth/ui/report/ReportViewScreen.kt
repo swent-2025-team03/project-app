@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.data.model.*
+import com.android.agrihealth.ui.navigation.NavigationTestTags
 
 /**
  * Displays the detailed view of a single report. The UI dynamically adapts depending on the current
@@ -37,9 +38,9 @@ fun ReportViewScreen(
     viewModel: ReportViewModel,
     reportId: String = ""
 ) {
-    LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
+  LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
 
-    val uiState by viewModel.uiState.collectAsState()
+  val uiState by viewModel.uiState.collectAsState()
 
   val report = uiState.report
   val answerText = uiState.answerText
@@ -89,9 +90,13 @@ fun ReportViewScreen(
                   }
             },
             navigationIcon = {
-              IconButton(onClick = { navController.popBackStack() }) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-              }
+              IconButton(
+                  onClick = { navController.popBackStack() },
+                  modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back")
+                  }
             })
       }) { padding ->
 
@@ -255,7 +260,10 @@ fun PreviewReportViewFarmer() {
     val navController = rememberNavController()
     val viewModel = ReportViewModel()
     ReportViewScreen(
-        navController = navController, userRole = UserRole.FARMER, viewModel = viewModel, reportId = "RPT001")
+        navController = navController,
+        userRole = UserRole.FARMER,
+        viewModel = viewModel,
+        reportId = "RPT001")
   }
 }
 
@@ -265,6 +273,10 @@ fun PreviewReportViewVet() {
   MaterialTheme {
     val navController = rememberNavController()
     val viewModel = ReportViewModel()
-    ReportViewScreen(navController = navController, userRole = UserRole.VET, viewModel = viewModel, reportId = "RPT001")
+    ReportViewScreen(
+        navController = navController,
+        userRole = UserRole.VET,
+        viewModel = viewModel,
+        reportId = "RPT001")
   }
 }

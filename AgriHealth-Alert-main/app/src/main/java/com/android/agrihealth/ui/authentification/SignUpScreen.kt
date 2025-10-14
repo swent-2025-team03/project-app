@@ -23,6 +23,7 @@ import com.android.agrihealth.data.model.authentification.UserRole
 private val FieldBg = Color(0xFFF0F6F1)
 
 object SignUpScreenTestTags {
+  const val SCREEN = "SignUpScreen"
   const val BACK_BUTTON = "BackButton"
   const val TITLE = "SignUpTitle"
   const val NAME_FIELD = "NameField"
@@ -57,7 +58,11 @@ fun SignUpScreen(
             })
       }) { padding ->
         Column(
-            Modifier.background(FieldBg).fillMaxSize().padding(padding).padding(horizontal = 24.dp),
+            Modifier.background(FieldBg)
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 24.dp)
+                .testTag(SignUpScreenTestTags.SCREEN),
             horizontalAlignment = Alignment.CenterHorizontally) {
               Spacer(Modifier.height(24.dp))
               Text(
