@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,7 +21,7 @@ data class CreateReportUiState(
     val title: String = "",
     val description: String = "",
     val chosenVet: String = "",   // TODO: Shouldn't be a string! Temporary measure
-    val imageUri: Uri? = null     // TODO: Currentl just an image but should hold mutliple images/videos later
+    val imageBitmap: Bitmap? = null    // TODO: Currently just an image but should hold mutliple images/videos later
 )
 
 class CreateReportViewModel : ViewModel() {
@@ -34,6 +35,14 @@ class CreateReportViewModel : ViewModel() {
     fun setDescription(newDescription: String) {
         _uiState.value = _uiState.value.copy(description = newDescription)
     }
+
+    fun setImageBitmap(newImageBitmap: Bitmap?) {
+        _uiState.value = _uiState.value.copy(imageBitmap = newImageBitmap)
+    }
+    fun setVet(option: String) {
+        _uiState.value = _uiState.value.copy(chosenVet = option)
+    }
+
 
     fun createReport() {
         // TODO: complete the action of the create report button

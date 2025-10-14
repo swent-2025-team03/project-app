@@ -1,5 +1,11 @@
 package com.android.agrihealth.ui.report
 
+import android.graphics.BitmapFactory
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,6 +52,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.sp
 import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
 
@@ -63,6 +71,25 @@ fun CreateReportScreen(
 
 
     val uiState by createReportViewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    // For the dropdown menu
+    val vetOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")   // TODO: Dummy list must change later
+    var expanded by remember { mutableStateOf(false) }  // For menu expanded/collapsed tracking
+    val selectedOption = uiState.chosenVet
+
+
+    val pickMedia = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        // Decode Uri to Bitmap and store in ViewModel
+        uri?.let {
+            val bitmap = context.contentResolver.openInputStream(it)?.use { input ->
+                BitmapFactory.decodeStream(input)
+            }
+            createReportViewModel.setImageBitmap(bitmap)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -108,6 +135,87 @@ fun CreateReportScreen(
                 { createReportViewModel.setTitle(it) },
                 "Title"
             )
+            Field(
+                value = uiState.description,
+                { createReportViewModel.setDescription(it) },
+                "Description"
+            )
+
+
+
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    value = selectedOption,
+                    onValueChange = { }, // No direct text editing
+                    readOnly = true,
+                    label = { Text("Choose an Option") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    },
+                    modifier = Modifier
+                        .menuAnchor() // Needed for M3 dropdown alignment
+                        .fillMaxWidth()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    vetOptions.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option) },
+                            onClick = {
+                                createReportViewModel.setVet(option)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+            // Add Picture button
+            Button(
+                onClick = {
+                    pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Add Picture")
+            }
+
+            // TODO: Add this prettier version of the button
+            /*
+            Button(
+                onClick = {
+                    pickMedia.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB3D9C1))
+            ) {
+                Icon(
+                    imageVector = null,
+                    contentDescription = "Add Picture",
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text("Add Picture", fontSize = 18.sp)
+            }
+             */
+
+            // Show the bitmap if present
+            uiState.imageBitmap?.let { bitmap ->
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = "Selected Image",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                )
+            }
             Spacer(Modifier.height(28.dp))
             Button(
                 onClick = { createReportViewModel.createReport() },   // TODO: Should we use "onCreateReport"?
