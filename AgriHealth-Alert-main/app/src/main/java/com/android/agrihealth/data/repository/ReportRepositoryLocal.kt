@@ -27,9 +27,9 @@ class ReportRepositoryLocal : ReportRepository {
 
   override suspend fun addReport(report: Report) {
     try {
-      if (getReportById(report.id) == null) reports.add(report)
+      editReport(report.id, report)
     } catch (e: Exception) {
-      println("Failed to add report: ${e.message}")
+      reports.add(report)
     }
   }
 
