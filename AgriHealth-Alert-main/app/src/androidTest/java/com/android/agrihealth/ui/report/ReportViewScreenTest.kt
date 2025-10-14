@@ -104,10 +104,10 @@ class ReportViewScreenTest {
 
   // --- TEST 9: Dropdown should contain all expected statuses ---
   @Test
-  fun dropdown_containsAllStatusOptions() {
+  fun dropdown_containsCorrectStatusOptions() {
     setVetScreen()
     composeTestRule.onNodeWithTag("StatusDropdownField").performClick()
-    listOf("PENDING", "IN_PROGRESS", "RESOLVED").forEach {
+    listOf("IN_PROGRESS", "RESOLVED").forEach {
       composeTestRule.onNodeWithTag("StatusOption_$it", useUnmergedTree = true).assertIsDisplayed()
     }
   }

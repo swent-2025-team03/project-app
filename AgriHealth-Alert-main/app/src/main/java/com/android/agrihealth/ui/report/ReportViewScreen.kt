@@ -1,7 +1,5 @@
 package com.android.agrihealth.ui.report
 
-// Preview imports
-// For tests
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -37,9 +35,16 @@ fun ReportViewScreen(
     viewModel: ReportViewModel,
     reportId: String = ""
 ) {
-    LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
+  LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
 
-    val uiState by viewModel.uiState.collectAsState()
+  val uiState by viewModel.uiState.collectAsState()
+
+  // --- Auto-change PENDING -> IN_PROGRESS for vets ---
+  LaunchedEffect(userRole, uiState.report?.status) {
+    if (userRole == UserRole.VET && uiState.report?.status == ReportStatus.PENDING) {
+      viewModel.onStatusChange(ReportStatus.IN_PROGRESS)
+    }
+  }
 
   val report = uiState.report
   val answerText = uiState.answerText
@@ -148,9 +153,6 @@ fun ReportViewScreen(
                         Modifier.fillMaxWidth().heightIn(min = 100.dp).testTag("AnswerField"))
               }
 
-              // TODO : implement automatic Status logic (PENDING -> IN_PROGRESS when Vet type
-              // answer)
-
               // ---- Status dropdown (Vet only) ----
               if (userRole == UserRole.VET) {
                 var expanded by remember { mutableStateOf(false) }
@@ -172,19 +174,16 @@ fun ReportViewScreen(
                           expanded = expanded,
                           onDismissRequest = { expanded = false },
                           modifier = Modifier.testTag("StatusDropdownMenu")) {
-                            listOf(
-                                    ReportStatus.PENDING,
-                                    ReportStatus.IN_PROGRESS,
-                                    ReportStatus.RESOLVED)
-                                .forEach { status ->
-                                  DropdownMenuItem(
-                                      text = { Text(status.name.replace("_", " ")) },
-                                      onClick = {
-                                        viewModel.onStatusChange(status)
-                                        expanded = false
-                                      },
-                                      modifier = Modifier.testTag("StatusOption_${status.name}"))
-                                }
+                            listOf(ReportStatus.IN_PROGRESS, ReportStatus.RESOLVED).forEach { status
+                              ->
+                              DropdownMenuItem(
+                                  text = { Text(status.name.replace("_", " ")) },
+                                  onClick = {
+                                    viewModel.onStatusChange(status)
+                                    expanded = false
+                                  },
+                                  modifier = Modifier.testTag("StatusOption_${status.name}"))
+                            }
                           }
                     }
               }
@@ -255,7 +254,10 @@ fun PreviewReportViewFarmer() {
     val navController = rememberNavController()
     val viewModel = ReportViewModel()
     ReportViewScreen(
-        navController = navController, userRole = UserRole.FARMER, viewModel = viewModel, reportId = "RPT001")
+        navController = navController,
+        userRole = UserRole.FARMER,
+        viewModel = viewModel,
+        reportId = "RPT001")
   }
 }
 
@@ -265,6 +267,10 @@ fun PreviewReportViewVet() {
   MaterialTheme {
     val navController = rememberNavController()
     val viewModel = ReportViewModel()
-    ReportViewScreen(navController = navController, userRole = UserRole.VET, viewModel = viewModel, reportId = "RPT001")
+    ReportViewScreen(
+        navController = navController,
+        userRole = UserRole.VET,
+        viewModel = viewModel,
+        reportId = "RPT001")
   }
 }
