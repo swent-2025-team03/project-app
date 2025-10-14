@@ -19,6 +19,19 @@ Farmers can quickly upload photos and a short description of symptoms and receiv
 
 ---
 
+## Fommands for Coverage : 
+
+1- `./gradlew ktfmtFormat` — format Kotlin code automatically (if the plugin is enabled).  
+2- `./gradlew createDebugCoverageReport` — run all tests and generate a code coverage report located in `app/build/reports/coverage/`.  
+3- `./gradlew cleanTest createDebugCoverageReport` — clean previous test data before generating a fresh coverage report.  
+
+**To open the coverage report:**  
+
+- open app/build/reports/coverage/debug/index.html (macOS/Linux)
+- start app\build\reports\coverage\debug\index.html (Windows)
+
+---
+
 ## Usage Examples
 -  A pack of wolves attacks a farmer’s sheep. The farmer posts an alert to inform nearby farmers and simultaneously requests veterinary assistance. The veterinarian advises on immediate care and escalates if necessary.  
 -  A farmer notices unusual skin lesions on cows. They send a private report to a nearby vet, who may escalate to authorities if a contagious disease is suspected.  
