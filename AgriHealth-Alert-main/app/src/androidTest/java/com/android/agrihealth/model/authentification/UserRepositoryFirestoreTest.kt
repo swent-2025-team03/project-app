@@ -9,7 +9,7 @@ import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 
-class UserRepositoryFirestoreTest: FirebaseEmulatorsTest() {
+class UserRepositoryFirestoreTest : FirebaseEmulatorsTest() {
 
   @Before
   override fun setUp() {

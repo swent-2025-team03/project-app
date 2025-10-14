@@ -30,9 +30,9 @@ sealed class Screen(
   object SignUp : Screen(route = "sign_up", name = "Sign Up")
 
   data class ViewReport(val reportId: String) :
-    Screen(route = "view_report/${reportId}", name = "view_report") {
-    companion object{
-        const val route = "view_report/{reportId}"
+      Screen(route = "view_report/${reportId}", name = "view_report") {
+    companion object {
+      const val route = "view_report/{reportId}"
     }
   }
 }
