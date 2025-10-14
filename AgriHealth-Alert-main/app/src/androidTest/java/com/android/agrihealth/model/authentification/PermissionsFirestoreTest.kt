@@ -1,6 +1,5 @@
 package com.android.agrihealth.model.authentification
 
-import android.util.Log
 import com.android.agrihealth.data.model.authentification.User
 import com.android.agrihealth.data.model.authentification.UserRole
 import kotlinx.coroutines.test.runTest
@@ -8,9 +7,7 @@ import org.junit.Before
 import org.junit.Test
 import com.google.firebase.auth.FirebaseAuth
 import org.junit.Assert.*
-import com.google.firebase.emulators.EmulatedServiceSettings
 import com.google.firebase.firestore.FirebaseFirestoreException
-import org.junit.After
 
 class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
   val auth = FirebaseAuth.getInstance()

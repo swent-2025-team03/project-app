@@ -1,6 +1,5 @@
 package com.android.agrihealth.model.authentification
 
-import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull

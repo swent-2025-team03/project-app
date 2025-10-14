@@ -2,16 +2,13 @@ package com.android.agrihealth.model.authentification
 
 import com.android.agrihealth.R
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
-import com.android.agrihealth.data.model.authentification.USERS_COLLECTION_PATH
 import com.android.agrihealth.data.model.authentification.User
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.authentification.UserRole
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.runTest
-import org.junit.After
 import org.junit.Before
 import okhttp3.OkHttpClient
 import okhttp3.Request
