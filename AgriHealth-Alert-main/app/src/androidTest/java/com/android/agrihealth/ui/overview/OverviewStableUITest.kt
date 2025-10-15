@@ -66,10 +66,7 @@ class OverviewStableUITest {
 
   @Test
   fun authorityScreen_displaysExpectedElements() {
-    composeTestRule.setContent {
-      OverviewScreen(userRole = UserRole.AUTHORITY)
-    }
+    composeTestRule.setContent { OverviewScreen(userRole = UserRole.AUTHORITY) }
     composeTestRule.onNodeWithText("Latest News / Alerts").assertIsDisplayed()
   }
-
 }

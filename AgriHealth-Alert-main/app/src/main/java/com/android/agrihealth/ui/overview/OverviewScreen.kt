@@ -12,11 +12,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.data.model.Report
 import com.android.agrihealth.data.model.ReportStatus
 import com.android.agrihealth.data.model.UserRole
@@ -193,46 +191,20 @@ fun StatusTag(status: ReportStatus) {
       }
 }
 
+/** Preview of the OverviewScreen with dummy data. Temporarily commented out */
+
 /**
- * Preview of the OverviewScreen with dummy data.
- * Temporarily commented out
+ * @Preview(showBackground = true)
+ * @Composable fun PreviewOverviewScreen() { val dummyNavController = rememberNavController() val
+ *   dummyNavigationActions = NavigationActions(dummyNavController)
+ *
+ * val dummyReports = listOf( Report( id = "1", title = "Cow coughing", description = "Coughing and
+ * nasal discharge observed", photoUri = null, farmerId = "farmer_001", vetId = null, status =
+ * ReportStatus.IN_PROGRESS, answer = null, location = null), Report( id = "2", title = "Sheep
+ * limping", description = "Limping observed in the rear leg; mild swelling noted", photoUri = null,
+ * farmerId = "farmer_002", vetId = null, status = ReportStatus.PENDING, answer = null, location =
+ * null))
+ *
+ * OverviewScreen( userRole = UserRole.FARMER, onAddReport = {}, onReportClick = {},
+ * navigationActions = dummyNavigationActions, reports = dummyReports, ) }
  */
-
-/** @Preview(showBackground = true)
-@Composable
-fun PreviewOverviewScreen() {
-  val dummyNavController = rememberNavController()
-  val dummyNavigationActions = NavigationActions(dummyNavController)
-
-  val dummyReports =
-      listOf(
-          Report(
-              id = "1",
-              title = "Cow coughing",
-              description = "Coughing and nasal discharge observed",
-              photoUri = null,
-              farmerId = "farmer_001",
-              vetId = null,
-              status = ReportStatus.IN_PROGRESS,
-              answer = null,
-              location = null),
-          Report(
-              id = "2",
-              title = "Sheep limping",
-              description = "Limping observed in the rear leg; mild swelling noted",
-              photoUri = null,
-              farmerId = "farmer_002",
-              vetId = null,
-              status = ReportStatus.PENDING,
-              answer = null,
-              location = null))
-
-  OverviewScreen(
-      userRole = UserRole.FARMER,
-      onAddReport = {},
-      onReportClick = {},
-      navigationActions = dummyNavigationActions,
-      reports = dummyReports,
-  )
-}
-*/
