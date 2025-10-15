@@ -193,8 +193,12 @@ fun StatusTag(status: ReportStatus) {
       }
 }
 
-/** Preview of the OverviewScreen with dummy data. */
-@Preview(showBackground = true)
+/**
+ * Preview of the OverviewScreen with dummy data.
+ * Temporarily commented out
+ */
+
+/** @Preview(showBackground = true)
 @Composable
 fun PreviewOverviewScreen() {
   val dummyNavController = rememberNavController()
@@ -231,3 +235,4 @@ fun PreviewOverviewScreen() {
       reports = dummyReports,
   )
 }
+*/
