@@ -126,4 +126,78 @@ class ReportViewScreenTest {
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("RESOLVED")
   }
+
+  // -------------------- Additional tests to increase coverage --------------------
+
+  @Test
+  fun vet_autoChangesPendingToInProgress_onLaunch() {
+    // When a Vet screen is launched and the ViewModel's report status is PENDING (default),
+    // the LaunchedEffect in the composable should auto-change it to IN_PROGRESS.
+    val viewModel = ReportViewModel()
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      ReportViewScreen(navController = navController, userRole = UserRole.VET, viewModel = viewModel)
+    }
+    // Wait for composition + LaunchedEffect to run
+    composeTestRule.waitForIdle()
+    // The status badge should show "IN PROGRESS" (name has underscore replaced by space)
+    composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("IN PROGRESS")
+  }
+
+  /*@Test
+  fun vet_doesNotShowEscalateButton_whenAlreadyEscalated() {
+    // If report status is already ESCALATED, the escalate button should be hidden
+    val viewModel = ReportViewModel().apply { onStatusChange(ReportStatus.ESCALATED) }
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      ReportViewScreen(navController = navController, userRole = UserRole.VET, viewModel = viewModel)
+    }
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("ESCALATED")
+    composeTestRule.onNodeWithTag("EscalateButton").assertDoesNotExist()
+  }*/
+
+  @Test
+  fun farmer_showsVetIdText() {
+    // Farmer view shows the Vet ID line
+    val viewModel = ReportViewModel()
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      ReportViewScreen(navController = navController, userRole = UserRole.FARMER, viewModel = viewModel)
+    }
+    composeTestRule.waitForIdle()
+    // Default sample report has vetId "VET_456" (from ReportViewUIState)
+    composeTestRule.onNodeWithText("Vet ID: VET_456").assertIsDisplayed()
+  }
+
+  @Test
+  fun vet_showsFarmerIdText() {
+    // Vet view shows the Farmer ID line
+    val viewModel = ReportViewModel()
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      ReportViewScreen(navController = navController, userRole = UserRole.VET, viewModel = viewModel)
+    }
+    composeTestRule.waitForIdle()
+    // Default sample report has farmerId "FARMER_123"
+    composeTestRule.onNodeWithText("Farmer ID: FARMER_123").assertIsDisplayed()
+  }
+
+  @Test
+  fun vet_canSelectInProgressStatus_viaDropdown() {
+    // Test selecting IN_PROGRESS via dropdown (complements existing RESOLVED test)
+    val viewModel = ReportViewModel()
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      ReportViewScreen(navController = navController, userRole = UserRole.VET, viewModel = viewModel)
+    }
+    composeTestRule.waitForIdle()
+
+    // Open dropdown and pick IN_PROGRESS
+    composeTestRule.onNodeWithTag("StatusDropdownField").performClick()
+    composeTestRule.onNodeWithTag("StatusOption_IN_PROGRESS").performClick()
+
+    // Ensure badge text updated
+    composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("IN PROGRESS")
+  }
 }

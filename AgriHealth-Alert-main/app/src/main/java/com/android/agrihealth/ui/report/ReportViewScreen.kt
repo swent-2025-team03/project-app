@@ -242,7 +242,7 @@ fun ReportViewScreen(
             }
       }
 }
-
+/*  If you want to use the preview, just decoment this block.
 /**
  * Preview of the ReportViewScreen for both farmer and vet roles. Allows testing of layout and
  * colors directly in Android Studio.
@@ -274,3 +274,4 @@ fun PreviewReportViewVet() {
         reportId = "RPT001")
   }
 }
+*/
