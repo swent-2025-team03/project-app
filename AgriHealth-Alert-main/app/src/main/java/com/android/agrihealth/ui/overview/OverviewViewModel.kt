@@ -78,8 +78,9 @@ class OverviewViewModel(
         // TODO: Replace with actual user ID from authentication
         val reports = reportRepository.getAllReports("FARMER_001")
         _uiState.value = OverviewUIState(reports = reports)
-      } catch (e: NoSuchElementException) {
+      } catch (e: Exception) {
         Log.e("OverviewViewModel", "Error fetching reports", e)
+        _uiState.value = OverviewUIState(reports = emptyList())
       }
     }
   }
