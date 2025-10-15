@@ -45,8 +45,8 @@ class MainActivity : ComponentActivity() {
     val firestorePort = resources.getInteger(R.integer.FIREBASE_EMULATORS_FIRESTORE_PORT)
     val authPort = resources.getInteger(R.integer.FIREBASE_EMULATORS_AUTH_PORT)
     try {
-        Firebase.firestore.useEmulator(url, firestorePort)
-        Firebase.auth.useEmulator(url, authPort)
+      Firebase.firestore.useEmulator(url, firestorePort)
+      Firebase.auth.useEmulator(url, authPort)
     } catch (_: IllegalStateException) {}
 
     setContent {
