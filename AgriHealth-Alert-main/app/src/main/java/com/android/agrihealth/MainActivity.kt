@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    //TODO: Remove useEmulator() lines when the app goes in production
+    // TODO: Remove useEmulator() lines when the app goes in production
     val url = getString(R.string.FIREBASE_EMULATORS_URL)
     val firestorePort = resources.getInteger(R.integer.FIREBASE_EMULATORS_FIRESTORE_PORT)
     val authPort = resources.getInteger(R.integer.FIREBASE_EMULATORS_AUTH_PORT)
@@ -68,7 +68,8 @@ fun AgriHealthApp() {
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
 
-  val startDestination = Screen.Auth.name
+  val startDestination =
+      if (Firebase.auth.currentUser != null) Screen.Overview.name else Screen.Auth.name
 
   NavHost(navController = navController, startDestination = startDestination) {
     // --- Auth Graph ---
@@ -114,7 +115,8 @@ fun AgriHealthApp() {
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
             // TODO: Pass the selected report to the ViewReportScreen
             onReportClick = { reportId ->
-                navigationActions.navigateTo(Screen.ViewReport(reportId)) },
+              navigationActions.navigateTo(Screen.ViewReport(reportId))
+            },
             navigationActions = navigationActions,
         )
       }
@@ -138,9 +140,8 @@ fun AgriHealthApp() {
                 navController = navController,
                 userRole = currentUserRole,
                 viewModel = viewModel,
-                reportId = reportId
-            )
-        }
+                reportId = reportId)
+          }
     }
 
     navigation(

@@ -14,8 +14,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 
 open class FirebaseEmulatorsTest {
-    val userRepository = UserRepositoryProvider.repository
-    val authRepository = AuthRepositoryProvider.repository
+  val userRepository = UserRepositoryProvider.repository
+  val authRepository = AuthRepositoryProvider.repository
 
     //from bootcamp
     val httpClient = OkHttpClient()
@@ -33,6 +33,8 @@ open class FirebaseEmulatorsTest {
     }
 
 
+  private suspend fun clearUsers() {
+    val usersCollection = Firebase.firestore.collection(USERS_COLLECTION_PATH).get().await()
 
     val user1 = User("abc123", "Rushia", "Uruha", UserRole.FARMER, "email1@thing.com")
     val user2 = User("def456", "mike", "neko", UserRole.FARMER, "email2@aaaaa.balls")
@@ -54,24 +56,30 @@ open class FirebaseEmulatorsTest {
     companion object {
         var emulatorInitialized = false
     }
+  }
 
-    @Before
-    open fun setUp() {
-        if (!emulatorInitialized) {
-            val context = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
-            val url = context.getString(R.string.FIREBASE_EMULATORS_URL)
-            val firestorePort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_FIRESTORE_PORT)
-            val authPort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_AUTH_PORT)
+  companion object {
+    var emulatorInitialized = false
+  }
 
-            Firebase.firestore.useEmulator(url, firestorePort)
-            Firebase.auth.useEmulator(url, authPort)
+  @Before
+  open fun setUp() {
+    if (!emulatorInitialized) {
+      val context =
+          androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
+      val url = context.getString(R.string.FIREBASE_EMULATORS_URL)
+      val firestorePort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_FIRESTORE_PORT)
+      val authPort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_AUTH_PORT)
 
-            emulatorInitialized = true
-        }
-
-        runTest {
-            clearEmulator(authEndpoint)
-            clearEmulator(firestoreEndpoint)
-        }
+      Firebase.firestore.useEmulator(url, firestorePort)
+      Firebase.auth.useEmulator(url, authPort)
+      
+      emulatorInitialized = true
     }
+    
+    runTest {
+      clearEmulator(authEndpoint)
+      clearEmulator(firestoreEndpoint)
+    }
+  }
 }
