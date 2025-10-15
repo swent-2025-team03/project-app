@@ -15,7 +15,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class E2ETest : FirebaseEmulatorsTest() {
+class E2ETest : FirebaseEmulatorsTest(false) {
 
   @get:Rule val composeRule = createAndroidComposeRule<MainActivity>()
 
@@ -28,7 +28,6 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun completeSignUp(email: String, password: String, isVet: Boolean) {
-    // Remplir tous les champs requis
     composeRule
         .onNodeWithTag(SignUpScreenTestTags.NAME_FIELD)
         .assertIsDisplayed()
@@ -87,6 +86,13 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun checkOverviewScreenIsDisplayed() {
+    composeRule.waitUntil(timeoutMillis = 5_000) {
+      composeRule
+          .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+
     composeRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).assertIsDisplayed()
   }
 

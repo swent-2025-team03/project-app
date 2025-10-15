@@ -28,6 +28,8 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
 object OverviewScreenTestTags {
+
+  const val TOP_APP_BAR_TITLE = NavigationTestTags.TOP_BAR_TITLE
   const val ADD_REPORT_BUTTON = "addReportFab"
   const val LOGOUT_BUTTON = "logoutButton"
   const val SCREEN = "OverviewScreen"
@@ -61,7 +63,12 @@ fun OverviewScreen(
       // -- Top App Bar with logout icon --
       topBar = {
         TopAppBar(
-            title = { Text("Overview", style = MaterialTheme.typography.titleLarge) },
+            title = {
+              Text(
+                  "Overview",
+                  style = MaterialTheme.typography.titleLarge,
+                  modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE))
+            },
             actions = {
               IconButton(
                   onClick = {

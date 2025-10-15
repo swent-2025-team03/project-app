@@ -2,34 +2,52 @@ package com.android.agrihealth.model.authentification
 
 import com.android.agrihealth.R
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
-import com.android.agrihealth.data.model.authentification.USERS_COLLECTION_PATH
 import com.android.agrihealth.data.model.authentification.User
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.authentification.UserRole
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.runTest
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.junit.Before
 
-open class FirebaseEmulatorsTest {
+open class FirebaseEmulatorsTest(shouldInitializeEmulators: Boolean = true) {
   val userRepository = UserRepositoryProvider.repository
   val authRepository = AuthRepositoryProvider.repository
+  private val _shouldInitializeEmulators = shouldInitializeEmulators
+  // from bootcamp
+  val httpClient = OkHttpClient()
+  val contextHost =
+      androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
+  val host = contextHost.getString(R.string.FIREBASE_EMULATORS_URL)
+  val firestorePort = 8081
+  val authPort = 9099
 
+  private val firestoreEndpoint by lazy {
+    "http://${host}:${firestorePort}/emulator/v1/projects/agrihealth-alert/databases/(default)/documents"
+  }
+  private val authEndpoint by lazy {
+    "http://${host}:${authPort}/emulator/v1/projects/agrihealth-alert/accounts"
+  }
+
+  // Definition of test users
   val user1 = User("abc123", "Rushia", "Uruha", UserRole.FARMER, "email1@thing.com")
   val user2 = User("def456", "mike", "neko", UserRole.FARMER, "email2@aaaaa.balls")
   val user3 = User("ghj789", "Nazuna", "Amemiya", UserRole.VETERINARIAN, "email3@kms.josh")
 
-  private suspend fun clearUsers() {
-    val usersCollection = Firebase.firestore.collection(USERS_COLLECTION_PATH).get().await()
+  val password1 = "Password123"
+  val password2 = "iamaweakpassword"
+  val password3 = "12345678"
 
-    // Inspired from bootcamp
-    if (usersCollection.count() > 0) {
-      val batch = Firebase.firestore.batch()
-      usersCollection.documents.forEach { batch.delete(it.reference) }
-      batch.commit().await()
-    }
+  // from Bootcamp
+  private fun clearEmulator(endpoint: String) {
+    val client = httpClient
+    val request = Request.Builder().url(endpoint).delete().build()
+    val response = client.newCall(request).execute()
+
+    assert(response.isSuccessful) { "Failed to clear emulator at $endpoint" }
   }
 
   companion object {
@@ -38,7 +56,7 @@ open class FirebaseEmulatorsTest {
 
   @Before
   open fun setUp() {
-    if (!emulatorInitialized) {
+    if (!emulatorInitialized && _shouldInitializeEmulators) {
       val context =
           androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
       val url = context.getString(R.string.FIREBASE_EMULATORS_URL)
@@ -51,6 +69,9 @@ open class FirebaseEmulatorsTest {
       emulatorInitialized = true
     }
 
-    runTest { clearUsers() }
+    runTest {
+      clearEmulator(authEndpoint)
+      clearEmulator(firestoreEndpoint)
+    }
   }
 }

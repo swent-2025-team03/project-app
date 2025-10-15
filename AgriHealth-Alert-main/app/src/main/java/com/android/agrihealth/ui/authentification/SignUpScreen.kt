@@ -139,7 +139,7 @@ private fun RoleSelector(selected: UserRole?, onSelected: (UserRole) -> Unit) {
 }
 
 private val UnselectedColor = Color(0xFFE5E5E5)
-private val SelectedColor = Color(0xFF96B7B1) // vert
+private val SelectedColor = Color(0xFF96B7B1)
 
 @Composable
 private fun SelectablePill(
@@ -148,7 +148,7 @@ private fun SelectablePill(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-  val bg = if (selected) SelectedColor else UnselectedColor // vert / gris
+  val bg = if (selected) SelectedColor else UnselectedColor
   Surface(
       onClick = onClick,
       shape = RoundedCornerShape(24.dp),
