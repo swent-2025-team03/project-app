@@ -30,6 +30,9 @@ object OverviewScreenTestTags {
   const val TOP_APP_BAR_TITLE = NavigationTestTags.TOP_BAR_TITLE
   const val ADD_REPORT_BUTTON = "addReportFab"
   const val LOGOUT_BUTTON = "logoutButton"
+  const val SCREEN = "OverviewScreen"
+  // Nouveau: tag commun pour chaque item de rapport (pour les tests E2E)
+  const val REPORT_ITEM = "reportItem"
 }
 
 /**
@@ -86,39 +89,49 @@ fun OverviewScreen(
 
       // -- Main content area --
       content = { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp)) {
-          // -- Latest alert section --
-          Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
+        Column(
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp)
+                    .testTag(OverviewScreenTestTags.SCREEN) // ← tag stable sur le conteneur racine
+            ) {
+              // -- Latest alert section --
+              Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
 
-          Spacer(modifier = Modifier.height(12.dp))
-          LatestAlertCard()
+              Spacer(modifier = Modifier.height(12.dp))
+              LatestAlertCard()
 
-          Spacer(modifier = Modifier.height(24.dp))
+              Spacer(modifier = Modifier.height(24.dp))
 
-          // -- Create a new report buton --
-          // Display the button only if the user role is FARMER
-          if (userRole == UserRole.FARMER) {
-            Button(
-                onClick = onAddReport,
-                modifier =
-                    Modifier.align(Alignment.CenterHorizontally)
-                        .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
-                  Text("Create a new report")
+              // -- Create a new report buton --
+              // Display the button only if the user role is FARMER
+              if (userRole == UserRole.FARMER) {
+                Button(
+                    onClick = onAddReport,
+                    modifier =
+                        Modifier.align(Alignment.CenterHorizontally)
+                            .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
+                      Text("Create a new report")
+                    }
+              }
+
+              Spacer(modifier = Modifier.height(15.dp))
+
+              // -- Past reports list --
+              Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
+              Spacer(modifier = Modifier.height(12.dp))
+              LazyColumn {
+                items(reports, key = { it.id }) { report ->
+                  // Ajout du testTag pour chaque item cliquable
+                  ReportItem(
+                      report = report,
+                      onClick = { onReportClick(report.id) },
+                  )
+                  Divider()
                 }
-          }
-
-          Spacer(modifier = Modifier.height(15.dp))
-
-          // -- Past reports list --
-          Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
-          Spacer(modifier = Modifier.height(12.dp))
-          LazyColumn {
-            items(reports, key = { it.id }) { report ->
-              ReportItem(report = report, onClick = { onReportClick(report.id) })
-              Divider()
+              }
             }
-          }
-        }
       })
 }
 
@@ -153,7 +166,11 @@ fun LatestAlertCard() {
 @Composable
 fun ReportItem(report: Report, onClick: () -> Unit) {
   Row(
-      modifier = Modifier.fillMaxWidth().clickable { onClick() }.padding(vertical = 8.dp),
+      modifier =
+          Modifier.fillMaxWidth()
+              .testTag(OverviewScreenTestTags.REPORT_ITEM)
+              .clickable { onClick() }
+              .padding(vertical = 8.dp),
       verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
           Text(report.title, fontSize = 18.sp, fontWeight = FontWeight.Medium)

@@ -92,9 +92,15 @@ fun ReportViewScreen(
                   }
             },
             navigationIcon = {
-              IconButton(onClick = { navController.popBackStack() }) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-              }
+              IconButton(
+                  onClick = { navController.popBackStack() },
+                  modifier =
+                      Modifier.testTag(
+                          com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON)) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back")
+                  }
             })
       }) { padding ->
 

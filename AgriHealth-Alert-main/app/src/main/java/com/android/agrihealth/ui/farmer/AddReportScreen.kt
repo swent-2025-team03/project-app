@@ -13,6 +13,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 
+object AddReportScreenTestTags {
+  const val SCREEN = "AddReportScreen"
+}
+
 @Preview
 @Composable
 fun AddReportScreen(

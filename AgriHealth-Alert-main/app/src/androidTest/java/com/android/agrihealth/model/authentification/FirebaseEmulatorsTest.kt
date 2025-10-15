@@ -13,10 +13,10 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.junit.Before
 
-open class FirebaseEmulatorsTest {
+open class FirebaseEmulatorsTest(shouldInitializeEmulators: Boolean = true) {
   val userRepository = UserRepositoryProvider.repository
   val authRepository = AuthRepositoryProvider.repository
-
+  private val _shouldInitializeEmulators = shouldInitializeEmulators
   // from bootcamp
   val httpClient = OkHttpClient()
   val contextHost =
@@ -56,17 +56,23 @@ open class FirebaseEmulatorsTest {
 
   @Before
   open fun setUp() {
-    if (!emulatorInitialized) {
+    if (!emulatorInitialized && _shouldInitializeEmulators) {
       val context =
           androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
       val url = context.getString(R.string.FIREBASE_EMULATORS_URL)
       val firestorePort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_FIRESTORE_PORT)
       val authPort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_AUTH_PORT)
 
-      Firebase.firestore.useEmulator(url, firestorePort)
-      Firebase.auth.useEmulator(url, authPort)
-
-      emulatorInitialized = true
+      // running all tests fails if e2e runs at the same time as this
+      try {
+        Firebase.firestore.useEmulator(url, firestorePort)
+        Firebase.auth.useEmulator(url, authPort)
+      } catch (e: IllegalStateException) {
+        if (e.message != "Cannot call useEmulator() after instance has already been initialized.")
+            throw e
+      } finally {
+        emulatorInitialized = true
+      }
     }
 
     runTest {
