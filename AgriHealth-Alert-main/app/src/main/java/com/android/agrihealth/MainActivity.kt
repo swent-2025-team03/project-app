@@ -47,7 +47,10 @@ class MainActivity : ComponentActivity() {
     try {
       Firebase.firestore.useEmulator(url, firestorePort)
       Firebase.auth.useEmulator(url, authPort)
-    } catch (_: IllegalStateException) {}
+    } catch (e: IllegalStateException) {
+      if (e.message != "Cannot call useEmulator() after instance has already been initialized.")
+          throw e
+    }
 
     setContent {
       SampleAppTheme {
