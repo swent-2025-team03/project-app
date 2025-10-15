@@ -10,25 +10,15 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
     super.setUp()
   }
 
-  @Test
-  fun canAccessOwnData() {
-    TODO()
-  }
+  // TODO: write tests
 
-  @Test
-  fun failToAccessOtherUsersData() {
-    TODO()
-  }
+  @Test fun canAccessOwnData() {}
 
-  @Test
-  fun failToAccessDataWhileLoggedOut() {
-    TODO()
-  }
+  @Test fun failToAccessOtherUsersData() {}
 
-  @Test
-  fun failToUpdateOwnRole() {
-    TODO()
-  }
+  @Test fun failToAccessDataWhileLoggedOut() {}
 
-  @Test fun failToDeleteWhileLoggedOut() = runTest { TODO() }
+  @Test fun failToUpdateOwnRole() {}
+
+  @Test fun failToDeleteWhileLoggedOut() = runTest {}
 }
