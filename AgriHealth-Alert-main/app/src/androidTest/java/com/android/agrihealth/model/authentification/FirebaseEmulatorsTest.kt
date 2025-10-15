@@ -19,23 +19,19 @@ open class FirebaseEmulatorsTest {
 
     //from bootcamp
     val httpClient = OkHttpClient()
-    //val host = "localhost"
     val contextHost = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
     val host = contextHost.getString(R.string.FIREBASE_EMULATORS_URL)
     val firestorePort = 8081
     val authPort = 9099
+
     private val firestoreEndpoint by lazy {
         "http://${host}:${firestorePort}/emulator/v1/projects/agrihealth-alert/databases/(default)/documents"
     }
-
     private val authEndpoint by lazy {
         "http://${host}:${authPort}/emulator/v1/projects/agrihealth-alert/accounts"
     }
 
-
-  private suspend fun clearUsers() {
-    val usersCollection = Firebase.firestore.collection(USERS_COLLECTION_PATH).get().await()
-
+    // Definition of test users
     val user1 = User("abc123", "Rushia", "Uruha", UserRole.FARMER, "email1@thing.com")
     val user2 = User("def456", "mike", "neko", UserRole.FARMER, "email2@aaaaa.balls")
     val user3 = User("ghj789", "Nazuna", "Amemiya", UserRole.VETERINARIAN, "email3@kms.josh")
@@ -52,11 +48,6 @@ open class FirebaseEmulatorsTest {
 
         assert(response.isSuccessful) { "Failed to clear emulator at $endpoint" }
     }
-
-    companion object {
-        var emulatorInitialized = false
-    }
-  }
 
   companion object {
     var emulatorInitialized = false
