@@ -1,8 +1,5 @@
 package com.android.agrihealth.data.repository
 
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
-
 object ReportRepositoryProvider {
 
   /**

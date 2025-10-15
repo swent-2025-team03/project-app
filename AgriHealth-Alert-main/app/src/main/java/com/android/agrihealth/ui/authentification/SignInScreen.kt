@@ -23,6 +23,7 @@ private val ButtonBg = Color(0xFF9BB9B4)
 private val TitleColor = Color(0xFF000000)
 
 object SignInScreenTestTags {
+  const val SCREEN = "SignInScreen"
   const val LOGIN_BUTTON = "loginButton"
   const val SIGN_UP_BUTTON = "signUpButton"
   const val LOGIN_TITLE = "loginTitle"
@@ -46,7 +47,7 @@ fun SignInScreen(
   LaunchedEffect(signInUIState.user) { signInUIState.user?.let { onSignedIn() } }
 
   Box(
-      modifier = modifier.background(FieldBg).fillMaxSize(),
+      modifier = modifier.background(FieldBg).fillMaxSize().testTag(SignInScreenTestTags.SCREEN),
       contentAlignment = Alignment.TopCenter) {
         Column(
             modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp),
@@ -122,8 +123,7 @@ fun SignInScreen(
                   color = Color.Black,
                   thickness = 1.dp,
                   modifier =
-                      Modifier.fillMaxWidth(0.8f)
-                          .testTag(SignInScreenTestTags.LOGIN_DIVIDER))
+                      Modifier.fillMaxWidth(0.8f).testTag(SignInScreenTestTags.LOGIN_DIVIDER))
               Spacer(Modifier.height(24.dp))
 
               Button(

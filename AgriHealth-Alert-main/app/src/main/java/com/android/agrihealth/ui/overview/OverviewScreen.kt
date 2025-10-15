@@ -12,11 +12,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.data.model.Report
 import com.android.agrihealth.data.model.ReportStatus
 import com.android.agrihealth.data.model.UserRole
@@ -28,18 +26,22 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
 object OverviewScreenTestTags {
+
+  const val TOP_APP_BAR_TITLE = NavigationTestTags.TOP_BAR_TITLE
   const val ADD_REPORT_BUTTON = "addReportFab"
   const val LOGOUT_BUTTON = "logoutButton"
+  const val SCREEN = "OverviewScreen"
+  // Nouveau: tag commun pour chaque item de rapport (pour les tests E2E)
+  const val REPORT_ITEM = "reportItem"
 }
 
 /**
- * Composable screen displaying the Overview UI.
- * Shows latest alerts and a list of past reports.
- * Button for creating a new report will only be displayed for farmer accounts.
- * For the list, farmers can view only reports made by their own;
- * vets can view all the reports.
+ * Composable screen displaying the Overview UI. Shows latest alerts and a list of past reports.
+ * Button for creating a new report will only be displayed for farmer accounts. For the list,
+ * farmers can view only reports made by their own; vets can view all the reports.
  *
- * @param reports List of report to display kept only for backward compatibility and shouldn't be used
+ * @param reports List of report to display kept only for backward compatibility and shouldn't be
+ *   used
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,27 +54,30 @@ fun OverviewScreen(
     reports: List<Report> = overviewViewModel.uiState.collectAsState().value.reports,
 ) {
 
-    val uiState by overviewViewModel.uiState.collectAsState()
-    val reports = uiState.reports
+  val uiState by overviewViewModel.uiState.collectAsState()
+  val reports = uiState.reports
 
-    Scaffold(
-        // -- Top App Bar with logout icon --
-        topBar = {
-            TopAppBar(
-                title = { Text("Overview", style = MaterialTheme.typography.titleLarge) },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            Firebase.auth.signOut()
-                            navigationActions?.navigateToAuthAndClear()
-                        },
-                        modifier = Modifier.testTag(OverviewScreenTestTags.LOGOUT_BUTTON)
-                    ) {
-                        Icon(Icons.Default.ExitToApp, contentDescription = "Sign Out")
-                    }
-                }
-            )
-        },
+  Scaffold(
+      // -- Top App Bar with logout icon --
+      topBar = {
+        TopAppBar(
+            title = {
+              Text(
+                  "Overview",
+                  style = MaterialTheme.typography.titleLarge,
+                  modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE))
+            },
+            actions = {
+              IconButton(
+                  onClick = {
+                    Firebase.auth.signOut()
+                    navigationActions?.navigateToAuthAndClear()
+                  },
+                  modifier = Modifier.testTag(OverviewScreenTestTags.LOGOUT_BUTTON)) {
+                    Icon(Icons.Default.ExitToApp, contentDescription = "Sign Out")
+                  }
+            })
+      },
 
       // -- Bottom navigation menu --
       bottomBar = {
@@ -84,39 +89,49 @@ fun OverviewScreen(
 
       // -- Main content area --
       content = { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp)) {
-          // -- Latest alert section --
-          Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
+        Column(
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp)
+                    .testTag(OverviewScreenTestTags.SCREEN) // ← tag stable sur le conteneur racine
+            ) {
+              // -- Latest alert section --
+              Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
 
-          Spacer(modifier = Modifier.height(12.dp))
-          LatestAlertCard()
+              Spacer(modifier = Modifier.height(12.dp))
+              LatestAlertCard()
 
-          Spacer(modifier = Modifier.height(24.dp))
+              Spacer(modifier = Modifier.height(24.dp))
 
-          // -- Create a new report buton --
-          // Display the button only if the user role is FARMER
-          if (userRole == UserRole.FARMER) {
-            Button(
-                onClick = onAddReport,
-                modifier =
-                    Modifier.align(Alignment.CenterHorizontally)
-                        .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
-                  Text("Create a new report")
+              // -- Create a new report buton --
+              // Display the button only if the user role is FARMER
+              if (userRole == UserRole.FARMER) {
+                Button(
+                    onClick = onAddReport,
+                    modifier =
+                        Modifier.align(Alignment.CenterHorizontally)
+                            .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
+                      Text("Create a new report")
+                    }
+              }
+
+              Spacer(modifier = Modifier.height(15.dp))
+
+              // -- Past reports list --
+              Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
+              Spacer(modifier = Modifier.height(12.dp))
+              LazyColumn {
+                items(reports, key = { it.id }) { report ->
+                  // Ajout du testTag pour chaque item cliquable
+                  ReportItem(
+                      report = report,
+                      onClick = { onReportClick(report.id) },
+                  )
+                  Divider()
                 }
-          }
-
-          Spacer(modifier = Modifier.height(15.dp))
-
-          // -- Past reports list --
-          Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
-          Spacer(modifier = Modifier.height(12.dp))
-          LazyColumn {
-            items(reports, key = { it.id }) { report ->
-              ReportItem(report = report, onClick = { onReportClick(report.id) })
-              Divider()
+              }
             }
-          }
-        }
       })
 }
 
@@ -151,7 +166,11 @@ fun LatestAlertCard() {
 @Composable
 fun ReportItem(report: Report, onClick: () -> Unit) {
   Row(
-      modifier = Modifier.fillMaxWidth().clickable { onClick() }.padding(vertical = 8.dp),
+      modifier =
+          Modifier.fillMaxWidth()
+              .testTag(OverviewScreenTestTags.REPORT_ITEM)
+              .clickable { onClick() }
+              .padding(vertical = 8.dp),
       verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
           Text(report.title, fontSize = 18.sp, fontWeight = FontWeight.Medium)
@@ -189,41 +208,20 @@ fun StatusTag(status: ReportStatus) {
       }
 }
 
-/** Preview of the OverviewScreen with dummy data. */
-@Preview(showBackground = true)
-@Composable
-fun PreviewOverviewScreen() {
-  val dummyNavController = rememberNavController()
-  val dummyNavigationActions = NavigationActions(dummyNavController)
+/** Preview of the OverviewScreen with dummy data. Temporarily commented out */
 
-  val dummyReports =
-      listOf(
-          Report(
-              id = "1",
-              title = "Cow coughing",
-              description = "Coughing and nasal discharge observed",
-              photoUri = null,
-              farmerId = "farmer_001",
-              vetId = null,
-              status = ReportStatus.IN_PROGRESS,
-              answer = null,
-              location = null),
-          Report(
-              id = "2",
-              title = "Sheep limping",
-              description = "Limping observed in the rear leg; mild swelling noted",
-              photoUri = null,
-              farmerId = "farmer_002",
-              vetId = null,
-              status = ReportStatus.PENDING,
-              answer = null,
-              location = null))
-
-    OverviewScreen(
-        userRole = UserRole.FARMER,
-        onAddReport = {},
-        onReportClick = {},
-        navigationActions = dummyNavigationActions,
-        reports = dummyReports,
-    )
-}
+/**
+ * @Preview(showBackground = true)
+ * @Composable fun PreviewOverviewScreen() { val dummyNavController = rememberNavController() val
+ *   dummyNavigationActions = NavigationActions(dummyNavController)
+ *
+ * val dummyReports = listOf( Report( id = "1", title = "Cow coughing", description = "Coughing and
+ * nasal discharge observed", photoUri = null, farmerId = "farmer_001", vetId = null, status =
+ * ReportStatus.IN_PROGRESS, answer = null, location = null), Report( id = "2", title = "Sheep
+ * limping", description = "Limping observed in the rear leg; mild swelling noted", photoUri = null,
+ * farmerId = "farmer_002", vetId = null, status = ReportStatus.PENDING, answer = null, location =
+ * null))
+ *
+ * OverviewScreen( userRole = UserRole.FARMER, onAddReport = {}, onReportClick = {},
+ * navigationActions = dummyNavigationActions, reports = dummyReports, ) }
+ */
