@@ -1,5 +1,6 @@
 package com.android.agrihealth
 
+import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -15,85 +16,95 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class E2ETest : FirebaseEmulatorsTest(false) {
+class E2ETest : FirebaseEmulatorsTest(true) {
 
-  @get:Rule val composeRule = createAndroidComposeRule<MainActivity>()
+  @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
   // ----------- Helpers -----------
 
   @Before
   override fun setUp() {
     super.setUp()
-    runTest { authRepository.signUpWithEmailAndPassword(user1.email, "12345678", user1) }
+    runTest {
+      authRepository.signUpWithEmailAndPassword(user1.email, "12345678", user1)
+      authRepository.signOut()
+    }
+    composeTestRule.setContent { AgriHealthApp() }
   }
 
   private fun completeSignUp(email: String, password: String, isVet: Boolean) {
-    composeRule
+    composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.NAME_FIELD)
         .assertIsDisplayed()
         .performTextInput("Test")
 
-    composeRule
+    composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.SURNAME_FIELD)
         .assertIsDisplayed()
         .performTextInput("User")
 
-    composeRule
+    composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.EMAIL_FIELD)
         .assertIsDisplayed()
         .performTextInput(email)
 
-    composeRule
+    composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.PASSWORD_FIELD)
         .assertIsDisplayed()
         .performTextInput(password)
 
-    composeRule
+    composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD)
         .assertIsDisplayed()
         .performTextInput(password)
 
     val roleTag = if (isVet) SignUpScreenTestTags.VET_PILL else SignUpScreenTestTags.FARMER_PILL
 
-    composeRule.onNodeWithTag(roleTag).assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag(roleTag).assertIsDisplayed().performClick()
 
-    composeRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).assertIsDisplayed().performClick()
+    composeTestRule
+        .onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
   }
 
   private fun completeSignIn(email: String, password: String) {
-    composeRule
+    composeTestRule
         .onNodeWithTag(SignInScreenTestTags.EMAIL_FIELD)
         .assertIsDisplayed()
         .performTextInput(email)
 
-    composeRule
+    composeTestRule
         .onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD)
         .assertIsDisplayed()
         .performTextInput(password)
 
-    composeRule.onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON).assertIsDisplayed().performClick()
+    composeTestRule
+        .onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
   }
 
   private fun signOutFromOverview() {
-    composeRule
+    composeTestRule
         .onNodeWithTag(OverviewScreenTestTags.LOGOUT_BUTTON)
         .assertIsDisplayed()
         .performClick()
   }
 
   private fun clickFirstReportItem() {
-    composeRule.onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)[0].performClick()
+    composeTestRule.onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)[0].performClick()
   }
 
   private fun checkOverviewScreenIsDisplayed() {
-    composeRule.waitUntil(timeoutMillis = 5_000) {
-      composeRule
+    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+      composeTestRule
           .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
           .fetchSemanticsNodes()
           .isNotEmpty()
     }
 
-    composeRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).assertIsDisplayed()
   }
 
   // ----------- Scenario: Vet -----------
@@ -101,7 +112,7 @@ class E2ETest : FirebaseEmulatorsTest(false) {
   fun testVet_SignUp_Logout_SignIn() {
     val email = "vet@example.com"
     val pwd = "StrongPwd!123"
-    composeRule
+    composeTestRule
         .onNodeWithTag(SignInScreenTestTags.SIGN_UP_BUTTON)
         .assertIsDisplayed()
         .performClick()
@@ -109,7 +120,7 @@ class E2ETest : FirebaseEmulatorsTest(false) {
     completeSignUp(email, pwd, isVet = true)
     checkOverviewScreenIsDisplayed()
     signOutFromOverview()
-    composeRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
     completeSignIn(email, pwd)
     checkOverviewScreenIsDisplayed()
   }
@@ -117,13 +128,16 @@ class E2ETest : FirebaseEmulatorsTest(false) {
   // ----------- Scenario: Farmer -----------
   @Test
   fun testFarmer_SignIn_ClickReport_Back_Logout() {
-    composeRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
     completeSignIn(user1.email, "12345678")
     checkOverviewScreenIsDisplayed()
     clickFirstReportItem()
-    composeRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsDisplayed().performClick()
+    composeTestRule
+        .onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
     checkOverviewScreenIsDisplayed()
     signOutFromOverview()
-    composeRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
   }
 }
