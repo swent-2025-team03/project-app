@@ -15,7 +15,16 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
   }
 
   override suspend fun updateUser(user: User) {
-    val map = mapFromUser(user)
+    val result = getUserFromId(user.uid)
+    if (result.isFailure) throw result.exceptionOrNull()!!
+
+    val oldData = result.getOrNull()
+    val map = getUpdateMap(oldData!!, user) // cannot be null because result is success
+
+    val illegalKeys = setOf("role", "uid")
+    if (map.keys.intersect(illegalKeys).isNotEmpty())
+        throw IllegalArgumentException("Permission denied")
+
     db.collection(USERS_COLLECTION_PATH).document(user.uid).update(map).await()
   }
 
@@ -54,5 +63,17 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     val role = roleFromDisplayString(roleStr)
 
     return User(uid, name, surname, role, email)
+  }
+
+  private fun getUpdateMap(old: User, new: User): Map<String, String> {
+    val changes = mutableMapOf<String, String>()
+
+    if (old.uid != new.uid) changes["uid"] = new.uid
+    if (old.name != new.name) changes["name"] = new.name
+    if (old.surname != new.surname) changes["surname"] = new.surname
+    if (old.role != new.role) changes["role"] = new.role.displayString()
+    if (old.email != new.email) changes["email"] = new.email
+
+    return changes
   }
 }
