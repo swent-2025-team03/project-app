@@ -2,16 +2,15 @@ package com.android.agrihealth.model.authentification
 
 import com.android.agrihealth.data.model.authentification.User
 import com.android.agrihealth.data.model.authentification.UserRole
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
-import com.google.firebase.auth.FirebaseAuth
-import org.junit.Assert.*
-import com.google.firebase.firestore.FirebaseFirestoreException
 
 class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
   val auth = FirebaseAuth.getInstance()
-
 
   @Before
   override fun setUp() {
@@ -29,7 +28,9 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
     val exception = result.exceptionOrNull()
     assertNotNull(exception)
     assertTrue(exception is FirebaseFirestoreException)
-    assertEquals((exception as FirebaseFirestoreException).code, FirebaseFirestoreException.Code.PERMISSION_DENIED)
+    assertEquals(
+        (exception as FirebaseFirestoreException).code,
+        FirebaseFirestoreException.Code.PERMISSION_DENIED)
   }
 
   @Test
@@ -66,7 +67,8 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
   @Test
   fun canUpdateName() = runTest {
     createAccount(user1, password1)
-    userRepository.updateUser(user1.copy(name = "new", surname = "name", email = "newemail@thing.com"))
+    userRepository.updateUser(
+        user1.copy(name = "new", surname = "name", email = "newemail@thing.com"))
   }
 
   @Test

@@ -19,10 +19,11 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     if (result.isFailure) throw result.exceptionOrNull()!!
 
     val oldData = result.getOrNull()
-    val map = getUpdateMap(oldData!!, user) //cannot be null because result is success
+    val map = getUpdateMap(oldData!!, user) // cannot be null because result is success
 
     val illegalKeys = setOf("role", "uid")
-    if (map.keys.intersect(illegalKeys).isNotEmpty()) throw IllegalArgumentException("Permission denied")
+    if (map.keys.intersect(illegalKeys).isNotEmpty())
+        throw IllegalArgumentException("Permission denied")
 
     db.collection(USERS_COLLECTION_PATH).document(user.uid).update(map).await()
   }

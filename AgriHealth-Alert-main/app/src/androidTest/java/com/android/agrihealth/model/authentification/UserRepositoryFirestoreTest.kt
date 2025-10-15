@@ -13,9 +13,7 @@ class UserRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   @Before
   override fun setUp() {
     super.setUp()
-    runTest {
-      authRepository.signUpWithEmailAndPassword(user1.email, password1, user1)
-    }
+    runTest { authRepository.signUpWithEmailAndPassword(user1.email, password1, user1) }
   }
 
   @Test
