@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
     try {
         Firebase.firestore.useEmulator(url, firestorePort)
         Firebase.auth.useEmulator(url, authPort)
-    } catch (e: IllegalStateException) {}
+    } catch (_: IllegalStateException) {}
 
     setContent {
       SampleAppTheme {
