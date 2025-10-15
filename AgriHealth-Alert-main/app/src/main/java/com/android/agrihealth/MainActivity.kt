@@ -22,12 +22,12 @@ import com.android.agrihealth.data.model.UserRole
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
-import com.android.agrihealth.ui.farmer.AddReportScreen
 import com.android.agrihealth.ui.farmer.MapScreen
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
+import com.android.agrihealth.ui.report.AddReportScreen
 import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.theme.SampleAppTheme
@@ -122,8 +122,8 @@ fun AgriHealthApp() {
       }
       composable(Screen.AddReport.route) {
         AddReportScreen(
-            onDone = { navigationActions.navigateTo(Screen.Overview) },
-            onGoBack = { navigationActions.goBack() })
+            onCreateReport = { navigationActions.navigateTo(Screen.Overview) },
+            onBack = { navigationActions.goBack() })
       }
       composable(
           route = Screen.ViewReport.route,
