@@ -1,7 +1,5 @@
 package com.android.agrihealth.ui.report
 
-// Preview imports
-// For tests
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,10 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.data.model.*
 
 /**
@@ -40,6 +36,13 @@ fun ReportViewScreen(
   LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
 
   val uiState by viewModel.uiState.collectAsState()
+
+  // --- Auto-change PENDING -> IN_PROGRESS for vets ---
+  LaunchedEffect(userRole, uiState.report?.status) {
+    if (userRole == UserRole.VET && uiState.report?.status == ReportStatus.PENDING) {
+      viewModel.onStatusChange(ReportStatus.IN_PROGRESS)
+    }
+  }
 
   val report = uiState.report
   val answerText = uiState.answerText
@@ -148,9 +151,6 @@ fun ReportViewScreen(
                         Modifier.fillMaxWidth().heightIn(min = 100.dp).testTag("AnswerField"))
               }
 
-              // TODO : implement automatic Status logic (PENDING -> IN_PROGRESS when Vet type
-              // answer)
-
               // ---- Status dropdown (Vet only) ----
               if (userRole == UserRole.VET) {
                 var expanded by remember { mutableStateOf(false) }
@@ -172,19 +172,16 @@ fun ReportViewScreen(
                           expanded = expanded,
                           onDismissRequest = { expanded = false },
                           modifier = Modifier.testTag("StatusDropdownMenu")) {
-                            listOf(
-                                    ReportStatus.PENDING,
-                                    ReportStatus.IN_PROGRESS,
-                                    ReportStatus.RESOLVED)
-                                .forEach { status ->
-                                  DropdownMenuItem(
-                                      text = { Text(status.name.replace("_", " ")) },
-                                      onClick = {
-                                        viewModel.onStatusChange(status)
-                                        expanded = false
-                                      },
-                                      modifier = Modifier.testTag("StatusOption_${status.name}"))
-                                }
+                            listOf(ReportStatus.IN_PROGRESS, ReportStatus.RESOLVED).forEach { status
+                              ->
+                              DropdownMenuItem(
+                                  text = { Text(status.name.replace("_", " ")) },
+                                  onClick = {
+                                    viewModel.onStatusChange(status)
+                                    expanded = false
+                                  },
+                                  modifier = Modifier.testTag("StatusOption_${status.name}"))
+                            }
                           }
                     }
               }
@@ -243,7 +240,7 @@ fun ReportViewScreen(
             }
       }
 }
-
+/*  If you want to use the preview, just decoment this block.
 /**
  * Preview of the ReportViewScreen for both farmer and vet roles. Allows testing of layout and
  * colors directly in Android Studio.
@@ -275,3 +272,4 @@ fun PreviewReportViewVet() {
         reportId = "RPT001")
   }
 }
+*/
