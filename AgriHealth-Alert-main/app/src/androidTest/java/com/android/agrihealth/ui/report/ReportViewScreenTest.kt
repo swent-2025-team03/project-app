@@ -136,7 +136,8 @@ class ReportViewScreenTest {
     val viewModel = ReportViewModel()
     composeTestRule.setContent {
       val navController = rememberNavController()
-      ReportViewScreen(navController = navController, userRole = UserRole.VET, viewModel = viewModel)
+      ReportViewScreen(
+          navController = navController, userRole = UserRole.VET, viewModel = viewModel)
     }
     // Wait for composition + LaunchedEffect to run
     composeTestRule.waitForIdle()
@@ -163,7 +164,8 @@ class ReportViewScreenTest {
     val viewModel = ReportViewModel()
     composeTestRule.setContent {
       val navController = rememberNavController()
-      ReportViewScreen(navController = navController, userRole = UserRole.FARMER, viewModel = viewModel)
+      ReportViewScreen(
+          navController = navController, userRole = UserRole.FARMER, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
     // Default sample report has vetId "VET_456" (from ReportViewUIState)
@@ -176,7 +178,8 @@ class ReportViewScreenTest {
     val viewModel = ReportViewModel()
     composeTestRule.setContent {
       val navController = rememberNavController()
-      ReportViewScreen(navController = navController, userRole = UserRole.VET, viewModel = viewModel)
+      ReportViewScreen(
+          navController = navController, userRole = UserRole.VET, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
     // Default sample report has farmerId "FARMER_123"
@@ -189,7 +192,8 @@ class ReportViewScreenTest {
     val viewModel = ReportViewModel()
     composeTestRule.setContent {
       val navController = rememberNavController()
-      ReportViewScreen(navController = navController, userRole = UserRole.VET, viewModel = viewModel)
+      ReportViewScreen(
+          navController = navController, userRole = UserRole.VET, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
