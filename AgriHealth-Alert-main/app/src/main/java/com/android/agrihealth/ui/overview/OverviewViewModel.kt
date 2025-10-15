@@ -79,8 +79,8 @@ class OverviewViewModel(
         val reports = reportRepository.getAllReports("FARMER_001")
         _uiState.value = OverviewUIState(reports = reports)
       } catch (e: Exception) {
-          Log.e("OverviewViewModel", "Error fetching reports", e)
-          _uiState.value = OverviewUIState(reports = emptyList())
+        Log.e("OverviewViewModel", "Error fetching reports", e)
+        _uiState.value = OverviewUIState(reports = emptyList())
       }
     }
   }
