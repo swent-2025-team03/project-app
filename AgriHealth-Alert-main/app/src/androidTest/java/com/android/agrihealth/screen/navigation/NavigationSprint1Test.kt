@@ -11,7 +11,11 @@ import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.ui.farmer.OverviewScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import junit.framework.TestCase
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -26,6 +30,16 @@ class NavigationSprint1Test {
   @Before
   fun setUp() {
     // Set the content to the Overview screen before each test
+    if (Firebase.auth.currentUser == null) {
+      runTest {
+        try {
+          Firebase.auth.createUserWithEmailAndPassword("navigation@test.ff", "123456").await()
+        } catch (e: Exception) {
+          Firebase.auth.signInWithEmailAndPassword("navigation@test.ff", "123456").await()
+        }
+      }
+    }
+    assert(Firebase.auth.currentUser != null)
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule
         .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
