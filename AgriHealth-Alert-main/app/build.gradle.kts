@@ -160,6 +160,9 @@ dependencies {
     implementation(libs.firebase.database)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
+
+    // Http networking for firebase tests
+    implementation(libs.okhttp)
 }
 
 tasks.withType<Test> {

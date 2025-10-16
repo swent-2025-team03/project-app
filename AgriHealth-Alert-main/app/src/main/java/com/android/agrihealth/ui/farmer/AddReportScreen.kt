@@ -1,11 +1,5 @@
 package com.android.agrihealth.ui.farmer
 
-import android.graphics.BitmapFactory
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,9 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.sp
-import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import kotlinx.coroutines.launch
 
@@ -52,6 +44,7 @@ object AddReportScreenTestTags {
     const val IMAGE_BUTTON = "imageButton"
     const val VET_DROPDOWN = "vetDropDown"
     const val CREATE_BUTTON = "createButton"
+    const val SCREEN = "AddReportScreen"
 }
 
 /**

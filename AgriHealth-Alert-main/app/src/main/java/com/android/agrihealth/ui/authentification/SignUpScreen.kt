@@ -23,6 +23,7 @@ import com.android.agrihealth.data.model.authentification.UserRole
 private val FieldBg = Color(0xFFF0F6F1)
 
 object SignUpScreenTestTags {
+  const val SCREEN = "SignUpScreen"
   const val BACK_BUTTON = "BackButton"
   const val TITLE = "SignUpTitle"
   const val NAME_FIELD = "NameField"
@@ -57,7 +58,11 @@ fun SignUpScreen(
             })
       }) { padding ->
         Column(
-            Modifier.background(FieldBg).fillMaxSize().padding(padding).padding(horizontal = 24.dp),
+            Modifier.background(FieldBg)
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 24.dp)
+                .testTag(SignUpScreenTestTags.SCREEN),
             horizontalAlignment = Alignment.CenterHorizontally) {
               Spacer(Modifier.height(24.dp))
               Text(
@@ -134,7 +139,7 @@ private fun RoleSelector(selected: UserRole?, onSelected: (UserRole) -> Unit) {
 }
 
 private val UnselectedColor = Color(0xFFE5E5E5)
-private val SelectedColor = Color(0xFF96B7B1) // vert
+private val SelectedColor = Color(0xFF96B7B1)
 
 @Composable
 private fun SelectablePill(
@@ -143,7 +148,7 @@ private fun SelectablePill(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-  val bg = if (selected) SelectedColor else UnselectedColor // vert / gris
+  val bg = if (selected) SelectedColor else UnselectedColor
   Surface(
       onClick = onClick,
       shape = RoundedCornerShape(24.dp),
