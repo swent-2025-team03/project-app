@@ -1,4 +1,4 @@
-package com.android.agrihealth.ui.report
+package com.android.agrihealth.ui.farmer
 
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -18,13 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,14 +34,18 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.sp
 import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
-import com.android.agrihealth.ui.farmer.AddReportViewModel
+import com.android.agrihealth.ui.navigation.NavigationTestTags
+import kotlinx.coroutines.launch
 
 
-// For the automatic tests
+/**
+ *  Tags for the various components. For testing purposes
+ */
 object AddReportScreenTestTags {
     const val TITLE_FIELD = "titleField"
     const val DESCRIPTION_FIELD = "descriptionField"
@@ -57,9 +54,30 @@ object AddReportScreenTestTags {
     const val CREATE_BUTTON = "createButton"
 }
 
+/**
+ *  Texts for the report creation feedback. For testing purposes
+ */
+object AddReportFeedbackTexts {
+    const val SUCCESS = "Report created successfully!"
+    const val FAILURE = "Please fill in all required fields..."
+}
+
+
+private val unfocusedFieldColor = Color(0xFFF0F7F1)
+private val focusedFieldColor = Color(0xFFF0F7F1)
+private val createReportButton = Color(0xFF96B7B1)
+
 
 /**
  *  Displays the report creation screen for farmers
+ *
+ *
+ * @param onBack A callback invoked when the back button in the top bar is pressed.
+ * @param onCreateReport A callback invoked when a report is successfully created.
+ * @param createReportViewModel The [AddReportViewModel] instance responsible for managing
+ * report creation logic and UI state.
+ *
+ * @see AddReportViewModel
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,20 +96,12 @@ fun AddReportScreen(
     var expanded by remember { mutableStateOf(false) }  // For menu expanded/collapsed tracking
     val selectedOption = uiState.chosenVet
 
-
-    val pickMedia = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri: Uri? ->
-        // Decode Uri to Bitmap and store in ViewModel
-        uri?.let {
-            val bitmap = context.contentResolver.openInputStream(it)?.use { input ->
-                BitmapFactory.decodeStream(input)
-            }
-            createReportViewModel.setImageBitmap(bitmap)
-        }
-    }
+    // For the confirmation snackbar (i.e alter window)
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             // Top bar with back arrow and title/status
             TopAppBar(
@@ -105,15 +115,16 @@ fun AddReportScreen(
                             text = "Create New Report",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f).testTag(NavigationTestTags.TOP_BAR_TITLE)
                         )
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { onBack }) {
+                    IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)
                         )
                     }
                 })
@@ -124,12 +135,12 @@ fun AddReportScreen(
             modifier =
                 Modifier.padding(padding)
                     .fillMaxSize()
+                    .padding(padding)
                     .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         )
         {
-            Spacer(Modifier.height(96.dp))
             Field(
                 uiState.title,
                 { createReportViewModel.setTitle(it) },
@@ -162,6 +173,7 @@ fun AddReportScreen(
                     modifier = Modifier
                         .menuAnchor() // Needed for M3 dropdown alignment
                         .fillMaxWidth()
+                        .testTag(AddReportScreenTestTags.VET_DROPDOWN)
                 )
 
                 ExposedDropdownMenu(
@@ -179,56 +191,26 @@ fun AddReportScreen(
                     }
                 }
             }
-            // Add Picture button
-            Button(
-                onClick = {
-                    pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                },
-                modifier = Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.IMAGE_BUTTON)
-            ) {
-                Text("Add Picture")
-            }
 
-            // TODO: Add this prettier version of the button
-            /*
-            Button(
-                onClick = {
-                    pickMedia.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB3D9C1))
-            ) {
-                Icon(
-                    imageVector = null,
-                    contentDescription = "Add Picture",
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text("Add Picture", fontSize = 18.sp)
-            }
-             */
-
-            // Show the bitmap if present
-            uiState.imageBitmap?.let { bitmap ->
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "Selected Image",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                )
-            }
             Spacer(Modifier.height(28.dp))
             Button(
-                onClick = { createReportViewModel.createReport() },   // TODO: Should we use "onCreateReport"?
+                onClick = {
+                    val created = createReportViewModel.createReport()
+                    scope.launch {
+                        if (created) {
+                            snackbarHostState.showSnackbar(AddReportFeedbackTexts.SUCCESS)
+                            onCreateReport()
+                        } else {
+                            snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
+                        }
+                    }
+                },
                 modifier =
                     Modifier.fillMaxWidth()
                         .height(56.dp)
-                        .testTag(SignUpScreenTestTags.SAVE_BUTTON),
+                        .testTag(AddReportScreenTestTags.CREATE_BUTTON),
                 shape = RoundedCornerShape(20.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF96B7B1))
+                colors = ButtonDefaults.buttonColors(containerColor = createReportButton)
             ) {
                 Text("Create Report", fontSize = 24.sp)
             }
@@ -236,10 +218,6 @@ fun AddReportScreen(
         }
     }
 }
-
-
-private val unfocusedFieldColor = Color(0xFFF0F7F1)
-private val focusedFieldColor = Color(0xFFF0F7F1)
 
 @Composable
 private fun Field(
@@ -255,7 +233,7 @@ private fun Field(
         placeholder = { Text(placeholder) },
         singleLine = true,
         shape = RoundedCornerShape(28.dp),
-        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(AddReportScreenTestTags.TITLE_FIELD),
+        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
         colors =
             OutlinedTextFieldDefaults.colors(
                 unfocusedContainerColor = unfocusedFieldColor,
@@ -269,8 +247,6 @@ private fun Field(
  * Preview of the ReportViewScreen for both farmer and vet roles. Allows testing of layout and
  * colors directly in Android Studio.
  */
-
-
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun AddReportScreenPreview() {
