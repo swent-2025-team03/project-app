@@ -1,7 +1,7 @@
 package com.android.agrihealth.data.model.authentification
 
 data class User(
-    val uid: String = "placeholder",
+    var uid: String = "placeholder",
     val name: String,
     val surname: String,
     val role: UserRole,

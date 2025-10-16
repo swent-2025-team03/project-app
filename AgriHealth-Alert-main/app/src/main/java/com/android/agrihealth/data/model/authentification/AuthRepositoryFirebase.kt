@@ -35,8 +35,9 @@ class AuthRepositoryFirebase(private val auth: FirebaseAuth = Firebase.auth) : A
           creationResult.user
               ?: return Result.failure(NullPointerException("Account creation failed"))
 
+      userData.uid = user.uid
       try {
-        userRepository.addUser(userData.copy(uid = user.uid, email = email))
+        userRepository.addUser(userData.copy(email = email))
       } catch (e: Exception) {
         user.delete().await()
         Result.failure<FirebaseUser>(NullPointerException("Account creation failed"))

@@ -52,6 +52,7 @@ object AddReportScreenTestTags {
     const val IMAGE_BUTTON = "imageButton"
     const val VET_DROPDOWN = "vetDropDown"
     const val CREATE_BUTTON = "createButton"
+    const val SCREEN = "AddReportScreen"
 }
 
 /**
