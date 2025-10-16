@@ -27,7 +27,7 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
-import com.android.agrihealth.ui.report.AddReportScreen
+import com.android.agrihealth.ui.farmer.AddReportScreen
 import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.theme.SampleAppTheme
