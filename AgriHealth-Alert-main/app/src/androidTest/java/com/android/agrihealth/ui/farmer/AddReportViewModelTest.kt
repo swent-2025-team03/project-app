@@ -3,9 +3,14 @@ package com.android.agrihealth.ui.farmer
 import com.android.agrihealth.data.model.Report
 import com.android.agrihealth.data.model.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -39,8 +44,14 @@ class AddReportViewModelTest {
 
   @Before
   fun setup() {
+    Dispatchers.setMain(StandardTestDispatcher())   // Necessary for scheduling coroutines
     repository = FakeReportRepository()
     viewModel = AddReportViewModel(repository)
+  }
+
+  @After
+  fun tearDown() {
+    Dispatchers.resetMain()
   }
 
   @Test
@@ -83,6 +94,7 @@ class AddReportViewModelTest {
         viewModel.setDescription("A description")
         viewModel.setVet(AddReportConstants.vetOptions[0])
         val result = viewModel.createReport()
+        advanceUntilIdle()     // To avoid errors of synchronization which would make this test non-deterministic
         assertTrue(result)
         // Fields are cleared
         val state = viewModel.uiState.value
