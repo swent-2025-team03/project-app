@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.navigation.Screen
 import kotlinx.coroutines.launch
 
 /** Tags for the various components. For testing purposes */
@@ -97,14 +98,16 @@ fun AddReportScreen(
                   horizontalArrangement = Arrangement.SpaceBetween,
                   verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Create New Report",
+                        text = Screen.AddReport.name,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f).testTag(NavigationTestTags.TOP_BAR_TITLE))
                   }
             },
             navigationIcon = {
-              IconButton(onClick = onBack) {
+              IconButton(
+                onClick = onBack,
+                modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
