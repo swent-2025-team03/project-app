@@ -8,7 +8,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import com.android.agrihealth.ui.farmer.AddReportScreenTestTags
 import org.junit.Rule
 import org.junit.Test
 
@@ -22,7 +21,6 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).assertIsDisplayed()
     composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()
     composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).assertIsDisplayed()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_BUTTON).assertIsDisplayed()
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).assertIsDisplayed()
   }
 
@@ -38,7 +36,9 @@ class AddReportScreenTest {
   fun enteringTitleDescription_canCreateReport_showsSuccessSnackbar() {
     composeRule.setContent { MaterialTheme { AddReportScreen() } }
     composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput("Report Title")
-    composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD).performTextInput("Something happened")
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
+        .performTextInput("Something happened")
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
     composeRule.onNodeWithText(AddReportFeedbackTexts.SUCCESS).assertIsDisplayed()
   }

@@ -3,7 +3,6 @@ package com.android.agrihealth.ui.farmer
 import com.android.agrihealth.data.model.Report
 import com.android.agrihealth.data.model.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -11,16 +10,24 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 
+/** Tests created with generative AI */
 class FakeReportRepository : ReportRepository {
-  var addedReport: Report? = null
+  var storedReport: Report? = null
 
   override fun getNewReportId(): String = "fake-id"
 
   override suspend fun getAllReports(userId: String): List<Report> = emptyList()
+
   override suspend fun getReportsByFarmer(farmerId: String): List<Report> = emptyList()
+
   override suspend fun getReportById(reportId: String): Report? = null
-  override suspend fun addReport(report: Report) { addedReport = report }
+
+  override suspend fun addReport(report: Report) {
+    storedReport = report
+  }
+
   override suspend fun editReport(reportId: String, newReport: Report) {}
+
   override suspend fun deleteReport(reportId: String) {}
 }
 
@@ -70,26 +77,26 @@ class AddReportViewModelTest {
   }
 
   @Test
-  fun createReport_withTitleAndDescription_returnsTrue_and_ClearsFields_andSaves() = runTest(StandardTestDispatcher()) {
-    viewModel.setTitle("Report")
-    viewModel.setDescription("A description")
-    viewModel.setVet("Vet123")
-    val result = viewModel.createReport()
-    assertTrue(result)
-    // Fields are cleared
-    val state = viewModel.uiState.value
-    assertEquals("", state.title)
-    assertEquals("", state.description)
-    assertEquals("", state.chosenVet)
-    // Report is saved
-    assertNotNull(repository.addedReport)
-    repository.addedReport!!.apply {
-      assertEquals("Report", title)
-      assertEquals("A description", description)
-      assertEquals("Vet123", vetId)
-      assertEquals(ReportStatus.PENDING, status)
-    }
-  }
+  fun createReport_reportIsAddedToRepository() =
+      runTest(StandardTestDispatcher()) {
+        viewModel.setTitle("Report")
+        viewModel.setDescription("A description")
+        viewModel.setVet(AddReportConstants.vetOptions[0])
+        val result = viewModel.createReport()
+        assertTrue(result)
+        // Fields are cleared
+        val state = viewModel.uiState.value
+        assertEquals("", state.title)
+        assertEquals("", state.description)
+        assertEquals("", state.chosenVet)
+        // Report is saved
+        assertNotNull(repository.storedReport)
+        val addedReport = repository.storedReport!!
+        assertEquals("Report", addedReport.title)
+        assertEquals("A description", addedReport.description)
+        assertEquals(AddReportConstants.vetOptions[0], addedReport.vetId)
+        assertEquals(ReportStatus.PENDING, addedReport.status)
+      }
 
   @Test
   fun clearInputs_resetsAllFields() {
