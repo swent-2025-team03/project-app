@@ -95,7 +95,7 @@ class AddReportViewModelTest {
         viewModel.setVet(AddReportConstants.vetOptions[0])
         val result = viewModel.createReport()
         advanceUntilIdle() // To avoid errors of synchronization which would make this test
-                           // non-deterministic
+        // non-deterministic
         assertTrue(result)
         // Fields are cleared
         val state = viewModel.uiState.value
