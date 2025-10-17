@@ -106,13 +106,13 @@ fun AddReportScreen(
             },
             navigationIcon = {
               IconButton(
-                onClick = onBack,
-                modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON))
-              }
+                  onClick = onBack,
+                  modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON))
+                  }
             })
       }) { padding ->
 

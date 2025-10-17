@@ -44,7 +44,7 @@ class AddReportViewModelTest {
 
   @Before
   fun setup() {
-    Dispatchers.setMain(StandardTestDispatcher())   // Necessary for scheduling coroutines
+    Dispatchers.setMain(StandardTestDispatcher()) // Necessary for scheduling coroutines
     repository = FakeReportRepository()
     viewModel = AddReportViewModel(repository)
   }
@@ -94,7 +94,8 @@ class AddReportViewModelTest {
         viewModel.setDescription("A description")
         viewModel.setVet(AddReportConstants.vetOptions[0])
         val result = viewModel.createReport()
-        advanceUntilIdle()     // To avoid errors of synchronization which would make this test non-deterministic
+        advanceUntilIdle() // To avoid errors of synchronization which would make this test
+                           // non-deterministic
         assertTrue(result)
         // Fields are cleared
         val state = viewModel.uiState.value
