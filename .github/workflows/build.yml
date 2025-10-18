@@ -117,6 +117,8 @@ jobs:
         with:
           projectBaseDir: AgriHealth-Alert-main
           args: >
+            -Dsonar.sources=app/src/main/java
+            -Dsonar.tests=app/src/test/java,app/src/androidTest/java
             -Dsonar.coverage.jacoco.xmlReportPaths=app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
