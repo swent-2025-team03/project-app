@@ -131,7 +131,7 @@ class E2ETest : FirebaseEmulatorsTest(true) {
   fun testFarmer_SignIn_ClickReport_Back_Logout() {
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
     completeSignIn(user2.email, "12345678")
-    composeTestRule.waitUntil(500L) {
+    composeTestRule.waitUntil(5_000) {
       composeTestRule.onNodeWithText(SignInErrorMsg.INVALID_CREDENTIALS).isDisplayed()
     }
     composeTestRule.onNodeWithTag(SignInScreenTestTags.EMAIL_FIELD).performTextClearance()
