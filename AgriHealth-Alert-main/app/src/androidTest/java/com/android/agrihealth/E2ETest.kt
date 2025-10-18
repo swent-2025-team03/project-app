@@ -5,6 +5,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.agrihealth.model.authentification.FirebaseEmulatorsTest
+import com.android.agrihealth.ui.authentification.SignInErrorMsg
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -25,10 +26,9 @@ class E2ETest : FirebaseEmulatorsTest(true) {
   @Before
   override fun setUp() {
     super.setUp()
-    runTest {
-      authRepository.signUpWithEmailAndPassword(user1.email, "12345678", user1)
-      authRepository.signOut()
-    }
+    runTest { authRepository.signUpWithEmailAndPassword(user1.email, "12345678", user1) }
+    authRepository.signOut()
+
     composeTestRule.setContent { AgriHealthApp() }
   }
 
@@ -129,6 +129,12 @@ class E2ETest : FirebaseEmulatorsTest(true) {
   @Test
   fun testFarmer_SignIn_ClickReport_Back_Logout() {
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
+    completeSignIn(user2.email, "12345678")
+    composeTestRule.waitUntil(5_000) {
+      composeTestRule.onNodeWithText(SignInErrorMsg.INVALID_CREDENTIALS).isDisplayed()
+    }
+    composeTestRule.onNodeWithTag(SignInScreenTestTags.EMAIL_FIELD).performTextClearance()
+    composeTestRule.onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD).performTextClearance()
     completeSignIn(user1.email, "12345678")
     checkOverviewScreenIsDisplayed()
     clickFirstReportItem()
