@@ -36,7 +36,7 @@ open class FirebaseEmulatorsTest(shouldInitializeEmulators: Boolean = true) {
   val user1 = User("abc123", "Rushia", "Uruha", UserRole.FARMER, "email1@thing.com")
   val user2 = User("def456", "mike", "neko", UserRole.FARMER, "email2@aaaaa.balls")
   val user3 = User("ghi789", "Nazuna", "Amemiya", UserRole.VETERINARIAN, "email3@kms.josh")
-  val user4 = User("jklABC", "John", "Fake", UserRole.FARMER, "fake@user.glorp")
+  val user4 = User("jklABC", "John", "Fake", UserRole.FARMER, "fakeUser.glorp")
 
   val password1 = "Password123"
   val password2 = "iamaweakpassword"

@@ -5,7 +5,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withTimeout
 
 class AuthRepositoryFirebase(private val auth: FirebaseAuth = Firebase.auth) : AuthRepository {
 
@@ -14,8 +13,7 @@ class AuthRepositoryFirebase(private val auth: FirebaseAuth = Firebase.auth) : A
       password: String
   ): Result<FirebaseUser> {
     return try {
-      val loginResult =
-          withTimeout(3000L) { auth.signInWithEmailAndPassword(email, password).await() }
+      val loginResult = auth.signInWithEmailAndPassword(email, password).await()
       val user = loginResult.user ?: return Result.failure(NullPointerException("Log in failed"))
 
       Result.success(user)

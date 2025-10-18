@@ -9,7 +9,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -47,8 +46,6 @@ fun SignInScreen(
   val signInUIState by signInViewModel.uiState.collectAsState()
   val snackbarHostState = remember { SnackbarHostState() }
   val errorMsg = signInUIState.errorMsg
-
-  val context = LocalContext.current
 
   LaunchedEffect(errorMsg) {
     if (errorMsg != null) {

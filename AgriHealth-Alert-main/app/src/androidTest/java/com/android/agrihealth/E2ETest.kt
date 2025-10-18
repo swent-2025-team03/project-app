@@ -26,10 +26,9 @@ class E2ETest : FirebaseEmulatorsTest(true) {
   @Before
   override fun setUp() {
     super.setUp()
-    runTest {
-      authRepository.signUpWithEmailAndPassword(user1.email, "12345678", user1)
-      authRepository.signOut()
-    }
+    runTest { authRepository.signUpWithEmailAndPassword(user1.email, "12345678", user1) }
+    authRepository.signOut()
+
     composeTestRule.setContent { AgriHealthApp() }
   }
 
