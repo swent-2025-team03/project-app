@@ -221,6 +221,6 @@ private fun Field(
  */
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
-private fun AddReportScreenPreview() {
+fun AddReportScreenPreview() {
   MaterialTheme { AddReportScreen() }
 }

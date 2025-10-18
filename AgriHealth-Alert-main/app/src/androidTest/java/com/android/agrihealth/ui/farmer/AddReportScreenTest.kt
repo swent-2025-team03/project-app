@@ -42,4 +42,24 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
     composeRule.onNodeWithText(AddReportFeedbackTexts.SUCCESS).assertIsDisplayed()
   }
+
+  @Test
+  fun selectingVet_updatesDisplayedOption() {
+    composeRule.setContent { MaterialTheme { AddReportScreen() } }
+    composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).performClick()
+    val firstVet = AddReportConstants.vetOptions[0]
+    composeRule.onNodeWithText(firstVet).assertIsDisplayed().performClick()
+    composeRule.onNodeWithText(firstVet).assertIsDisplayed()
+  }
+
+  @Test
+  fun previewComposable_rendersWithoutCrash() {
+    composeRule.setContent { AddReportScreenPreview() }
+
+    // Verify that essential UI components render (sample check)
+    composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).assertIsDisplayed()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).assertIsDisplayed()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).assertIsDisplayed()
+  }
 }
