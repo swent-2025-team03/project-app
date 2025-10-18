@@ -8,9 +8,9 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import com.android.agrihealth.AgriHealthApp
-import com.android.agrihealth.ui.farmer.OverviewScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import junit.framework.TestCase

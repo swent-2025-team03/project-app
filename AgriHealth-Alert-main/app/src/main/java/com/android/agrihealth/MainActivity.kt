@@ -127,8 +127,8 @@ fun AgriHealthApp() {
       }
       composable(Screen.AddReport.route) {
         AddReportScreen(
-            onDone = { navigationActions.navigateTo(Screen.Overview) },
-            onGoBack = { navigationActions.goBack() })
+            onCreateReport = { navigationActions.navigateTo(Screen.Overview) },
+            onBack = { navigationActions.goBack() })
       }
       composable(
           route = Screen.ViewReport.route,
