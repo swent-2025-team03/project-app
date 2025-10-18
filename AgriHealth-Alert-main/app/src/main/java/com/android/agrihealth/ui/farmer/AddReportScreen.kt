@@ -24,7 +24,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,7 +56,7 @@ object AddReportConstants {
 
 private val unfocusedFieldColor = Color(0xFFF0F7F1)
 private val focusedFieldColor = Color(0xFFF0F7F1)
-private val createReportButton = Color(0xFF96B7B1)
+private val createReportButtonColor = Color(0xFF96B7B1)
 
 /**
  * Displays the report creation screen for farmers
@@ -77,7 +76,6 @@ fun AddReportScreen(
 ) {
 
   val uiState by createReportViewModel.uiState.collectAsState()
-  val context = LocalContext.current
 
   // For the dropdown menu
   var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
@@ -121,7 +119,6 @@ fun AddReportScreen(
             modifier =
                 Modifier.padding(padding)
                     .fillMaxSize()
-                    .padding(padding)
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -184,7 +181,7 @@ fun AddReportScreen(
                           .height(56.dp)
                           .testTag(AddReportScreenTestTags.CREATE_BUTTON),
                   shape = RoundedCornerShape(20.dp),
-                  colors = ButtonDefaults.buttonColors(containerColor = createReportButton)) {
+                  colors = ButtonDefaults.buttonColors(containerColor = createReportButtonColor)) {
                     Text("Create Report", fontSize = 24.sp)
                   }
               Spacer(Modifier.height(24.dp))
