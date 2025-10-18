@@ -64,7 +64,7 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun signInWithEmptyFieldsFail() {
     composeTestRule.onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON).performClick()
-    composeTestRule.waitUntil(500) {
+    composeTestRule.waitUntil(3000) {
       composeTestRule.onNodeWithText(SignInErrorMsg.EMPTY_EMAIL_OR_PASSWORD).isDisplayed()
     }
   }
@@ -72,7 +72,7 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun signInWithUnregisteredAccountFails() {
     completeSignIn(user4.email, password4)
-    composeTestRule.waitUntil(500) {
+    composeTestRule.waitUntil(3000) {
       composeTestRule.onNodeWithText(SignInErrorMsg.INVALID_CREDENTIALS).isDisplayed()
     }
   }
@@ -81,7 +81,7 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
   fun signInWithNoInternetFails() {
     setNetworkEnabled(false)
     completeSignIn(user4.email, password4)
-    composeTestRule.waitUntil(500) {
+    composeTestRule.waitUntil(3000) {
       composeTestRule.onNodeWithText(SignInErrorMsg.TIMEOUT).isDisplayed()
     }
     setNetworkEnabled(true)

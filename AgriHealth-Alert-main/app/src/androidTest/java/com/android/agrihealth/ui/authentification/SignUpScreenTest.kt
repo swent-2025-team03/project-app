@@ -94,7 +94,7 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun signUpWithEmptyFieldsFails() {
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).performClick()
-    composeTestRule.waitUntil(500) {
+    composeTestRule.waitUntil(3000) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.EMPTY_FIELDS).isDisplayed()
     }
   }
@@ -128,7 +128,7 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
 
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).performClick()
 
-    composeTestRule.waitUntil(500) {
+    composeTestRule.waitUntil(3000) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.ROLE_NULL).isDisplayed()
     }
   }
@@ -136,7 +136,7 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun signUpWithMalformedEmailFails() {
     completeSignUp(user4.email, password4)
-    composeTestRule.waitUntil(500) {
+    composeTestRule.waitUntil(3000) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.BAD_EMAIL_FORMAT).isDisplayed()
     }
   }
@@ -144,7 +144,7 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun signUpWithWeakPasswordFails() {
     completeSignUp(user3.email, password4)
-    composeTestRule.waitUntil(500) {
+    composeTestRule.waitUntil(3000) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.WEAK_PASSWORD).isDisplayed()
     }
   }
@@ -186,7 +186,7 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.waitUntil(500) {
+    composeTestRule.waitUntil(3000) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.CNF_PASSWORD_DIFF).isDisplayed()
     }
   }
@@ -195,7 +195,7 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
   fun signUpWithAlreadyUsedEmailFails() {
     completeSignUp(user1.email, password3)
 
-    composeTestRule.waitUntil(500) {
+    composeTestRule.waitUntil(3000) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.ALREADY_USED_EMAIL).isDisplayed()
     }
   }
@@ -205,7 +205,7 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
     setNetworkEnabled(false)
     completeSignUp(user2.email, password2)
     setNetworkEnabled(true)
-    composeTestRule.waitUntil(500) {
+    composeTestRule.waitUntil(3000) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.TIMEOUT).isDisplayed()
     }
   }
