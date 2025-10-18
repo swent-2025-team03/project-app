@@ -128,10 +128,10 @@ class SignUpViewModel(
         setErrorMsg(SignUpErrorMsg.EMPTY_FIELDS)
       } else if (_uiState.value.role == null) {
         setErrorMsg(SignUpErrorMsg.ROLE_NULL)
-      } else if (_uiState.value.passwordIsWeak()) {
-        setErrorMsg(SignUpErrorMsg.WEAK_PASSWORD)
       } else if (_uiState.value.emailIsMalformed()) {
         setErrorMsg(SignUpErrorMsg.BAD_EMAIL_FORMAT)
+      } else if (_uiState.value.passwordIsWeak()) {
+        setErrorMsg(SignUpErrorMsg.WEAK_PASSWORD)
       } else if (_uiState.value.password != _uiState.value.cnfPassword) {
         setErrorMsg(SignUpErrorMsg.CNF_PASSWORD_DIFF)
       }

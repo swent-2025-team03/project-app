@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -93,7 +94,9 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun signUpWithEmptyFieldsFails() {
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).performClick()
-    composeTestRule.onNodeWithText(SignUpErrorMsg.EMPTY_FIELDS).assertIsDisplayed()
+    composeTestRule.waitUntil(500) {
+      composeTestRule.onNodeWithText(SignUpErrorMsg.EMPTY_FIELDS).isDisplayed()
+    }
   }
 
   @Test
@@ -125,19 +128,25 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
 
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).performClick()
 
-    composeTestRule.onNodeWithText(SignUpErrorMsg.ROLE_NULL).assertIsDisplayed()
+    composeTestRule.waitUntil(500) {
+      composeTestRule.onNodeWithText(SignUpErrorMsg.ROLE_NULL).isDisplayed()
+    }
   }
 
   @Test
   fun signUpWithMalformedEmailFails() {
     completeSignUp(user4.email, password4)
-    composeTestRule.onNodeWithText(SignUpErrorMsg.BAD_EMAIL_FORMAT)
+    composeTestRule.waitUntil(500) {
+      composeTestRule.onNodeWithText(SignUpErrorMsg.BAD_EMAIL_FORMAT).isDisplayed()
+    }
   }
 
   @Test
   fun signUpWithWeakPasswordFails() {
     completeSignUp(user3.email, password4)
-    composeTestRule.onNodeWithText(SignUpErrorMsg.WEAK_PASSWORD)
+    composeTestRule.waitUntil(500) {
+      composeTestRule.onNodeWithText(SignUpErrorMsg.WEAK_PASSWORD).isDisplayed()
+    }
   }
 
   @Test
@@ -177,14 +186,18 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.onNodeWithText(SignUpErrorMsg.CNF_PASSWORD_DIFF).assertIsDisplayed()
+    composeTestRule.waitUntil(500) {
+      composeTestRule.onNodeWithText(SignUpErrorMsg.CNF_PASSWORD_DIFF).isDisplayed()
+    }
   }
 
   @Test
   fun signUpWithAlreadyUsedEmailFails() {
     completeSignUp(user1.email, password3)
 
-    composeTestRule.onNodeWithText(SignUpErrorMsg.ALREADY_USED_EMAIL).assertIsDisplayed()
+    composeTestRule.waitUntil(500) {
+      composeTestRule.onNodeWithText(SignUpErrorMsg.ALREADY_USED_EMAIL).isDisplayed()
+    }
   }
 
   @Test
@@ -192,6 +205,8 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
     setNetworkEnabled(false)
     completeSignUp(user2.email, password2)
     setNetworkEnabled(true)
-    composeTestRule.onNodeWithText(SignUpErrorMsg.TIMEOUT).assertIsDisplayed()
+    composeTestRule.waitUntil(500) {
+      composeTestRule.onNodeWithText(SignUpErrorMsg.TIMEOUT).isDisplayed()
+    }
   }
 }

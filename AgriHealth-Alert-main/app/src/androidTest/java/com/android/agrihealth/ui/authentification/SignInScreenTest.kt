@@ -9,12 +9,9 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.model.authentification.FirebaseEmulatorsTest
-import java.util.function.Predicate.not
-import org.hamcrest.Matchers.not
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -67,23 +64,26 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun signInWithEmptyFieldsFail() {
     composeTestRule.onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON).performClick()
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.SNACKBAR).isDisplayed()
-    composeTestRule.onNodeWithText(SignInErrorMsg.EMPTY_EMAIL_OR_PASSWORD).isDisplayed()
+    composeTestRule.waitUntil(500) {
+      composeTestRule.onNodeWithText(SignInErrorMsg.EMPTY_EMAIL_OR_PASSWORD).isDisplayed()
+    }
   }
 
   @Test
   fun signInWithUnregisteredAccountFails() {
     completeSignIn(user4.email, password4)
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.SNACKBAR).isDisplayed()
-    composeTestRule.onNodeWithText(SignInErrorMsg.INVALID_CREDENTIALS).isDisplayed()
+    composeTestRule.waitUntil(500) {
+      composeTestRule.onNodeWithText(SignInErrorMsg.INVALID_CREDENTIALS).isDisplayed()
+    }
   }
 
   @Test
   fun signInWithNoInternetFails() {
     setNetworkEnabled(false)
     completeSignIn(user4.email, password4)
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.SNACKBAR).isDisplayed()
-    composeTestRule.onNodeWithText(SignInErrorMsg.TIMEOUT).isDisplayed()
+    composeTestRule.waitUntil(500) {
+      composeTestRule.onNodeWithText(SignInErrorMsg.TIMEOUT).isDisplayed()
+    }
     setNetworkEnabled(true)
   }
 }
