@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -31,6 +32,7 @@ object SignInScreenTestTags {
   const val PASSWORD_FIELD = "passwordField"
   const val FORGOT_PASSWORD = "forgotPassword"
   const val LOGIN_DIVIDER = "loginDivider"
+  const val SNACKBAR = "snackbar"
 }
 
 @Composable
@@ -43,6 +45,17 @@ fun SignInScreen(
 ) {
 
   val signInUIState by signInViewModel.uiState.collectAsState()
+  val snackbarHostState = remember { SnackbarHostState() }
+  val errorMsg = signInUIState.errorMsg
+
+  val context = LocalContext.current
+
+  LaunchedEffect(errorMsg) {
+    if (errorMsg != null) {
+      snackbarHostState.showSnackbar(errorMsg)
+      signInViewModel.clearErrorMsg()
+    }
+  }
 
   LaunchedEffect(signInUIState.user) { signInUIState.user?.let { onSignedIn() } }
 
@@ -69,6 +82,7 @@ fun SignInScreen(
                   placeholder = { Text("Email") },
                   singleLine = true,
                   shape = RoundedCornerShape(28.dp),
+                  isError = signInUIState.emailIsInvalid && signInUIState.email.isEmpty(),
                   colors =
                       TextFieldDefaults.colors(
                           focusedContainerColor = FieldBg,
@@ -90,6 +104,7 @@ fun SignInScreen(
                   singleLine = true,
                   visualTransformation = PasswordVisualTransformation(),
                   shape = RoundedCornerShape(28.dp),
+                  isError = signInUIState.passwordIsInvalid && signInUIState.password.isEmpty(),
                   colors =
                       TextFieldDefaults.colors(
                           focusedContainerColor = FieldBg,
@@ -150,6 +165,12 @@ fun SignInScreen(
                     Text("Create an account", color = Color.Black)
                   }
             }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier =
+                Modifier.align(Alignment.BottomCenter)
+                    .padding(bottom = 16.dp)
+                    .testTag(SignInScreenTestTags.SNACKBAR))
       }
 }
 
