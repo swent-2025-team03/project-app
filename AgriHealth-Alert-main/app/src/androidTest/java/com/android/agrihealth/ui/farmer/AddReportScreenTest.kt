@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 
@@ -33,17 +34,6 @@ class AddReportScreenTest {
   }
 
   @Test
-  fun enteringTitleDescription_canCreateReport_showsSuccessSnackbar() {
-    composeRule.setContent { MaterialTheme { AddReportScreen() } }
-    composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput("Report Title")
-    composeRule
-        .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
-        .performTextInput("Something happened")
-    composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
-    composeRule.onNodeWithText(AddReportFeedbackTexts.SUCCESS).assertIsDisplayed()
-  }
-
-  @Test
   fun selectingVet_updatesDisplayedOption() {
     composeRule.setContent { MaterialTheme { AddReportScreen() } }
     composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).performClick()
@@ -61,5 +51,49 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()
     composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).assertIsDisplayed()
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).assertIsDisplayed()
+  }
+
+  @Test
+  fun enteringTitleDescription_showsSuccessDialog() {
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen()
+      }
+    }
+
+    // Fill in valid fields
+    composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD)
+      .performTextInput("Title")
+    composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
+      .performTextInput("Description")
+
+    // Click create
+    composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
+
+    // Check that dialog appears
+    composeRule.onNodeWithText(AddReportFeedbackTexts.SUCCESS).assertIsDisplayed()
+    composeRule.onNodeWithText("OK").assertIsDisplayed()
+  }
+
+  @Test
+  fun dismissingDialog_callsOnCreateReport() {
+    var called = false
+
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(onCreateReport = { called = true })
+      }
+    }
+
+    composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD)
+      .performTextInput("Valid Title")
+    composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
+      .performTextInput("Some description")
+    composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
+
+    composeRule.onNodeWithText("OK").assertIsDisplayed()
+    composeRule.onNodeWithText("OK").performClick()
+
+    assertTrue(called)
   }
 }
