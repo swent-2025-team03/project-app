@@ -1,7 +1,6 @@
 package com.android.agrihealth.ui.farmer
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.Report
 import com.android.agrihealth.data.model.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
@@ -58,9 +57,7 @@ class AddReportViewModel(
             location = null // optional until implemented
             )
 
-    withContext(Dispatchers.IO) {
-      reportRepository.addReport(newReport)
-    }
+    withContext(Dispatchers.IO) { reportRepository.addReport(newReport) }
 
     // Clears all the fields
     clearInputs() // TODO: Call only if addReport succeeds
