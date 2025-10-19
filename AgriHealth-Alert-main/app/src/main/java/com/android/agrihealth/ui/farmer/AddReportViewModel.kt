@@ -48,7 +48,10 @@ class AddReportViewModel(
             description = uiState.description,
             photoUri = null, // currently unused
             farmerId = "currentUserId", //
-            vetId = uiState.chosenVet.takeIf { it.isNotBlank() },    // TODO: Use the real vetID when implemented
+            vetId =
+                uiState.chosenVet.takeIf {
+                  it.isNotBlank()
+                }, // TODO: Use the real vetID when implemented
             status = ReportStatus.PENDING,
             answer = null,
             location = null // optional until implemented
@@ -57,7 +60,7 @@ class AddReportViewModel(
     viewModelScope.launch { reportRepository.addReport(newReport) }
 
     // Clears all the fields
-    clearInputs()   // TODO: Call only if addReport succeeds
+    clearInputs() // TODO: Call only if addReport succeeds
 
     return true
   }

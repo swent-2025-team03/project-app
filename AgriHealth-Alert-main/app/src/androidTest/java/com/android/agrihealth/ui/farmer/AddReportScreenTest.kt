@@ -55,17 +55,13 @@ class AddReportScreenTest {
 
   @Test
   fun enteringTitleDescription_showsSuccessDialog() {
-    composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen()
-      }
-    }
+    composeRule.setContent { MaterialTheme { AddReportScreen() } }
 
     // Fill in valid fields
-    composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD)
-      .performTextInput("Title")
-    composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
-      .performTextInput("Description")
+    composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput("Title")
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
+        .performTextInput("Description")
 
     // Click create
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
@@ -79,16 +75,12 @@ class AddReportScreenTest {
   fun dismissingDialog_callsOnCreateReport() {
     var called = false
 
-    composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen(onCreateReport = { called = true })
-      }
-    }
+    composeRule.setContent { MaterialTheme { AddReportScreen(onCreateReport = { called = true }) } }
 
-    composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD)
-      .performTextInput("Valid Title")
-    composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
-      .performTextInput("Some description")
+    composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput("Valid Title")
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
+        .performTextInput("Some description")
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
 
     composeRule.onNodeWithText("OK").assertIsDisplayed()
