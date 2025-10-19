@@ -16,7 +16,6 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 
-
 /** Tests created with generative AI */
 class FakeReportRepository : ReportRepository {
   var storedReport: Report? = null
