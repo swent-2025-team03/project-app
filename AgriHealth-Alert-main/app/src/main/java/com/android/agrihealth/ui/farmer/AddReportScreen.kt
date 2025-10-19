@@ -85,6 +85,9 @@ fun AddReportScreen(
   val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
 
+  // For the dialog when adding a report is successful
+  var showSuccessDialog by remember { mutableStateOf(false) }
+
   Scaffold(
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       topBar = {
@@ -161,26 +164,48 @@ fun AddReportScreen(
                   }
 
               Spacer(Modifier.height(28.dp))
-              Button(
-                  onClick = {
-                    val created = createReportViewModel.createReport()
-                    scope.launch {
-                      if (created) {
-                        onCreateReport()
-                      } else {
-                        snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
-                      }
-                    }
-                  },
-                  modifier =
-                      Modifier.fillMaxWidth()
-                          .height(56.dp)
-                          .testTag(AddReportScreenTestTags.CREATE_BUTTON),
-                  shape = RoundedCornerShape(20.dp),
-                  colors = ButtonDefaults.buttonColors(containerColor = createReportButtonColor)) {
-                    Text("Create Report", fontSize = 24.sp)
+
+            Button(
+              onClick = {
+                val created = createReportViewModel.createReport()
+                scope.launch {
+                  if (created) {
+                    showSuccessDialog = true
+                  } else {
+                    snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
                   }
+                }
+              },
+              modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .testTag(AddReportScreenTestTags.CREATE_BUTTON),
+              shape = RoundedCornerShape(20.dp),
+              colors = ButtonDefaults.buttonColors(containerColor = createReportButtonColor)
+            ) {
+              Text("Create Report", fontSize = 24.sp)
+            }
               Spacer(Modifier.height(24.dp))
+            }
+
+            // If adding the report was successful
+            if (showSuccessDialog) {
+              AlertDialog(
+                onDismissRequest = {
+                  showSuccessDialog = false
+                  onCreateReport()
+                },
+                confirmButton = {
+                  TextButton(
+                    onClick = {
+                      showSuccessDialog = false
+                      onCreateReport()
+                    }
+                  ) { Text("OK") }
+                },
+                title = { Text("Success!") },
+                text = { Text(AddReportFeedbackTexts.SUCCESS) }
+              )
             }
       }
 }
