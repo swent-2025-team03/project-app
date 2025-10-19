@@ -38,7 +38,6 @@ import kotlinx.coroutines.launch
 object AddReportScreenTestTags {
   const val TITLE_FIELD = "titleField"
   const val DESCRIPTION_FIELD = "descriptionField"
-  const val IMAGE_BUTTON = "imageButton"
   const val VET_DROPDOWN = "vetDropDown"
   const val CREATE_BUTTON = "createButton"
 }
@@ -54,6 +53,7 @@ object AddReportConstants {
   val vetOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")
 }
 
+// TODO: Replace these with the theme colors (in a global theme file or similar)
 private val unfocusedFieldColor = Color(0xFFF0F7F1)
 private val focusedFieldColor = Color(0xFFF0F7F1)
 private val createReportButtonColor = Color(0xFF96B7B1)
@@ -108,8 +108,7 @@ fun AddReportScreen(
                   modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON))
+                        contentDescription = "Back")
                   }
             })
       }) { padding ->
@@ -126,13 +125,11 @@ fun AddReportScreen(
                   uiState.title,
                   { createReportViewModel.setTitle(it) },
                   "Title",
-                  Modifier,
                   AddReportScreenTestTags.TITLE_FIELD)
               Field(
-                  value = uiState.description,
+                  uiState.description,
                   { createReportViewModel.setDescription(it) },
                   "Description",
-                  Modifier,
                   AddReportScreenTestTags.DESCRIPTION_FIELD)
 
               ExposedDropdownMenuBox(
@@ -169,7 +166,6 @@ fun AddReportScreen(
                     val created = createReportViewModel.createReport()
                     scope.launch {
                       if (created) {
-                        snackbarHostState.showSnackbar(AddReportFeedbackTexts.SUCCESS)
                         onCreateReport()
                       } else {
                         snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
@@ -194,7 +190,6 @@ private fun Field(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
-    modifier: Modifier = Modifier,
     testTag: String
 ) {
   OutlinedTextField(
@@ -203,7 +198,7 @@ private fun Field(
       placeholder = { Text(placeholder) },
       singleLine = true,
       shape = RoundedCornerShape(28.dp),
-      modifier = modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
+      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
       colors =
           OutlinedTextFieldDefaults.colors(
               unfocusedContainerColor = unfocusedFieldColor,
