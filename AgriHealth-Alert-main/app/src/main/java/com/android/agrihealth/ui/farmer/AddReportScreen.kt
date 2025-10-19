@@ -3,7 +3,6 @@ package com.android.agrihealth.ui.farmer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -122,7 +121,7 @@ fun AddReportScreen(
                 Modifier.padding(padding)
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp),
+                    .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
               Field(
                   uiState.title,
@@ -163,8 +162,6 @@ fun AddReportScreen(
                         }
                   }
 
-              Spacer(Modifier.height(28.dp))
-
               Button(
                   onClick = {
                     val created = createReportViewModel.createReport()
@@ -184,7 +181,6 @@ fun AddReportScreen(
                   colors = ButtonDefaults.buttonColors(containerColor = createReportButtonColor)) {
                     Text("Create Report", fontSize = 24.sp)
                   }
-              Spacer(Modifier.height(24.dp))
             }
 
         // If adding the report was successful
