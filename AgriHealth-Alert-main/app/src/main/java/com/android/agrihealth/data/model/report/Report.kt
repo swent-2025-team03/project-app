@@ -1,4 +1,6 @@
-package com.android.agrihealth.data.model
+package com.android.agrihealth.data.model.report
+
+import com.android.agrihealth.data.model.location.Location
 
 enum class ReportStatus {
   PENDING,
@@ -6,14 +8,6 @@ enum class ReportStatus {
   RESOLVED,
   ESCALATED
 }
-
-enum class UserRole {
-  FARMER,
-  VET,
-  AUTHORITY
-}
-
-data class Location(val latitude: Double, val longitude: Double, val name: String? = null)
 
 data class Report(
     val id: String,
