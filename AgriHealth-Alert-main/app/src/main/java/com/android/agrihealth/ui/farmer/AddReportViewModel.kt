@@ -6,10 +6,11 @@ import com.android.agrihealth.data.model.Report
 import com.android.agrihealth.data.model.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class AddReportUiState(
     val title: String = "",
@@ -35,7 +36,7 @@ class AddReportViewModel(
     _uiState.value = _uiState.value.copy(chosenVet = option)
   }
 
-  fun createReport(): Boolean {
+  suspend fun createReport(): Boolean {
     val uiState = _uiState.value
     if (uiState.title.isBlank() || uiState.description.isBlank()) {
       return false
@@ -57,7 +58,9 @@ class AddReportViewModel(
             location = null // optional until implemented
             )
 
-    viewModelScope.launch { reportRepository.addReport(newReport) }
+    withContext(Dispatchers.IO) {
+      reportRepository.addReport(newReport)
+    }
 
     // Clears all the fields
     clearInputs() // TODO: Call only if addReport succeeds

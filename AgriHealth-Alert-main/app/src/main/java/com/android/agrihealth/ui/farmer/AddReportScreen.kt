@@ -164,8 +164,8 @@ fun AddReportScreen(
 
               Button(
                   onClick = {
-                    val created = createReportViewModel.createReport()
                     scope.launch {
+                      val created = createReportViewModel.createReport()
                       if (created) {
                         showSuccessDialog = true
                       } else {
