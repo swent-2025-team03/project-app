@@ -12,6 +12,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.model.authentification.FirebaseEmulatorsTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -84,6 +85,10 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
     composeTestRule.waitUntil(3000) {
       composeTestRule.onNodeWithText(SignInErrorMsg.TIMEOUT).isDisplayed()
     }
+  }
+
+  @After
+  fun turnOnInternet() {
     setNetworkEnabled(true)
   }
 }

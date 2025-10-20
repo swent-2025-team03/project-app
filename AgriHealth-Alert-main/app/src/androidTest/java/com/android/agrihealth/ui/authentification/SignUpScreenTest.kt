@@ -13,6 +13,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.model.authentification.FirebaseEmulatorsTest
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -150,7 +151,7 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun signUpWithMissMatchedPasswordsFails() {
+  fun signUpWithMismatchedPasswordsFails() {
     composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.NAME_FIELD)
         .assertIsDisplayed()
@@ -204,9 +205,13 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
   fun signUpWithoutInternetFails() {
     setNetworkEnabled(false)
     completeSignUp(user2.email, password2)
-    setNetworkEnabled(true)
     composeTestRule.waitUntil(3000) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.TIMEOUT).isDisplayed()
     }
+  }
+
+  @After
+  fun turnOnInternet() {
+    setNetworkEnabled(true)
   }
 }

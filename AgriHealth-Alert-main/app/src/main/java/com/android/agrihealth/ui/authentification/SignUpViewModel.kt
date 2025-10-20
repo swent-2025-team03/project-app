@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 object SignUpErrorMsg {
   const val EMPTY_FIELDS = "Please fill every field."
-  const val ROLE_NULL = "Please select a roll."
+  const val ROLE_NULL = "Please select a role."
   const val BAD_EMAIL_FORMAT = "Invalid email format."
   const val WEAK_PASSWORD = "Your password is too weak, try adding more characters."
   const val CNF_PASSWORD_DIFF = "The password and confirm password don't match."
@@ -124,17 +124,17 @@ class SignUpViewModel(
       }
     } else {
       _uiState.value = _uiState.value.copy(hasFailed = true)
-      if (!_uiState.value.isFilled()) {
-        setErrorMsg(SignUpErrorMsg.EMPTY_FIELDS)
-      } else if (_uiState.value.role == null) {
-        setErrorMsg(SignUpErrorMsg.ROLE_NULL)
-      } else if (_uiState.value.emailIsMalformed()) {
-        setErrorMsg(SignUpErrorMsg.BAD_EMAIL_FORMAT)
-      } else if (_uiState.value.passwordIsWeak()) {
-        setErrorMsg(SignUpErrorMsg.WEAK_PASSWORD)
-      } else if (_uiState.value.password != _uiState.value.cnfPassword) {
-        setErrorMsg(SignUpErrorMsg.CNF_PASSWORD_DIFF)
-      }
+      val errorMsg =
+          when {
+            !_uiState.value.isFilled() -> SignUpErrorMsg.EMPTY_FIELDS
+            _uiState.value.role == null -> SignUpErrorMsg.ROLE_NULL
+            _uiState.value.emailIsMalformed() -> SignUpErrorMsg.BAD_EMAIL_FORMAT
+            _uiState.value.passwordIsWeak() -> SignUpErrorMsg.WEAK_PASSWORD
+            _uiState.value.password != _uiState.value.cnfPassword ->
+                SignUpErrorMsg.CNF_PASSWORD_DIFF
+            else -> null
+          }
+      setErrorMsg(errorMsg!!)
     }
   }
 }
