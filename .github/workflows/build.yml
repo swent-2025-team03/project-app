@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FIREBASE_AUTH_EMULATOR_HOST: localhost:9099
-      FIREBASE_FIRESTORE_EMULATOR_HOST: localhost:8080
+      FIREBASE_FIRESTORE_EMULATOR_HOST: localhost:8081
     defaults:
       run:
         working-directory: ./AgriHealth-Alert-main
@@ -79,7 +79,7 @@ jobs:
         run: ./gradlew check --parallel --build-cache
 
       - name: Start Firebase emulators
-        run: firebase emulators:start --only firestore,auth
+        run: firebase emulators:start --only firestore,auth &
           
       - name: Run instrumentation tests
         timeout-minutes: 25
