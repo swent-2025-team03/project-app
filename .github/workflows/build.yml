@@ -76,14 +76,7 @@ jobs:
         run: ./gradlew check --parallel --build-cache
 
       - name: Start Firebase emulators
-        run: |
-          if [ -e "firebase.json" ] && jq -e '.emulators' firebase.json >/dev/null; then
-            echo "Starting Firebase emulators for instrumentation tests..."
-            firebase emulators:start --only auth,firestore --project demo-project &
-            echo "Firebase emulators started"
-          else
-            echo "Firebase emulators not configured, skipping emulator startup..."
-          fi
+        run: firebase emulators:start
           
       - name: Run instrumentation tests
         timeout-minutes: 25
