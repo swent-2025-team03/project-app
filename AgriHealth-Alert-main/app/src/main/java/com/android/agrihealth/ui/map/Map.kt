@@ -72,7 +72,7 @@ fun MapScreen(
                             onClick = { navigationActions?.goBack() },
                             modifier =
                                 Modifier.testTag(
-                                    com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON)) {
+                                    NavigationTestTags.GO_BACK_BUTTON)) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back")
