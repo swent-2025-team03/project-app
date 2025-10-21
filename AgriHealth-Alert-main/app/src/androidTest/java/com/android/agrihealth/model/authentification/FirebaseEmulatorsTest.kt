@@ -21,7 +21,7 @@ open class FirebaseEmulatorsTest(shouldInitializeEmulators: Boolean = true) {
   val httpClient = OkHttpClient()
   val contextHost =
       androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
-  val host = contextHost.getString(R.string.FIREBASE_EMULATORS_URL)
+  val host = "10.0.2.2"
   val firestorePort = 8081
   val authPort = 9099
 
@@ -59,7 +59,7 @@ open class FirebaseEmulatorsTest(shouldInitializeEmulators: Boolean = true) {
     if (!emulatorInitialized && _shouldInitializeEmulators) {
       val context =
           androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
-      val url = context.getString(R.string.FIREBASE_EMULATORS_URL)
+      val url = "10.0.2.2"
       val firestorePort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_FIRESTORE_PORT)
       val authPort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_AUTH_PORT)
 
