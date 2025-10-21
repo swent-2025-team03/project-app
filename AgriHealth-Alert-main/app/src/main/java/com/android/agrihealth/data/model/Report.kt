@@ -4,7 +4,7 @@ enum class ReportStatus {
   PENDING,
   IN_PROGRESS,
   RESOLVED,
-  ESCALATED
+  SPAM
 }
 
 enum class UserRole {

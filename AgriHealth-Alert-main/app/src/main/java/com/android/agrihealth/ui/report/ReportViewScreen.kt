@@ -49,7 +49,7 @@ fun ReportViewScreen(
   val selectedStatus = uiState.status
   val context = LocalContext.current
 
-  var isEscalateDialogOpen by remember { mutableStateOf(false) }
+  var isSpamDialogOpen by remember { mutableStateOf(false) }
 
   // ---- Helper: Color based on status ----
   @Composable
@@ -58,7 +58,7 @@ fun ReportViewScreen(
       ReportStatus.PENDING -> MaterialTheme.colorScheme.surfaceVariant
       ReportStatus.IN_PROGRESS -> MaterialTheme.colorScheme.tertiaryContainer
       ReportStatus.RESOLVED -> MaterialTheme.colorScheme.secondaryContainer
-      ReportStatus.ESCALATED -> MaterialTheme.colorScheme.error
+      ReportStatus.SPAM -> MaterialTheme.colorScheme.error
     }
   }
 
@@ -192,37 +192,37 @@ fun ReportViewScreen(
                     }
               }
 
-              // ---- Escalate button (Vet only) ----
-              if (userRole == UserRole.VET && selectedStatus != ReportStatus.ESCALATED) {
+              // ---- Report as Spam button (Vet only) ----
+              if (userRole == UserRole.VET && selectedStatus != ReportStatus.SPAM) {
                 Button(
-                    onClick = { isEscalateDialogOpen = true },
+                    onClick = { isSpamDialogOpen = true },
                     colors =
                         ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error),
-                    modifier = Modifier.fillMaxWidth().testTag("EscalateButton")) {
-                      Text("Escalate to Authorities")
+                    modifier = Modifier.fillMaxWidth().testTag("SpamButton")) {
+                      Text("Report as SPAM")
                     }
               }
 
-              // ---- Escalation confirmation dialog ----
-              if (isEscalateDialogOpen) {
+              // ---- Report as Spam confirmation dialog ----
+              if (isSpamDialogOpen) {
                 AlertDialog(
-                    onDismissRequest = { isEscalateDialogOpen = false },
-                    title = { Text("Confirm Escalation") },
+                    onDismissRequest = { isSpamDialogOpen = false },
+                    title = { Text("Confirm it is Spam") },
                     text = {
-                      Text("Are you sure you want to escalate this report to the authorities?")
+                      Text("Are you sure you want to report this report as spam?")
                     },
                     confirmButton = {
                       TextButton(
                           onClick = {
-                            viewModel.onEscalate()
-                            isEscalateDialogOpen = false
+                            viewModel.onSpam()
+                            isSpamDialogOpen = false
                           }) {
                             Text("Yes")
                           }
                     },
                     dismissButton = {
-                      TextButton(onClick = { isEscalateDialogOpen = false }) { Text("Cancel") }
+                      TextButton(onClick = { isSpamDialogOpen = false }) { Text("Cancel") }
                     })
               }
 
@@ -246,7 +246,7 @@ fun ReportViewScreen(
             }
       }
 }
-/*  If you want to use the preview, just decoment this block.
+/*  If you want to use the preview, just de-comment this block.
 /**
  * Preview of the ReportViewScreen for both farmer and vet roles. Allows testing of layout and
  * colors directly in Android Studio.

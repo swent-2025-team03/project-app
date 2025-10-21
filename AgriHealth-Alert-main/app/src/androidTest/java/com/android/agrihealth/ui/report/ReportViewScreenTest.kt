@@ -70,28 +70,28 @@ class ReportViewScreenTest {
 
   // --- TEST 5: Vet can open escalation dialog ---
   @Test
-  fun vet_canOpenEscalationDialog() {
+  fun vet_canOpenSpamDialog() {
     setVetScreen()
-    composeTestRule.onNodeWithTag("EscalateButton").performClick()
-    composeTestRule.onNodeWithText("Confirm Escalation").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("SpamButton").performClick()
+    composeTestRule.onNodeWithText("Confirm it is Spam").assertIsDisplayed()
   }
 
   // --- TEST 6: Vet can cancel escalation dialog ---
   @Test
   fun vet_canCancelEscalationDialog() {
     setVetScreen()
-    composeTestRule.onNodeWithTag("EscalateButton").performClick()
+    composeTestRule.onNodeWithTag("SpamButton").performClick()
     composeTestRule.onNodeWithText("Cancel").performClick()
-    composeTestRule.onNodeWithText("Confirm Escalation").assertDoesNotExist()
+    composeTestRule.onNodeWithText("Confirm it is Spam").assertDoesNotExist()
   }
 
   // --- TEST 7: Vet can confirm escalation ---
   @Test
-  fun vet_canConfirmEscalation() {
+  fun vet_canConfirmSpam() {
     setVetScreen()
-    composeTestRule.onNodeWithTag("EscalateButton").performClick()
+    composeTestRule.onNodeWithTag("SpamButton").performClick()
     composeTestRule.onNodeWithText("Yes").performClick()
-    composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("ESCALATED")
+    composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("SPAM")
   }
 
   // --- TEST 8: Vet sees both bottom buttons ---
@@ -144,19 +144,6 @@ class ReportViewScreenTest {
     // The status badge should show "IN PROGRESS" (name has underscore replaced by space)
     composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("IN PROGRESS")
   }
-
-  /*@Test
-  fun vet_doesNotShowEscalateButton_whenAlreadyEscalated() {
-    // If report status is already ESCALATED, the escalate button should be hidden
-    val viewModel = ReportViewModel().apply { onStatusChange(ReportStatus.ESCALATED) }
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      ReportViewScreen(navController = navController, userRole = UserRole.VET, viewModel = viewModel)
-    }
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("ESCALATED")
-    composeTestRule.onNodeWithTag("EscalateButton").assertDoesNotExist()
-  }*/
 
   @Test
   fun farmer_showsVetIdText() {

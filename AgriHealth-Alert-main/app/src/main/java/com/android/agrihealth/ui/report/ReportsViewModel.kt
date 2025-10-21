@@ -79,8 +79,8 @@ class ReportViewModel(
     _uiState.value = _uiState.value.copy(status = newStatus)
   }
 
-  fun onEscalate() {
-    _uiState.value = _uiState.value.copy(status = ReportStatus.ESCALATED)
+  fun onSpam() {
+    _uiState.value = _uiState.value.copy(status = ReportStatus.SPAM)
   }
 
   fun onSave() {
