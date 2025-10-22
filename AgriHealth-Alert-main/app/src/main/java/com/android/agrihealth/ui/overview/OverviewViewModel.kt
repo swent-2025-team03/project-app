@@ -55,11 +55,12 @@ data class OverviewUIState(
  */
 class OverviewViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
-    private val authRepository: AuthRepository = AuthRepositoryProvider.repository
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(OverviewUIState())
   val uiState: StateFlow<OverviewUIState> = _uiState.asStateFlow()
+
+  private lateinit var authRepository: AuthRepository
 
   init {
     // ---Add some mock reports for testing---
@@ -106,6 +107,7 @@ class OverviewViewModel(
   }
 
   fun signOut(credentialManager: CredentialManager) {
+    authRepository = AuthRepositoryProvider.repository
     viewModelScope.launch {
       authRepository.signOut()
       credentialManager.clearCredentialState(ClearCredentialStateRequest())
