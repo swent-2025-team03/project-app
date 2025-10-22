@@ -1,9 +1,13 @@
 package com.android.agrihealth.ui.overview
 
 import android.util.Log
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.*
+import com.android.agrihealth.data.model.authentification.AuthRepository
+import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,6 +55,7 @@ data class OverviewUIState(
  */
 class OverviewViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
+    private val authRepository: AuthRepository = AuthRepositoryProvider.repository
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(OverviewUIState())
@@ -97,6 +102,13 @@ class OverviewViewModel(
       UserRole.FARMER -> allReports.filter { it.farmerId == userId }
       UserRole.VET -> allReports
       else -> emptyList()
+    }
+  }
+
+  fun signOut(credentialManager: CredentialManager) {
+    viewModelScope.launch {
+      authRepository.signOut()
+      credentialManager.clearCredentialState(ClearCredentialStateRequest())
     }
   }
 }

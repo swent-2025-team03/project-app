@@ -1,9 +1,15 @@
 package com.android.agrihealth.ui.authentification
 
+import android.content.Context
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.agrihealth.R
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
@@ -33,7 +39,7 @@ class SignInViewModel(private val repository: AuthRepository = AuthRepositoryPro
   }
 
   /** initiates the sign in using available credentials * */
-  fun signIn() {
+  fun signInWithEmailAndPassword() {
     if (_uiState.value.isValid()) {
       viewModelScope.launch {
         repository.signInWithEmailAndPassword(_uiState.value.email, _uiState.value.password).fold({
@@ -41,6 +47,50 @@ class SignInViewModel(private val repository: AuthRepository = AuthRepositoryPro
           _uiState.update { it.copy(user = user) }
         }) { failure ->
         }
+      }
+    }
+  }
+
+  private fun getSignInOptions(context: Context) =
+      GetSignInWithGoogleOption.Builder(
+              serverClientId = context.getString(R.string.default_web_client_id))
+          .build()
+
+  private fun signInRequest(signInOptions: GetSignInWithGoogleOption) =
+      GetCredentialRequest.Builder().addCredentialOption(signInOptions).build()
+
+  private suspend fun getCredential(
+      context: Context,
+      request: GetCredentialRequest,
+      credentialManager: CredentialManager
+  ) = credentialManager.getCredential(context, request).credential
+
+  /** Initiates the Google sign-in flow and updates the UI state on success or failure. */
+  fun signInWithGoogle(context: Context, credentialManager: CredentialManager) {
+
+    viewModelScope.launch {
+      val signInOptions = getSignInOptions(context)
+      val signInRequest = signInRequest(signInOptions)
+
+      try {
+        // Launch Credential Manager UI safely
+        val credential = getCredential(context, signInRequest, credentialManager)
+
+        // Pass the credential to your repository
+        repository.signInWithGoogle(credential).fold({ user ->
+          _uiState.update { it.copy(user = user) }
+        }) { failure ->
+          _uiState.update { it.copy(user = null) }
+        }
+      } catch (e: GetCredentialCancellationException) {
+        // User cancelled the sign-in flow
+        _uiState.update { it.copy(user = null) }
+      } catch (e: androidx.credentials.exceptions.GetCredentialException) {
+        // Other credential errors
+        _uiState.update { it.copy(user = null) }
+      } catch (e: Exception) {
+        // Unexpected errors
+        _uiState.update { it.copy(user = null) }
       }
     }
   }

@@ -93,7 +93,7 @@ android {
 
 // Kotlin 17 (toolchain + jvmTarget)
 kotlin {
-    compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
+    compilerOptions { jvmTarget.set(JvmTarget.JVM_17) }
     jvmToolchain(17)
 }
 
@@ -125,6 +125,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(platform(libs.compose.bom))
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.googleid)
     testImplementation(libs.junit)
     globalTestImplementation(libs.androidx.junit)
     globalTestImplementation(libs.androidx.espresso.core)
