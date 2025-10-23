@@ -34,6 +34,7 @@ object SignUpScreenTestTags {
   const val SAVE_BUTTON = "SaveButton"
   const val FARMER_PILL = "FarmerPill"
   const val VET_PILL = "VetPill"
+  const val SNACKBAR = "Snackbar"
 }
 
 @Composable
@@ -43,10 +44,24 @@ fun SignUpScreen(
     signUpViewModel: SignUpViewModel = viewModel()
 ) {
   val signUpUIState by signUpViewModel.uiState.collectAsState()
+  val snackbarHostState = remember { SnackbarHostState() }
+  val errorMsg = signUpUIState.errorMsg
+
+  LaunchedEffect(errorMsg) {
+    if (errorMsg != null) {
+      snackbarHostState.showSnackbar(errorMsg)
+      signUpViewModel.clearErrorMsg()
+    }
+  }
 
   LaunchedEffect(signUpUIState.user) { signUpUIState.user?.let { onSignedUp() } }
 
   Scaffold(
+      snackbarHost = {
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.testTag(SignUpScreenTestTags.SNACKBAR))
+      },
       topBar = {
         TopAppBar(
             title = {},
@@ -86,17 +101,22 @@ fun SignUpScreen(
                   signUpUIState.email,
                   { signUpViewModel.setEmail(it) },
                   "Email",
-                  modifier = Modifier.testTag(SignUpScreenTestTags.EMAIL_FIELD))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.EMAIL_FIELD),
+                  signUpUIState.hasFailed && signUpUIState.emailIsMalformed())
               Field(
                   signUpUIState.password,
                   { signUpViewModel.setPassword(it) },
                   "Password",
-                  modifier = Modifier.testTag(SignUpScreenTestTags.PASSWORD_FIELD))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.PASSWORD_FIELD),
+                  signUpUIState.hasFailed && signUpUIState.passwordIsWeak())
               Field(
                   signUpUIState.cnfPassword,
                   { signUpViewModel.setCnfPassword(it) },
                   "Confirm Password",
-                  modifier = Modifier.testTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD),
+                  signUpUIState.hasFailed &&
+                      (signUpUIState.cnfPassword != signUpUIState.password ||
+                          signUpUIState.passwordIsWeak()))
 
               Spacer(Modifier.height(16.dp))
               Text(
@@ -168,7 +188,8 @@ private fun Field(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isError: Boolean = false
 ) {
   OutlinedTextField(
       value = value,
@@ -177,6 +198,7 @@ private fun Field(
       singleLine = true,
       shape = RoundedCornerShape(28.dp),
       modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
+      isError = isError,
       colors =
           OutlinedTextFieldDefaults.colors(
               unfocusedContainerColor = unfocusedFieldColor,

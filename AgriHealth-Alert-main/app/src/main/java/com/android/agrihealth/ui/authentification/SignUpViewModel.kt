@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.authentification
 
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.authentification.AuthRepository
@@ -10,11 +11,24 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.data.model.authentification.User
+import com.android.agrihealth.data.model.authentification.UserRole
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+object SignUpErrorMsg {
+  const val EMPTY_FIELDS = "Please fill every field."
+  const val ROLE_NULL = "Please select a role."
+  const val BAD_EMAIL_FORMAT = "Invalid email format."
+  const val WEAK_PASSWORD = "Your password is too weak, try adding more characters."
+  const val CNF_PASSWORD_DIFF = "The password and confirm password don't match."
+  const val ALREADY_USED_EMAIL = "This email is already in use, try using an other one."
+  const val TIMEOUT = "Not connected to the internet."
+}
 
 data class SignUpUIState(
     override val email: String = "",
@@ -24,20 +38,51 @@ data class SignUpUIState(
     val lastname: String = "",
     val cnfPassword: String = "",
     val role: UserRole? = null,
-) : SignInAndSignUpCommons {
+    val errorMsg: String? = null,
+    val hasFailed: Boolean = false,
+) {
 
-  override fun isValid(): Boolean {
-    return super.isValid() && password == cnfPassword && role != null
+  fun isValid(): Boolean {
+    return !emailIsMalformed() &&
+        isFilled() &&
+        !passwordIsWeak() &&
+        password == cnfPassword &&
+        role != null
+  }
+
+  fun passwordIsWeak(): Boolean {
+    return password.length < 6
+  }
+
+  fun emailIsMalformed(): Boolean {
+    return !Patterns.EMAIL_ADDRESS.matcher(email).matches()
+  }
+
+  fun isFilled(): Boolean {
+    return email.isNotEmpty() &&
+        password.isNotEmpty() &&
+        name.isNotEmpty() &&
+        surname.isNotEmpty() &&
+        cnfPassword.isNotEmpty()
   }
 }
 
 class SignUpViewModel(
-    private val userRepository: UserRepository = UserRepositoryProvider.repository,
     private val authRepository: AuthRepository = AuthRepositoryProvider.repository
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(SignUpUIState())
   val uiState: StateFlow<SignUpUIState> = _uiState
+
+  /** Clears the error message in the UI state. */
+  fun clearErrorMsg() {
+    _uiState.value = _uiState.value.copy(errorMsg = null)
+  }
+
+  /** Sets an error message in the UI state. */
+  private fun setErrorMsg(errorMsg: String) {
+    _uiState.value = _uiState.value.copy(errorMsg = errorMsg)
+  }
 
   fun setName(name: String) {
     _uiState.value = _uiState.value.copy(firstname = name)
@@ -61,10 +106,6 @@ class SignUpViewModel(
 
   fun onSelected(role: UserRole) {
     _uiState.value = _uiState.value.copy(role = role)
-  }
-
-  private fun createUser(user: User) {
-    viewModelScope.launch { userRepository.addUser(user) }
   }
 
   fun signUp() {
@@ -100,6 +141,19 @@ class SignUpViewModel(
               .fold({ user -> _uiState.update { it.copy(user = user) } }) { failure -> }
         }
       }
+    } else {
+      _uiState.value = _uiState.value.copy(hasFailed = true)
+      val errorMsg =
+          when {
+            !_uiState.value.isFilled() -> SignUpErrorMsg.EMPTY_FIELDS
+            _uiState.value.role == null -> SignUpErrorMsg.ROLE_NULL
+            _uiState.value.emailIsMalformed() -> SignUpErrorMsg.BAD_EMAIL_FORMAT
+            _uiState.value.passwordIsWeak() -> SignUpErrorMsg.WEAK_PASSWORD
+            _uiState.value.password != _uiState.value.cnfPassword ->
+                SignUpErrorMsg.CNF_PASSWORD_DIFF
+            else -> null
+          }
+      setErrorMsg(errorMsg!!)
     }
   }
 }
