@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.data.model.authentification.UserRole
+import com.android.agrihealth.data.model.user.UserRole
 
 private val FieldBg = Color(0xFFF0F6F1)
 
@@ -132,8 +132,8 @@ private fun RoleSelector(selected: UserRole?, onSelected: (UserRole) -> Unit) {
         modifier = Modifier.testTag(SignUpScreenTestTags.FARMER_PILL))
     SelectablePill(
         text = "Vet",
-        selected = selected == UserRole.VETERINARIAN,
-        onClick = { onSelected(UserRole.VETERINARIAN) },
+        selected = selected == UserRole.VET,
+        onClick = { onSelected(UserRole.VET) },
         modifier = Modifier.testTag(SignUpScreenTestTags.VET_PILL))
   }
 }

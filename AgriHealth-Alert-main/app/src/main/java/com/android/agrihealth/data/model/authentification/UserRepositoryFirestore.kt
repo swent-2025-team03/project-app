@@ -1,5 +1,8 @@
 package com.android.agrihealth.data.model.authentification
 
+import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.data.model.user.displayString
+import com.android.agrihealth.data.model.user.roleFromDisplayString
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
