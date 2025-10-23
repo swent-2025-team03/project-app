@@ -195,7 +195,7 @@ fun StatusTag(status: ReportStatus) {
         ReportStatus.PENDING -> MaterialTheme.colorScheme.surfaceVariant
         ReportStatus.IN_PROGRESS -> MaterialTheme.colorScheme.tertiaryContainer
         ReportStatus.RESOLVED -> MaterialTheme.colorScheme.secondaryContainer
-        ReportStatus.ESCALATED -> MaterialTheme.colorScheme.error
+        ReportStatus.SPAM -> MaterialTheme.colorScheme.error
       }
   Surface(
       color = color,

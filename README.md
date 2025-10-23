@@ -1,39 +1,40 @@
 # AgriHealth Alert
-*(Veterinary Telemedicine and Rapid Disease Reporting for Farmers)*
+*(Veterinary Telemedicine and Herd Health Management for Farmers)*
 
 ## Pitch
-Farmers often face uncertainty when animals show unusual symptoms. Calling a veterinarian for every case can be costly and time-consuming, while delays in reporting contagious diseases can worsen outbreaks. **AgriHealth Alert** combines veterinary telemedicine with rapid outbreak response.
+Farmers often face uncertainty when animals show unusual symptoms. Calling a veterinarian for every case can be costly and time-consuming. **AgriHealth Alert** provides a streamlined platform for **direct communication between farmers and veterinary professionals**, helping farmers manage herd health efficiently while supporting veterinarians in planning and response.
 
-Farmers can quickly upload photos and a short description of symptoms and receive feedback from veterinary professionals. In normal use, this supports affordable, fast veterinary guidance. In the event of a suspected highly contagious animal disease outbreak, veterinary professionals can escalate reports to competent authorities, enabling rapid situational awareness, resource allocation, and containment measures. The app provides a professional, structured communication channel that strengthens both daily herd health management and emergency disease surveillance.
+Farmers can quickly upload photos and a short description of symptoms and receive timely feedback from veterinary professionals. The app also allows authorities to post news and alerts, making it an official channel for veterinary and animal health updates. All reports are stored, creating a rich database for future analysis and potential use by authorities.
 
 ---
 
 ## Features
--  **Photo upload with GPS coordinates** for precise reporting  
--  **Short symptoms report** (number of animals, duration, severity, optional notes)  
--  **Veterinary feedback loop**: professionals review and respond to farmer submissions  
--  **Crisis escalation**: urgent cases flagged to authorities for investigation and containment  
--  **Map visualization** of reported cases (only for canton veterinary)  
--  **Privacy management**: farmers choose whether reports are public; authorities retain full oversight  
--  **Offline mode**: draft reports without Internet; auto-send when back online  
+- **Photo upload with GPS coordinates** for accurate case reporting  
+- **Short symptom reports** (number of animals affected, duration, severity, optional notes)  
+- **Veterinary feedback loop**: vets review and respond directly to farmer submissions  
+- **Planning and scheduling tools** for veterinarians to manage farm visits and consultations  
+- **News & alerts**: official updates from authorities for farmers and vets  
+- **Privacy management**: farmers choose whether reports are shared publicly or kept private  
+- **Offline mode**: draft reports without Internet; auto-send when back online  
 
 ---
 
 ## Usage Examples
--  A pack of wolves attacks a farmer’s sheep. The farmer posts an alert to inform nearby farmers and simultaneously requests veterinary assistance. The veterinarian advises on immediate care and escalates if necessary.  
--  A farmer notices unusual skin lesions on cows. They send a private report to a nearby vet, who may escalate to authorities if a contagious disease is suspected.  
--  During routine checks, a farmer notices chickens with respiratory distress. They upload photos + a brief report; vets provide advice while monitoring outbreak patterns.  
+- A farmer notices unusual skin lesions on cows. They upload photos and a brief report to a vet, who provides guidance on treatment and schedules a follow-up visit.  
+- During routine checks, a farmer observes chickens with respiratory distress. They send a report to a veterinarian, who replies with care instructions and plans an on-site inspection.  
+- Authorities post a region-wide alert about a local outbreak of a contagious animal disease. Farmers receive the official news, while vets can prepare for preventive visits.  
 
 ---
 
 ## Further Improvements
--  Introduce a **guest mode** for the general public, allowing limited viewing of authorized reports.  
--  Allow the public to submit relevant observations (e.g., dead wild animals) to help monitoring.  
--  Implement **push notifications** for nearby farmers when contagious diseases are reported.  
--  Integrate **automated alerts & analytics** for vets/authorities to detect clusters of unusual symptoms.
+- **Guest mode** for the general public to view selected, authorized updates  
+- **Public reporting of observations** (e.g., dead wild animals) to assist monitoring  
+- **Push notifications** for farmers when vets respond or when official news is posted  
+- **Analytics tools** for veterinarians to monitor symptom trends across farms  
 
 ---
 
-## Ressources
-- [Our Figma](https://www.figma.com/design/c57y3MH6zUHQA119zAUud8/AgriHealth-Premium?node-id=0-1&p=f&t=GHzDq8QCPL3GDJvy-0)
+## Resources
+- [Our Figma](https://www.figma.com/design/c57y3MH6zUHQA119zAUud8/AgriHealth-Premium?node-id=0-1&p=f&t=GHzDq8QCPL3GDJvy-0)  
 - [Our Wiki](https://github.com/swent-2025-team03/project-app/wiki)
+
