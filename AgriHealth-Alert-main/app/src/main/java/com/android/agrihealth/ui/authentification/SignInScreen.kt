@@ -37,6 +37,7 @@ object SignInScreenTestTags {
   const val FORGOT_PASSWORD = "forgotPassword"
   const val LOGIN_DIVIDER = "loginDivider"
   const val GOOGLE_LOGIN_BUTTON = "googleLoginButton"
+  const val SNACKBAR = "snackbar"
 }
 
 @Composable
@@ -50,6 +51,15 @@ fun SignInScreen(
 ) {
 
   val signInUIState by signInViewModel.uiState.collectAsState()
+  val snackbarHostState = remember { SnackbarHostState() }
+  val errorMsg = signInUIState.errorMsg
+
+  LaunchedEffect(errorMsg) {
+    if (errorMsg != null) {
+      snackbarHostState.showSnackbar(errorMsg)
+      signInViewModel.clearErrorMsg()
+    }
+  }
 
   val context = LocalContext.current
 
@@ -78,6 +88,7 @@ fun SignInScreen(
                   placeholder = { Text("Email") },
                   singleLine = true,
                   shape = RoundedCornerShape(28.dp),
+                  isError = signInUIState.emailIsInvalid && signInUIState.email.isEmpty(),
                   colors =
                       TextFieldDefaults.colors(
                           focusedContainerColor = FieldBg,
@@ -99,6 +110,7 @@ fun SignInScreen(
                   singleLine = true,
                   visualTransformation = PasswordVisualTransformation(),
                   shape = RoundedCornerShape(28.dp),
+                  isError = signInUIState.passwordIsInvalid && signInUIState.password.isEmpty(),
                   colors =
                       TextFieldDefaults.colors(
                           focusedContainerColor = FieldBg,
@@ -164,6 +176,12 @@ fun SignInScreen(
                     context = context, credentialManager = credentialManager)
               }
             }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier =
+                Modifier.align(Alignment.BottomCenter)
+                    .padding(bottom = 16.dp)
+                    .testTag(SignInScreenTestTags.SNACKBAR))
       }
 }
 
