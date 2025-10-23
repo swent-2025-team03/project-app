@@ -101,6 +101,7 @@ fun AgriHealthApp(
       }
       composable(Screen.SignUp.route) {
         SignUpScreen(
+            onBack = { navigationActions.navigateTo(Screen.Auth) },
             onSignedUp = {
               // TODO: After signup, set user info
               userViewModel.userRole = UserRole.FARMER

@@ -23,6 +23,7 @@ object SignInErrorMsg {
   const val EMPTY_EMAIL_OR_PASSWORD = "Please enter your email and password."
   const val INVALID_CREDENTIALS = "User not found with this email and password."
   const val TIMEOUT = "Not connected to the internet."
+  const val UNEXPECTED = "Something unexpected happened, try again."
 }
 
 data class SignInUIState(
@@ -115,17 +116,14 @@ class SignInViewModel(private val repository: AuthRepository = AuthRepositoryPro
         repository.signInWithGoogle(credential).fold({ user ->
           _uiState.update { it.copy(user = user) }
         }) { failure ->
-          _uiState.update { it.copy(user = null) }
+          _uiState.update { it.copy(user = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
         }
       } catch (e: GetCredentialCancellationException) {
         // User cancelled the sign-in flow
         _uiState.update { it.copy(user = null) }
-      } catch (e: androidx.credentials.exceptions.GetCredentialException) {
-        // Other credential errors
-        _uiState.update { it.copy(user = null) }
       } catch (e: Exception) {
         // Unexpected errors
-        _uiState.update { it.copy(user = null) }
+        _uiState.update { it.copy(user = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
       }
     }
   }

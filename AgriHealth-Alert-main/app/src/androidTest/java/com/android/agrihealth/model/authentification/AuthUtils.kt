@@ -63,6 +63,7 @@ class FakeCredentialManager private constructor(private val context: Context) :
               data = bundleOf("id_token" to fakeUserIdToken))
 
       every { mockGetCredentialResponse.credential } returns fakeCustomCredential
+      coEvery { fakeCredentialManager.clearCredentialState(any()) } returns Unit
       coEvery {
         fakeCredentialManager.getCredential(any<Context>(), any<GetCredentialRequest>())
       } returns mockGetCredentialResponse
