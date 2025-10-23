@@ -138,6 +138,7 @@ dependencies {
     implementation(libs.compose.ui.graphics)
     // Material Design 3
     implementation(libs.compose.material3)
+    implementation("androidx.compose.material:material-icons-extended:<version>")
     // Integration with activities
     implementation(libs.compose.activity)
     // Integration with ViewModels
