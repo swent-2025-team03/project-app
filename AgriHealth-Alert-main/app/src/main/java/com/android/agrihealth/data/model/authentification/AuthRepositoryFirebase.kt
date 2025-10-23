@@ -1,6 +1,8 @@
 package com.android.agrihealth.data.model.authentification
 
+import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -37,8 +39,16 @@ class AuthRepositoryFirebase(private val auth: FirebaseAuth = Firebase.auth) : A
               ?: return Result.failure(NullPointerException("Account creation failed"))
 
       userData.uid = user.uid
+
+      // Safely handle subclass-specific copy()
+      val updatedUser =
+          when (userData) {
+            is Farmer -> userData.copy(email = email)
+            is Vet -> userData.copy(email = email)
+          }
+
       try {
-        userRepository.addUser(userData.copy(email = email))
+        userRepository.addUser(updatedUser)
       } catch (e: Exception) {
         user.delete().await()
         Result.failure<FirebaseUser>(NullPointerException("Account creation failed"))

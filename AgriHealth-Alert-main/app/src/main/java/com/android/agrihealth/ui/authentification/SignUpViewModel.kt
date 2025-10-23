@@ -6,8 +6,10 @@ import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,8 +20,8 @@ data class SignUpUIState(
     override val email: String = "",
     override val password: String = "",
     override val user: FirebaseUser? = null,
-    val name: String = "",
-    val surname: String = "",
+    val firstname: String = "",
+    val lastname: String = "",
     val cnfPassword: String = "",
     val role: UserRole? = null,
 ) : SignInAndSignUpCommons {
@@ -38,11 +40,11 @@ class SignUpViewModel(
   val uiState: StateFlow<SignUpUIState> = _uiState
 
   fun setName(name: String) {
-    _uiState.value = _uiState.value.copy(name = name)
+    _uiState.value = _uiState.value.copy(firstname = name)
   }
 
   fun setSurname(surname: String) {
-    _uiState.value = _uiState.value.copy(surname = surname)
+    _uiState.value = _uiState.value.copy(lastname = surname)
   }
 
   fun setPassword(password: String) {
@@ -67,18 +69,36 @@ class SignUpViewModel(
 
   fun signUp() {
     if (_uiState.value.isValid()) {
-      viewModelScope.launch {
-        authRepository
-            .signUpWithEmailAndPassword(
-                _uiState.value.email,
-                _uiState.value.password,
-                User(
-                    "",
-                    _uiState.value.name,
-                    _uiState.value.surname,
-                    _uiState.value.role!!,
-                    _uiState.value.email))
-            .fold({ user -> _uiState.update { it.copy(user = user) } }) { failure -> }
+      if (_uiState.value.role == UserRole.FARMER) {
+        viewModelScope.launch {
+          authRepository
+              .signUpWithEmailAndPassword(
+                  _uiState.value.email,
+                  _uiState.value.password,
+                  Farmer(
+                      "",
+                      _uiState.value.firstname,
+                      _uiState.value.lastname,
+                      _uiState.value.email,
+                      null,
+                      emptyList(),
+                      null))
+              .fold({ user -> _uiState.update { it.copy(user = user) } }) { failure -> }
+        }
+      } else if (_uiState.value.role == UserRole.VET) {
+        viewModelScope.launch {
+          authRepository
+              .signUpWithEmailAndPassword(
+                  _uiState.value.email,
+                  _uiState.value.password,
+                  Vet(
+                      "",
+                      _uiState.value.firstname,
+                      _uiState.value.lastname,
+                      _uiState.value.email,
+                      null))
+              .fold({ user -> _uiState.update { it.copy(user = user) } }) { failure -> }
+        }
       }
     }
   }

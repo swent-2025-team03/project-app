@@ -26,8 +26,8 @@ object SignUpScreenTestTags {
   const val SCREEN = "SignUpScreen"
   const val BACK_BUTTON = "BackButton"
   const val TITLE = "SignUpTitle"
-  const val NAME_FIELD = "NameField"
-  const val SURNAME_FIELD = "SurnameField"
+  const val FIRSTNAME_FIELD = "NameField"
+  const val LASTNAME_FIELD = "SurnameField"
   const val EMAIL_FIELD = "EmailField"
   const val PASSWORD_FIELD = "PasswordField"
   const val CONFIRM_PASSWORD_FIELD = "ConfirmPasswordField"
@@ -73,15 +73,15 @@ fun SignUpScreen(
               Spacer(Modifier.height(24.dp))
 
               Field(
-                  signUpUIState.name,
+                  signUpUIState.firstname,
                   { signUpViewModel.setName(it) },
                   "Name",
-                  modifier = Modifier.testTag(SignUpScreenTestTags.NAME_FIELD))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.FIRSTNAME_FIELD))
               Field(
-                  signUpUIState.surname,
+                  signUpUIState.lastname,
                   { signUpViewModel.setSurname(it) },
                   "Surname",
-                  modifier = Modifier.testTag(SignUpScreenTestTags.SURNAME_FIELD))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.LASTNAME_FIELD))
               Field(
                   signUpUIState.email,
                   { signUpViewModel.setEmail(it) },

@@ -130,7 +130,7 @@ fun OverviewScreen(
                       report = report,
                       onClick = { onReportClick(report.id) },
                   )
-                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                  HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                 }
               }
             }
