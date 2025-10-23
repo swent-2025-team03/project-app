@@ -68,7 +68,7 @@ class ReportViewScreenTest {
     composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("RESOLVED")
   }
 
-  // --- TEST 5: Vet can open escalation dialog ---
+  // --- TEST 5: Vet can open spam dialog ---
   @Test
   fun vet_canOpenSpamDialog() {
     setVetScreen()
@@ -76,16 +76,16 @@ class ReportViewScreenTest {
     composeTestRule.onNodeWithText("Confirm it is Spam").assertIsDisplayed()
   }
 
-  // --- TEST 6: Vet can cancel escalation dialog ---
+  // --- TEST 6: Vet can cancel spam dialog ---
   @Test
-  fun vet_canCancelEscalationDialog() {
+  fun vet_canCancelSpamDialog() {
     setVetScreen()
     composeTestRule.onNodeWithTag("SpamButton").performClick()
     composeTestRule.onNodeWithText("Cancel").performClick()
     composeTestRule.onNodeWithText("Confirm it is Spam").assertDoesNotExist()
   }
 
-  // --- TEST 7: Vet can confirm escalation ---
+  // --- TEST 7: Vet can confirm spam ---
   @Test
   fun vet_canConfirmSpam() {
     setVetScreen()
