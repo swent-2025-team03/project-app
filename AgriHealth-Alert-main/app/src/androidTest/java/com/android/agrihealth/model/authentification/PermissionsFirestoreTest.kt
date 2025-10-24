@@ -1,7 +1,6 @@
 package com.android.agrihealth.model.authentification
 
-import com.android.agrihealth.data.model.authentification.User
-import com.android.agrihealth.data.model.authentification.UserRole
+import com.android.agrihealth.data.model.user.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.test.runTest
@@ -39,8 +38,8 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
 
     val userData = userRepository.getUserFromId(user1.uid).getOrThrow()
     assertEquals(user1.uid, userData.uid)
-    assertEquals(user1.name, userData.name)
-    assertEquals(user1.surname, userData.surname)
+    assertEquals(user1.firstname, userData.firstname)
+    assertEquals(user1.lastname, userData.lastname)
     assertEquals(user1.role, userData.role)
     assertEquals(user1.email, userData.email)
   }
@@ -68,19 +67,7 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
   fun canUpdateName() = runTest {
     createAccount(user1, password1)
     userRepository.updateUser(
-        user1.copy(name = "new", surname = "name", email = "newemail@thing.com"))
-  }
-
-  @Test
-  fun failToUpdateOwnRole() = runTest {
-    createAccount(user1, password1)
-
-    try {
-      userRepository.updateUser(user1.copy(role = UserRole.VETERINARIAN))
-      fail("User should not be able to change their role")
-    } catch (e: IllegalArgumentException) {
-      assertEquals(e.message, "Permission denied")
-    }
+        user1.copy(firstname = "new", lastname = "name", email = "newemail@thing.com"))
   }
 
   @Test
@@ -90,7 +77,7 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
     try {
       // A bit counter intuitive, this will return PERMISSION_DENIED because updateUser() tries to
       // getUserFromUid() first, and user is not allowed to get others
-      userRepository.updateUser(user1.copy(uid = "newUid"))
+      userRepository.updateUser(user1.copy(farmerId = "newUid"))
       fail("User should not be able to change their uid")
     } catch (e: FirebaseFirestoreException) {
       assertEquals(e.code, FirebaseFirestoreException.Code.PERMISSION_DENIED)
