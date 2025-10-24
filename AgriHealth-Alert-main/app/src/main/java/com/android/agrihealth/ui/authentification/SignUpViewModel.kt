@@ -5,15 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
-import com.android.agrihealth.data.model.authentification.UserRepository
-import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.data.model.authentification.User
-import com.android.agrihealth.data.model.authentification.UserRole
-import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,9 +25,9 @@ object SignUpErrorMsg {
 }
 
 data class SignUpUIState(
-    override val email: String = "",
-    override val password: String = "",
-    override val user: FirebaseUser? = null,
+    val email: String = "",
+    val password: String = "",
+    val user: FirebaseUser? = null,
     val firstname: String = "",
     val lastname: String = "",
     val cnfPassword: String = "",
@@ -61,8 +55,8 @@ data class SignUpUIState(
   fun isFilled(): Boolean {
     return email.isNotEmpty() &&
         password.isNotEmpty() &&
-        name.isNotEmpty() &&
-        surname.isNotEmpty() &&
+        firstname.isNotEmpty() &&
+        lastname.isNotEmpty() &&
         cnfPassword.isNotEmpty()
   }
 }
