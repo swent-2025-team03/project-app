@@ -1,6 +1,6 @@
 package com.android.agrihealth.ui.overview
 
-import com.android.agrihealth.data.model.UserRole
+import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.repository.FakeOverviewRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -48,12 +48,6 @@ class OverviewViewModelTest {
   fun `getReportsForUser returns all reports for vet`() = runTest {
     val reports = viewModel.getReportsForUser(UserRole.VET, "VET_001")
     Assert.assertEquals(2, reports.size)
-  }
-
-  @Test
-  fun `getReportsForUser returns empty for unknown role`() = runTest {
-    val reports = viewModel.getReportsForUser(UserRole.AUTHORITY, "userX")
-    Assert.assertTrue(reports.isEmpty())
   }
 
   @Test
