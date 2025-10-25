@@ -1,5 +1,8 @@
-package com.android.agrihealth.data.model.connection
+package com.android.agrihealth.data.connection
 
+import androidx.test.platform.app.InstrumentationRegistry
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import kotlinx.coroutines.async
@@ -7,11 +10,40 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.tasks.await
+import org.junit.AfterClass
 import org.junit.Assert.*
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
+import com.android.agrihealth.data.model.connection.ConnectionRepository
 
 class ConnectionRepositoryTest {
+
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun beforeAll() {
+            FirebaseApp.clearInstancesForTest()
+
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            val options = FirebaseOptions.Builder()
+                .setProjectId("test-project")
+                .setApplicationId("1:android:1")
+                .setApiKey("fake-api-key")
+                .build()
+            FirebaseApp.initializeApp(context, options)
+
+            // IMPORTANT: configure emulator on the instance before any Firestore usage
+            FirebaseFirestore.getInstance().useEmulator("10.0.2.2", 8081)
+        }
+
+        @JvmStatic
+        @AfterClass
+        fun afterAll() {
+            // Cleanup after all tests
+            FirebaseApp.clearInstancesForTest()
+        }
+    }
 
     private lateinit var db: FirebaseFirestore
     private lateinit var repo: ConnectionRepository
@@ -19,8 +51,6 @@ class ConnectionRepositoryTest {
     @Before
     fun setup() = runBlocking {
         db = FirebaseFirestore.getInstance().apply {
-            // Émulateur Firestore (Android emulator)
-            useEmulator("10.0.2.2", 8080)
             firestoreSettings = FirebaseFirestoreSettings.Builder()
                 .setPersistenceEnabled(false)
                 .build()
@@ -31,8 +61,10 @@ class ConnectionRepositoryTest {
 
     private suspend fun clearCollections() {
         listOf("connect_codes", "connections").forEach { col ->
-            val docs = db.collection(col).get().await()
-            docs.documents.forEach { it.reference.delete() }
+            val snap = db.collection(col).get().await()
+            snap.documents
+                .map { it.reference.delete() }
+                .let { tasks -> tasks.map { it.await() } }
         }
     }
 
@@ -73,7 +105,7 @@ class ConnectionRepositoryTest {
     fun claimCode_failsForExpired() = runTest {
         val vetId = "vetC"
         val farmerId = "farmer2"
-        val code = repo.generateCode(vetId, ttlMinutes = 0).getOrThrow() // expire immédiat
+        val code = repo.generateCode(vetId, ttlMinutes = 0).getOrThrow() // immediate expiry
         val res = repo.claimCode(code, farmerId)
         assertTrue(res.isFailure)
         assertTrue(res.exceptionOrNull()!!.message!!.lowercase().contains("expired"))
@@ -114,13 +146,15 @@ class ConnectionRepositoryTest {
         assertEquals(1, results.count { it.isSuccess })
         assertEquals(1, results.count { it.isFailure })
     }
+
     @Test
     fun claimCode_succeedsRightBeforeExpiry() = runTest {
         val vet = "vetT"; val farmer = "farmerT"
         val code = repo.generateCode(vet, ttlMinutes = 1).getOrThrow()
-        // Pas besoin d’attendre: juste vérifier que ça passe avant expiration
+        // No need to delay: just check it succeeds before expiration
         assertTrue(repo.claimCode(code, farmer).isSuccess)
     }
+
     @Test
     fun connectionId_isSymmetric_singleDoc() = runTest {
         val vet="vetS"; val farmer="farmerS"
@@ -130,5 +164,5 @@ class ConnectionRepositoryTest {
         assertTrue(db.collection("connections").document(id).get().await().exists())
     }
 
-
+    // TODO add a test for double click generateCode after implementing the UI
 }

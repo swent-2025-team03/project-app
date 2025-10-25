@@ -27,28 +27,33 @@ class ConnectionRepository(
     }
 
     suspend fun generateCode(vetId: String, ttlMinutes: Long = 10): Result<String> = runCatching {
-        repeat(8) {
+        // Try multiple times in case of rare collisions
+        repeat(20) {
             val code = Random.nextInt(100_000, 1_000_000).toString()
-            val ref = db.collection(CODES_COLLECTION).document(code)
-            val snap = ref.get().await()
-            if (!snap.exists()) {
-                val nowMs = System.currentTimeMillis()
-                val expiresMs = nowMs + ttlMinutes * 60_000
-
-                val codeObj = ConnectionCode(
-                    code = code,
-                    vetId = vetId,
-                    status = STATUS_OPEN,
-                    createdAt = null, // will be filled by serverTimestamp
-                    expiresAtMs = expiresMs
-                )
-
-                ref.set(codeObj).await()
-                // server time for createdAt ensures sync across clients
-                ref.update("createdAt", FieldValue.serverTimestamp()).await()
-
-                return@runCatching code
-            }
+            val maybeCode = db.runTransaction { tx ->
+                val ref = db.collection(CODES_COLLECTION).document(code)
+                val snap = tx.get(ref)
+                if (snap.exists()) {
+                    // Collision, let caller retry with a new code
+                    null
+                } else {
+                    val nowMs = System.currentTimeMillis()
+                    val expiresMs = nowMs + ttlMinutes * 60_000
+                    // Single write with server timestamp for createdAt
+                    tx.set(
+                        ref,
+                        mapOf(
+                            "code" to code,
+                            "vetId" to vetId,
+                            "status" to STATUS_OPEN,
+                            "createdAt" to FieldValue.serverTimestamp(),
+                            "expiresAtMs" to expiresMs
+                        )
+                    )
+                    code
+                }
+            }.await()
+            if (maybeCode != null) return@runCatching maybeCode
         }
         throw IllegalStateException("Failed to generate a unique code.")
     }
@@ -65,7 +70,14 @@ class ConnectionRepository(
             val vetId = snap.getString("vetId") ?: throw IllegalArgumentException("Invalid vet ID.")
 
             linkUsers(tx, vetId, farmerId)
-            tx.update(docRef, "status", STATUS_USED)
+            tx.update(
+                docRef,
+                mapOf(
+                    "status" to STATUS_USED,
+                    "usedAt" to FieldValue.serverTimestamp(),
+                    "claimedBy" to farmerId
+                )
+            )
 
             vetId
         }.await()

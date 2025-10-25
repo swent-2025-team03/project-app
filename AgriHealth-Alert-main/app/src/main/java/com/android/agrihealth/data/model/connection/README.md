@@ -1,43 +1,43 @@
 ## TL;DR
-Backend pour lier **Vétérinaire ↔️ Fermier** via **code à 6 chiffres** avec TTL.  
-Pas d’UI dans cette PR. L’UI n’a qu’à appeler le ViewModel et afficher l’état.
+Backend to link Vet ↔ Farmer via a 6‑digit code with TTL.  
+No UI in this PR. The UI only needs to call the ViewModel and render the state.
 
-## Ce que fait cette PR
-- Ajoute la logique Firestore :
-    - Génération d’un **code unique** par un vet, valable **10 min**.
-    - **Réclamation** du code par un farmer.
-    - Création du lien persistant **`connections/{vet__farmer}`**.
-    - Invalidation du code (`status = USED`).
-- Expose une API simple pour l’UI via ViewModel + `StateFlow`.
-
----
-
-## Fichiers clés
-- `ConnectionRepository.kt` : Firestore (create/claim/link).
-- `ConnectionViewModel.kt` : `generateCode(vetId)`, `claimCode(code, farmerId)`, `state`.
-- `ConnectionUiState.kt` : `Idle | Loading | CodeGenerated(code) | Connected(vetId) | Error(msg)`.
+## What this PR does
+- Adds Firestore logic:
+  - Generation of a unique code by a vet, valid for 10 minutes.
+  - Code claim by a farmer.
+  - Creation of a persistent link `connections/{vet__farmer}`.
+  - Code invalidation (`status = USED`).
+- Exposes a simple API for the UI via ViewModel + `StateFlow`.
 
 ---
 
-## Modèle Firestore
+## Key files
+- `ConnectionRepository.kt`: Firestore (create/claim/link).
+- `ConnectionViewModel.kt`: `generateCode(vetId)`, `claimCode(code, farmerId)`, `state`.
+- `ConnectionUiState.kt`: `Idle | Loading | CodeGenerated(code) | Connected(vetId) | Error(msg)`.
+
+---
+
+## Firestore model
 **Codes**
 
 
-## Flux fonctionnel
-1) Vet → `generateCode(vetId)` → doc dans `/connect_codes/{code}` → `CodeGenerated(code)`.
-2) Farmer → `claimCode(code, farmerId)` → validations (existence, OPEN, non expiré) →  
-   création `/connections/{vet__farmer}` + `status=USED` → `Connected(vetId)`.
+## Flow
+1) Vet → `generateCode(vetId)` → doc created at `/connect_codes/{code}` → `CodeGenerated(code)`.
+2) Farmer → `claimCode(code, farmerId)` → validations (exists, OPEN, not expired) →
+   create `/connections/{vet__farmer}` + set `status=USED` → `Connected(vetId)`.
 
 ---
 
-## Intégration UI (à faire par @MadaMada08)
-- Appeler `viewModel.generateCode(vetId)` et afficher `CodeGenerated(code)`.
-- Champ saisie code → `viewModel.claimCode(code, farmerId)`.
-- Afficher selon `state` : `Loading`, `Error(msg)`, `Connected(vetId)`.
+## UI integration (to be done by @MadaMada08)
+- Call `viewModel.generateCode(vetId)` and display `CodeGenerated(code)`.
+- Input field to enter the code → `viewModel.claimCode(code, farmerId)`.
+- Render according to `state`: `Loading`, `Error(msg)`, `Connected(vetId)`.
 
 ---
 
-## Règles Firestore (proposées)
+## Proposed Firestore rules
 ```javascript
 match /connect_codes/{code} {
   allow create: if request.auth.token.role == "vet";
@@ -47,3 +47,4 @@ match /connect_codes/{code} {
 match /connections/{id} {
   allow read, write: if request.auth.uid in [resource.data.vetId, resource.data.farmerId];
 }
+```
