@@ -3,7 +3,9 @@ package com.android.agrihealth.ui.report
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.agrihealth.data.model.*
+import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import kotlinx.coroutines.flow.MutableStateFlow

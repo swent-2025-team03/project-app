@@ -34,12 +34,12 @@ class E2ETest : FirebaseEmulatorsTest(true) {
 
   private fun completeSignUp(email: String, password: String, isVet: Boolean) {
     composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.NAME_FIELD)
+        .onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD)
         .assertIsDisplayed()
         .performTextInput("Test")
 
     composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.SURNAME_FIELD)
+        .onNodeWithTag(SignUpScreenTestTags.LASTNAME_FIELD)
         .assertIsDisplayed()
         .performTextInput("User")
 

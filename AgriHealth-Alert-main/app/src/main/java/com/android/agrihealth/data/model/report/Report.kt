@@ -1,4 +1,7 @@
-package com.android.agrihealth.data.model
+package com.android.agrihealth.data.model.report
+
+import com.android.agrihealth.data.model.location.Location
+import java.time.Instant
 
 enum class ReportStatus {
   PENDING,
@@ -7,22 +10,15 @@ enum class ReportStatus {
   ESCALATED
 }
 
-enum class UserRole {
-  FARMER,
-  VET,
-  AUTHORITY
-}
-
-data class Location(val latitude: Double, val longitude: Double, val name: String? = null)
-
 data class Report(
     val id: String,
     val title: String,
     val description: String,
     val photoUri: String?, // For now, unused (will show placeholder)
     val farmerId: String,
-    val vetId: String?,
+    val vetId: String,
     val status: ReportStatus,
     val answer: String?,
-    val location: Location?
+    val location: Location?,
+    val createdAt: Instant = Instant.now() // Auto-set creation timestamp
 )

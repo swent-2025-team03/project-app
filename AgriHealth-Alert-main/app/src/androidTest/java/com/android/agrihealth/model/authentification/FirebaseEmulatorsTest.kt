@@ -2,9 +2,9 @@ package com.android.agrihealth.model.authentification
 
 import com.android.agrihealth.R
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
-import com.android.agrihealth.data.model.authentification.User
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
-import com.android.agrihealth.data.model.authentification.UserRole
+import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
@@ -33,10 +33,10 @@ open class FirebaseEmulatorsTest(shouldInitializeEmulators: Boolean = true) {
   }
 
   // Definition of test users
-  val user1 = User("abc123", "Rushia", "Uruha", UserRole.FARMER, "email1@thing.com")
-  val user2 = User("def456", "mike", "neko", UserRole.FARMER, "email2@aaaaa.balls")
-  val user3 = User("ghi789", "Nazuna", "Amemiya", UserRole.VETERINARIAN, "email3@kms.josh")
-  val user4 = User("jklABC", "John", "Fake", UserRole.FARMER, "fakeUser.glorp")
+  val user1 = Farmer("abc123", "Rushia", "Uruha", "email1@thing.com", null, emptyList(), null)
+  val user2 = Farmer("def456", "mike", "neko", "email2@aaaaa.balls", null, emptyList(), null)
+  val user3 = Vet("ghi789", "Nazuna", "Amemiya", "email3@kms.josh", null)
+  val user4 = Farmer("jklABC", "John", "Fake", "fakeUser.glorp", null, emptyList(), null)
 
   val password1 = "Password123"
   val password2 = "iamaweakpassword"

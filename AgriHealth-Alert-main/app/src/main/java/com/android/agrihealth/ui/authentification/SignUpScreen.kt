@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.data.model.authentification.UserRole
+import com.android.agrihealth.data.model.user.UserRole
 
 private val FieldBg = Color(0xFFF0F6F1)
 
@@ -26,8 +26,8 @@ object SignUpScreenTestTags {
   const val SCREEN = "SignUpScreen"
   const val BACK_BUTTON = "BackButton"
   const val TITLE = "SignUpTitle"
-  const val NAME_FIELD = "NameField"
-  const val SURNAME_FIELD = "SurnameField"
+  const val FIRSTNAME_FIELD = "NameField"
+  const val LASTNAME_FIELD = "SurnameField"
   const val EMAIL_FIELD = "EmailField"
   const val PASSWORD_FIELD = "PasswordField"
   const val CONFIRM_PASSWORD_FIELD = "ConfirmPasswordField"
@@ -88,18 +88,15 @@ fun SignUpScreen(
               Spacer(Modifier.height(24.dp))
 
               Field(
-                  signUpUIState.name,
+                  signUpUIState.firstname,
                   { signUpViewModel.setName(it) },
                   "Name",
-                  modifier = Modifier.testTag(SignUpScreenTestTags.NAME_FIELD),
-                  signUpUIState.hasFailed && signUpUIState.name.isEmpty())
-
+                  modifier = Modifier.testTag(SignUpScreenTestTags.FIRSTNAME_FIELD))
               Field(
-                  signUpUIState.surname,
+                  signUpUIState.lastname,
                   { signUpViewModel.setSurname(it) },
                   "Surname",
-                  modifier = Modifier.testTag(SignUpScreenTestTags.SURNAME_FIELD),
-                  signUpUIState.hasFailed && signUpUIState.surname.isEmpty())
+                  modifier = Modifier.testTag(SignUpScreenTestTags.LASTNAME_FIELD))
               Field(
                   signUpUIState.email,
                   { signUpViewModel.setEmail(it) },
@@ -155,8 +152,8 @@ private fun RoleSelector(selected: UserRole?, onSelected: (UserRole) -> Unit) {
         modifier = Modifier.testTag(SignUpScreenTestTags.FARMER_PILL))
     SelectablePill(
         text = "Vet",
-        selected = selected == UserRole.VETERINARIAN,
-        onClick = { onSelected(UserRole.VETERINARIAN) },
+        selected = selected == UserRole.VET,
+        onClick = { onSelected(UserRole.VET) },
         modifier = Modifier.testTag(SignUpScreenTestTags.VET_PILL))
   }
 }

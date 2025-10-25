@@ -3,8 +3,8 @@ package com.android.agrihealth.ui.report
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.compose.rememberNavController
-import com.android.agrihealth.data.model.ReportStatus
-import com.android.agrihealth.data.model.UserRole
+import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.user.UserRole
 import org.junit.Rule
 import org.junit.Test
 

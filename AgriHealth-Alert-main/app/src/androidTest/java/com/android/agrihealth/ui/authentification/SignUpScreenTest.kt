@@ -31,12 +31,12 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
 
   private fun completeSignUp(email: String, password: String) {
     composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.NAME_FIELD)
+        .onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD)
         .assertIsDisplayed()
         .performTextInput("Test")
 
     composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.SURNAME_FIELD)
+        .onNodeWithTag(SignUpScreenTestTags.LASTNAME_FIELD)
         .assertIsDisplayed()
         .performTextInput("User")
 
@@ -81,8 +81,8 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
 
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.BACK_BUTTON).assertIsDisplayed()
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignUpScreenTestTags.NAME_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignUpScreenTestTags.SURNAME_FIELD).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SignUpScreenTestTags.LASTNAME_FIELD).assertIsDisplayed()
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.EMAIL_FIELD).assertIsDisplayed()
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.PASSWORD_FIELD).assertIsDisplayed()
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD).assertIsDisplayed()
@@ -103,12 +103,12 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun signUpWithoutRoleFails() {
     composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.NAME_FIELD)
+        .onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD)
         .assertIsDisplayed()
         .performTextInput("Test")
 
     composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.SURNAME_FIELD)
+        .onNodeWithTag(SignUpScreenTestTags.LASTNAME_FIELD)
         .assertIsDisplayed()
         .performTextInput("User")
 
@@ -153,12 +153,12 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun signUpWithMismatchedPasswordsFails() {
     composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.NAME_FIELD)
+        .onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD)
         .assertIsDisplayed()
         .performTextInput("Test")
 
     composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.SURNAME_FIELD)
+        .onNodeWithTag(SignUpScreenTestTags.LASTNAME_FIELD)
         .assertIsDisplayed()
         .performTextInput("User")
 
