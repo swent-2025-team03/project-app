@@ -1,7 +1,5 @@
-package com.android.agrihealth.model.authentification
+package com.android.agrihealth.data.model.authentification
 
-import com.android.agrihealth.data.model.authentification.User
-import com.android.agrihealth.data.model.authentification.UserRole
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.test.runTest

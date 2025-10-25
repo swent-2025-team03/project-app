@@ -1,4 +1,4 @@
-package com.android.agrihealth.model.report
+package com.android.agrihealth.data.model.report
 
 import com.android.agrihealth.data.model.Location
 import com.android.agrihealth.data.model.Report
