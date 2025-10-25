@@ -3,4 +3,5 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_second">SecondActivity</string>
     <string name="FIREBASE_EMULATORS_URL">firebase.okau.moe</string>
+    <string name="default_web_client_id">56441775769-s6hsvgduqu30bho1hd2cqj7uj94lvhsa.apps.googleusercontent.com</string>
 </resources>
