@@ -2,9 +2,8 @@ package com.android.agrihealth.data.model.user
 
 import com.android.agrihealth.data.model.location.Location
 
-// TODO: review pertinence, and missing fields
 data class Farmer(
-    val farmerId: String, // Need to discuss if we keep a String
+    override var uid: String,
     override val firstname: String,
     override val lastname: String,
     override val email: String,
@@ -12,4 +11,4 @@ data class Farmer(
     val linkedVets: List<String> =
         emptyList<String>(), // List of vet IDs associated with the farmer
     val defaultVet: String? // Default vet ID for quick access, can be changed in profile screen
-) : User(farmerId, firstname, lastname, UserRole.FARMER, email)
+) : User(uid, firstname, lastname, UserRole.FARMER, email)

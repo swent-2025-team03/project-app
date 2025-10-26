@@ -40,11 +40,10 @@ class AuthRepositoryFirebase(private val auth: FirebaseAuth = Firebase.auth) : A
 
       userData.uid = user.uid
 
-      // Safely handle subclass-specific copy()
       val updatedUser =
           when (userData) {
-            is Farmer -> userData.copy(email = email)
-            is Vet -> userData.copy(email = email)
+            is Farmer,
+            is Vet -> userData
           }
 
       try {

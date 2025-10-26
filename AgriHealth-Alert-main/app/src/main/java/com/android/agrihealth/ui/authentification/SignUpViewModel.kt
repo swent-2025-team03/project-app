@@ -103,51 +103,38 @@ class SignUpViewModel(
   }
 
   fun signUp() {
-    if (_uiState.value.isValid()) {
-      if (_uiState.value.role == UserRole.FARMER) {
+    val state = _uiState.value
+
+    if (state.isValid()) {
+      val user =
+          when (state.role) {
+            UserRole.FARMER ->
+                Farmer("", state.firstname, state.lastname, state.email, null, emptyList(), null)
+            UserRole.VET -> Vet("", state.firstname, state.lastname, state.email, null)
+            else -> null
+          }
+
+      if (user != null) {
         viewModelScope.launch {
-          authRepository
-              .signUpWithEmailAndPassword(
-                  _uiState.value.email,
-                  _uiState.value.password,
-                  Farmer(
-                      "",
-                      _uiState.value.firstname,
-                      _uiState.value.lastname,
-                      _uiState.value.email,
-                      null,
-                      emptyList(),
-                      null))
-              .fold({ user -> _uiState.update { it.copy(user = user) } }) { failure -> }
-        }
-      } else if (_uiState.value.role == UserRole.VET) {
-        viewModelScope.launch {
-          authRepository
-              .signUpWithEmailAndPassword(
-                  _uiState.value.email,
-                  _uiState.value.password,
-                  Vet(
-                      "",
-                      _uiState.value.firstname,
-                      _uiState.value.lastname,
-                      _uiState.value.email,
-                      null))
-              .fold({ user -> _uiState.update { it.copy(user = user) } }) { failure -> }
+          authRepository.signUpWithEmailAndPassword(state.email, state.password, user).fold({ user
+            ->
+            _uiState.update { it.copy(user = user) }
+          }) { failure ->
+          }
         }
       }
     } else {
-      _uiState.value = _uiState.value.copy(hasFailed = true)
+      _uiState.value = state.copy(hasFailed = true)
       val errorMsg =
           when {
-            !_uiState.value.isFilled() -> SignUpErrorMsg.EMPTY_FIELDS
-            _uiState.value.role == null -> SignUpErrorMsg.ROLE_NULL
-            _uiState.value.emailIsMalformed() -> SignUpErrorMsg.BAD_EMAIL_FORMAT
-            _uiState.value.passwordIsWeak() -> SignUpErrorMsg.WEAK_PASSWORD
-            _uiState.value.password != _uiState.value.cnfPassword ->
-                SignUpErrorMsg.CNF_PASSWORD_DIFF
+            !state.isFilled() -> SignUpErrorMsg.EMPTY_FIELDS
+            state.role == null -> SignUpErrorMsg.ROLE_NULL
+            state.emailIsMalformed() -> SignUpErrorMsg.BAD_EMAIL_FORMAT
+            state.passwordIsWeak() -> SignUpErrorMsg.WEAK_PASSWORD
+            state.password != state.cnfPassword -> SignUpErrorMsg.CNF_PASSWORD_DIFF
             else -> null
           }
-      setErrorMsg(errorMsg!!)
+      errorMsg?.let { setErrorMsg(it) }
     }
   }
 }

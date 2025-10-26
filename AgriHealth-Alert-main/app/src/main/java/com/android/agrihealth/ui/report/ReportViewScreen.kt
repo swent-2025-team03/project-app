@@ -118,7 +118,7 @@ fun ReportViewScreen(
               Text(
                   text =
                       if (userRole == UserRole.VET) "Farmer ID: ${report.farmerId}"
-                      else "Vet ID: ${report.vetId}",
+                      else "Vet ID: ${report.vetId} ?: \"Unassigned\"",
                   style = MaterialTheme.typography.bodyMedium,
                   color = MaterialTheme.colorScheme.onSurfaceVariant)
 
