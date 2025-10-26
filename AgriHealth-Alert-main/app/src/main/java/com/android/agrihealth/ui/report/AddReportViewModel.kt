@@ -48,7 +48,7 @@ class AddReportViewModel(
             description = uiState.description,
             photoUri = null, // currently unused
             farmerId = "currentUserId", //
-            vetId = "VET_456", // TODO: Use the real vetID when implemented
+            vetId = "Best Vet Ever!", // TODO: Use the real vetID when implemented
             status = ReportStatus.PENDING,
             answer = null,
             location = null // optional until implemented

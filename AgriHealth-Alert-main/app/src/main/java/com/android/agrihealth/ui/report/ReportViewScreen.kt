@@ -118,9 +118,10 @@ fun ReportViewScreen(
               Text(
                   text =
                       if (userRole == UserRole.VET) "Farmer ID: ${report.farmerId}"
-                      else "Vet ID: ${report.vetId} ?: \"Unassigned\"",
+                      else "Vet ID: ${report.vetId}" ?: "Unassigned",
                   style = MaterialTheme.typography.bodyMedium,
-                  color = MaterialTheme.colorScheme.onSurfaceVariant)
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
+                  modifier = Modifier.testTag("roleInfoLine"))
 
               // ---- Photo ---- For now, I am skipping this part since I had trouble loading a
               // placeholder image
