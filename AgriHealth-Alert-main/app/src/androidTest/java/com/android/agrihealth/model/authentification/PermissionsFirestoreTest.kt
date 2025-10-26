@@ -2,6 +2,7 @@ package com.android.agrihealth.model.authentification
 
 import com.android.agrihealth.data.model.user.User
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
@@ -77,7 +78,7 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
     try {
       // A bit counter intuitive, this will return PERMISSION_DENIED because updateUser() tries to
       // getUserFromUid() first, and user is not allowed to get others
-      userRepository.updateUser(user1.copy(farmerId = "newUid"))
+      userRepository.updateUser(user1.copy(uid = "newUid"))
       fail("User should not be able to change their uid")
     } catch (e: FirebaseFirestoreException) {
       assertEquals(e.code, FirebaseFirestoreException.Code.PERMISSION_DENIED)
