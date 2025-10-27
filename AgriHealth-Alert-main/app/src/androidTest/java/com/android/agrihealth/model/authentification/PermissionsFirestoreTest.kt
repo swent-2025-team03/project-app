@@ -72,6 +72,17 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
+  fun failToUpdateOwnRole() = runTest {
+    createAccount(user1, password1)
+
+    try {
+      userRepository.updateUser(user1.copy(role = UserRole.VET))
+      fail("User should not be able to change their role")
+    } catch (e: IllegalArgumentException) {
+      assertEquals(e.message, "Permission denied")
+    }
+
+  @Test
   fun failToUpdateOwnUid() = runTest {
     createAccount(user1, password1)
 
