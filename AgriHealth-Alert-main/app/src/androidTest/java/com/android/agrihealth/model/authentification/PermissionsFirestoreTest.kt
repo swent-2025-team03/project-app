@@ -1,8 +1,8 @@
 package com.android.agrihealth.model.authentification
 
 import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
@@ -76,11 +76,13 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
     createAccount(user1, password1)
 
     try {
-      userRepository.updateUser(user1.copy(role = UserRole.VET))
+      userRepository.updateUser(
+          Vet(user1.uid, user1.lastname, user1.firstname, user1.email, user1.address))
       fail("User should not be able to change their role")
     } catch (e: IllegalArgumentException) {
       assertEquals(e.message, "Permission denied")
     }
+  }
 
   @Test
   fun failToUpdateOwnUid() = runTest {

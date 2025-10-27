@@ -125,6 +125,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
         if (old.address != new.address) changes["address"] = new.address
         if (old.linkedFarmers != new.linkedFarmers) changes["linkedFarmers"] = new.linkedFarmers
       }
+      else -> throw IllegalArgumentException("Permission denied")
     }
 
     return changes
