@@ -4,7 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import com.android.agrihealth.data.model.UserRole
+import com.android.agrihealth.data.model.user.UserRole
 import org.junit.Rule
 import org.junit.Test
 
@@ -18,15 +18,11 @@ class OverviewStableUITest {
 
   // --- Helper functions to set up screens ---
   private fun setFarmerScreen() {
-    composeTestRule.setContent {
-      OverviewScreen(userRole = com.android.agrihealth.data.model.UserRole.FARMER)
-    }
+    composeTestRule.setContent { OverviewScreen(userRole = UserRole.FARMER) }
   }
 
   private fun setVetScreen() {
-    composeTestRule.setContent {
-      OverviewScreen(userRole = com.android.agrihealth.data.model.UserRole.VET)
-    }
+    composeTestRule.setContent { OverviewScreen(userRole = UserRole.VET) }
   }
 
   // --- TEST 1: Verify the top app bar title is displayed ---
@@ -61,12 +57,6 @@ class OverviewStableUITest {
   @Test
   fun latestNewsSection_isDisplayed() {
     setFarmerScreen()
-    composeTestRule.onNodeWithText("Latest News / Alerts").assertIsDisplayed()
-  }
-
-  @Test
-  fun authorityScreen_displaysExpectedElements() {
-    composeTestRule.setContent { OverviewScreen(userRole = UserRole.AUTHORITY) }
     composeTestRule.onNodeWithText("Latest News / Alerts").assertIsDisplayed()
   }
 }

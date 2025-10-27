@@ -1,6 +1,6 @@
 package com.android.agrihealth.data.repository
 
-import com.android.agrihealth.data.model.Report
+import com.android.agrihealth.data.model.report.Report
 
 /** Repository interface for managing reports. */
 interface ReportRepository {
