@@ -7,7 +7,7 @@ enum class ReportStatus {
   PENDING,
   IN_PROGRESS,
   RESOLVED,
-  ESCALATED
+  SPAM
 }
 
 data class Report(

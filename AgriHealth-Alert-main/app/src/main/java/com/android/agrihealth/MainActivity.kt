@@ -22,7 +22,7 @@ import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
-import com.android.agrihealth.ui.farmer.MapScreen
+import com.android.agrihealth.ui.map.MapScreen
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
