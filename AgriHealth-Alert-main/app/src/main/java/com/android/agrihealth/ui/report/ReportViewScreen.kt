@@ -211,9 +211,7 @@ fun ReportViewScreen(
                 AlertDialog(
                     onDismissRequest = { isSpamDialogOpen = false },
                     title = { Text("Confirm it is Spam") },
-                    text = {
-                      Text("Are you sure you want to report this report as spam?")
-                    },
+                    text = { Text("Are you sure you want to report this report as spam?") },
                     confirmButton = {
                       TextButton(
                           onClick = {
