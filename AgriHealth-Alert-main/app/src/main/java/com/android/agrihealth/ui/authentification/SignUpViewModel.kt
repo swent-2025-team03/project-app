@@ -116,11 +116,18 @@ class SignUpViewModel(
 
       if (user != null) {
         viewModelScope.launch {
-          authRepository.signUpWithEmailAndPassword(state.email, state.password, user).fold({ user
-            ->
-            _uiState.update { it.copy(user = user) }
-          }) { failure ->
-          }
+          authRepository
+              .signUpWithEmailAndPassword(state.email, state.password, user)
+              .fold(
+                  { user -> _uiState.update { it.copy(user = user) } },
+                  { failure ->
+                    setErrorMsg(
+                        when (failure) {
+                          is com.google.firebase.auth.FirebaseAuthException ->
+                              SignUpErrorMsg.ALREADY_USED_EMAIL
+                          else -> SignUpErrorMsg.TIMEOUT
+                        })
+                  })
         }
       }
     } else {
