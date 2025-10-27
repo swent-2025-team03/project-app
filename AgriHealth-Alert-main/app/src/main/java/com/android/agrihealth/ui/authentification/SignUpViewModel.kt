@@ -5,9 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
-import com.android.agrihealth.data.model.authentification.User
-import com.android.agrihealth.data.model.authentification.UserRole
-import com.google.firebase.auth.FirebaseAuthException
+import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,8 +28,8 @@ data class SignUpUIState(
     val email: String = "",
     val password: String = "",
     val user: FirebaseUser? = null,
-    val name: String = "",
-    val surname: String = "",
+    val firstname: String = "",
+    val lastname: String = "",
     val cnfPassword: String = "",
     val role: UserRole? = null,
     val errorMsg: String? = null,
@@ -55,8 +55,8 @@ data class SignUpUIState(
   fun isFilled(): Boolean {
     return email.isNotEmpty() &&
         password.isNotEmpty() &&
-        name.isNotEmpty() &&
-        surname.isNotEmpty() &&
+        firstname.isNotEmpty() &&
+        lastname.isNotEmpty() &&
         cnfPassword.isNotEmpty()
   }
 }
@@ -79,11 +79,11 @@ class SignUpViewModel(
   }
 
   fun setName(name: String) {
-    _uiState.value = _uiState.value.copy(name = name)
+    _uiState.value = _uiState.value.copy(firstname = name)
   }
 
   fun setSurname(surname: String) {
-    _uiState.value = _uiState.value.copy(surname = surname)
+    _uiState.value = _uiState.value.copy(lastname = surname)
   }
 
   fun setPassword(password: String) {
@@ -103,38 +103,45 @@ class SignUpViewModel(
   }
 
   fun signUp() {
-    if (_uiState.value.isValid()) {
-      viewModelScope.launch {
-        authRepository
-            .signUpWithEmailAndPassword(
-                _uiState.value.email,
-                _uiState.value.password,
-                User(
-                    "",
-                    _uiState.value.name,
-                    _uiState.value.surname,
-                    _uiState.value.role!!,
-                    _uiState.value.email))
-            .fold({ user -> _uiState.update { it.copy(user = user) } }) { failure ->
-              when (failure) {
-                is FirebaseAuthException -> setErrorMsg(SignUpErrorMsg.ALREADY_USED_EMAIL)
-                else -> setErrorMsg(SignUpErrorMsg.TIMEOUT)
-              }
-            }
-      }
-    } else {
-      _uiState.value = _uiState.value.copy(hasFailed = true)
-      val errorMsg =
-          when {
-            !_uiState.value.isFilled() -> SignUpErrorMsg.EMPTY_FIELDS
-            _uiState.value.role == null -> SignUpErrorMsg.ROLE_NULL
-            _uiState.value.emailIsMalformed() -> SignUpErrorMsg.BAD_EMAIL_FORMAT
-            _uiState.value.passwordIsWeak() -> SignUpErrorMsg.WEAK_PASSWORD
-            _uiState.value.password != _uiState.value.cnfPassword ->
-                SignUpErrorMsg.CNF_PASSWORD_DIFF
+    val state = _uiState.value
+
+    if (state.isValid()) {
+      val user =
+          when (state.role) {
+            UserRole.FARMER ->
+                Farmer("", state.firstname, state.lastname, state.email, null, emptyList(), null)
+            UserRole.VET -> Vet("", state.firstname, state.lastname, state.email, null)
             else -> null
           }
-      setErrorMsg(errorMsg!!)
+
+      if (user != null) {
+        viewModelScope.launch {
+          authRepository
+              .signUpWithEmailAndPassword(state.email, state.password, user)
+              .fold(
+                  { user -> _uiState.update { it.copy(user = user) } },
+                  { failure ->
+                    setErrorMsg(
+                        when (failure) {
+                          is com.google.firebase.auth.FirebaseAuthException ->
+                              SignUpErrorMsg.ALREADY_USED_EMAIL
+                          else -> SignUpErrorMsg.TIMEOUT
+                        })
+                  })
+        }
+      }
+    } else {
+      _uiState.value = state.copy(hasFailed = true)
+      val errorMsg =
+          when {
+            !state.isFilled() -> SignUpErrorMsg.EMPTY_FIELDS
+            state.role == null -> SignUpErrorMsg.ROLE_NULL
+            state.emailIsMalformed() -> SignUpErrorMsg.BAD_EMAIL_FORMAT
+            state.passwordIsWeak() -> SignUpErrorMsg.WEAK_PASSWORD
+            state.password != state.cnfPassword -> SignUpErrorMsg.CNF_PASSWORD_DIFF
+            else -> null
+          }
+      errorMsg?.let { setErrorMsg(it) }
     }
   }
 }
