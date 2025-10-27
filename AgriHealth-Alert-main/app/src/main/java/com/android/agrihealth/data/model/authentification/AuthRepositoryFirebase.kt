@@ -3,6 +3,9 @@ package com.android.agrihealth.data.model.authentification
 import androidx.credentials.Credential
 import androidx.credentials.CustomCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -65,8 +68,15 @@ class AuthRepositoryFirebase(
               ?: return Result.failure(NullPointerException("Account creation failed"))
 
       userData.uid = user.uid
+
+      val updatedUser =
+          when (userData) {
+            is Farmer,
+            is Vet -> userData
+          }
+
       try {
-        userRepository.addUser(userData.copy(email = email))
+        userRepository.addUser(updatedUser)
       } catch (e: Exception) {
         user.delete().await()
         Result.failure<FirebaseUser>(NullPointerException("Account creation failed"))

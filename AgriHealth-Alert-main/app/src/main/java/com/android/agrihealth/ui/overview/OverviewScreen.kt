@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,9 +19,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.data.model.Report
-import com.android.agrihealth.data.model.ReportStatus
-import com.android.agrihealth.data.model.UserRole
+import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -56,7 +58,7 @@ fun OverviewScreen(
 ) {
 
   val uiState by overviewViewModel.uiState.collectAsState()
-  val reports = uiState.reports
+  val reports: List<Report> = uiState.reports
 
   Scaffold(
       // -- Top App Bar with logout icon --
@@ -75,7 +77,7 @@ fun OverviewScreen(
                     navigationActions?.navigateToAuthAndClear()
                   },
                   modifier = Modifier.testTag(OverviewScreenTestTags.LOGOUT_BUTTON)) {
-                    Icon(Icons.Default.ExitToApp, contentDescription = "Sign Out")
+                    Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Sign Out")
                   }
             })
       },
@@ -129,7 +131,7 @@ fun OverviewScreen(
                       report = report,
                       onClick = { onReportClick(report.id) },
                   )
-                  Divider()
+                  HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                 }
               }
             }

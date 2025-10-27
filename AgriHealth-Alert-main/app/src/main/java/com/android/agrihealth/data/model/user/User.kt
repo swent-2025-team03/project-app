@@ -1,16 +1,16 @@
-package com.android.agrihealth.data.model.authentification
+package com.android.agrihealth.data.model.user
 
-data class User(
-    var uid: String = "placeholder",
-    val name: String,
-    val surname: String,
-    val role: UserRole,
-    val email: String
+sealed class User(
+    open var uid: String = "placeholder",
+    open val firstname: String,
+    open val lastname: String,
+    open val role: UserRole,
+    open val email: String
 )
 
 enum class UserRole {
   FARMER,
-  VETERINARIAN,
+  VET
 }
 
 /**

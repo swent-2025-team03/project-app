@@ -1,6 +1,7 @@
 package com.android.agrihealth.data.model.authentification
 
 import androidx.credentials.Credential
+import com.android.agrihealth.data.model.user.User
 import com.google.firebase.auth.FirebaseUser
 
 interface AuthRepository {

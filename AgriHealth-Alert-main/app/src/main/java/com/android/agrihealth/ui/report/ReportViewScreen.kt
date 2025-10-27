@@ -19,7 +19,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.android.agrihealth.data.model.*
+import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.user.UserRole
 
 /**
  * Displays the detailed view of a single report. The UI dynamically adapts depending on the current
@@ -38,8 +39,8 @@ fun ReportViewScreen(
   val uiState by viewModel.uiState.collectAsState()
 
   // --- Auto-change PENDING -> IN_PROGRESS for vets ---
-  LaunchedEffect(userRole, uiState.report?.status) {
-    if (userRole == UserRole.VET && uiState.report?.status == ReportStatus.PENDING) {
+  LaunchedEffect(userRole, uiState.report.status) {
+    if (userRole == UserRole.VET && uiState.report.status == ReportStatus.PENDING) {
       viewModel.onStatusChange(ReportStatus.IN_PROGRESS)
     }
   }
@@ -117,9 +118,10 @@ fun ReportViewScreen(
               Text(
                   text =
                       if (userRole == UserRole.VET) "Farmer ID: ${report.farmerId}"
-                      else "Vet ID: ${report.vetId ?: "Unassigned"}",
+                      else "Vet ID: ${report.vetId}" ?: "Unassigned",
                   style = MaterialTheme.typography.bodyMedium,
-                  color = MaterialTheme.colorScheme.onSurfaceVariant)
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
+                  modifier = Modifier.testTag("roleInfoLine"))
 
               // ---- Photo ---- For now, I am skipping this part since I had trouble loading a
               // placeholder image
