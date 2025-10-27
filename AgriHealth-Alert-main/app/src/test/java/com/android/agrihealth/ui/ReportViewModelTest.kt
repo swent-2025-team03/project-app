@@ -67,9 +67,9 @@ class ReportViewModelTest {
   }
 
   @Test
-  fun `onEscalate sets status to ESCALATED`() {
-    viewModel.onEscalate()
-    assertEquals(ReportStatus.ESCALATED, viewModel.uiState.value.status)
+  fun `onSpam sets status to SPAM`() {
+    viewModel.onSpam()
+    assertEquals(ReportStatus.SPAM, viewModel.uiState.value.status)
   }
 
   @Test
