@@ -9,7 +9,6 @@ import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -25,7 +24,6 @@ class E2ETest : FirebaseEmulatorsTest(true) {
   @Before
   override fun setUp() {
     super.setUp()
-    runTest { authRepository.signUpWithEmailAndPassword(user1.email, "12345678", user1) }
     authRepository.signOut()
 
     composeTestRule.setContent { AgriHealthApp() }

@@ -2,10 +2,6 @@ package com.android.agrihealth.data.model.authentification
 
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.R
-import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
-import com.android.agrihealth.data.model.authentification.User
-import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
-import com.android.agrihealth.data.model.authentification.UserRole
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
@@ -20,8 +16,7 @@ open class FirebaseEmulatorsTest(shouldInitializeEmulators: Boolean = true) {
   private val _shouldInitializeEmulators = shouldInitializeEmulators
   // from bootcamp
   val httpClient = OkHttpClient()
-  val contextHost =
-      InstrumentationRegistry.getInstrumentation().targetContext
+  val contextHost = InstrumentationRegistry.getInstrumentation().targetContext
   val host = contextHost.getString(R.string.FIREBASE_EMULATORS_URL)
   val firestorePort = 8081
   val authPort = 9099
@@ -60,8 +55,7 @@ open class FirebaseEmulatorsTest(shouldInitializeEmulators: Boolean = true) {
   @Before
   open fun setUp() {
     if (!emulatorInitialized && _shouldInitializeEmulators) {
-      val context =
-          InstrumentationRegistry.getInstrumentation().targetContext
+      val context = InstrumentationRegistry.getInstrumentation().targetContext
       val url = context.getString(R.string.FIREBASE_EMULATORS_URL)
       val firestorePort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_FIRESTORE_PORT)
       val authPort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_AUTH_PORT)
