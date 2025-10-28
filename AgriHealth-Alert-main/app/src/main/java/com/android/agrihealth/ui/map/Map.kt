@@ -35,7 +35,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.createBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.Report
 import com.android.agrihealth.data.model.ReportStatus
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -44,19 +46,17 @@ import com.android.agrihealth.ui.navigation.Tab
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
-import androidx.core.graphics.createBitmap
-import com.android.agrihealth.data.model.Report
+import com.google.maps.android.compose.rememberCameraPositionState
 
 object MapScreenTestTags {
-    const val GOOGLE_MAP_SCREEN = "googleMapScreen"
+  const val GOOGLE_MAP_SCREEN = "googleMapScreen"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,22 +66,23 @@ fun MapScreen(
     navigationActions: NavigationActions? = null,
     isViewedFromOverview: Boolean = true
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+  val uiState by viewModel.uiState.collectAsState()
 
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(46.9481,7.4474), 10f) // Bern
-    }
+  val cameraPositionState = rememberCameraPositionState {
+    position = CameraPosition.fromLatLngZoom(LatLng(46.9481, 7.4474), 10f) // Bern
+  }
 
-    val selectedReport = remember { mutableStateOf<Report?>(null) }
+  val selectedReport = remember { mutableStateOf<Report?>(null) }
 
-    val googleMapUiSettings = remember {
-        MapUiSettings(
-            zoomControlsEnabled = false,
-        )
-    }
-    val googleMapMapProperties = remember {
-        MapProperties(
-            mapStyleOptions = MapStyleOptions(
+  val googleMapUiSettings = remember {
+    MapUiSettings(
+        zoomControlsEnabled = false,
+    )
+  }
+  val googleMapMapProperties = remember {
+    MapProperties(
+        mapStyleOptions =
+            MapStyleOptions(
                 """
                 [
                   {
@@ -113,149 +114,136 @@ fun MapScreen(
                     "stylers": [{ "visibility": "off" }]
                   }
                 ]
-                """.trimIndent()
-            )
-        )
-    }
+                """
+                    .trimIndent()))
+  }
 
-    Scaffold(
-        topBar = {
-            if (!isViewedFromOverview) {
-                TopAppBar(
-                    title = {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Map",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = { navigationActions?.goBack() },
-                            modifier =
-                                Modifier.testTag(
-                                    NavigationTestTags.GO_BACK_BUTTON
-                                )
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
-                            )
-                        }
+  Scaffold(
+      topBar = {
+        if (!isViewedFromOverview) {
+          TopAppBar(
+              title = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically) {
+                      Text(
+                          text = "Map",
+                          style = MaterialTheme.typography.titleLarge,
+                          fontWeight = FontWeight.Bold,
+                          modifier = Modifier.weight(1f))
                     }
-                )
-            }
-        },
-        bottomBar = {
-            if (isViewedFromOverview) BottomNavigationMenu(
+              },
+              navigationIcon = {
+                IconButton(
+                    onClick = { navigationActions?.goBack() },
+                    modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
+                      Icon(
+                          imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                          contentDescription = "Back")
+                    }
+              })
+        }
+      },
+      bottomBar = {
+        if (isViewedFromOverview)
+            BottomNavigationMenu(
                 selectedTab = Tab.Map,
                 onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
                 modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
-        },
-        content = { pd ->
-            Box(modifier = Modifier.fillMaxSize().padding(pd)) {
-                GoogleMap(
-                    cameraPositionState = cameraPositionState,
-                    properties = googleMapMapProperties,
-                    uiSettings = googleMapUiSettings
-                ) {
-                    uiState.reports.forEach { report ->
-                        val markerSize = if (report == selectedReport.value) 60f else 40f
-                        val markerIcon = when (report.status) {
-                            ReportStatus.PENDING -> createCircleMarker(Color.GRAY, markerSize)
-                            ReportStatus.IN_PROGRESS -> createCircleMarker(Color.rgb(242, 199, 119), markerSize) // yellow
-                            ReportStatus.RESOLVED -> createCircleMarker(Color.rgb(108, 166, 209), markerSize) // blue
-                            ReportStatus.ESCALATED -> createCircleMarker(Color.rgb(184, 92, 92), markerSize) // red
-                        }
-                        Marker(
-                            state = MarkerState(
-                                position = LatLng(
-                                    report.location!!.latitude,
-                                    report.location.longitude
-                                )
-                            ),
-                            title = report.title,
-                            snippet = report.description,
-                            icon = markerIcon,
-                            onClick = {
-                                selectedReport.value = if (selectedReport.value == report) null else report
-                                true
-                            }
-                        )
-                    }
+      },
+      content = { pd ->
+        Box(modifier = Modifier.fillMaxSize().padding(pd)) {
+          GoogleMap(
+              cameraPositionState = cameraPositionState,
+              properties = googleMapMapProperties,
+              uiSettings = googleMapUiSettings) {
+                uiState.reports.forEach { report ->
+                  val markerSize = if (report == selectedReport.value) 60f else 40f
+                  val markerIcon =
+                      when (report.status) {
+                        ReportStatus.PENDING -> createCircleMarker(Color.GRAY, markerSize)
+                        ReportStatus.IN_PROGRESS ->
+                            createCircleMarker(Color.rgb(242, 199, 119), markerSize) // yellow
+                        ReportStatus.RESOLVED ->
+                            createCircleMarker(Color.rgb(108, 166, 209), markerSize) // blue
+                        ReportStatus.ESCALATED ->
+                            createCircleMarker(Color.rgb(184, 92, 92), markerSize) // red
+                      }
+                  Marker(
+                      state =
+                          MarkerState(
+                              position =
+                                  LatLng(report.location!!.latitude, report.location.longitude)),
+                      title = report.title,
+                      snippet = report.description,
+                      icon = markerIcon,
+                      onClick = {
+                        selectedReport.value = if (selectedReport.value == report) null else report
+                        true
+                      })
                 }
+              }
 
-                ShowReportInfo(selectedReport.value)
-            }
+          ShowReportInfo(selectedReport.value)
         }
-    )
+      })
 }
 
 @Composable
 fun ShowReportInfo(report: Report?) {
-    if (report == null) return
+  if (report == null) return
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            //.padding(16.dp)
-    ) {
+  Box(
+      modifier = Modifier.fillMaxSize()
+      // .padding(16.dp)
+      ) {
         Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .background(color = androidx.compose.ui.graphics.Color.White, shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = report.title,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = report.description)
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-    }
+            modifier =
+                Modifier.align(Alignment.BottomCenter)
+                    .background(
+                        color = androidx.compose.ui.graphics.Color.White,
+                        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                    .fillMaxWidth()
+                    .padding(16.dp)) {
+              Text(text = report.title, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+              Spacer(modifier = Modifier.height(4.dp))
+              Text(text = report.description)
+              Spacer(modifier = Modifier.height(8.dp))
+            }
+      }
 }
 
 fun createCircleMarker(color: Int, radius: Float = 40f, strokeWidth: Float = 8f): BitmapDescriptor {
-    val size = (radius * 2 + strokeWidth).toInt()
-    val bitmap = createBitmap(size, size)
-    val canvas = Canvas(bitmap)
+  val size = (radius * 2 + strokeWidth).toInt()
+  val bitmap = createBitmap(size, size)
+  val canvas = Canvas(bitmap)
 
-    // Draw filled circle
-    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-    paint.color = color
-    paint.style = Paint.Style.FILL
-    canvas.drawCircle(size / 2f, size / 2f, radius, paint)
+  // Draw filled circle
+  val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+  paint.color = color
+  paint.style = Paint.Style.FILL
+  canvas.drawCircle(size / 2f, size / 2f, radius, paint)
 
-    // Draw white outline
-    val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    strokePaint.color = Color.WHITE
-    strokePaint.style = Paint.Style.STROKE
-    strokePaint.strokeWidth = strokeWidth
-    canvas.drawCircle(size / 2f, size / 2f, radius, strokePaint)
+  // Draw white outline
+  val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG)
+  strokePaint.color = Color.WHITE
+  strokePaint.style = Paint.Style.STROKE
+  strokePaint.strokeWidth = strokeWidth
+  canvas.drawCircle(size / 2f, size / 2f, radius, strokePaint)
 
-    // Draw white center dot
-    val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    val dotRadius = radius / 4f
-    dotPaint.color = Color.WHITE
-    dotPaint.style = Paint.Style.FILL
-    canvas.drawCircle(size / 2f, size / 2f, dotRadius, dotPaint)
+  // Draw white center dot
+  val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+  val dotRadius = radius / 4f
+  dotPaint.color = Color.WHITE
+  dotPaint.style = Paint.Style.FILL
+  canvas.drawCircle(size / 2f, size / 2f, dotRadius, dotPaint)
 
-    return BitmapDescriptorFactory.fromBitmap(bitmap)
+  return BitmapDescriptorFactory.fromBitmap(bitmap)
 }
 
 @Preview
 @Composable
 fun PreviewMapScreen() {
-    MapScreen()
+  MapScreen()
 }
