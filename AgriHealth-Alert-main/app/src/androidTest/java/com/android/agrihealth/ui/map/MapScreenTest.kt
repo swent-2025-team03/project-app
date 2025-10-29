@@ -11,6 +11,7 @@ import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.android.agrihealth.model.authentification.FirebaseEmulatorsTest
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -104,6 +105,8 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     composeRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsNotDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsNotDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
+      composeRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsDisplayed()
+      composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForFilter("All")).assertIsDisplayed()
   }
 
   @Test
@@ -113,6 +116,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     composeRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsNotDisplayed()
+      composeRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsNotDisplayed()
   }
 
   private fun getUserReports(uid: String): List<Report> {
@@ -157,4 +161,31 @@ class MapScreenTest : FirebaseEmulatorsTest() {
       composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsNotDisplayed()
     }
   }
+
+  @Test
+  fun filterReportsByStatus() {
+      composeRule.setContent { MaterialTheme { MapScreen() } }
+      assertNotNull(Firebase.auth.currentUser)
+      val uid = Firebase.auth.currentUser!!.uid
+      val reports = getUserReports(uid)
+      val filters = listOf("All") + ReportStatus.entries.map { it.displayString() }
+
+      filters.forEach { filter ->
+          composeRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsDisplayed().performClick()
+          composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForFilter(filter)).assertIsDisplayed().performClick()
+          val (matches, nonMatches) = reports.partition { it -> filter == "All" || it.status.displayString() == filter }
+          matches.forEach { report ->
+              composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id)).assertIsDisplayed()
+          }
+          nonMatches.forEach { report ->
+              composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id)).assertIsNotDisplayed()
+          }
+      }
+  }
+
+  @Test fun canOverrideStartingPosition() {}
+
+  @Test fun mapCenteredOnUserAddress() {}
+
+  @Test fun mapCenteredOnDefaultIfNoAddress() {}
 }
