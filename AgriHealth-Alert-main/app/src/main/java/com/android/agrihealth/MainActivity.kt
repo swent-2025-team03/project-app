@@ -1,5 +1,6 @@
 package com.android.agrihealth
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,9 +9,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -66,7 +69,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AgriHealthApp() {
+fun AgriHealthApp(
+    context: Context = LocalContext.current,
+    credentialManager: CredentialManager = CredentialManager.create(context)
+) {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
 
@@ -84,6 +90,7 @@ fun AgriHealthApp() {
     ) {
       composable(Screen.Auth.route) {
         SignInScreen(
+            credentialManager = credentialManager,
             onSignedIn = {
               // TODO: Get user data from Firebase after login
               userViewModel.userRole = UserRole.FARMER
@@ -94,6 +101,7 @@ fun AgriHealthApp() {
       }
       composable(Screen.SignUp.route) {
         SignUpScreen(
+            onBack = { navigationActions.navigateTo(Screen.Auth) },
             onSignedUp = {
               // TODO: After signup, set user info
               userViewModel.userRole = UserRole.FARMER
@@ -115,6 +123,7 @@ fun AgriHealthApp() {
         val currentUserId = userViewModel.userId
 
         OverviewScreen(
+            credentialManager = credentialManager,
             userRole = currentUserRole,
             overviewViewModel = overviewViewModel,
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
