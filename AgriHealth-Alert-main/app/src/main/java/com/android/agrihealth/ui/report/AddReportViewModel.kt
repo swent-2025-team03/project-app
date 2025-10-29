@@ -1,8 +1,8 @@
-package com.android.agrihealth.ui.farmer
+package com.android.agrihealth.ui.report
 
 import androidx.lifecycle.ViewModel
-import com.android.agrihealth.data.model.Report
-import com.android.agrihealth.data.model.ReportStatus
+import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import kotlinx.coroutines.Dispatchers
@@ -48,10 +48,7 @@ class AddReportViewModel(
             description = uiState.description,
             photoUri = null, // currently unused
             farmerId = "currentUserId", //
-            vetId =
-                uiState.chosenVet.takeIf {
-                  it.isNotBlank()
-                }, // TODO: Use the real vetID when implemented
+            vetId = "Best Vet Ever!", // TODO: Use the real vetID when implemented
             status = ReportStatus.PENDING,
             answer = null,
             location = null // optional until implemented

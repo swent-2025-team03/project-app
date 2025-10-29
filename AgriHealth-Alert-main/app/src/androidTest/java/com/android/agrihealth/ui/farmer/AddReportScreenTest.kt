@@ -8,6 +8,11 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import com.android.agrihealth.ui.report.AddReportConstants
+import com.android.agrihealth.ui.report.AddReportFeedbackTexts
+import com.android.agrihealth.ui.report.AddReportScreen
+import com.android.agrihealth.ui.report.AddReportScreenPreview
+import com.android.agrihealth.ui.report.AddReportScreenTestTags
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test

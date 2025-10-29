@@ -1,4 +1,4 @@
-package com.android.agrihealth.ui.farmer
+package com.android.agrihealth.ui.report
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

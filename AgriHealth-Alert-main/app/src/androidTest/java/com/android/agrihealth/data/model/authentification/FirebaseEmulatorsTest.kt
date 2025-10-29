@@ -2,6 +2,10 @@ package com.android.agrihealth.data.model.authentification
 
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.R
+import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
+import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
@@ -16,7 +20,8 @@ open class FirebaseEmulatorsTest(shouldInitializeEmulators: Boolean = true) {
   private val _shouldInitializeEmulators = shouldInitializeEmulators
   // from bootcamp
   val httpClient = OkHttpClient()
-  val contextHost = InstrumentationRegistry.getInstrumentation().targetContext
+  val contextHost =
+      androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
   val host = contextHost.getString(R.string.FIREBASE_EMULATORS_URL)
   val firestorePort = 8081
   val authPort = 9099
@@ -29,10 +34,10 @@ open class FirebaseEmulatorsTest(shouldInitializeEmulators: Boolean = true) {
   }
 
   // Definition of test users
-  val user1 = User("abc123", "Rushia", "Uruha", UserRole.FARMER, "email1@thing.com")
-  val user2 = User("def456", "mike", "neko", UserRole.FARMER, "email2@aaaaa.balls")
-  val user3 = User("ghi789", "Nazuna", "Amemiya", UserRole.VETERINARIAN, "email3@kms.josh")
-  val user4 = User("jklABC", "John", "Fake", UserRole.FARMER, "fakeUser.glorp")
+  val user1 = Farmer("abc123", "Rushia", "Uruha", "email1@thing.com", null, emptyList(), null)
+  val user2 = Farmer("def456", "mike", "neko", "email2@aaaaa.balls", null, emptyList(), null)
+  val user3 = Vet("ghi789", "Nazuna", "Amemiya", "email3@kms.josh", null)
+  val user4 = Farmer("jklABC", "John", "Fake", "fakeUser.glorp", null, emptyList(), null)
 
   val password1 = "Password123"
   val password2 = "iamaweakpassword"
@@ -55,7 +60,8 @@ open class FirebaseEmulatorsTest(shouldInitializeEmulators: Boolean = true) {
   @Before
   open fun setUp() {
     if (!emulatorInitialized && _shouldInitializeEmulators) {
-      val context = InstrumentationRegistry.getInstrumentation().targetContext
+      val context =
+          androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
       val url = context.getString(R.string.FIREBASE_EMULATORS_URL)
       val firestorePort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_FIRESTORE_PORT)
       val authPort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_AUTH_PORT)

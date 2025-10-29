@@ -1,8 +1,8 @@
 package com.android.agrihealth.data.repository
 
-import com.android.agrihealth.data.model.Location
-import com.android.agrihealth.data.model.Report
-import com.android.agrihealth.data.model.ReportStatus
+import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.ReportStatus
 
 class FakeOverviewRepository : ReportRepository {
 
@@ -14,7 +14,7 @@ class FakeOverviewRepository : ReportRepository {
               description = "Coughing and nasal discharge observed",
               photoUri = null,
               farmerId = "FARMER_001",
-              vetId = null,
+              vetId = "VET_001",
               status = ReportStatus.IN_PROGRESS,
               answer = null,
               location = Location(46.5191, 6.5668, "Lausanne Farm")),
