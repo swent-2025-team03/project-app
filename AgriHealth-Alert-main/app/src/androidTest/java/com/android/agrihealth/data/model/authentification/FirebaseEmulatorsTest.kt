@@ -2,8 +2,6 @@ package com.android.agrihealth.data.model.authentification
 
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.R
-import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
-import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.Firebase

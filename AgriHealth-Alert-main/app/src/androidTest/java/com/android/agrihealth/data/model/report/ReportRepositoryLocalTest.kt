@@ -1,8 +1,6 @@
 package com.android.agrihealth.data.model.report
 
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.report.Report
-import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepositoryLocal
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
