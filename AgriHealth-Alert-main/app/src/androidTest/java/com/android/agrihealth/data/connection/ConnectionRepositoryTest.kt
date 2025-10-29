@@ -3,7 +3,6 @@ package com.android.agrihealth.data.connection
 import com.android.agrihealth.data.model.authentification.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.connection.ConnectionRepository
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings
 import java.time.Instant
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -21,11 +20,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
 
   @Before
   fun setup() = runBlocking {
-    db =
-        FirebaseFirestore.getInstance().apply {
-          firestoreSettings =
-              FirebaseFirestoreSettings.Builder().setPersistenceEnabled(false).build()
-        }
+    db = FirebaseFirestore.getInstance()
     repo = ConnectionRepository(db)
     // Create test users in Firebase
     runTest {
