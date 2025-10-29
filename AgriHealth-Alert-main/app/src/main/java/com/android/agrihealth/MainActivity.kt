@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
@@ -72,6 +74,7 @@ fun AgriHealthApp() {
 
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
+    val currentUserRole by userViewModel.userRole.collectAsState()
 
   val startDestination =
       if (Firebase.auth.currentUser != null) Screen.Overview.name else Screen.Auth.name
@@ -86,8 +89,7 @@ fun AgriHealthApp() {
         SignInScreen(
             onSignedIn = {
               // TODO: Get user data from Firebase after login
-              userViewModel.userRole = UserRole.FARMER
-              userViewModel.userId = "FARMER_001"
+                userViewModel.refreshCurrentUser()
               navigationActions.navigateTo(Screen.Overview)
             },
             goToSignUp = { navigationActions.navigateTo(Screen.SignUp) })
@@ -96,8 +98,7 @@ fun AgriHealthApp() {
         SignUpScreen(
             onSignedUp = {
               // TODO: After signup, set user info
-              userViewModel.userRole = UserRole.FARMER
-              userViewModel.userId = "FARMER_001"
+                userViewModel.refreshCurrentUser()
               navigationActions.navigateTo(Screen.Overview)
             })
       }
@@ -110,9 +111,6 @@ fun AgriHealthApp() {
     ) {
       composable(Screen.Overview.route) {
         val overviewViewModel: OverviewViewModel = viewModel()
-
-        val currentUserRole = userViewModel.userRole
-        val currentUserId = userViewModel.userId
 
         OverviewScreen(
             userRole = currentUserRole,
@@ -138,8 +136,6 @@ fun AgriHealthApp() {
 
             // You might fetch the report by ID here
             val viewModel: ReportViewModel = viewModel()
-
-            val currentUserRole = userViewModel.userRole
 
             ReportViewScreen(
                 navController = navController,
