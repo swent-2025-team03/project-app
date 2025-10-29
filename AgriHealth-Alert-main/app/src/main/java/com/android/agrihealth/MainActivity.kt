@@ -87,7 +87,6 @@ fun AgriHealthApp() {
       composable(Screen.Auth.route) {
         SignInScreen(
             onSignedIn = {
-              // TODO: Get user data from Firebase after login
               userViewModel.refreshCurrentUser()
               navigationActions.navigateTo(Screen.Overview)
             },
@@ -96,7 +95,6 @@ fun AgriHealthApp() {
       composable(Screen.SignUp.route) {
         SignUpScreen(
             onSignedUp = {
-              // TODO: After signup, set user info
               userViewModel.refreshCurrentUser()
               navigationActions.navigateTo(Screen.Overview)
             })
