@@ -20,7 +20,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
@@ -74,7 +73,7 @@ fun AgriHealthApp() {
 
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
-    val currentUserRole by userViewModel.userRole.collectAsState()
+  val currentUserRole by userViewModel.userRole.collectAsState()
 
   val startDestination =
       if (Firebase.auth.currentUser != null) Screen.Overview.name else Screen.Auth.name
@@ -89,7 +88,7 @@ fun AgriHealthApp() {
         SignInScreen(
             onSignedIn = {
               // TODO: Get user data from Firebase after login
-                userViewModel.refreshCurrentUser()
+              userViewModel.refreshCurrentUser()
               navigationActions.navigateTo(Screen.Overview)
             },
             goToSignUp = { navigationActions.navigateTo(Screen.SignUp) })
@@ -98,7 +97,7 @@ fun AgriHealthApp() {
         SignUpScreen(
             onSignedUp = {
               // TODO: After signup, set user info
-                userViewModel.refreshCurrentUser()
+              userViewModel.refreshCurrentUser()
               navigationActions.navigateTo(Screen.Overview)
             })
       }

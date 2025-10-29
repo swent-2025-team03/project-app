@@ -17,8 +17,8 @@ import kotlinx.coroutines.launch
 // TODO: connect to Firebase Auth
 
 class UserViewModel(
-  private val userRepository: UserRepository = UserRepositoryProvider.repository,
-  private val auth: FirebaseAuth = Firebase.auth
+    private val userRepository: UserRepository = UserRepositoryProvider.repository,
+    private val auth: FirebaseAuth = Firebase.auth
 ) : ViewModel() {
 
   private val _userRole = MutableStateFlow<UserRole>(UserRole.FARMER)
@@ -37,13 +37,8 @@ class UserViewModel(
         val result = userRepository.getUserFromId(userId)
 
         result.fold(
-          onSuccess = { user ->
-            _userRole.value = user.role
-          },
-          onFailure = { e ->
-            Log.e("UserViewModel", "Failed to load user role", e)
-          }
-        )
+            onSuccess = { user -> _userRole.value = user.role },
+            onFailure = { e -> Log.e("UserViewModel", "Failed to load user role", e) })
       }
     }
   }
@@ -55,4 +50,3 @@ class UserViewModel(
     }
   }
 }
-
