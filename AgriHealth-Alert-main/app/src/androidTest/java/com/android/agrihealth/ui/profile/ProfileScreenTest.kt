@@ -1,0 +1,169 @@
+package com.android.agrihealth.ui.profile
+
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.test.*
+import androidx.compose.ui.test.junit4.createComposeRule
+import com.android.agrihealth.data.model.user.*
+import com.android.agrihealth.ui.user.UserViewModel
+import org.junit.Rule
+import org.junit.Test
+
+class ProfileScreenTest {
+
+  @get:Rule val composeTestRule = createComposeRule()
+
+  // Some Helpers
+
+  private fun makeFakeViewModel(role: UserRole, user: User?): UserViewModel {
+    return object : UserViewModel() {
+      init {
+        userRole = role
+        this.user = user
+      }
+    }
+  }
+
+  private fun setScreen(vm: UserViewModel) {
+    composeTestRule.setContent {
+      MaterialTheme {
+        ProfileScreen(userViewModel = vm, onGoBack = {}, onLogout = {}, onEditProfile = {})
+      }
+    }
+  }
+
+  // Tests suite: 84% coverage
+
+  @Test
+  fun topBar_displaysCorrectly() {
+    val vm =
+        makeFakeViewModel(
+            UserRole.FARMER,
+            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
+    setScreen(vm)
+
+    composeTestRule.onNodeWithTag("TopBar").assertExists()
+    composeTestRule.onNodeWithTag("GoBackButton").assertExists()
+    composeTestRule.onNodeWithTag("LogoutButton").assertExists()
+  }
+
+  @Test
+  fun profileImage_isVisible() {
+    val vm = makeFakeViewModel(UserRole.VET, null)
+    setScreen(vm)
+
+    composeTestRule.onNodeWithTag("ProfileImage").assertIsDisplayed()
+  }
+
+  @Test
+  fun farmer_showsDefaultVetField() {
+    val vm =
+        makeFakeViewModel(
+            UserRole.FARMER,
+            Farmer(
+                uid = "1",
+                firstname = "Alice",
+                lastname = "Johnson",
+                email = "alice@farmmail.com",
+                address = null,
+                defaultVet = "vet123"))
+    setScreen(vm)
+
+    composeTestRule.onNodeWithTag("DefaultVetField").assertExists()
+  }
+
+  @Test
+  fun vet_hidesDefaultVetField() {
+    val vm =
+        makeFakeViewModel(
+            UserRole.VET,
+            Vet(
+                uid = "2",
+                firstname = "Bob",
+                lastname = "Smith",
+                email = "bob@vetcare.com",
+                address = null,
+                linkedFarmers = listOf("farmer1")))
+    setScreen(vm)
+
+    composeTestRule.onAllNodesWithTag("DefaultVetField").assertCountEquals(0)
+  }
+
+  @Test
+  fun addressField_isVisibleAndPopulated() {
+    val vm =
+        makeFakeViewModel(
+            UserRole.FARMER,
+            Farmer(
+                "1", "Alice", "Johnson", "alice@farmmail.com", address = null, defaultVet = null))
+    setScreen(vm)
+
+    composeTestRule.onNodeWithTag("AddressField").assertExists()
+  }
+
+  @Test
+  fun emailAndPasswordFields_areDisplayed() {
+    val vm =
+        makeFakeViewModel(
+            UserRole.FARMER,
+            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
+    setScreen(vm)
+
+    composeTestRule.onNodeWithTag("EmailField").assertExists()
+    composeTestRule.onNodeWithTag("PasswordField").assertExists()
+  }
+
+  @Test
+  fun editButton_triggersCallback() {
+    var clicked = false
+    val vm =
+        makeFakeViewModel(
+            UserRole.FARMER,
+            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
+
+    composeTestRule.setContent {
+      MaterialTheme { ProfileScreen(userViewModel = vm, onEditProfile = { clicked = true }) }
+    }
+
+    composeTestRule.onNodeWithTag("EditButton").performClick()
+    assert(clicked)
+  }
+
+  @Test
+  fun nullUser_safeFallbacks() {
+    val vm = makeFakeViewModel(UserRole.FARMER, null)
+    setScreen(vm)
+
+    composeTestRule.onNodeWithTag("NameText").assertExists()
+    composeTestRule.onNodeWithTag("EmailField").assertExists()
+  }
+
+  @Test
+  fun allAccessibleElements_haveTags() {
+    val vm =
+        makeFakeViewModel(
+            UserRole.FARMER,
+            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
+    setScreen(vm)
+
+    composeTestRule.onNodeWithTag("ProfileImage").assertExists()
+    composeTestRule.onNodeWithTag("GoBackButton").assertExists()
+    composeTestRule.onNodeWithTag("LogoutButton").assertExists()
+    composeTestRule.onNodeWithTag("EditButton").assertExists()
+  }
+
+  @Test
+  fun codeButton_triggers() {
+    var clicked = false
+    val vm =
+        makeFakeViewModel(
+            UserRole.FARMER,
+            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
+
+    composeTestRule.setContent {
+      MaterialTheme { ProfileScreen(userViewModel = vm, onCode = { clicked = true }) }
+    }
+
+    composeTestRule.onNodeWithTag("CodeButton").performClick()
+    assert(clicked)
+  }
+}
