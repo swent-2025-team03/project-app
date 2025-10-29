@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.ui.navigation.NavigationActions
+import com.android.agrihealth.ui.navigation.Screen
 
 /**
  * Displays the detailed view of a single report. The UI dynamically adapts depending on the current
@@ -29,7 +31,7 @@ import com.android.agrihealth.data.model.user.UserRole
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportViewScreen(
-    navController: NavController,
+    navigationActions: NavigationActions,
     userRole: UserRole,
     viewModel: ReportViewModel,
     reportId: String = ""
@@ -94,7 +96,7 @@ fun ReportViewScreen(
             },
             navigationIcon = {
               IconButton(
-                  onClick = { navController.popBackStack() },
+                  onClick = { navigationActions.goBack() },
                   modifier =
                       Modifier.testTag(
                           com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON)) {
@@ -232,8 +234,7 @@ fun ReportViewScreen(
                   horizontalArrangement = Arrangement.SpaceBetween) {
                     OutlinedButton(
                         onClick = {
-                          Toast.makeText(context, "Map not implemented yet", Toast.LENGTH_SHORT)
-                              .show()
+                          navigationActions.navigateTo(Screen.Map(report.location?.latitude, report.location?.longitude))
                         }) {
                           Text("View on Map")
                         }

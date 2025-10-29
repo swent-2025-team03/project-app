@@ -29,6 +29,7 @@ class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository
 ) : ViewModel() {
+  //temporary, for demonstration purposes
   val report1 =
     Report(
       "rep_id1",
@@ -72,7 +73,7 @@ class MapViewModel(
     // Specific starting point, takes priority because of report navigation for example
     if (location != null) {
       _startingLocation.value = location
-      _zoom.value = 12f
+      _zoom.value = 15f
     }
     // Default starting position, so either location or workplace or default
     else {

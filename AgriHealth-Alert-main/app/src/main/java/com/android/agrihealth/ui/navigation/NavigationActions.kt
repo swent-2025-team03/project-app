@@ -1,6 +1,7 @@
 package com.android.agrihealth.ui.navigation
 
 import androidx.navigation.NavHostController
+import com.android.agrihealth.data.model.location.Location
 
 // file taken from https://github.com/swent-epfl/bootcamp-25-B3-Solution/tree/main
 
@@ -25,7 +26,7 @@ sealed class Screen(
 
   object AddReport : Screen(route = "add_report", name = "Create a new report")
 
-  object Map : Screen(route = "map", name = "Map", isTopLevelDestination = true)
+  //object Map : Screen(route = "map", name = "Map", isTopLevelDestination = true)
 
   object SignUp : Screen(route = "sign_up", name = "Sign Up")
 
@@ -33,6 +34,12 @@ sealed class Screen(
       Screen(route = "view_report/${reportId}", name = "view_report") {
     companion object {
       const val route = "view_report/{reportId}"
+    }
+  }
+
+  data class Map(val lat: Double? = null, val lng: Double? = null) : Screen(route = "map?lat=${lat}&lng=${lng}", name = "map", isTopLevelDestination = true) {
+    companion object {
+      const val route = "map?lat={lat}&lng={lng}"
     }
   }
 }

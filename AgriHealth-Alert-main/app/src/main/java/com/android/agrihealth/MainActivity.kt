@@ -18,6 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.SignInScreen
@@ -142,21 +143,39 @@ fun AgriHealthApp() {
             val currentUserRole = userViewModel.userRole
 
             ReportViewScreen(
-                navController = navController,
+                navigationActions = navigationActions,
                 userRole = currentUserRole,
                 viewModel = viewModel,
                 reportId = reportId)
           }
     }
 
-    navigation(
-        startDestination = Screen.Map.route,
-        route = Screen.Map.name,
-    ) {
-      composable(Screen.Map.route) {
-        MapScreen(navigationActions = navigationActions, isViewedFromOverview = true)
+    //navigation(
+    //    startDestination = Screen.Map.route,
+    //    route = Screen.Map.name,
+    //) {
+      composable(
+          route = Screen.Map.route,
+          arguments = listOf(
+              navArgument("lat") {
+                  type = NavType.StringType
+                  nullable = true
+                  defaultValue = null
+                                 },
+              navArgument("lng") {
+                  type = NavType.StringType
+                  nullable = true
+                  defaultValue = null
+              }
+          )
+      ) { backStackEntry ->
+          val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull()
+          val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull()
+
+          val location = if (lat != null && lng != null) Location(lat, lng) else null
+          MapScreen(navigationActions = navigationActions, isViewedFromOverview = true, startingPosition = location)
       }
-    }
+    //}
   }
 }
 
