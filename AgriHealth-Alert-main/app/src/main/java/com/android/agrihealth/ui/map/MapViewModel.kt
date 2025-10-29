@@ -3,7 +3,7 @@ package com.android.agrihealth.ui.map
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.agrihealth.data.model.Report
+import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.google.firebase.Firebase
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class MapUIState(
-    val reports: List<Report> = emptyList(),
+  val reports: List<Report> = emptyList(),
 )
 
 class MapViewModel(

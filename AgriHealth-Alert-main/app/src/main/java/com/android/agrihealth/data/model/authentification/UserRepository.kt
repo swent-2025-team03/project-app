@@ -1,5 +1,7 @@
 package com.android.agrihealth.data.model.authentification
 
+import com.android.agrihealth.data.model.user.User
+
 /** Represents a repository that manages public User item and its data. * */
 interface UserRepository {
   /**

@@ -1,7 +1,10 @@
-package com.android.agrihealth.ui.report
+package com.android.agrihealth.ui
 
-import com.android.agrihealth.data.model.*
+import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
+import com.android.agrihealth.ui.report.ReportViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
@@ -64,9 +67,9 @@ class ReportViewModelTest {
   }
 
   @Test
-  fun `onEscalate sets status to ESCALATED`() {
-    viewModel.onEscalate()
-    assertEquals(ReportStatus.ESCALATED, viewModel.uiState.value.status)
+  fun `onSpam sets status to SPAM`() {
+    viewModel.onSpam()
+    assertEquals(ReportStatus.SPAM, viewModel.uiState.value.status)
   }
 
   @Test

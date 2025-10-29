@@ -37,8 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.createBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.data.model.Report
-import com.android.agrihealth.data.model.ReportStatus
+import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -178,7 +178,7 @@ fun MapScreen(
                             createCircleMarker(Color.rgb(242, 199, 119), markerSize) // yellow
                         ReportStatus.RESOLVED ->
                             createCircleMarker(Color.rgb(108, 166, 209), markerSize) // blue
-                        ReportStatus.ESCALATED ->
+                        ReportStatus.SPAM ->
                             createCircleMarker(Color.rgb(184, 92, 92), markerSize) // red
                       }
                   Marker(

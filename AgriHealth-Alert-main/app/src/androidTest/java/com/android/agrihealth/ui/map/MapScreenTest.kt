@@ -8,9 +8,9 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import com.android.agrihealth.AgriHealthApp
-import com.android.agrihealth.data.model.Location
-import com.android.agrihealth.data.model.Report
-import com.android.agrihealth.data.model.ReportStatus
+import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.android.agrihealth.model.authentification.FirebaseEmulatorsTest
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -30,7 +30,7 @@ object MapScreenTestReports {
           "Description 1",
           null,
           "farmerId1",
-          null,
+          "vetId1",
           ReportStatus.PENDING,
           null,
           Location(46.5200948, 6.5651742, "Place name 1"))
@@ -52,7 +52,7 @@ object MapScreenTestReports {
           "Description 3",
           null,
           "farmerId3",
-          null,
+          "vetId1",
           ReportStatus.RESOLVED,
           null,
           Location(46.5206231, 6.569927, "Place name 3"))
@@ -64,7 +64,7 @@ object MapScreenTestReports {
           null,
           "farmerId4",
           "vetId4",
-          ReportStatus.ESCALATED,
+          ReportStatus.SPAM,
           "Vet answer 4",
           Location(46.5232, 6.5681191))
 
