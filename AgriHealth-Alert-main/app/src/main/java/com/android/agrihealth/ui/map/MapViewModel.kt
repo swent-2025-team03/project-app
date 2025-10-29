@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class MapUIState(
-  val reports: List<Report> = emptyList(),
+    val reports: List<Report> = emptyList(),
 )
 
 class MapViewModel(
