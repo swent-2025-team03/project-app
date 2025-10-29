@@ -7,6 +7,7 @@ import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -28,7 +29,18 @@ class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository
 ) : ViewModel() {
-  private val _uiState = MutableStateFlow(MapUIState())
+  val report1 =
+    Report(
+      "rep_id1",
+      "Report title 1",
+      "Description 1",
+      null,
+      "farmerId1",
+      "vetId1",
+      ReportStatus.PENDING,
+      null,
+      Location(46.5200948, 6.5651742, "Place name 1"))
+  private val _uiState = MutableStateFlow(MapUIState(listOf(report1)))
   val uiState: StateFlow<MapUIState> = _uiState.asStateFlow()
 
   private val _startingLocation = MutableStateFlow(Location(46.9481, 7.4474, null)) // Bern

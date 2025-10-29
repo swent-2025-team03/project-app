@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -54,6 +55,7 @@ import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -72,6 +74,7 @@ object MapScreenTestTags {
   const val TOP_BAR_MAP_TITLE = "topBarMapTitle"
   const val REPORT_INFO_BOX = "reportInfoBox"
   const val REPORT_FILTER_MENU = "reportFilterDropdownMenu"
+    const val REPORT_NAVIGATION_BUTTON = "reportNavigationButton"
 
   // from bootcamp map
   fun getTestTagForReportMarker(reportId: String): String = "reportMarker_$reportId"
@@ -233,7 +236,7 @@ fun MapScreen(
                 Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh Location")
               }
 
-          ShowReportInfo(selectedReport.value)
+          ShowReportInfo(selectedReport.value, onReportClick = { navigationActions?.navigateTo(Screen.ViewReport(it)) })
         }
       })
 }
@@ -272,7 +275,7 @@ fun FilterDropdown(
 
 
 @Composable
-fun ShowReportInfo(report: Report?) {
+fun ShowReportInfo(report: Report?, onReportClick: (String) -> Unit = {}) {
   if (report == null) return
 
   Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.REPORT_INFO_BOX)) {
@@ -284,11 +287,26 @@ fun ShowReportInfo(report: Report?) {
                     shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                 .fillMaxWidth()
                 .padding(16.dp)) {
-          Text(
-              text = report.title,
-              fontWeight = FontWeight.Bold,
-              fontSize = 18.sp,
-              modifier = Modifier.testTag(MapScreenTestTags.getTestTagForReportTitle(report.id)))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = report.title,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                modifier = Modifier.testTag(MapScreenTestTags.getTestTagForReportTitle(report.id)))
+
+            Button(
+                onClick = { onReportClick(report.id) },
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .testTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)
+            ) {
+                Text("See report")
+            }
+        }
+
           Spacer(modifier = Modifier.height(4.dp))
           Text(
               text = report.description,
