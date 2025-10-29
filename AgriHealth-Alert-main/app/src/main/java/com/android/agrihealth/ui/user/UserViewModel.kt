@@ -46,16 +46,13 @@ class UserViewModel(
     viewModelScope.launch {
       val result = userRepository.getUserFromId(userId)
 
-        result.fold(
-            onSuccess = { user -> _userRole.value = user.role },
-            onFailure = { e -> Log.e("UserViewModel", "Failed to load user role", e) })
-      }
+      result.fold(
+          onSuccess = { user -> _userRole.value = user.role },
+          onFailure = { e -> Log.e("UserViewModel", "Failed to load user role", e) })
     }
+  }
 
-
-  /**
-   * Refreshes the current user's role by reloading it from the repository.
-   */
+  /** Refreshes the current user's role by reloading it from the repository. */
   fun refreshCurrentUser() {
     viewModelScope.launch {
       val currentUser = auth.currentUser ?: return@launch
