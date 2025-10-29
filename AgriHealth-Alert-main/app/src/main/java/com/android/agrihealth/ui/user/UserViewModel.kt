@@ -1,8 +1,8 @@
 package com.android.agrihealth.ui.user
 
 import androidx.lifecycle.ViewModel
-import com.android.agrihealth.data.model.UserRole
-import com.android.agrihealth.data.model.authentification.User
+import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.data.model.user.UserRole
 
 // TODO: connect to Firebase Auth
 class UserViewModel : ViewModel() {
@@ -10,5 +10,4 @@ class UserViewModel : ViewModel() {
   var userId: String = "FARMER_001"
 
   var user: User? = null
-
 }

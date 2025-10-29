@@ -21,8 +21,8 @@ class UserRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     userRepository.addUser(user1)
     val userData = userRepository.getUserFromId(user1.uid).getOrThrow()
     assertEquals(user1.uid, userData.uid)
-    assertEquals(user1.name, userData.name)
-    assertEquals(user1.surname, userData.surname)
+    assertEquals(user1.firstname, userData.firstname)
+    assertEquals(user1.lastname, userData.lastname)
     assertEquals(user1.role, userData.role)
     assertEquals(user1.email, userData.email)
   }
@@ -41,10 +41,10 @@ class UserRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     userRepository.addUser(user1)
     val newEmail = "newemail@thing.com"
     val newName = "newName"
-    userRepository.updateUser(user1.copy(email = newEmail, name = newName))
+    userRepository.updateUser(user1.copy(email = newEmail, firstname = newName))
     val userData = userRepository.getUserFromId(user1.uid).getOrThrow()
     assertEquals(userData.email, newEmail)
-    assertEquals(userData.name, newName)
+    assertEquals(userData.firstname, newName)
   }
 
   @Test

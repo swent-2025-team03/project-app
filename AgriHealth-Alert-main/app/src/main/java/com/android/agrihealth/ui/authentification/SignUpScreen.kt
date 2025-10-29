@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.data.model.authentification.UserRole
+import com.android.agrihealth.data.model.user.UserRole
 
 private val FieldBg = Color(0xFFF0F6F1)
 
@@ -26,14 +26,15 @@ object SignUpScreenTestTags {
   const val SCREEN = "SignUpScreen"
   const val BACK_BUTTON = "BackButton"
   const val TITLE = "SignUpTitle"
-  const val NAME_FIELD = "NameField"
-  const val SURNAME_FIELD = "SurnameField"
+  const val FIRSTNAME_FIELD = "NameField"
+  const val LASTNAME_FIELD = "SurnameField"
   const val EMAIL_FIELD = "EmailField"
   const val PASSWORD_FIELD = "PasswordField"
   const val CONFIRM_PASSWORD_FIELD = "ConfirmPasswordField"
   const val SAVE_BUTTON = "SaveButton"
   const val FARMER_PILL = "FarmerPill"
   const val VET_PILL = "VetPill"
+  const val SNACKBAR = "Snackbar"
 }
 
 @Composable
@@ -43,10 +44,24 @@ fun SignUpScreen(
     signUpViewModel: SignUpViewModel = viewModel()
 ) {
   val signUpUIState by signUpViewModel.uiState.collectAsState()
+  val snackbarHostState = remember { SnackbarHostState() }
+  val errorMsg = signUpUIState.errorMsg
+
+  LaunchedEffect(errorMsg) {
+    if (errorMsg != null) {
+      snackbarHostState.showSnackbar(errorMsg)
+      signUpViewModel.clearErrorMsg()
+    }
+  }
 
   LaunchedEffect(signUpUIState.user) { signUpUIState.user?.let { onSignedUp() } }
 
   Scaffold(
+      snackbarHost = {
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.testTag(SignUpScreenTestTags.SNACKBAR))
+      },
       topBar = {
         TopAppBar(
             title = {},
@@ -73,30 +88,35 @@ fun SignUpScreen(
               Spacer(Modifier.height(24.dp))
 
               Field(
-                  signUpUIState.name,
+                  signUpUIState.firstname,
                   { signUpViewModel.setName(it) },
                   "Name",
-                  modifier = Modifier.testTag(SignUpScreenTestTags.NAME_FIELD))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.FIRSTNAME_FIELD))
               Field(
-                  signUpUIState.surname,
+                  signUpUIState.lastname,
                   { signUpViewModel.setSurname(it) },
                   "Surname",
-                  modifier = Modifier.testTag(SignUpScreenTestTags.SURNAME_FIELD))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.LASTNAME_FIELD))
               Field(
                   signUpUIState.email,
                   { signUpViewModel.setEmail(it) },
                   "Email",
-                  modifier = Modifier.testTag(SignUpScreenTestTags.EMAIL_FIELD))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.EMAIL_FIELD),
+                  signUpUIState.hasFailed && signUpUIState.emailIsMalformed())
               Field(
                   signUpUIState.password,
                   { signUpViewModel.setPassword(it) },
                   "Password",
-                  modifier = Modifier.testTag(SignUpScreenTestTags.PASSWORD_FIELD))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.PASSWORD_FIELD),
+                  signUpUIState.hasFailed && signUpUIState.passwordIsWeak())
               Field(
                   signUpUIState.cnfPassword,
                   { signUpViewModel.setCnfPassword(it) },
                   "Confirm Password",
-                  modifier = Modifier.testTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD))
+                  modifier = Modifier.testTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD),
+                  signUpUIState.hasFailed &&
+                      (signUpUIState.cnfPassword != signUpUIState.password ||
+                          signUpUIState.passwordIsWeak()))
 
               Spacer(Modifier.height(16.dp))
               Text(
@@ -132,8 +152,8 @@ private fun RoleSelector(selected: UserRole?, onSelected: (UserRole) -> Unit) {
         modifier = Modifier.testTag(SignUpScreenTestTags.FARMER_PILL))
     SelectablePill(
         text = "Vet",
-        selected = selected == UserRole.VETERINARIAN,
-        onClick = { onSelected(UserRole.VETERINARIAN) },
+        selected = selected == UserRole.VET,
+        onClick = { onSelected(UserRole.VET) },
         modifier = Modifier.testTag(SignUpScreenTestTags.VET_PILL))
   }
 }
@@ -168,7 +188,8 @@ private fun Field(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isError: Boolean = false
 ) {
   OutlinedTextField(
       value = value,
@@ -177,6 +198,7 @@ private fun Field(
       singleLine = true,
       shape = RoundedCornerShape(28.dp),
       modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
+      isError = isError,
       colors =
           OutlinedTextFieldDefaults.colors(
               unfocusedContainerColor = unfocusedFieldColor,

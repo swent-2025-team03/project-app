@@ -3,8 +3,8 @@ package com.android.agrihealth.ui.report
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.compose.rememberNavController
-import com.android.agrihealth.data.model.ReportStatus
-import com.android.agrihealth.data.model.UserRole
+import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.user.UserRole
 import org.junit.Rule
 import org.junit.Test
 
@@ -68,30 +68,30 @@ class ReportViewScreenTest {
     composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("RESOLVED")
   }
 
-  // --- TEST 5: Vet can open escalation dialog ---
+  // --- TEST 5: Vet can open spam dialog ---
   @Test
-  fun vet_canOpenEscalationDialog() {
+  fun vet_canOpenSpamDialog() {
     setVetScreen()
-    composeTestRule.onNodeWithTag("EscalateButton").performClick()
-    composeTestRule.onNodeWithText("Confirm Escalation").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("SpamButton").performClick()
+    composeTestRule.onNodeWithText("Confirm it is Spam").assertIsDisplayed()
   }
 
-  // --- TEST 6: Vet can cancel escalation dialog ---
+  // --- TEST 6: Vet can cancel spam dialog ---
   @Test
-  fun vet_canCancelEscalationDialog() {
+  fun vet_canCancelSpamDialog() {
     setVetScreen()
-    composeTestRule.onNodeWithTag("EscalateButton").performClick()
+    composeTestRule.onNodeWithTag("SpamButton").performClick()
     composeTestRule.onNodeWithText("Cancel").performClick()
-    composeTestRule.onNodeWithText("Confirm Escalation").assertDoesNotExist()
+    composeTestRule.onNodeWithText("Confirm it is Spam").assertDoesNotExist()
   }
 
-  // --- TEST 7: Vet can confirm escalation ---
+  // --- TEST 7: Vet can confirm spam ---
   @Test
-  fun vet_canConfirmEscalation() {
+  fun vet_canConfirmSpam() {
     setVetScreen()
-    composeTestRule.onNodeWithTag("EscalateButton").performClick()
+    composeTestRule.onNodeWithTag("SpamButton").performClick()
     composeTestRule.onNodeWithText("Yes").performClick()
-    composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("ESCALATED")
+    composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("SPAM")
   }
 
   // --- TEST 8: Vet sees both bottom buttons ---
@@ -145,19 +145,6 @@ class ReportViewScreenTest {
     composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("IN PROGRESS")
   }
 
-  /*@Test
-  fun vet_doesNotShowEscalateButton_whenAlreadyEscalated() {
-    // If report status is already ESCALATED, the escalate button should be hidden
-    val viewModel = ReportViewModel().apply { onStatusChange(ReportStatus.ESCALATED) }
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      ReportViewScreen(navController = navController, userRole = UserRole.VET, viewModel = viewModel)
-    }
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("ESCALATED")
-    composeTestRule.onNodeWithTag("EscalateButton").assertDoesNotExist()
-  }*/
-
   @Test
   fun farmer_showsVetIdText() {
     // Farmer view shows the Vet ID line
@@ -169,7 +156,7 @@ class ReportViewScreenTest {
     }
     composeTestRule.waitForIdle()
     // Default sample report has vetId "VET_456" (from ReportViewUIState)
-    composeTestRule.onNodeWithText("Vet ID: VET_456").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("roleInfoLine").assertTextContains("Vet ID: VET_456")
   }
 
   @Test
