@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.ui.farmer.OverviewScreenTestTags
+import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.google.firebase.Firebase
@@ -68,9 +69,8 @@ class NavigationSprint1Test {
     composeTestRule.onNodeWithTag(NavigationTestTags.MAP_TAB).performClick()
     // Assert that the Map screen is displayed
     composeTestRule
-        .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
+        .onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN)
         .assertIsDisplayed()
-        .assertTextContains(Screen.Map.name)
   }
 
   @Test
