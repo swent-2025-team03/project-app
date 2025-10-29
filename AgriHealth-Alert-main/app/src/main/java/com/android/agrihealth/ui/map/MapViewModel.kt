@@ -35,9 +35,6 @@ class MapViewModel(
   val startingLocation = _startingLocation.asStateFlow()
   private val _zoom = MutableStateFlow(10f)
   val zoom = _zoom.asStateFlow()
-  val startingCameraState =
-      CameraPosition.fromLatLngZoom(
-          LatLng(_startingLocation.value.latitude, _startingLocation.value.longitude), _zoom.value)
 
   init {
     Firebase.auth.addAuthStateListener {
