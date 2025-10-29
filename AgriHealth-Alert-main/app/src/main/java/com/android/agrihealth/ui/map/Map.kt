@@ -57,6 +57,13 @@ import com.google.maps.android.compose.rememberCameraPositionState
 
 object MapScreenTestTags {
   const val GOOGLE_MAP_SCREEN = "googleMapScreen"
+  const val TOP_BAR_MAP_TITLE = "topBarMapTitle"
+  const val REPORT_INFO_BOX = "reportInfoBox"
+
+  // from bootcamp map
+  fun getTestTagForReportMarker(reportId: String): String = "reportMarker_$reportId"
+  fun getTestTagForReportTitle(reportId: String): String = "reportTitle_$reportId"
+  fun getTestTagForReportDesc(reportId: String): String = "reportDescription_$reportId"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -131,7 +138,7 @@ fun MapScreen(
                           text = "Map",
                           style = MaterialTheme.typography.titleLarge,
                           fontWeight = FontWeight.Bold,
-                          modifier = Modifier.weight(1f))
+                          modifier = Modifier.weight(1f).testTag(MapScreenTestTags.TOP_BAR_MAP_TITLE))
                     }
               },
               navigationIcon = {
@@ -157,7 +164,8 @@ fun MapScreen(
           GoogleMap(
               cameraPositionState = cameraPositionState,
               properties = googleMapMapProperties,
-              uiSettings = googleMapUiSettings) {
+              uiSettings = googleMapUiSettings,
+              modifier = Modifier.testTag(MapScreenTestTags.GOOGLE_MAP_SCREEN)) {
                 uiState.reports.forEach { report ->
                   val markerSize = if (report == selectedReport.value) 60f else 40f
                   val markerIcon =
@@ -181,7 +189,8 @@ fun MapScreen(
                       onClick = {
                         selectedReport.value = if (selectedReport.value == report) null else report
                         true
-                      })
+                      },
+                      tag = MapScreenTestTags.getTestTagForReportMarker(report.id))
                 }
               }
 
@@ -195,8 +204,7 @@ fun ShowReportInfo(report: Report?) {
   if (report == null) return
 
   Box(
-      modifier = Modifier.fillMaxSize()
-      // .padding(16.dp)
+      modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.REPORT_INFO_BOX)
       ) {
         Column(
             modifier =
@@ -206,9 +214,10 @@ fun ShowReportInfo(report: Report?) {
                         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                     .fillMaxWidth()
                     .padding(16.dp)) {
-              Text(text = report.title, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+              Text(text = report.title, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.testTag(
+                  MapScreenTestTags.getTestTagForReportTitle(report.id)))
               Spacer(modifier = Modifier.height(4.dp))
-              Text(text = report.description)
+              Text(text = report.description, modifier = Modifier.testTag(MapScreenTestTags.getTestTagForReportDesc(report.id)))
               Spacer(modifier = Modifier.height(8.dp))
             }
       }
