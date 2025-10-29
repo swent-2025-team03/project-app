@@ -11,7 +11,6 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -29,18 +28,18 @@ class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository
 ) : ViewModel() {
-  //temporary, for demonstration purposes
+  // temporary, for demonstration purposes
   val report1 =
-    Report(
-      "rep_id1",
-      "Report title 1",
-      "Description 1",
-      null,
-      "farmerId1",
-      "vetId1",
-      ReportStatus.PENDING,
-      null,
-      Location(46.5200948, 6.5651742, "Place name 1"))
+      Report(
+          "rep_id1",
+          "Report title 1",
+          "Description 1",
+          null,
+          "farmerId1",
+          "vetId1",
+          ReportStatus.PENDING,
+          null,
+          Location(46.5200948, 6.5651742, "Place name 1"))
   private val _uiState = MutableStateFlow(MapUIState(listOf(report1)))
   val uiState: StateFlow<MapUIState> = _uiState.asStateFlow()
 

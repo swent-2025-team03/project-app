@@ -24,4 +24,7 @@ data class Report(
 )
 
 fun ReportStatus.displayString(): String =
-    name.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }.replace("_", " ")
+    name
+        .lowercase()
+        .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+        .replace("_", " ")

@@ -150,32 +150,34 @@ fun AgriHealthApp() {
           }
     }
 
-    //navigation(
+    // navigation(
     //    startDestination = Screen.Map.route,
     //    route = Screen.Map.name,
-    //) {
-      composable(
-          route = Screen.Map.route,
-          arguments = listOf(
-              navArgument("lat") {
+    // ) {
+    composable(
+        route = Screen.Map.route,
+        arguments =
+            listOf(
+                navArgument("lat") {
                   type = NavType.StringType
                   nullable = true
                   defaultValue = null
-                                 },
-              navArgument("lng") {
+                },
+                navArgument("lng") {
                   type = NavType.StringType
                   nullable = true
                   defaultValue = null
-              }
-          )
-      ) { backStackEntry ->
+                })) { backStackEntry ->
           val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull()
           val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull()
 
           val location = if (lat != null && lng != null) Location(lat, lng) else null
-          MapScreen(navigationActions = navigationActions, isViewedFromOverview = true, startingPosition = location)
-      }
-    //}
+          MapScreen(
+              navigationActions = navigationActions,
+              isViewedFromOverview = true,
+              startingPosition = location)
+        }
+    // }
   }
 }
 

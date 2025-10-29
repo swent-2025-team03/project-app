@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.report
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -18,7 +17,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -234,7 +232,8 @@ fun ReportViewScreen(
                   horizontalArrangement = Arrangement.SpaceBetween) {
                     OutlinedButton(
                         onClick = {
-                          navigationActions.navigateTo(Screen.Map(report.location?.latitude, report.location?.longitude))
+                          navigationActions.navigateTo(
+                              Screen.Map(report.location?.latitude, report.location?.longitude))
                         }) {
                           Text("View on Map")
                         }

@@ -16,7 +16,6 @@ import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.android.agrihealth.model.authentification.FirebaseEmulatorsTest
 import com.android.agrihealth.ui.navigation.NavigationTestTags
-import com.android.agrihealth.ui.report.ReportViewScreenTest
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.test.runTest
@@ -108,8 +107,8 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     composeRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsNotDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsNotDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
-      composeRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsDisplayed()
-      composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForFilter("All")).assertIsDisplayed()
+    composeRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsDisplayed()
+    composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForFilter("All")).assertIsDisplayed()
   }
 
   @Test
@@ -119,7 +118,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     composeRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsNotDisplayed()
-      composeRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsNotDisplayed()
+    composeRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsNotDisplayed()
   }
 
   private fun getUserReports(uid: String): List<Report> {
@@ -167,50 +166,71 @@ class MapScreenTest : FirebaseEmulatorsTest() {
 
   @Test
   fun filterReportsByStatus() {
-      composeRule.setContent { MaterialTheme { MapScreen() } }
-      assertNotNull(Firebase.auth.currentUser)
-      val uid = Firebase.auth.currentUser!!.uid
-      val reports = getUserReports(uid)
-      val filters = listOf("All") + ReportStatus.entries.map { it.displayString() }
+    composeRule.setContent { MaterialTheme { MapScreen() } }
+    assertNotNull(Firebase.auth.currentUser)
+    val uid = Firebase.auth.currentUser!!.uid
+    val reports = getUserReports(uid)
+    val filters = listOf("All") + ReportStatus.entries.map { it.displayString() }
 
-      filters.forEach { filter ->
-          composeRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsDisplayed().performClick()
-          composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForFilter(filter)).assertIsDisplayed().performClick()
-          val (matches, nonMatches) = reports.partition { it -> filter == "All" || it.status.displayString() == filter }
-          matches.forEach { report ->
-              composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id)).assertIsDisplayed()
-          }
-          nonMatches.forEach { report ->
-              composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id)).assertIsNotDisplayed()
-          }
+    filters.forEach { filter ->
+      composeRule
+          .onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU)
+          .assertIsDisplayed()
+          .performClick()
+      composeRule
+          .onNodeWithTag(MapScreenTestTags.getTestTagForFilter(filter))
+          .assertIsDisplayed()
+          .performClick()
+      val (matches, nonMatches) =
+          reports.partition { it -> filter == "All" || it.status.displayString() == filter }
+      matches.forEach { report ->
+        composeRule
+            .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+            .assertIsDisplayed()
       }
+      nonMatches.forEach { report ->
+        composeRule
+            .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+            .assertIsNotDisplayed()
+      }
+    }
   }
 
-  @Test fun canOverrideStartingPosition() {
-      val yverdon = Location(46.7815062,6.6463836) // Station d'épuration d'Yverdon-les-Bains
-      composeRule.setContent { MaterialTheme { MapScreen(startingPosition = yverdon) } }
-      // how do i test this
-      assertTrue(true)
+  @Test
+  fun canOverrideStartingPosition() {
+    val yverdon = Location(46.7815062, 6.6463836) // Station d'épuration d'Yverdon-les-Bains
+    composeRule.setContent { MaterialTheme { MapScreen(startingPosition = yverdon) } }
+    // how do i test this
+    assertTrue(true)
   }
 
   @Test fun mapCenteredOnUserAddress() {}
 
   @Test fun mapCenteredOnDefaultIfNoAddress() {}
 
-    @Test
-    fun canNavigateFromMapToReport() {
-        composeRule.setContent { MaterialTheme { AgriHealthApp() } }
-        //Go to map screen
-        composeRule.onNodeWithTag(NavigationTestTags.MAP_TAB).assertIsDisplayed().performClick()
-        composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
-        //Click on report
-        assertNotNull(Firebase.auth.currentUser)
-        val uid = Firebase.auth.currentUser!!.uid
-        val reports = getUserReports(uid)
-        val report = reports.first()
-        composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id)).assertIsDisplayed().performClick()
-        composeRule.onNodeWithTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON).assertIsDisplayed().performClick()
-        //Check if report screen
-        composeRule.onNodeWithTag("StatusBadgeText").assertIsDisplayed().assertTextContains(report.status.displayString(), ignoreCase = true)
-    }
+  @Test
+  fun canNavigateFromMapToReport() {
+    composeRule.setContent { MaterialTheme { AgriHealthApp() } }
+    // Go to map screen
+    composeRule.onNodeWithTag(NavigationTestTags.MAP_TAB).assertIsDisplayed().performClick()
+    composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
+    // Click on report
+    assertNotNull(Firebase.auth.currentUser)
+    val uid = Firebase.auth.currentUser!!.uid
+    val reports = getUserReports(uid)
+    val report = reports.first()
+    composeRule
+        .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+        .assertIsDisplayed()
+        .performClick()
+    composeRule
+        .onNodeWithTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    // Check if report screen
+    composeRule
+        .onNodeWithTag("StatusBadgeText")
+        .assertIsDisplayed()
+        .assertTextContains(report.status.displayString(), ignoreCase = true)
+  }
 }

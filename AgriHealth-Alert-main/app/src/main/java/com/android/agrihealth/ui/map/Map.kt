@@ -74,7 +74,7 @@ object MapScreenTestTags {
   const val TOP_BAR_MAP_TITLE = "topBarMapTitle"
   const val REPORT_INFO_BOX = "reportInfoBox"
   const val REPORT_FILTER_MENU = "reportFilterDropdownMenu"
-    const val REPORT_NAVIGATION_BUTTON = "reportNavigationButton"
+  const val REPORT_NAVIGATION_BUTTON = "reportNavigationButton"
 
   // from bootcamp map
   fun getTestTagForReportMarker(reportId: String): String = "reportMarker_$reportId"
@@ -82,7 +82,8 @@ object MapScreenTestTags {
   fun getTestTagForReportTitle(reportId: String): String = "reportTitle_$reportId"
 
   fun getTestTagForReportDesc(reportId: String): String = "reportDescription_$reportId"
-    fun getTestTagForFilter(filter: String): String = "filter_$filter"
+
+  fun getTestTagForFilter(filter: String): String = "filter_$filter"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -196,47 +197,55 @@ fun MapScreen(
               properties = googleMapMapProperties,
               uiSettings = googleMapUiSettings,
               modifier = Modifier.testTag(MapScreenTestTags.GOOGLE_MAP_SCREEN)) {
-                uiState.reports.filter{ it -> selectedFilter == "All" || it.status.displayString() == selectedFilter }.forEach { report ->
-                  val markerSize = if (report == selectedReport.value) 60f else 40f
-                  val markerIcon =
-                      when (report.status) {
-                        ReportStatus.PENDING -> createCircleMarker(Color.GRAY, markerSize)
-                        ReportStatus.IN_PROGRESS ->
-                            createCircleMarker(Color.rgb(242, 199, 119), markerSize) // yellow
-                        ReportStatus.RESOLVED ->
-                            createCircleMarker(Color.rgb(108, 166, 209), markerSize) // blue
-                        ReportStatus.SPAM ->
-                            createCircleMarker(Color.rgb(184, 92, 92), markerSize) // red
-                      }
-                  Marker(
-                      state =
-                          MarkerState(
-                              position =
-                                  LatLng(report.location!!.latitude, report.location.longitude)),
-                      title = report.title,
-                      snippet = report.description,
-                      icon = markerIcon,
-                      onClick = {
-                        selectedReport.value = if (selectedReport.value == report) null else report
-                        true
-                      },
-                      tag = MapScreenTestTags.getTestTagForReportMarker(report.id))
-                }
+                uiState.reports
+                    .filter { it ->
+                      selectedFilter == "All" || it.status.displayString() == selectedFilter
+                    }
+                    .forEach { report ->
+                      val markerSize = if (report == selectedReport.value) 60f else 40f
+                      val markerIcon =
+                          when (report.status) {
+                            ReportStatus.PENDING -> createCircleMarker(Color.GRAY, markerSize)
+                            ReportStatus.IN_PROGRESS ->
+                                createCircleMarker(Color.rgb(242, 199, 119), markerSize) // yellow
+                            ReportStatus.RESOLVED ->
+                                createCircleMarker(Color.rgb(108, 166, 209), markerSize) // blue
+                            ReportStatus.SPAM ->
+                                createCircleMarker(Color.rgb(184, 92, 92), markerSize) // red
+                          }
+                      Marker(
+                          state =
+                              MarkerState(
+                                  position =
+                                      LatLng(
+                                          report.location!!.latitude, report.location.longitude)),
+                          title = report.title,
+                          snippet = report.description,
+                          icon = markerIcon,
+                          onClick = {
+                            selectedReport.value =
+                                if (selectedReport.value == report) null else report
+                            true
+                          },
+                          tag = MapScreenTestTags.getTestTagForReportMarker(report.id))
+                    }
               }
 
-            if (isViewedFromOverview) {
-                val options = listOf("All") + ReportStatus.entries.map { it.displayString() }
-                FilterDropdown(options, selectedFilter) { selectedFilter = it }
-            }
+          if (isViewedFromOverview) {
+            val options = listOf("All") + ReportStatus.entries.map { it.displayString() }
+            FilterDropdown(options, selectedFilter) { selectedFilter = it }
+          }
 
-            FloatingActionButton(
+          FloatingActionButton(
               modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
               shape = CircleShape,
               onClick = { viewModel.refreshCameraPosition(cameraPositionState) }) {
                 Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh Location")
               }
 
-          ShowReportInfo(selectedReport.value, onReportClick = { navigationActions?.navigateTo(Screen.ViewReport(it)) })
+          ShowReportInfo(
+              selectedReport.value,
+              onReportClick = { navigationActions?.navigateTo(Screen.ViewReport(it)) })
         }
       })
 }
@@ -247,32 +256,33 @@ fun FilterDropdown(
     selectedOption: String,
     onOptionSelected: (String) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
+  var expanded by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier
-            .padding(16.dp)
-            .background(color = androidx.compose.ui.graphics.Color.White, shape = RoundedCornerShape(8.dp))
-            .clickable{ expanded = true }
-            .defaultMinSize(minWidth = 100.dp, minHeight = 40.dp)
-            .border(2.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(8.dp))
-            .testTag(MapScreenTestTags.REPORT_FILTER_MENU),
-        contentAlignment = Alignment.Center
-    ) {
+  Box(
+      modifier =
+          Modifier.padding(16.dp)
+              .background(
+                  color = androidx.compose.ui.graphics.Color.White,
+                  shape = RoundedCornerShape(8.dp))
+              .clickable { expanded = true }
+              .defaultMinSize(minWidth = 100.dp, minHeight = 40.dp)
+              .border(2.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(8.dp))
+              .testTag(MapScreenTestTags.REPORT_FILTER_MENU),
+      contentAlignment = Alignment.Center) {
         Text(selectedOption, fontSize = 16.sp)
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            options.forEach { option ->
-                DropdownMenuItem(onClick = {
-                    onOptionSelected(option)
-                    expanded = false
+          options.forEach { option ->
+            DropdownMenuItem(
+                onClick = {
+                  onOptionSelected(option)
+                  expanded = false
                 },
-                    text = { Text(option) },
-                    modifier = Modifier.testTag(MapScreenTestTags.getTestTagForFilter(option)))
-            }
+                text = { Text(option) },
+                modifier = Modifier.testTag(MapScreenTestTags.getTestTagForFilter(option)))
+          }
         }
-    }
+      }
 }
-
 
 @Composable
 fun ShowReportInfo(report: Report?, onReportClick: (String) -> Unit = {}) {
@@ -287,25 +297,24 @@ fun ShowReportInfo(report: Report?, onReportClick: (String) -> Unit = {}) {
                     shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                 .fillMaxWidth()
                 .padding(16.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = report.title,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                modifier = Modifier.testTag(MapScreenTestTags.getTestTagForReportTitle(report.id)))
+          Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(
+                    text = report.title,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    modifier =
+                        Modifier.testTag(MapScreenTestTags.getTestTagForReportTitle(report.id)))
 
-            Button(
-                onClick = { onReportClick(report.id) },
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .testTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)
-            ) {
-                Text("See report")
-            }
-        }
+                Button(
+                    onClick = { onReportClick(report.id) },
+                    modifier =
+                        Modifier.align(Alignment.CenterVertically)
+                            .testTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)) {
+                      Text("See report")
+                    }
+              }
 
           Spacer(modifier = Modifier.height(4.dp))
           Text(
