@@ -18,6 +18,7 @@ data class AddReportUiState(
 )
 
 class AddReportViewModel(
+    private val userId: String,
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(AddReportUiState())
@@ -47,7 +48,7 @@ class AddReportViewModel(
             title = uiState.title,
             description = uiState.description,
             photoUri = null, // currently unused
-            farmerId = "currentUserId", //
+            farmerId = userId,
             vetId = "Best Vet Ever!", // TODO: Use the real vetID when implemented
             status = ReportStatus.PENDING,
             answer = null,

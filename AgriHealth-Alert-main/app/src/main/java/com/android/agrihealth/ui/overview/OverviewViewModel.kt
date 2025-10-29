@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.overview
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.location.Location
@@ -60,29 +59,32 @@ class OverviewViewModel(
   val uiState: StateFlow<OverviewUIState> = _uiState.asStateFlow()
 
   init {
-    // ---Add some mock reports for testing---
     viewModelScope.launch {
-      try {
-        reportRepository.addReport(report1)
-        reportRepository.addReport(report2)
-      } catch (e: Exception) {
-        Log.e("OverviewViewModel", "Error fetching reports", e)
-      }
+      reportRepository.addReport(
+          Report(
+              id = "RPT001",
+              title = "Cow coughing",
+              description = "Coughing and nasal discharge observed in the barn.",
+              photoUri = null,
+              farmerId = "FARMER_001",
+              vetId = "VET_001",
+              status = ReportStatus.IN_PROGRESS,
+              answer = null,
+              location = Location(46.5191, 6.5668, "Lausanne Farm")))
     }
-    // ------
-
-    getAllReports()
   }
 
-  /** Fetches all reports from the repository and updates the UI state. */
-  private fun getAllReports() {
+  /** Loads reports based on user role and ID. */
+  fun loadReports(userRole: UserRole, userId: String) {
     viewModelScope.launch {
       try {
-        // TODO: Replace with actual user ID from authentication
-        val reports = reportRepository.getAllReports("FARMER_001")
+        val reports =
+            when (userRole) {
+              UserRole.FARMER -> reportRepository.getReportsByFarmer(userId)
+              UserRole.VET -> reportRepository.getReportsByVet(userId)
+            }
         _uiState.value = OverviewUIState(reports = reports)
       } catch (e: Exception) {
-        Log.e("OverviewViewModel", "Error fetching reports", e)
         _uiState.value = OverviewUIState(reports = emptyList())
       }
     }

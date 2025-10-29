@@ -29,8 +29,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.overview.OverviewViewModel
 import kotlinx.coroutines.launch
 
 /** Tags for the various components. For testing purposes */
@@ -61,7 +63,6 @@ private val createReportButtonColor = Color(0xFF96B7B1)
  * Displays the report creation screen for farmers
  *
  * @param onBack A callback invoked when the back button in the top bar is pressed.
- * @param onCreateReport A callback invoked when a report is successfully created.
  * @param createReportViewModel The [AddReportViewModel] instance responsible for managing report
  *   creation logic and UI state.
  * @see AddReportViewModel
@@ -70,7 +71,9 @@ private val createReportButtonColor = Color(0xFF96B7B1)
 @Composable
 fun AddReportScreen(
     onBack: () -> Unit = {},
-    onCreateReport: () -> Unit = {},
+    userRole: UserRole,
+    userId: String,
+    overviewViewModel: OverviewViewModel,
     createReportViewModel: AddReportViewModel = viewModel()
 ) {
 
@@ -188,13 +191,14 @@ fun AddReportScreen(
           AlertDialog(
               onDismissRequest = {
                 showSuccessDialog = false
-                onCreateReport()
+                onBack()
               },
               confirmButton = {
                 TextButton(
                     onClick = {
                       showSuccessDialog = false
-                      onCreateReport()
+                      overviewViewModel.loadReports(userRole, userId)
+                      onBack()
                     }) {
                       Text("OK")
                     }
@@ -234,5 +238,8 @@ private fun Field(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 fun AddReportScreenPreview() {
-  MaterialTheme { AddReportScreen() }
+  MaterialTheme {
+    AddReportScreen(
+        userRole = UserRole.FARMER, userId = "FARMER_001", overviewViewModel = viewModel())
+  }
 }

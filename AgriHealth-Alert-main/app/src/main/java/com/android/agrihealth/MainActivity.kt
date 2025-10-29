@@ -28,6 +28,7 @@ import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
 import com.android.agrihealth.ui.report.AddReportScreen
+import com.android.agrihealth.ui.report.AddReportViewModel
 import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.theme.SampleAppTheme
@@ -72,6 +73,7 @@ fun AgriHealthApp() {
 
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
+  val overviewViewModel: OverviewViewModel = viewModel()
 
   val startDestination =
       if (Firebase.auth.currentUser != null) Screen.Overview.name else Screen.Auth.name
@@ -87,7 +89,7 @@ fun AgriHealthApp() {
             onSignedIn = {
               // TODO: Get user data from Firebase after login
               userViewModel.userRole = UserRole.FARMER
-              userViewModel.userId = "FARMER_001"
+                userViewModel.userId = Firebase.auth.currentUser!!.uid
               navigationActions.navigateTo(Screen.Overview)
             },
             goToSignUp = { navigationActions.navigateTo(Screen.SignUp) })
@@ -97,7 +99,7 @@ fun AgriHealthApp() {
             onSignedUp = {
               // TODO: After signup, set user info
               userViewModel.userRole = UserRole.FARMER
-              userViewModel.userId = "FARMER_001"
+                userViewModel.userId = Firebase.auth.currentUser!!.uid
               navigationActions.navigateTo(Screen.Overview)
             })
       }
@@ -109,13 +111,12 @@ fun AgriHealthApp() {
         route = Screen.Overview.name,
     ) {
       composable(Screen.Overview.route) {
-        val overviewViewModel: OverviewViewModel = viewModel()
-
         val currentUserRole = userViewModel.userRole
         val currentUserId = userViewModel.userId
 
         OverviewScreen(
             userRole = currentUserRole,
+            userId = currentUserId,
             overviewViewModel = overviewViewModel,
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
             // TODO: Pass the selected report to the ViewReportScreen
@@ -126,9 +127,16 @@ fun AgriHealthApp() {
         )
       }
       composable(Screen.AddReport.route) {
+        val currentUserRole = userViewModel.userRole
+        val currentUserId = userViewModel.userId
+        val createReportViewModel = AddReportViewModel(userId = currentUserId)
+
         AddReportScreen(
-            onCreateReport = { navigationActions.navigateTo(Screen.Overview) },
-            onBack = { navigationActions.goBack() })
+            onBack = { navigationActions.goBack() },
+            userRole = currentUserRole,
+            userId = currentUserId,
+            overviewViewModel = overviewViewModel,
+            createReportViewModel = createReportViewModel)
       }
       composable(
           route = Screen.ViewReport.route,

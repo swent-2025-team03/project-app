@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.overview
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -49,15 +50,17 @@ object OverviewScreenTestTags {
 @Composable
 fun OverviewScreen(
     userRole: UserRole,
+    userId: String,
     overviewViewModel: OverviewViewModel = viewModel(),
     onAddReport: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
-    navigationActions: NavigationActions? = null,
-    reports: List<Report> = overviewViewModel.uiState.collectAsState().value.reports,
+    navigationActions: NavigationActions? = null
 ) {
 
   val uiState by overviewViewModel.uiState.collectAsState()
   val reports: List<Report> = uiState.reports
+
+  LaunchedEffect(Unit) { overviewViewModel.loadReports(userRole, userId) }
 
   Scaffold(
       // -- Top App Bar with logout icon --
@@ -93,7 +96,8 @@ fun OverviewScreen(
       content = { paddingValues ->
         Column(
             modifier =
-                Modifier.fillMaxSize()
+                Modifier
+                    .fillMaxSize()
                     .padding(paddingValues)
                     .padding(16.dp)
                     .testTag(OverviewScreenTestTags.SCREEN) // ← tag stable sur le conteneur racine
@@ -112,7 +116,8 @@ fun OverviewScreen(
                 Button(
                     onClick = onAddReport,
                     modifier =
-                        Modifier.align(Alignment.CenterHorizontally)
+                        Modifier
+                            .align(Alignment.CenterHorizontally)
                             .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
                       Text("Create a new report")
                     }
@@ -122,18 +127,18 @@ fun OverviewScreen(
 
               // -- Past reports list --
               Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
-              Spacer(modifier = Modifier.height(12.dp))
-              LazyColumn {
+            Spacer(modifier = Modifier.height(12.dp))
+            LazyColumn {
                 items(reports, key = { it.id }) { report ->
-                  // Ajout du testTag pour chaque item cliquable
-                  ReportItem(
-                      report = report,
-                      onClick = { onReportClick(report.id) },
-                  )
-                  HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                    // Ajout du testTag pour chaque item cliquable
+                    ReportItem(
+                        report = report,
+                        onClick = { onReportClick(report.id) },
+                    )
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                 }
-              }
             }
+        }
       })
 }
 
@@ -169,14 +174,15 @@ fun LatestAlertCard() {
 fun ReportItem(report: Report, onClick: () -> Unit) {
   Row(
       modifier =
-          Modifier.fillMaxWidth()
+          Modifier
+              .fillMaxWidth()
               .testTag(OverviewScreenTestTags.REPORT_ITEM)
               .clickable { onClick() }
               .padding(vertical = 8.dp),
       verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
           Text(report.title, fontSize = 18.sp, fontWeight = FontWeight.Medium)
-          Text("Farmer ID: ${report.farmerId}")
+          Text("Farmer ID: ${report.farmerId.take(8)}")
           Text(
               text = report.description.let { if (it.length > 50) it.take(50) + "..." else it },
               style = MaterialTheme.typography.bodySmall,
