@@ -7,7 +7,7 @@ data class Vet(
     override val firstname: String,
     override val lastname: String,
     override val email: String,
-    val address:
+    override val address:
         Location?, // This should be the veterinary practice location, set just after creating an
     // account.
     val linkedFarmers: List<String> =

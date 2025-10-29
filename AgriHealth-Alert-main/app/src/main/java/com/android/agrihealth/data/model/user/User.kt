@@ -1,11 +1,14 @@
 package com.android.agrihealth.data.model.user
 
+import com.android.agrihealth.data.model.location.Location
+
 sealed class User(
     open var uid: String = "placeholder",
     open val firstname: String,
     open val lastname: String,
     open val role: UserRole,
-    open val email: String
+    open val email: String,
+    open val address: Location? = null
 )
 
 enum class UserRole {
