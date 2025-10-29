@@ -212,7 +212,7 @@ fun GoogleSignInButton(onSignInClick: () -> Unit) {
               // Text for the button
               Text(
                   text = "Sign in with Google",
-                  color = Color.Gray, // Text color
+                  color = Color.Black, // Text color
                   fontSize = 16.sp, // Font size
                   fontWeight = FontWeight.Medium)
             }
