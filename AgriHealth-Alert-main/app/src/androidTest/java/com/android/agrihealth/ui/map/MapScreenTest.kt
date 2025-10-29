@@ -11,11 +11,8 @@ import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.Location
 import com.android.agrihealth.data.model.Report
 import com.android.agrihealth.data.model.ReportStatus
-import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.android.agrihealth.model.authentification.FirebaseEmulatorsTest
-import com.android.agrihealth.ui.map.MapScreen
-import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -26,127 +23,138 @@ import org.junit.Rule
 import org.junit.Test
 
 object MapScreenTestReports {
-    val report1 =
-        Report(
-            "rep_id1",
-            "Report title 1",
-            "Description 1",
-            null,
-            "farmerId1",
-            null,
-            ReportStatus.PENDING,
-            null,
-            Location(46.5200948, 6.5651742, "Place name 1"))
-    val report2 =
-        Report(
-            "rep_id2",
-            "Report title 2",
-            "Description aaaa 2",
-            null,
-            "farmerId2",
-            "vetId2",
-            ReportStatus.IN_PROGRESS,
-            "Vet answer",
-            Location(46.5183104, 6.5676777))
-    val report3 =
-        Report(
-            "rep_id3",
-            "Report title 3",
-            "Description 3",
-            null,
-            "farmerId3",
-            null,
-            ReportStatus.RESOLVED,
-            null,
-            Location(46.5206231, 6.569927, "Place name 3"))
-    val report4 =
-        Report(
-            "rep_id4",
-            "Report title 4",
-            "Description aaaa 4",
-            null,
-            "farmerId4",
-            "vetId4",
-            ReportStatus.ESCALATED,
-            "Vet answer 4",
-            Location(46.5232, 6.5681191))
+  val report1 =
+      Report(
+          "rep_id1",
+          "Report title 1",
+          "Description 1",
+          null,
+          "farmerId1",
+          null,
+          ReportStatus.PENDING,
+          null,
+          Location(46.5200948, 6.5651742, "Place name 1"))
+  val report2 =
+      Report(
+          "rep_id2",
+          "Report title 2",
+          "Description aaaa 2",
+          null,
+          "farmerId2",
+          "vetId2",
+          ReportStatus.IN_PROGRESS,
+          "Vet answer",
+          Location(46.5183104, 6.5676777))
+  val report3 =
+      Report(
+          "rep_id3",
+          "Report title 3",
+          "Description 3",
+          null,
+          "farmerId3",
+          null,
+          ReportStatus.RESOLVED,
+          null,
+          Location(46.5206231, 6.569927, "Place name 3"))
+  val report4 =
+      Report(
+          "rep_id4",
+          "Report title 4",
+          "Description aaaa 4",
+          null,
+          "farmerId4",
+          "vetId4",
+          ReportStatus.ESCALATED,
+          "Vet answer 4",
+          Location(46.5232, 6.5681191))
 
-    val reportList = listOf(report1, report2, report3, report4)
+  val reportList = listOf(report1, report2, report3, report4)
 }
 
 class MapScreenTest : FirebaseEmulatorsTest() {
-    @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
+  @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    val reportRepository = ReportRepositoryProvider.repository
+  val reportRepository = ReportRepositoryProvider.repository
 
-    @Before
-    override fun setUp() {
-        super.setUp()
-        runTest{ authRepository.signUpWithEmailAndPassword(user1.email, password1, user1) }
-        runTest{
-            val userId = Firebase.auth.currentUser!!.uid
-            reportRepository.addReport(MapScreenTestReports.report1.copy(farmerId = userId))
-            reportRepository.addReport(MapScreenTestReports.report2.copy(farmerId = userId))
-            reportRepository.addReport(MapScreenTestReports.report3.copy(farmerId = userId))
-            reportRepository.addReport(MapScreenTestReports.report4.copy(farmerId = userId))
-        }
+  @Before
+  override fun setUp() {
+    super.setUp()
+    runTest { authRepository.signUpWithEmailAndPassword(user1.email, password1, user1) }
+    runTest {
+      val userId = Firebase.auth.currentUser!!.uid
+      reportRepository.addReport(MapScreenTestReports.report1.copy(farmerId = userId))
+      reportRepository.addReport(MapScreenTestReports.report2.copy(farmerId = userId))
+      reportRepository.addReport(MapScreenTestReports.report3.copy(farmerId = userId))
+      reportRepository.addReport(MapScreenTestReports.report4.copy(farmerId = userId))
     }
+  }
 
-    @Test
-    fun canNavigateFromOverview() {
-        composeRule.setContent { MaterialTheme { AgriHealthApp()} }
-        composeRule.onNodeWithTag(NavigationTestTags.MAP_TAB).assertIsDisplayed().performClick()
-        composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
-        composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
+  @Test
+  fun canNavigateFromOverview() {
+    composeRule.setContent { MaterialTheme { AgriHealthApp() } }
+    composeRule.onNodeWithTag(NavigationTestTags.MAP_TAB).assertIsDisplayed().performClick()
+    composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
+    composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
+  }
+
+  @Test
+  fun displayAllFieldsAndButtonsFromOverview() {
+    composeRule.setContent { MaterialTheme { MapScreen(isViewedFromOverview = true) } }
+    composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
+    composeRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsNotDisplayed()
+    composeRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsNotDisplayed()
+    composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
+  }
+
+  @Test
+  fun displayAllFieldsAndButtonsFromReportView() {
+    composeRule.setContent { MaterialTheme { MapScreen(isViewedFromOverview = false) } }
+    composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
+    composeRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsDisplayed()
+    composeRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsDisplayed()
+    composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsNotDisplayed()
+  }
+
+  private fun getUserReports(uid: String): List<Report> {
+    return MapScreenTestReports.reportList.filter { it.farmerId == uid || it.vetId == uid }
+  }
+
+  @Test
+  fun displayReportsFromUser() {
+    composeRule.setContent { MaterialTheme { MapScreen() } }
+    assertNotNull(Firebase.auth.currentUser)
+    val uid = Firebase.auth.currentUser!!.uid
+
+    getUserReports(uid).forEach { report ->
+      composeRule
+          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+          .assertIsDisplayed()
     }
+  }
 
-    @Test
-    fun displayAllFieldsAndButtonsFromOverview() {
-        composeRule.setContent { MaterialTheme { MapScreen(isViewedFromOverview = true) } }
-        composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
-        composeRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsNotDisplayed()
-        composeRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsNotDisplayed()
-        composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
+  @Test
+  fun displayReportInfo() {
+    composeRule.setContent { MaterialTheme { MapScreen() } }
+    assertNotNull(Firebase.auth.currentUser)
+    val uid = Firebase.auth.currentUser!!.uid
+
+    getUserReports(uid).forEach { report ->
+      composeRule
+          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+          .assertIsDisplayed()
+          .performClick()
+      composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsDisplayed()
+      composeRule
+          .onNodeWithTag(MapScreenTestTags.getTestTagForReportTitle(report.id))
+          .assertIsDisplayed()
+      composeRule
+          .onNodeWithTag(MapScreenTestTags.getTestTagForReportDesc(report.id))
+          .assertIsDisplayed()
+
+      composeRule
+          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+          .performClick()
+      composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsNotDisplayed()
     }
-
-    @Test
-    fun displayAllFieldsAndButtonsFromReportView() {
-        composeRule.setContent { MaterialTheme { MapScreen(isViewedFromOverview = false) } }
-        composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
-        composeRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsDisplayed()
-        composeRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsDisplayed()
-        composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsNotDisplayed()
-    }
-
-    private fun getUserReports(uid: String): List<Report> {
-        return MapScreenTestReports.reportList.filter{ it.farmerId == uid || it.vetId == uid}
-    }
-
-    @Test
-    fun displayReportsFromUser() {
-        composeRule.setContent { MaterialTheme { MapScreen() } }
-        assertNotNull(Firebase.auth.currentUser)
-        val uid = Firebase.auth.currentUser!!.uid
-
-        getUserReports(uid).forEach { report ->
-            composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id)).assertIsDisplayed()
-        }
-    }
-
-    @Test
-    fun displayReportInfo() {
-        composeRule.setContent { MaterialTheme { MapScreen() } }
-        assertNotNull(Firebase.auth.currentUser)
-        val uid = Firebase.auth.currentUser!!.uid
-
-        getUserReports(uid).forEach { report ->
-            composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id)).assertIsDisplayed().performClick()
-            composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsDisplayed()
-            composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForReportTitle(report.id)).assertIsDisplayed()
-            composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForReportDesc(report.id)).assertIsDisplayed()
-
-            composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id)).performClick()
-            composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsNotDisplayed()
-        }
-    }
+  }
 }

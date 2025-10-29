@@ -68,9 +68,7 @@ class NavigationSprint1Test {
     // Click on the Map tab in the bottom navigation bar
     composeTestRule.onNodeWithTag(NavigationTestTags.MAP_TAB).performClick()
     // Assert that the Map screen is displayed
-    composeTestRule
-        .onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN)
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
   }
 
   @Test

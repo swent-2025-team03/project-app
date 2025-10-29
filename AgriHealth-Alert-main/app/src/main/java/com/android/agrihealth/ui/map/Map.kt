@@ -62,7 +62,9 @@ object MapScreenTestTags {
 
   // from bootcamp map
   fun getTestTagForReportMarker(reportId: String): String = "reportMarker_$reportId"
+
   fun getTestTagForReportTitle(reportId: String): String = "reportTitle_$reportId"
+
   fun getTestTagForReportDesc(reportId: String): String = "reportDescription_$reportId"
 }
 
@@ -138,7 +140,8 @@ fun MapScreen(
                           text = "Map",
                           style = MaterialTheme.typography.titleLarge,
                           fontWeight = FontWeight.Bold,
-                          modifier = Modifier.weight(1f).testTag(MapScreenTestTags.TOP_BAR_MAP_TITLE))
+                          modifier =
+                              Modifier.weight(1f).testTag(MapScreenTestTags.TOP_BAR_MAP_TITLE))
                     }
               },
               navigationIcon = {
@@ -203,24 +206,27 @@ fun MapScreen(
 fun ShowReportInfo(report: Report?) {
   if (report == null) return
 
-  Box(
-      modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.REPORT_INFO_BOX)
-      ) {
-        Column(
-            modifier =
-                Modifier.align(Alignment.BottomCenter)
-                    .background(
-                        color = androidx.compose.ui.graphics.Color.White,
-                        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                    .fillMaxWidth()
-                    .padding(16.dp)) {
-              Text(text = report.title, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.testTag(
-                  MapScreenTestTags.getTestTagForReportTitle(report.id)))
-              Spacer(modifier = Modifier.height(4.dp))
-              Text(text = report.description, modifier = Modifier.testTag(MapScreenTestTags.getTestTagForReportDesc(report.id)))
-              Spacer(modifier = Modifier.height(8.dp))
-            }
-      }
+  Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.REPORT_INFO_BOX)) {
+    Column(
+        modifier =
+            Modifier.align(Alignment.BottomCenter)
+                .background(
+                    color = androidx.compose.ui.graphics.Color.White,
+                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                .fillMaxWidth()
+                .padding(16.dp)) {
+          Text(
+              text = report.title,
+              fontWeight = FontWeight.Bold,
+              fontSize = 18.sp,
+              modifier = Modifier.testTag(MapScreenTestTags.getTestTagForReportTitle(report.id)))
+          Spacer(modifier = Modifier.height(4.dp))
+          Text(
+              text = report.description,
+              modifier = Modifier.testTag(MapScreenTestTags.getTestTagForReportDesc(report.id)))
+          Spacer(modifier = Modifier.height(8.dp))
+        }
+  }
 }
 
 fun createCircleMarker(color: Int, radius: Float = 40f, strokeWidth: Float = 8f): BitmapDescriptor {
