@@ -140,5 +140,4 @@ class FakeReportRepository : ReportRepository {
   }
 
   override fun getNewReportId(): String = "FAKE_ID_123"
-
 }

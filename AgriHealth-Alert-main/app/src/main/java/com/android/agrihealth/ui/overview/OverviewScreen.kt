@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.overview
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -62,7 +61,7 @@ fun OverviewScreen(
 
   LaunchedEffect(Unit) { overviewViewModel.loadReports(userRole, userId) }
 
-    Scaffold(
+  Scaffold(
       // -- Top App Bar with logout icon --
       topBar = {
         TopAppBar(
@@ -96,8 +95,7 @@ fun OverviewScreen(
       content = { paddingValues ->
         Column(
             modifier =
-                Modifier
-                    .fillMaxSize()
+                Modifier.fillMaxSize()
                     .padding(paddingValues)
                     .padding(16.dp)
                     .testTag(OverviewScreenTestTags.SCREEN) // ← tag stable sur le conteneur racine
@@ -116,8 +114,7 @@ fun OverviewScreen(
                 Button(
                     onClick = onAddReport,
                     modifier =
-                        Modifier
-                            .align(Alignment.CenterHorizontally)
+                        Modifier.align(Alignment.CenterHorizontally)
                             .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
                       Text("Create a new report")
                     }
@@ -127,18 +124,18 @@ fun OverviewScreen(
 
               // -- Past reports list --
               Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.height(12.dp))
-            LazyColumn {
+              Spacer(modifier = Modifier.height(12.dp))
+              LazyColumn {
                 items(reports, key = { it.id }) { report ->
-                    // Ajout du testTag pour chaque item cliquable
-                    ReportItem(
-                        report = report,
-                        onClick = { onReportClick(report.id) },
-                    )
-                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                  // Ajout du testTag pour chaque item cliquable
+                  ReportItem(
+                      report = report,
+                      onClick = { onReportClick(report.id) },
+                  )
+                  HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                 }
+              }
             }
-        }
       })
 }
 
@@ -174,8 +171,7 @@ fun LatestAlertCard() {
 fun ReportItem(report: Report, onClick: () -> Unit) {
   Row(
       modifier =
-          Modifier
-              .fillMaxWidth()
+          Modifier.fillMaxWidth()
               .testTag(OverviewScreenTestTags.REPORT_ITEM)
               .clickable { onClick() }
               .padding(vertical = 8.dp),

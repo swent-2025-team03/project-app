@@ -21,49 +21,49 @@ class AddReportViewModel(
     private val userId: String,
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository
 ) : ViewModel(), AddReportViewModelContract {
-    private val _uiState = MutableStateFlow(AddReportUiState())
-    override val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
+  private val _uiState = MutableStateFlow(AddReportUiState())
+  override val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
 
-    override fun setTitle(newTitle: String) {
-        _uiState.value = _uiState.value.copy(title = newTitle)
+  override fun setTitle(newTitle: String) {
+    _uiState.value = _uiState.value.copy(title = newTitle)
+  }
+
+  override fun setDescription(newDescription: String) {
+    _uiState.value = _uiState.value.copy(description = newDescription)
+  }
+
+  override fun setVet(option: String) {
+    _uiState.value = _uiState.value.copy(chosenVet = option)
+  }
+
+  override suspend fun createReport(): Boolean {
+    val uiState = _uiState.value
+    if (uiState.title.isBlank() || uiState.description.isBlank()) {
+      return false
     }
 
-    override fun setDescription(newDescription: String) {
-        _uiState.value = _uiState.value.copy(description = newDescription)
-    }
-
-    override fun setVet(option: String) {
-        _uiState.value = _uiState.value.copy(chosenVet = option)
-    }
-
-    override suspend fun createReport(): Boolean {
-        val uiState = _uiState.value
-        if (uiState.title.isBlank() || uiState.description.isBlank()) {
-            return false
-        }
-
-        val newReport =
-            Report(
-                id = reportRepository.getNewReportId(),
-                title = uiState.title,
-                description = uiState.description,
-                photoUri = null, // currently unused
-                farmerId = userId,
-                vetId = "Best Vet Ever!", // TODO: Use the real vetID when implemented
-                status = ReportStatus.PENDING,
-                answer = null,
-                location = null // optional until implemented
+    val newReport =
+        Report(
+            id = reportRepository.getNewReportId(),
+            title = uiState.title,
+            description = uiState.description,
+            photoUri = null, // currently unused
+            farmerId = userId,
+            vetId = "Best Vet Ever!", // TODO: Use the real vetID when implemented
+            status = ReportStatus.PENDING,
+            answer = null,
+            location = null // optional until implemented
             )
 
-        withContext(Dispatchers.IO) { reportRepository.addReport(newReport) }
+    withContext(Dispatchers.IO) { reportRepository.addReport(newReport) }
 
-        // Clears all the fields
-        clearInputs() // TODO: Call only if addReport succeeds
+    // Clears all the fields
+    clearInputs() // TODO: Call only if addReport succeeds
 
-        return true
-    }
+    return true
+  }
 
-    override fun clearInputs() {
-        _uiState.value = AddReportUiState()
-    }
+  override fun clearInputs() {
+    _uiState.value = AddReportUiState()
+  }
 }

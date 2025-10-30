@@ -1,6 +1,7 @@
 package com.android.agrihealth.ui.overview
 
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.testutil.FakeOverviewRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -12,7 +13,6 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import com.android.agrihealth.testutil.FakeOverviewRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class OverviewViewModelTest {

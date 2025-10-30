@@ -5,10 +5,9 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.testutil.FakeOverviewRepository
 import org.junit.Rule
 import org.junit.Test
-import com.android.agrihealth.testutil.FakeOverviewRepository
-
 
 /**
  * UI tests for [OverviewScreen]. This test class verifies the presence of stable UI elements in the
@@ -21,20 +20,18 @@ class OverviewStableUITest {
   private fun setFarmerScreen() {
     composeTestRule.setContent {
       OverviewScreen(
-        userRole = UserRole.FARMER,
-        userId = "mock_farmer_id",
-        overviewViewModel = OverviewViewModel(FakeOverviewRepository())
-      )
+          userRole = UserRole.FARMER,
+          userId = "mock_farmer_id",
+          overviewViewModel = OverviewViewModel(FakeOverviewRepository()))
     }
   }
 
   private fun setVetScreen() {
     composeTestRule.setContent {
       OverviewScreen(
-        userRole = UserRole.VET,
-        userId = "mock_vet_id",
-        overviewViewModel = OverviewViewModel(FakeOverviewRepository())
-      )
+          userRole = UserRole.VET,
+          userId = "mock_vet_id",
+          overviewViewModel = OverviewViewModel(FakeOverviewRepository()))
     }
   }
 

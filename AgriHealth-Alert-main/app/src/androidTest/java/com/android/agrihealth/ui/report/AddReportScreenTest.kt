@@ -14,24 +14,20 @@ import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 
-
-
 class AddReportScreenTest {
 
-  @get:Rule
-  val composeRule = createAndroidComposeRule<ComponentActivity>()
+  @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
   @Test
   fun displayAllFieldsAndButtons() {
     composeRule.setContent {
-        MaterialTheme {
-            AddReportScreen(
-                userRole = UserRole.FARMER,
-                userId = "test_user",
-                onCreateReport = {},
-                addReportViewModel = FakeAddReportViewModel()
-            )
-        }
+      MaterialTheme {
+        AddReportScreen(
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = FakeAddReportViewModel())
+      }
     }
     composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).assertIsDisplayed()
     composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()
@@ -42,14 +38,13 @@ class AddReportScreenTest {
   @Test
   fun createButton_showsSnackbar_onEmptyFields() {
     composeRule.setContent {
-        MaterialTheme {
-            AddReportScreen(
-                userRole = UserRole.FARMER,
-                userId = "test_user",
-                onCreateReport = {},
-                addReportViewModel = FakeAddReportViewModel()
-            )
-        }
+      MaterialTheme {
+        AddReportScreen(
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = FakeAddReportViewModel())
+      }
     }
     // Click with fields empty
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
@@ -59,14 +54,13 @@ class AddReportScreenTest {
   @Test
   fun selectingVet_updatesDisplayedOption() {
     composeRule.setContent {
-        MaterialTheme {
-            AddReportScreen(
-                userRole = UserRole.FARMER,
-                userId = "test_user",
-                onCreateReport = {},
-                addReportViewModel = FakeAddReportViewModel()
-            )
-        }
+      MaterialTheme {
+        AddReportScreen(
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = FakeAddReportViewModel())
+      }
     }
     composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).performClick()
     val firstVet = AddReportConstants.vetOptions[0]
@@ -87,14 +81,13 @@ class AddReportScreenTest {
   @Test
   fun enteringTitleDescription_showsSuccessDialog() {
     composeRule.setContent {
-        MaterialTheme {
-            AddReportScreen(
-                userRole = UserRole.FARMER,
-                userId = "test_user",
-                onCreateReport = {},
-                addReportViewModel = FakeAddReportViewModel()
-            )
-        }
+      MaterialTheme {
+        AddReportScreen(
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = FakeAddReportViewModel())
+      }
     }
 
     // Fill in valid fields
@@ -116,14 +109,13 @@ class AddReportScreenTest {
     var called = false
 
     composeRule.setContent {
-        MaterialTheme {
-            AddReportScreen(
-                userRole = UserRole.FARMER,
-                userId = "test_user",
-                onCreateReport = {called = true},
-                addReportViewModel = FakeAddReportViewModel()
-            )
-        }
+      MaterialTheme {
+        AddReportScreen(
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = { called = true },
+            addReportViewModel = FakeAddReportViewModel())
+      }
     }
 
     composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput("Valid Title")
@@ -135,6 +127,6 @@ class AddReportScreenTest {
     composeRule.onNodeWithText("OK").assertIsDisplayed()
     composeRule.onNodeWithText("OK").performClick()
 
-      Assert.assertTrue(called)
+    Assert.assertTrue(called)
   }
 }

@@ -49,11 +49,7 @@ class AddReportViewModelTest {
   fun setup() {
     Dispatchers.setMain(StandardTestDispatcher()) // Necessary for scheduling coroutines
     repository = FakeReportRepository()
-    viewModel = AddReportViewModel(
-      userId = "fake-user-id",
-      reportRepository = repository
-    )
-
+    viewModel = AddReportViewModel(userId = "fake-user-id", reportRepository = repository)
   }
 
   @After

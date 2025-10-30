@@ -28,12 +28,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
-import com.android.agrihealth.ui.overview.OverviewViewModel
 import kotlinx.coroutines.launch
 
 /** Tags for the various components. For testing purposes */
@@ -105,9 +103,7 @@ fun AddReportScreen(
                         text = Screen.AddReport.name,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .weight(1f)
-                            .testTag(NavigationTestTags.TOP_BAR_TITLE))
+                        modifier = Modifier.weight(1f).testTag(NavigationTestTags.TOP_BAR_TITLE))
                   }
             },
             navigationIcon = {
@@ -124,8 +120,7 @@ fun AddReportScreen(
         // Main scrollable content
         Column(
             modifier =
-                Modifier
-                    .padding(padding)
+                Modifier.padding(padding)
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
@@ -152,8 +147,7 @@ fun AddReportScreen(
                           ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                         },
                         modifier =
-                            Modifier
-                                .menuAnchor() // Needed for M3 dropdown alignment
+                            Modifier.menuAnchor() // Needed for M3 dropdown alignment
                                 .fillMaxWidth()
                                 .testTag(AddReportScreenTestTags.VET_DROPDOWN))
 
@@ -174,16 +168,15 @@ fun AddReportScreen(
                   onClick = {
                     scope.launch {
                       val created = addReportViewModel.createReport()
-                        if (created) {
-                            showSuccessDialog = true
-                        } else {
-                            snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
-                        }
+                      if (created) {
+                        showSuccessDialog = true
+                      } else {
+                        snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
+                      }
                     }
                   },
                   modifier =
-                      Modifier
-                          .fillMaxWidth()
+                      Modifier.fillMaxWidth()
                           .height(56.dp)
                           .testTag(AddReportScreenTestTags.CREATE_BUTTON),
                   shape = RoundedCornerShape(20.dp),
@@ -196,15 +189,15 @@ fun AddReportScreen(
         if (showSuccessDialog) {
           AlertDialog(
               onDismissRequest = {
-                  showSuccessDialog = false
-                  onBack()
+                showSuccessDialog = false
+                onBack()
               },
               confirmButton = {
                 TextButton(
                     onClick = {
-                        showSuccessDialog = false
-                        onCreateReport()
-                        onBack()
+                      showSuccessDialog = false
+                      onCreateReport()
+                      onBack()
                     }) {
                       Text("OK")
                     }
@@ -228,10 +221,7 @@ private fun Field(
       placeholder = { Text(placeholder) },
       singleLine = true,
       shape = RoundedCornerShape(28.dp),
-      modifier = Modifier
-          .fillMaxWidth()
-          .padding(vertical = 8.dp)
-          .testTag(testTag),
+      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
       colors =
           OutlinedTextFieldDefaults.colors(
               unfocusedContainerColor = unfocusedFieldColor,
@@ -252,7 +242,6 @@ fun AddReportScreenPreview() {
         userRole = UserRole.FARMER,
         userId = "FARMER_001",
         onCreateReport = {},
-        addReportViewModel = FakeAddReportViewModel()
-    )
+        addReportViewModel = FakeAddReportViewModel())
   }
 }
