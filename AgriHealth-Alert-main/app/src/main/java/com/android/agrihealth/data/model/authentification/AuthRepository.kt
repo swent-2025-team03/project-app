@@ -1,5 +1,6 @@
 package com.android.agrihealth.data.model.authentification
 
+import androidx.credentials.Credential
 import com.android.agrihealth.data.model.user.User
 import com.google.firebase.auth.FirebaseUser
 
@@ -11,6 +12,12 @@ interface AuthRepository {
    */
   suspend fun signInWithEmailAndPassword(email: String, password: String): Result<FirebaseUser>
 
+  /**
+   * Signs in the user using their google account.
+   *
+   * @return A [Result] containing a [FirebaseUser] on success, or an exception on failure.
+   */
+  suspend fun signInWithGoogle(credential: Credential): Result<FirebaseUser>
   /**
    * Signs up the user using their email, password and profile data.
    *

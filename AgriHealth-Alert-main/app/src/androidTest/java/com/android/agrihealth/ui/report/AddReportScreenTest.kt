@@ -1,4 +1,4 @@
-package com.android.agrihealth.ui.report
+package com.android.agrihealth.ui.farmer
 
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
@@ -71,6 +71,7 @@ class AddReportScreenTest {
   @Test
   fun previewComposable_rendersWithoutCrash() {
     composeRule.setContent { AddReportScreenPreview() }
+
     // Verify that essential UI components render (sample check)
     composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).assertIsDisplayed()
     composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()

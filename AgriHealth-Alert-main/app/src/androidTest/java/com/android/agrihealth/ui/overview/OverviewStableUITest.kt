@@ -69,4 +69,11 @@ class OverviewStableUITest {
     setFarmerScreen()
     composeTestRule.onNodeWithText("Latest News / Alerts").assertIsDisplayed()
   }
+
+  // --- TEST 6: Verify the profile button is displayed ---
+  @Test
+  fun profileButton_isDisplayed() {
+    setFarmerScreen()
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.PROFILE_BUTTON).assertIsDisplayed()
+  }
 }
