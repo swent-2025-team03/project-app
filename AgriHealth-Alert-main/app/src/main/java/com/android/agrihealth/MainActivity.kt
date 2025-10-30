@@ -158,11 +158,14 @@ fun AgriHealthApp(
                 reportId = reportId)
           }
       composable(Screen.Profile.route) {
+        val credentialManager = CredentialManager.create(LocalContext.current)
+        val overviewViewModel: OverviewViewModel = viewModel()
+
         ProfileScreen(
             userViewModel = userViewModel,
             onGoBack = { navigationActions.goBack() },
             onLogout = {
-              Firebase.auth.signOut()
+              overviewViewModel.signOut(credentialManager)
               navigationActions.navigateToAuthAndClear()
             },
             onEditProfile = {

@@ -4,6 +4,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.android.agrihealth.data.model.user.*
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_VET_FIELD
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EMAIL_FIELD
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.LOGOUT_BUTTON
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PASSWORD_FIELD
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
 import org.junit.Rule
 import org.junit.Test
@@ -31,7 +42,7 @@ class ProfileScreenTest {
     }
   }
 
-  // Tests suite: 84% coverage
+  // Test suite
 
   @Test
   fun topBar_displaysCorrectly() {
@@ -41,9 +52,9 @@ class ProfileScreenTest {
             Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
     setScreen(vm)
 
-    composeTestRule.onNodeWithTag("TopBar").assertExists()
-    composeTestRule.onNodeWithTag("GoBackButton").assertExists()
-    composeTestRule.onNodeWithTag("LogoutButton").assertExists()
+    composeTestRule.onNodeWithTag(TOP_BAR).assertExists()
+    composeTestRule.onNodeWithTag(GO_BACK_BUTTON).assertExists()
+    composeTestRule.onNodeWithTag(LOGOUT_BUTTON).assertExists()
   }
 
   @Test
@@ -51,7 +62,7 @@ class ProfileScreenTest {
     val vm = makeFakeViewModel(UserRole.VET, null)
     setScreen(vm)
 
-    composeTestRule.onNodeWithTag("ProfileImage").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(PROFILE_IMAGE).assertIsDisplayed()
   }
 
   @Test
@@ -68,7 +79,7 @@ class ProfileScreenTest {
                 defaultVet = "vet123"))
     setScreen(vm)
 
-    composeTestRule.onNodeWithTag("DefaultVetField").assertExists()
+    composeTestRule.onNodeWithTag(DEFAULT_VET_FIELD).assertExists()
   }
 
   @Test
@@ -85,7 +96,7 @@ class ProfileScreenTest {
                 linkedFarmers = listOf("farmer1")))
     setScreen(vm)
 
-    composeTestRule.onAllNodesWithTag("DefaultVetField").assertCountEquals(0)
+    composeTestRule.onAllNodesWithTag(DEFAULT_VET_FIELD).assertCountEquals(0)
   }
 
   @Test
@@ -97,7 +108,7 @@ class ProfileScreenTest {
                 "1", "Alice", "Johnson", "alice@farmmail.com", address = null, defaultVet = null))
     setScreen(vm)
 
-    composeTestRule.onNodeWithTag("AddressField").assertExists()
+    composeTestRule.onNodeWithTag(ADDRESS_FIELD).assertExists()
   }
 
   @Test
@@ -108,8 +119,8 @@ class ProfileScreenTest {
             Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
     setScreen(vm)
 
-    composeTestRule.onNodeWithTag("EmailField").assertExists()
-    composeTestRule.onNodeWithTag("PasswordField").assertExists()
+    composeTestRule.onNodeWithTag(EMAIL_FIELD).assertExists()
+    composeTestRule.onNodeWithTag(PASSWORD_FIELD).assertExists()
   }
 
   @Test
@@ -124,7 +135,7 @@ class ProfileScreenTest {
       MaterialTheme { ProfileScreen(userViewModel = vm, onEditProfile = { clicked = true }) }
     }
 
-    composeTestRule.onNodeWithTag("EditButton").performClick()
+    composeTestRule.onNodeWithTag(EDIT_BUTTON).performClick()
     assert(clicked)
   }
 
@@ -133,8 +144,8 @@ class ProfileScreenTest {
     val vm = makeFakeViewModel(UserRole.FARMER, null)
     setScreen(vm)
 
-    composeTestRule.onNodeWithTag("NameText").assertExists()
-    composeTestRule.onNodeWithTag("EmailField").assertExists()
+    composeTestRule.onNodeWithTag(NAME_TEXT).assertExists()
+    composeTestRule.onNodeWithTag(EMAIL_FIELD).assertExists()
   }
 
   @Test
@@ -145,14 +156,14 @@ class ProfileScreenTest {
             Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
     setScreen(vm)
 
-    composeTestRule.onNodeWithTag("ProfileImage").assertExists()
-    composeTestRule.onNodeWithTag("GoBackButton").assertExists()
-    composeTestRule.onNodeWithTag("LogoutButton").assertExists()
-    composeTestRule.onNodeWithTag("EditButton").assertExists()
+    composeTestRule.onNodeWithTag(PROFILE_IMAGE).assertExists()
+    composeTestRule.onNodeWithTag(GO_BACK_BUTTON).assertExists()
+    composeTestRule.onNodeWithTag(LOGOUT_BUTTON).assertExists()
+    composeTestRule.onNodeWithTag(EDIT_BUTTON).assertExists()
   }
 
   @Test
-  fun codeButton_triggers() {
+  fun codeButton_triggersCallbacks() {
     var clicked = false
     val vm =
         makeFakeViewModel(
@@ -163,7 +174,7 @@ class ProfileScreenTest {
       MaterialTheme { ProfileScreen(userViewModel = vm, onCode = { clicked = true }) }
     }
 
-    composeTestRule.onNodeWithTag("CodeButton").performClick()
+    composeTestRule.onNodeWithTag(CODE_BUTTON).performClick()
     assert(clicked)
   }
 }

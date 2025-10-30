@@ -35,7 +35,6 @@ object OverviewScreenTestTags {
   const val ADD_REPORT_BUTTON = "addReportFab"
   const val LOGOUT_BUTTON = "logoutButton"
   const val SCREEN = "OverviewScreen"
-  // Nouveau: tag commun pour chaque item de rapport (pour les tests E2E)
   const val REPORT_ITEM = "reportItem"
   const val PROFILE_BUTTON = "ProfileButton"
 }

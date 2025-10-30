@@ -21,6 +21,21 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.user.UserViewModel
 
+object ProfileScreenTestTags {
+
+  const val GO_BACK_BUTTON = "GoBackButton"
+  const val LOGOUT_BUTTON = "LogoutButton"
+  const val TOP_BAR = "TopBar"
+  const val PROFILE_IMAGE = "ProfileImage"
+  const val NAME_TEXT = "NameText"
+  const val EDIT_BUTTON = "EditButton"
+  const val EMAIL_FIELD = "EmailField"
+  const val PASSWORD_FIELD = "PasswordField"
+  const val ADDRESS_FIELD = "AddressField"
+  const val DEFAULT_VET_FIELD = "DefaultVetField"
+  const val CODE_BUTTON = "CodeButton"
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -96,9 +111,8 @@ fun ProfileScreen(
 
               // Password
               OutlinedTextField(
-                  value =
-                      "********", // I think we are missing the passwords in the User model, should
-                  // we modify this ?
+                  value = "********", // For now the password is not in the user model, so we use a
+                  // placeholder
                   onValueChange = {},
                   label = { Text("Password") },
                   enabled = false,
@@ -109,17 +123,15 @@ fun ProfileScreen(
               Spacer(modifier = Modifier.height(12.dp))
 
               // Address (Location)
-              val address =
-                  when (user) {
-                    is Farmer -> user.address
-                    is Vet -> user.address
-                    else -> null
-                  }
-
               OutlinedTextField(
-                  value = address?.toString() ?: "",
+                  value = user?.address?.toString() ?: "",
                   onValueChange = {},
-                  label = { Text("Address") },
+                  label = {
+                    when (userRole) {
+                      UserRole.FARMER -> Text("Farm Address")
+                      UserRole.VET -> Text("Clinic Address")
+                    }
+                  },
                   enabled = false,
                   modifier = Modifier.fillMaxWidth().testTag("AddressField"))
 
