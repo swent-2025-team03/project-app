@@ -6,6 +6,7 @@ import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.defaultUser
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -43,7 +44,7 @@ class UserViewModelTest {
   }
 
   @Test
-  fun initKeepsDefaultRoleWhenNoUserLoggedIn() = runTest {
+  fun initKeepsDefaultUserWhenNoUserLoggedIn() = runTest {
     // Given no current user
     assertEquals(auth.currentUser, null)
 
@@ -51,8 +52,8 @@ class UserViewModelTest {
     advanceUntilIdle()
 
     // Default role = FARMER
-    val role = viewModel.userRole.first()
-    assertEquals(UserRole.FARMER, role)
+    val role = viewModel.user.first()
+    assertEquals(defaultUser, role)
   }
 
   @Test
@@ -68,8 +69,8 @@ class UserViewModelTest {
     advanceUntilIdle()
 
     // Then userRole StateFlow should be updated
-    val role = viewModel.userRole.first()
-    assertEquals(UserRole.VET, role)
+    val role = viewModel.user.first()
+    assertEquals(user3, role)
   }
 
   @Test
@@ -84,8 +85,8 @@ class UserViewModelTest {
     advanceUntilIdle()
 
     // Then userRole StateFlow should remain default
-    val role = viewModel.userRole.first()
-    assertEquals(UserRole.FARMER, role)
+    val role = viewModel.user.first()
+    assertEquals(defaultUser, role)
   }
 }
 

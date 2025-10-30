@@ -80,7 +80,8 @@ fun AgriHealthApp(
 
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
-  val currentUserRole by userViewModel.userRole.collectAsState()
+  val currentUser by userViewModel.user.collectAsState()
+    val currentUserRole = currentUser.role
 
   val startDestination =
       if (Firebase.auth.currentUser != null) Screen.Overview.name else Screen.Auth.name

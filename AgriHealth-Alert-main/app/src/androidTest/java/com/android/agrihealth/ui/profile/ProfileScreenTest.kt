@@ -16,6 +16,9 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.defaultUser
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.junit.Rule
 import org.junit.Test
 
@@ -25,11 +28,10 @@ class ProfileScreenTest {
 
   // Some Helpers
 
-  private fun makeFakeViewModel(role: UserRole, user: User?): UserViewModel {
+  private fun makeFakeViewModel(user: User?): UserViewModel {
     return object : UserViewModel() {
       init {
-        userRole = role
-        this.user = user
+        this.user = MutableStateFlow<User>(user?: defaultUser).asStateFlow()
       }
     }
   }
@@ -48,7 +50,6 @@ class ProfileScreenTest {
   fun topBar_displaysCorrectly() {
     val vm =
         makeFakeViewModel(
-            UserRole.FARMER,
             Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
     setScreen(vm)
 
@@ -59,7 +60,13 @@ class ProfileScreenTest {
 
   @Test
   fun profileImage_isVisible() {
-    val vm = makeFakeViewModel(UserRole.VET, null)
+    val vm = makeFakeViewModel(Vet(
+        uid = "2",
+        firstname = "Bob",
+        lastname = "Smith",
+        email = "bob@vetcare.com",
+        address = null,
+        linkedFarmers = listOf("farmer1")))
     setScreen(vm)
 
     composeTestRule.onNodeWithTag(PROFILE_IMAGE).assertIsDisplayed()
@@ -69,7 +76,6 @@ class ProfileScreenTest {
   fun farmer_showsDefaultVetField() {
     val vm =
         makeFakeViewModel(
-            UserRole.FARMER,
             Farmer(
                 uid = "1",
                 firstname = "Alice",
@@ -86,7 +92,6 @@ class ProfileScreenTest {
   fun vet_hidesDefaultVetField() {
     val vm =
         makeFakeViewModel(
-            UserRole.VET,
             Vet(
                 uid = "2",
                 firstname = "Bob",
@@ -103,7 +108,6 @@ class ProfileScreenTest {
   fun addressField_isVisibleAndPopulated() {
     val vm =
         makeFakeViewModel(
-            UserRole.FARMER,
             Farmer(
                 "1", "Alice", "Johnson", "alice@farmmail.com", address = null, defaultVet = null))
     setScreen(vm)
@@ -115,7 +119,6 @@ class ProfileScreenTest {
   fun emailAndPasswordFields_areDisplayed() {
     val vm =
         makeFakeViewModel(
-            UserRole.FARMER,
             Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
     setScreen(vm)
 
@@ -128,7 +131,6 @@ class ProfileScreenTest {
     var clicked = false
     val vm =
         makeFakeViewModel(
-            UserRole.FARMER,
             Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
 
     composeTestRule.setContent {
@@ -141,7 +143,7 @@ class ProfileScreenTest {
 
   @Test
   fun nullUser_safeFallbacks() {
-    val vm = makeFakeViewModel(UserRole.FARMER, null)
+    val vm = makeFakeViewModel(Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
     setScreen(vm)
 
     composeTestRule.onNodeWithTag(NAME_TEXT).assertExists()
@@ -152,7 +154,6 @@ class ProfileScreenTest {
   fun allAccessibleElements_haveTags() {
     val vm =
         makeFakeViewModel(
-            UserRole.FARMER,
             Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
     setScreen(vm)
 
@@ -167,7 +168,6 @@ class ProfileScreenTest {
     var clicked = false
     val vm =
         makeFakeViewModel(
-            UserRole.FARMER,
             Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
 
     composeTestRule.setContent {

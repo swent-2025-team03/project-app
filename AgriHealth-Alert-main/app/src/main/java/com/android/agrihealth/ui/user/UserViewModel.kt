@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.google.firebase.Firebase
@@ -15,27 +16,36 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+
+val defaultUser = Farmer(
+    uid = "placeholder",
+    firstname = "John",
+    lastname = "Doe",
+    email = "",
+    address = null,
+    linkedVets = emptyList(),
+    defaultVet = null
+  )
+
 /**
  * ViewModel for managing user-related data and operations.
  *
  * @param userRepository The repository for user data operations.
  * @param auth The FirebaseAuth instance for authentication operations.
  */
-class UserViewModel(
+ open class UserViewModel(
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
     private val auth: FirebaseAuth = Firebase.auth
 ) : ViewModel() {
 
-  private val _userRole = MutableStateFlow<UserRole>(UserRole.FARMER)
+  //private val _userRole = MutableStateFlow<UserRole>(UserRole.FARMER)
+  private val _user = MutableStateFlow<User>(defaultUser)
 
-  var userId: String = "FARMER_001"
-
-  var user: User? = null
-
-
+  //user id can be accessed using Firebase.auth.currentUser?.uid
 
   /** The current user's role as a state flow. */
-  val userRole: StateFlow<UserRole> = _userRole.asStateFlow()
+  //val userRole: StateFlow<UserRole> = _userRole.asStateFlow()
+  val user: StateFlow<User> = _user.asStateFlow()
 
   init {
     val currentUser = auth.currentUser
@@ -54,7 +64,7 @@ class UserViewModel(
       val result = userRepository.getUserFromId(userId)
 
       result.fold(
-          onSuccess = { user -> _userRole.value = user.role },
+          onSuccess = { user -> _user.value = user },
           onFailure = { e -> Log.e("UserViewModel", "Failed to load user role", e) })
     }
   }
