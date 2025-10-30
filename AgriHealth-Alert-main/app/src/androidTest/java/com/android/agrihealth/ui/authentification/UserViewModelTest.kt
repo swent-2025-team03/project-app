@@ -3,7 +3,6 @@ package com.android.agrihealth.ui.authentification
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
-import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.defaultUser
@@ -57,7 +56,7 @@ class UserViewModelTest {
   }
 
   @Test
-  fun loadUserRoleUpdatesStateFlow() = runTest {
+  fun loadUserUpdatesStateFlow() = runTest {
     // Given a user in the repository
     repository.addUser(user3)
 
@@ -65,7 +64,7 @@ class UserViewModelTest {
     advanceUntilIdle()
 
     // When loading user role
-    viewModel.loadUserRole(user3.uid)
+    viewModel.loadUser(user3.uid)
     advanceUntilIdle()
 
     // Then userRole StateFlow should be updated
@@ -74,14 +73,14 @@ class UserViewModelTest {
   }
 
   @Test
-  fun loadUserRoleHandlesNonExistingUser() = runTest {
+  fun loadUserHandlesNonExistingUser() = runTest {
     // Given no user in the repository
 
     val viewModel = UserViewModel(repository, auth)
     advanceUntilIdle()
 
     // When loading user role for non-existing user
-    viewModel.loadUserRole("nonExistingUid")
+    viewModel.loadUser("nonExistingUid")
     advanceUntilIdle()
 
     // Then userRole StateFlow should remain default

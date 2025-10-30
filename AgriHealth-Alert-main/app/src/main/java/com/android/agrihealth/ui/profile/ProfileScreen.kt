@@ -55,7 +55,7 @@ fun ProfileScreen(
     onCode: () -> Unit = {}
 ) {
 
-    val user by userViewModel.user.collectAsState()
+  val user by userViewModel.user.collectAsState()
   val userRole = user.role
 
   Scaffold(

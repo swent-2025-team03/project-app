@@ -16,9 +16,6 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
-import com.android.agrihealth.ui.user.defaultUser
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import org.junit.Rule
 import org.junit.Test
 
@@ -29,11 +26,7 @@ class ProfileScreenTest {
   // Some Helpers
 
   private fun makeFakeViewModel(user: User?): UserViewModel {
-    return object : UserViewModel() {
-      init {
-        this.user = MutableStateFlow<User>(user?: defaultUser).asStateFlow()
-      }
-    }
+    return UserViewModel(initialUser = user)
   }
 
   private fun setScreen(vm: UserViewModel) {
@@ -60,13 +53,15 @@ class ProfileScreenTest {
 
   @Test
   fun profileImage_isVisible() {
-    val vm = makeFakeViewModel(Vet(
-        uid = "2",
-        firstname = "Bob",
-        lastname = "Smith",
-        email = "bob@vetcare.com",
-        address = null,
-        linkedFarmers = listOf("farmer1")))
+    val vm =
+        makeFakeViewModel(
+            Vet(
+                uid = "2",
+                firstname = "Bob",
+                lastname = "Smith",
+                email = "bob@vetcare.com",
+                address = null,
+                linkedFarmers = listOf("farmer1")))
     setScreen(vm)
 
     composeTestRule.onNodeWithTag(PROFILE_IMAGE).assertIsDisplayed()
@@ -143,7 +138,9 @@ class ProfileScreenTest {
 
   @Test
   fun nullUser_safeFallbacks() {
-    val vm = makeFakeViewModel(Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
+    val vm =
+        makeFakeViewModel(
+            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
     setScreen(vm)
 
     composeTestRule.onNodeWithTag(NAME_TEXT).assertExists()
