@@ -13,30 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-// Mock data for testing
-val report1 =
-    Report(
-        id = "RPT001",
-        title = "Cow coughing",
-        description = "Coughing and nasal discharge observed in the barn.",
-        photoUri = null,
-        farmerId = "FARMER_001",
-        vetId = "VET_001",
-        status = ReportStatus.IN_PROGRESS,
-        answer = null,
-        location = Location(46.5191, 6.5668, "Lausanne Farm"))
-val report2 =
-    Report(
-        id = "RPT002",
-        title = "Sheep lost appetite",
-        description = "One sheep has not eaten for two days.",
-        photoUri = null,
-        farmerId = "FARMER_001",
-        vetId = "VET_001",
-        status = ReportStatus.PENDING,
-        answer = null,
-        location = Location(46.5210, 6.5650, "Vaud Farm"))
-
 /**
  * Represents the UI state for the Overview screen.
  *
@@ -57,22 +33,6 @@ class OverviewViewModel(
 
   private val _uiState = MutableStateFlow(OverviewUIState())
   val uiState: StateFlow<OverviewUIState> = _uiState.asStateFlow()
-
-  init {
-    viewModelScope.launch {
-      reportRepository.addReport(
-          Report(
-              id = "RPT001",
-              title = "Cow coughing",
-              description = "Coughing and nasal discharge observed in the barn.",
-              photoUri = null,
-              farmerId = "FARMER_001",
-              vetId = "VET_001",
-              status = ReportStatus.IN_PROGRESS,
-              answer = null,
-              location = Location(46.5191, 6.5668, "Lausanne Farm")))
-    }
-  }
 
   /** Loads reports based on user role and ID. */
   fun loadReports(userRole: UserRole, userId: String) {

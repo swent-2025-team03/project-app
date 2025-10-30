@@ -129,6 +129,8 @@ class FakeReportRepository : ReportRepository {
 
   override suspend fun getReportsByFarmer(farmerId: String): List<Report> = emptyList()
 
+  override suspend fun getReportsByVet(vetId: String): List<Report> = emptyList()
+
   override suspend fun addReport(report: Report) {
     // not used
   }
@@ -138,4 +140,5 @@ class FakeReportRepository : ReportRepository {
   }
 
   override fun getNewReportId(): String = "FAKE_ID_123"
+
 }

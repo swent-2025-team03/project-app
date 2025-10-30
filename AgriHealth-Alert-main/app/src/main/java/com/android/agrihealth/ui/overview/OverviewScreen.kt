@@ -62,7 +62,7 @@ fun OverviewScreen(
 
   LaunchedEffect(Unit) { overviewViewModel.loadReports(userRole, userId) }
 
-  Scaffold(
+    Scaffold(
       // -- Top App Bar with logout icon --
       topBar = {
         TopAppBar(

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewViewModel
@@ -73,11 +74,11 @@ fun AddReportScreen(
     onBack: () -> Unit = {},
     userRole: UserRole,
     userId: String,
-    overviewViewModel: OverviewViewModel,
-    createReportViewModel: AddReportViewModel = viewModel()
+    onCreateReport: () -> Unit = {},
+    addReportViewModel: AddReportViewModelContract
 ) {
 
-  val uiState by createReportViewModel.uiState.collectAsState()
+  val uiState by addReportViewModel.uiState.collectAsState()
 
   // For the dropdown menu
   var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
@@ -104,7 +105,9 @@ fun AddReportScreen(
                         text = Screen.AddReport.name,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f).testTag(NavigationTestTags.TOP_BAR_TITLE))
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag(NavigationTestTags.TOP_BAR_TITLE))
                   }
             },
             navigationIcon = {
@@ -121,19 +124,20 @@ fun AddReportScreen(
         // Main scrollable content
         Column(
             modifier =
-                Modifier.padding(padding)
+                Modifier
+                    .padding(padding)
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
               Field(
                   uiState.title,
-                  { createReportViewModel.setTitle(it) },
+                  { addReportViewModel.setTitle(it) },
                   "Title",
                   AddReportScreenTestTags.TITLE_FIELD)
               Field(
                   uiState.description,
-                  { createReportViewModel.setDescription(it) },
+                  { addReportViewModel.setDescription(it) },
                   "Description",
                   AddReportScreenTestTags.DESCRIPTION_FIELD)
 
@@ -148,7 +152,8 @@ fun AddReportScreen(
                           ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                         },
                         modifier =
-                            Modifier.menuAnchor() // Needed for M3 dropdown alignment
+                            Modifier
+                                .menuAnchor() // Needed for M3 dropdown alignment
                                 .fillMaxWidth()
                                 .testTag(AddReportScreenTestTags.VET_DROPDOWN))
 
@@ -158,7 +163,7 @@ fun AddReportScreen(
                             DropdownMenuItem(
                                 text = { Text(option) },
                                 onClick = {
-                                  createReportViewModel.setVet(option)
+                                  addReportViewModel.setVet(option)
                                   expanded = false
                                 })
                           }
@@ -168,16 +173,17 @@ fun AddReportScreen(
               Button(
                   onClick = {
                     scope.launch {
-                      val created = createReportViewModel.createReport()
-                      if (created) {
-                        showSuccessDialog = true
-                      } else {
-                        snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
-                      }
+                      val created = addReportViewModel.createReport()
+                        if (created) {
+                            showSuccessDialog = true
+                        } else {
+                            snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
+                        }
                     }
                   },
                   modifier =
-                      Modifier.fillMaxWidth()
+                      Modifier
+                          .fillMaxWidth()
                           .height(56.dp)
                           .testTag(AddReportScreenTestTags.CREATE_BUTTON),
                   shape = RoundedCornerShape(20.dp),
@@ -190,15 +196,15 @@ fun AddReportScreen(
         if (showSuccessDialog) {
           AlertDialog(
               onDismissRequest = {
-                showSuccessDialog = false
-                onBack()
+                  showSuccessDialog = false
+                  onBack()
               },
               confirmButton = {
                 TextButton(
                     onClick = {
-                      showSuccessDialog = false
-                      overviewViewModel.loadReports(userRole, userId)
-                      onBack()
+                        showSuccessDialog = false
+                        onCreateReport()
+                        onBack()
                     }) {
                       Text("OK")
                     }
@@ -222,7 +228,10 @@ private fun Field(
       placeholder = { Text(placeholder) },
       singleLine = true,
       shape = RoundedCornerShape(28.dp),
-      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
+      modifier = Modifier
+          .fillMaxWidth()
+          .padding(vertical = 8.dp)
+          .testTag(testTag),
       colors =
           OutlinedTextFieldDefaults.colors(
               unfocusedContainerColor = unfocusedFieldColor,
@@ -240,6 +249,10 @@ private fun Field(
 fun AddReportScreenPreview() {
   MaterialTheme {
     AddReportScreen(
-        userRole = UserRole.FARMER, userId = "FARMER_001", overviewViewModel = viewModel())
+        userRole = UserRole.FARMER,
+        userId = "FARMER_001",
+        onCreateReport = {},
+        addReportViewModel = FakeAddReportViewModel()
+    )
   }
 }

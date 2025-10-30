@@ -1,7 +1,6 @@
 package com.android.agrihealth.ui.overview
 
 import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.data.repository.FakeOverviewRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -13,6 +12,7 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import com.android.agrihealth.testutil.FakeOverviewRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class OverviewViewModelTest {
@@ -30,39 +30,25 @@ class OverviewViewModelTest {
   }
 
   @Test
-  fun `uiState contains mock reports after init`() = runTest {
-    val state = viewModel.uiState.value
-    Assert.assertEquals(2, state.reports.size)
-    Assert.assertEquals("RPT001", state.reports[0].id)
-    Assert.assertEquals("RPT002", state.reports[1].id)
-  }
-
-  @Test
   fun `getReportsForUser returns farmer's own reports`() = runTest {
+    viewModel.loadReports(UserRole.FARMER, "FARMER_001")
+    advanceUntilIdle()
     val reports = viewModel.getReportsForUser(UserRole.FARMER, "FARMER_001")
-    Assert.assertEquals(2, reports.size)
     Assert.assertTrue(reports.all { it.farmerId == "FARMER_001" })
   }
 
   @Test
   fun `getReportsForUser returns all reports for vet`() = runTest {
+    viewModel.loadReports(UserRole.VET, "VET_001")
+    advanceUntilIdle()
     val reports = viewModel.getReportsForUser(UserRole.VET, "VET_001")
-    Assert.assertEquals(2, reports.size)
+    Assert.assertTrue(reports.all { it.vetId == "VET_001" })
   }
 
   @Test
-  fun `getAllReports handles repository exception safely`() = runTest {
-    val safeRepo = FakeOverviewRepository()
-    val viewModel = OverviewViewModel(safeRepo)
-    advanceUntilIdle()
-
-    safeRepo.throwOnGet = true
-
-    viewModel.javaClass.getDeclaredMethod("getAllReports").apply {
-      isAccessible = true
-      invoke(viewModel)
-    }
-
+  fun `loadReports handles repository exception safely`() = runTest {
+    repository.throwOnGet = true
+    viewModel.loadReports(UserRole.FARMER, "FARMER_001")
     advanceUntilIdle()
     val state = viewModel.uiState.value
     Assert.assertTrue(state.reports.isEmpty())

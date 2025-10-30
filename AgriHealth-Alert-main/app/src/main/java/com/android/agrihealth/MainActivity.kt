@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
@@ -36,6 +38,9 @@ import com.android.agrihealth.ui.user.UserViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,6 +79,8 @@ fun AgriHealthApp() {
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
   val overviewViewModel: OverviewViewModel = viewModel()
+
+    var reloadReports by remember { mutableStateOf(false) }
 
   val startDestination =
       if (Firebase.auth.currentUser != null) Screen.Overview.name else Screen.Auth.name
@@ -135,8 +142,12 @@ fun AgriHealthApp() {
             onBack = { navigationActions.goBack() },
             userRole = currentUserRole,
             userId = currentUserId,
-            overviewViewModel = overviewViewModel,
-            createReportViewModel = createReportViewModel)
+            onCreateReport = {
+                reloadReports = !reloadReports
+                navigationActions.goBack()
+            },
+            addReportViewModel = createReportViewModel,
+        )
       }
       composable(
           route = Screen.ViewReport.route,

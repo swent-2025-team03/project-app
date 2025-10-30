@@ -1,4 +1,4 @@
-package com.android.agrihealth.ui.farmer
+package com.android.agrihealth.ui.report
 
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
@@ -8,22 +8,31 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import com.android.agrihealth.ui.report.AddReportConstants
-import com.android.agrihealth.ui.report.AddReportFeedbackTexts
-import com.android.agrihealth.ui.report.AddReportScreen
-import com.android.agrihealth.ui.report.AddReportScreenPreview
-import com.android.agrihealth.ui.report.AddReportScreenTestTags
-import org.junit.Assert.*
+import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.testutil.FakeAddReportViewModel
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 
+
+
 class AddReportScreenTest {
 
-  @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
+  @get:Rule
+  val composeRule = createAndroidComposeRule<ComponentActivity>()
 
   @Test
   fun displayAllFieldsAndButtons() {
-    composeRule.setContent { MaterialTheme { AddReportScreen() } }
+    composeRule.setContent {
+        MaterialTheme {
+            AddReportScreen(
+                userRole = UserRole.FARMER,
+                userId = "test_user",
+                onCreateReport = {},
+                addReportViewModel = FakeAddReportViewModel()
+            )
+        }
+    }
     composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).assertIsDisplayed()
     composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()
     composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).assertIsDisplayed()
@@ -32,7 +41,16 @@ class AddReportScreenTest {
 
   @Test
   fun createButton_showsSnackbar_onEmptyFields() {
-    composeRule.setContent { MaterialTheme { AddReportScreen() } }
+    composeRule.setContent {
+        MaterialTheme {
+            AddReportScreen(
+                userRole = UserRole.FARMER,
+                userId = "test_user",
+                onCreateReport = {},
+                addReportViewModel = FakeAddReportViewModel()
+            )
+        }
+    }
     // Click with fields empty
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
     composeRule.onNodeWithText(AddReportFeedbackTexts.FAILURE).assertIsDisplayed()
@@ -40,7 +58,16 @@ class AddReportScreenTest {
 
   @Test
   fun selectingVet_updatesDisplayedOption() {
-    composeRule.setContent { MaterialTheme { AddReportScreen() } }
+    composeRule.setContent {
+        MaterialTheme {
+            AddReportScreen(
+                userRole = UserRole.FARMER,
+                userId = "test_user",
+                onCreateReport = {},
+                addReportViewModel = FakeAddReportViewModel()
+            )
+        }
+    }
     composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).performClick()
     val firstVet = AddReportConstants.vetOptions[0]
     composeRule.onNodeWithText(firstVet).assertIsDisplayed().performClick()
@@ -50,7 +77,6 @@ class AddReportScreenTest {
   @Test
   fun previewComposable_rendersWithoutCrash() {
     composeRule.setContent { AddReportScreenPreview() }
-
     // Verify that essential UI components render (sample check)
     composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).assertIsDisplayed()
     composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()
@@ -60,7 +86,16 @@ class AddReportScreenTest {
 
   @Test
   fun enteringTitleDescription_showsSuccessDialog() {
-    composeRule.setContent { MaterialTheme { AddReportScreen() } }
+    composeRule.setContent {
+        MaterialTheme {
+            AddReportScreen(
+                userRole = UserRole.FARMER,
+                userId = "test_user",
+                onCreateReport = {},
+                addReportViewModel = FakeAddReportViewModel()
+            )
+        }
+    }
 
     // Fill in valid fields
     composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput("Title")
@@ -80,7 +115,16 @@ class AddReportScreenTest {
   fun dismissingDialog_callsOnCreateReport() {
     var called = false
 
-    composeRule.setContent { MaterialTheme { AddReportScreen(onCreateReport = { called = true }) } }
+    composeRule.setContent {
+        MaterialTheme {
+            AddReportScreen(
+                userRole = UserRole.FARMER,
+                userId = "test_user",
+                onCreateReport = {called = true},
+                addReportViewModel = FakeAddReportViewModel()
+            )
+        }
+    }
 
     composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput("Valid Title")
     composeRule
@@ -91,6 +135,6 @@ class AddReportScreenTest {
     composeRule.onNodeWithText("OK").assertIsDisplayed()
     composeRule.onNodeWithText("OK").performClick()
 
-    assertTrue(called)
+      Assert.assertTrue(called)
   }
 }
