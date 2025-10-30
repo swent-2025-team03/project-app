@@ -12,13 +12,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
@@ -45,6 +45,7 @@ fun EditProfileScreen(
     onGoBack: () -> Unit = {},
     onSave: (User) -> Unit = {},
     onAddVetCode: (String) -> Unit = {},
+    openCodeField: Boolean = false
 ) {
   val user = userViewModel.user
   val userRole = userViewModel.userRole
@@ -62,8 +63,21 @@ fun EditProfileScreen(
   var expandedVetDropdown by remember { mutableStateOf(false) }
   var vetCode by remember { mutableStateOf("") }
 
+  // Focus requester for vet code input
+  val codeFocusRequester = remember { FocusRequester() }
+  val focusManager = LocalFocusManager.current
+
   // Vet-specific states
   var expandedCodesDropdown by remember { mutableStateOf(false) }
+
+  // If openCodeField is true and user is Farmer, request focus on the code text field
+  // I added this so when clicking on "Add Vet with Code" from ProfileScreen, the keyboard opens
+  // directly on the code input field.
+  LaunchedEffect(openCodeField) {
+    if (openCodeField && user is Farmer) {
+      scope.launch { codeFocusRequester.requestFocus() }
+    }
+  }
 
   Scaffold(
       topBar = {
@@ -265,6 +279,7 @@ fun EditProfileScreen(
       }
 }
 
+/*
 @Preview(showBackground = true)
 @Composable
 fun EditProfileScreenPreviewFarmer() {
@@ -307,3 +322,4 @@ fun EditProfileScreenPreviewVet() {
 
   EditProfileScreen(userViewModel = fakeViewModel, onGoBack = {}, onSave = {}, onAddVetCode = {})
 }
+*/
