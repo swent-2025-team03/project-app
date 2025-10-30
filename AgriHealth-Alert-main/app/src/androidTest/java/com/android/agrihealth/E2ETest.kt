@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.agrihealth.model.authentification.FakeCredentialManager
 import com.android.agrihealth.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.model.authentification.FirebaseEmulatorsTest
+import com.android.agrihealth.ui.authentification.RoleSelectionScreenTestTags
 import com.android.agrihealth.ui.authentification.SignInErrorMsg
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
@@ -122,6 +123,11 @@ class E2ETest : FirebaseEmulatorsTest(true) {
         .onNodeWithTag(SignInScreenTestTags.GOOGLE_LOGIN_BUTTON)
         .assertIsDisplayed()
         .performClick()
+
+    composeTestRule.waitUntil(5000) {
+      composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).isDisplayed()
+    }
+    composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).performClick()
 
     checkOverviewScreenIsDisplayed()
     signOutFromOverview()

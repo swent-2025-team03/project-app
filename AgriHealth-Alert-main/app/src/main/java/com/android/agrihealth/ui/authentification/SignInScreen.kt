@@ -46,6 +46,7 @@ fun SignInScreen(
     credentialManager: CredentialManager = CredentialManager.create(LocalContext.current),
     onForgotPasswordClick: () -> Unit = {},
     onSignedIn: () -> Unit = {},
+    onNewGoogle: () -> Unit = {},
     goToSignUp: () -> Unit = {},
     signInViewModel: SignInViewModel = viewModel()
 ) {
@@ -63,7 +64,9 @@ fun SignInScreen(
 
   val context = LocalContext.current
 
-  LaunchedEffect(signInUIState.user) { signInUIState.user?.let { onSignedIn() } }
+  LaunchedEffect(signInUIState.user) {
+    signInUIState.user?.let { if (signInUIState.isNewGoogle) onNewGoogle() else onSignedIn() }
+  }
 
   Box(
       modifier = modifier.background(FieldBg).fillMaxSize().testTag(SignInScreenTestTags.SCREEN),

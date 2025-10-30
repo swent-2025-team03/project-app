@@ -23,6 +23,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.resources.C
+import com.android.agrihealth.ui.authentification.RoleSelectionScreen
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
 import com.android.agrihealth.ui.map.MapScreen
@@ -97,7 +98,8 @@ fun AgriHealthApp(
               userViewModel.userId = "FARMER_001"
               navigationActions.navigateTo(Screen.Overview)
             },
-            goToSignUp = { navigationActions.navigateTo(Screen.SignUp) })
+            goToSignUp = { navigationActions.navigateTo(Screen.SignUp) },
+            onNewGoogle = { navigationActions.navigateTo(Screen.RoleSelection) })
       }
       composable(Screen.SignUp.route) {
         SignUpScreen(
@@ -108,6 +110,12 @@ fun AgriHealthApp(
               userViewModel.userId = "FARMER_001"
               navigationActions.navigateTo(Screen.Overview)
             })
+      }
+      composable(Screen.RoleSelection.route) {
+        RoleSelectionScreen(
+            credentialManager = credentialManager,
+            onBack = { navigationActions.navigateTo(Screen.Auth) },
+            onButtonPressed = { navigationActions.navigateTo(Screen.Overview) })
       }
     }
 
