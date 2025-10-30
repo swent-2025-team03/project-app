@@ -61,7 +61,7 @@ fun RoleSelectionScreen(
               IconButton(
                   onClick = {
                     vm.signOut(credentialManager)
-                    onBack
+                    onBack.invoke()
                   },
                   modifier = Modifier.testTag(SignUpScreenTestTags.BACK_BUTTON)) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
