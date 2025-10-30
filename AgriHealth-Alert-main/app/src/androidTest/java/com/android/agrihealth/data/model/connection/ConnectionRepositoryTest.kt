@@ -21,9 +21,17 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
   private lateinit var db: FirebaseFirestore
   private lateinit var repo: ConnectionRepository
 
+  /**
+   * Test setup for ConnectionRepository integration tests.
+   * - Calls super.setUp() to initialize Firebase emulator and base test logic.
+   * - Initializes Firestore and the repository instance.
+   * - Creates three test users (user1, user2, user3) in Firebase for use as vet and farmers in all
+   *   tests. This ensures all tests run with a clean, known state and valid user accounts.
+   */
   @Before
-  fun setup() = runBlocking {
+  override fun setUp() = runBlocking {
     // Initialize Firestore and repository, and create test users for vet and farmers.
+    super.setUp()
     db = FirebaseFirestore.getInstance()
     repo = ConnectionRepository(db)
     runTest {
