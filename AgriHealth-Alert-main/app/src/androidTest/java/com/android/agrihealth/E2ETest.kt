@@ -4,9 +4,9 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.android.agrihealth.model.authentification.FakeCredentialManager
-import com.android.agrihealth.model.authentification.FakeJwtGenerator
-import com.android.agrihealth.model.authentification.FirebaseEmulatorsTest
+import com.android.agrihealth.data.model.authentification.FakeCredentialManager
+import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
+import com.android.agrihealth.data.model.authentification.FirebaseEmulatorsTest
 import com.android.agrihealth.ui.authentification.SignInErrorMsg
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
