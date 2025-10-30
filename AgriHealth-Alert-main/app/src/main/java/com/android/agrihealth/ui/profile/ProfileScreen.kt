@@ -19,18 +19,25 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.*
+import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
+import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
+import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.overview.OverviewScreenTestTags.LOGOUT_BUTTON
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_VET_FIELD
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
 
 object ProfileScreenTestTags {
 
-  const val GO_BACK_BUTTON = "GoBackButton"
-  const val LOGOUT_BUTTON = "LogoutButton"
   const val TOP_BAR = "TopBar"
   const val PROFILE_IMAGE = "ProfileImage"
   const val NAME_TEXT = "NameText"
   const val EDIT_BUTTON = "EditButton"
-  const val EMAIL_FIELD = "EmailField"
-  const val PASSWORD_FIELD = "PasswordField"
   const val ADDRESS_FIELD = "AddressField"
   const val DEFAULT_VET_FIELD = "DefaultVetField"
   const val CODE_BUTTON = "CodeButton"
@@ -57,16 +64,16 @@ fun ProfileScreen(
                   style = MaterialTheme.typography.titleMedium)
             },
             navigationIcon = {
-              IconButton(onClick = onGoBack, modifier = Modifier.testTag("GoBackButton")) {
+              IconButton(onClick = onGoBack, modifier = Modifier.testTag(GO_BACK_BUTTON)) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Go back")
               }
             },
             actions = {
-              IconButton(onClick = onLogout, modifier = Modifier.testTag("LogoutButton")) {
+              IconButton(onClick = onLogout, modifier = Modifier.testTag(LOGOUT_BUTTON)) {
                 Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout")
               }
             },
-            modifier = Modifier.testTag("TopBar"))
+            modifier = Modifier.testTag(TOP_BAR))
       }) { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding).padding(16.dp).fillMaxSize(),
@@ -79,7 +86,7 @@ fun ProfileScreen(
                   imageVector =
                       Icons.Default.AccountCircle, // To change to actual image when available
                   contentDescription = "Profile Picture",
-                  modifier = Modifier.size(120.dp).clip(CircleShape).testTag("ProfileImage"),
+                  modifier = Modifier.size(120.dp).clip(CircleShape).testTag(PROFILE_IMAGE),
                   tint = MaterialTheme.colorScheme.primary)
 
               Spacer(modifier = Modifier.height(8.dp))
@@ -91,8 +98,8 @@ fun ProfileScreen(
                 Text(
                     text = "${user?.firstname ?: "Unknown"} ${user?.lastname ?: ""}",
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.testTag("NameText"))
-                IconButton(onClick = onEditProfile, modifier = Modifier.testTag("EditButton")) {
+                    modifier = Modifier.testTag(NAME_TEXT))
+                IconButton(onClick = onEditProfile, modifier = Modifier.testTag(EDIT_BUTTON)) {
                   Icon(Icons.Default.Edit, contentDescription = "Edit profile")
                 }
               }
@@ -105,7 +112,7 @@ fun ProfileScreen(
                   onValueChange = {},
                   label = { Text("Email address") },
                   enabled = false,
-                  modifier = Modifier.fillMaxWidth().testTag("EmailField"))
+                  modifier = Modifier.fillMaxWidth().testTag(EMAIL_FIELD))
 
               Spacer(modifier = Modifier.height(12.dp))
 
@@ -118,7 +125,7 @@ fun ProfileScreen(
                   enabled = false,
                   visualTransformation = PasswordVisualTransformation(),
                   keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                  modifier = Modifier.fillMaxWidth().testTag("PasswordField"))
+                  modifier = Modifier.fillMaxWidth().testTag(PASSWORD_FIELD))
 
               Spacer(modifier = Modifier.height(12.dp))
 
@@ -133,7 +140,7 @@ fun ProfileScreen(
                     }
                   },
                   enabled = false,
-                  modifier = Modifier.fillMaxWidth().testTag("AddressField"))
+                  modifier = Modifier.fillMaxWidth().testTag(ADDRESS_FIELD))
 
               // Default Vet (Farmers only)
               if (user is Farmer) {
@@ -143,14 +150,14 @@ fun ProfileScreen(
                     onValueChange = {},
                     label = { Text("Default Vet") },
                     enabled = false,
-                    modifier = Modifier.fillMaxWidth().testTag("DefaultVetField"))
+                    modifier = Modifier.fillMaxWidth().testTag(DEFAULT_VET_FIELD))
               }
 
               Spacer(modifier = Modifier.height(24.dp))
 
               Button(
                   onClick = onCode,
-                  modifier = Modifier.align(Alignment.CenterHorizontally).testTag("CodeButton")) {
+                  modifier = Modifier.align(Alignment.CenterHorizontally).testTag(CODE_BUTTON)) {
                     when (userRole) {
                       UserRole.FARMER -> Text("Add new Vet with Code")
                       UserRole.VET -> Text("Generate new Farmer's Code")

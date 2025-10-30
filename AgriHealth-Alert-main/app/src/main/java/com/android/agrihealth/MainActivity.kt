@@ -169,7 +169,7 @@ fun AgriHealthApp(
               navigationActions.navigateToAuthAndClear()
             },
             onEditProfile = {
-              // Later we will add edit profile functionality
+              // TODO: Later we will add edit profile functionality
             })
       }
     }
