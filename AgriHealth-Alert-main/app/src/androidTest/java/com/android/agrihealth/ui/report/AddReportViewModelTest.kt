@@ -1,10 +1,8 @@
-package com.android.agrihealth.ui.farmer
+package com.android.agrihealth.ui.report
 
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
-import com.android.agrihealth.ui.report.AddReportConstants
-import com.android.agrihealth.ui.report.AddReportViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking

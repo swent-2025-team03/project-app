@@ -1,4 +1,4 @@
-package com.android.agrihealth.model.authentification
+package com.android.agrihealth.data.model.authentification
 
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet

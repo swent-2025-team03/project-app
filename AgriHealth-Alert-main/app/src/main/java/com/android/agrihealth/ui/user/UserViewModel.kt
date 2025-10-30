@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -26,6 +27,12 @@ class UserViewModel(
 ) : ViewModel() {
 
   private val _userRole = MutableStateFlow<UserRole>(UserRole.FARMER)
+
+  var userId: String = "FARMER_001"
+
+  var user: User? = null
+
+
 
   /** The current user's role as a state flow. */
   val userRole: StateFlow<UserRole> = _userRole.asStateFlow()

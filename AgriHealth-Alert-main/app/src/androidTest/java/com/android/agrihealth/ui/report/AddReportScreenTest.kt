@@ -1,4 +1,4 @@
-package com.android.agrihealth.ui.farmer
+package com.android.agrihealth.ui.report
 
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
@@ -8,12 +8,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import com.android.agrihealth.ui.report.AddReportConstants
-import com.android.agrihealth.ui.report.AddReportFeedbackTexts
-import com.android.agrihealth.ui.report.AddReportScreen
-import com.android.agrihealth.ui.report.AddReportScreenPreview
-import com.android.agrihealth.ui.report.AddReportScreenTestTags
-import org.junit.Assert.*
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 
@@ -91,6 +86,6 @@ class AddReportScreenTest {
     composeRule.onNodeWithText("OK").assertIsDisplayed()
     composeRule.onNodeWithText("OK").performClick()
 
-    assertTrue(called)
+    Assert.assertTrue(called)
   }
 }

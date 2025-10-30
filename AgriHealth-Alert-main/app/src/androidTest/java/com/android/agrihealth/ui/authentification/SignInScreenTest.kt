@@ -11,7 +11,10 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.AgriHealthApp
-import com.android.agrihealth.model.authentification.FirebaseEmulatorsTest
+import com.android.agrihealth.data.model.authentification.FakeCredentialManager
+import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
+import com.android.agrihealth.data.model.authentification.FirebaseEmulatorsTest
+import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -48,11 +51,12 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
   @Before
   override fun setUp() {
     super.setUp()
-    composeTestRule.setContent { AgriHealthApp() }
+    authRepository.signOut()
   }
 
   @Test
   fun displayAllComponents() {
+    composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SIGN_UP_BUTTON).assertIsDisplayed()
     composeTestRule.onNodeWithTag(SignInScreenTestTags.EMAIL_FIELD).assertIsDisplayed()
     composeTestRule.onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD).assertIsDisplayed()
@@ -60,10 +64,30 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(SignInScreenTestTags.FORGOT_PASSWORD).assertIsDisplayed()
     composeTestRule.onNodeWithTag(SignInScreenTestTags.LOGIN_DIVIDER).assertIsDisplayed()
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SNACKBAR).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(SignInScreenTestTags.GOOGLE_LOGIN_BUTTON).assertIsDisplayed()
+  }
+
+  @Test
+  fun canSignInWithGoogle() {
+    val fakeGoogleIdToken =
+        FakeJwtGenerator.createFakeGoogleIdToken("12345", email = "test@example.com")
+
+    val fakeCredentialManager = FakeCredentialManager.create(fakeGoogleIdToken)
+
+    composeTestRule.setContent { AgriHealthApp(credentialManager = fakeCredentialManager) }
+    composeTestRule
+        .onNodeWithTag(SignInScreenTestTags.GOOGLE_LOGIN_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+
+    composeTestRule.waitUntil(5000) {
+      composeTestRule.onNodeWithTag(OverviewScreenTestTags.TOP_APP_BAR_TITLE).isDisplayed()
+    }
   }
 
   @Test
   fun signInWithEmptyFieldsFail() {
+    composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON).performClick()
     composeTestRule.waitUntil(3000) {
       composeTestRule.onNodeWithText(SignInErrorMsg.EMPTY_EMAIL_OR_PASSWORD).isDisplayed()
@@ -72,6 +96,7 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
 
   @Test
   fun signInWithUnregisteredAccountFails() {
+    composeTestRule.setContent { AgriHealthApp() }
     completeSignIn(user4.email, password4)
     composeTestRule.waitUntil(3000) {
       composeTestRule.onNodeWithText(SignInErrorMsg.INVALID_CREDENTIALS).isDisplayed()
@@ -80,6 +105,7 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
 
   @Test
   fun signInWithNoInternetFails() {
+    composeTestRule.setContent { AgriHealthApp() }
     setNetworkEnabled(false)
     completeSignIn(user4.email, password4)
     composeTestRule.waitUntil(3000) {
