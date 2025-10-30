@@ -70,3 +70,7 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# macOS files
+.DS_Store
+# End of file
