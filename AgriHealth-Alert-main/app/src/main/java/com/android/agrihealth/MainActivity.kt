@@ -103,7 +103,7 @@ fun AgriHealthApp(
             onSignedIn = {
               // TODO: Get user data from Firebase after login
               userViewModel.userRole = UserRole.FARMER
-              userViewModel.userId = Firebase.auth.currentUser!!.uid
+              userViewModel.userId = Firebase.auth.currentUser?.uid ?: "testUser"
               navigationActions.navigateTo(Screen.Overview)
             },
             goToSignUp = { navigationActions.navigateTo(Screen.SignUp) })
@@ -114,7 +114,7 @@ fun AgriHealthApp(
             onSignedUp = {
               // TODO: After signup, set user info
               userViewModel.userRole = UserRole.FARMER
-              userViewModel.userId = Firebase.auth.currentUser!!.uid
+              userViewModel.userId = Firebase.auth.currentUser?.uid ?: "testUser"
               navigationActions.navigateTo(Screen.Overview)
             })
       }

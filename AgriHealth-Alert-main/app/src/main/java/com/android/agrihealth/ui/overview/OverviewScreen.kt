@@ -19,7 +19,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
@@ -53,7 +52,7 @@ fun OverviewScreen(
     userRole: UserRole,
     credentialManager: CredentialManager = CredentialManager.create(LocalContext.current),
     userId: String,
-    overviewViewModel: OverviewViewModel = viewModel(),
+    overviewViewModel: OverviewViewModelContract,
     onAddReport: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
     navigationActions: NavigationActions? = null

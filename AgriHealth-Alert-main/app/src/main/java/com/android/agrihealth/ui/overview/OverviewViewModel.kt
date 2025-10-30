@@ -32,15 +32,15 @@ data class OverviewUIState(
  */
 class OverviewViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
-) : ViewModel() {
+) : ViewModel(), OverviewViewModelContract {
 
   private val _uiState = MutableStateFlow(OverviewUIState())
-  val uiState: StateFlow<OverviewUIState> = _uiState.asStateFlow()
+  override val uiState: StateFlow<OverviewUIState> = _uiState.asStateFlow()
 
   private lateinit var authRepository: AuthRepository
 
   /** Loads reports based on user role and ID. */
-  fun loadReports(userRole: UserRole, userId: String) {
+  override fun loadReports(userRole: UserRole, userId: String) {
     viewModelScope.launch {
       try {
         val reports =
@@ -70,7 +70,7 @@ class OverviewViewModel(
     }
   }
 
-  fun signOut(credentialManager: CredentialManager) {
+  override fun signOut(credentialManager: CredentialManager) {
     authRepository = AuthRepositoryProvider.repository
     viewModelScope.launch {
       authRepository.signOut()

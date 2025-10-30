@@ -4,13 +4,16 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.model.authentification.FakeCredentialManager
 import com.android.agrihealth.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.model.authentification.FirebaseEmulatorsTest
+import com.android.agrihealth.testutil.FakeOverviewViewModel
 import com.android.agrihealth.ui.authentification.SignInErrorMsg
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -115,6 +118,19 @@ class E2ETest : FirebaseEmulatorsTest(true) {
     val email = "vet@example.com"
     val pwd = "StrongPwd!123"
     val fakeGoogleIdToken = FakeJwtGenerator.createFakeGoogleIdToken("12345", email = email)
+
+    val fakeViewModel = FakeOverviewViewModel()
+    fakeViewModel.loadReports(UserRole.VET, "12345")
+
+    composeTestRule.setContent {
+      OverviewScreen(
+          userRole = UserRole.VET,
+          userId = "12345",
+          overviewViewModel = fakeViewModel,
+          onAddReport = {},
+          onReportClick = {},
+          navigationActions = null)
+    }
 
     val fakeCredentialManager = FakeCredentialManager.create(fakeGoogleIdToken)
     composeTestRule.setContent { AgriHealthApp(credentialManager = fakeCredentialManager) }
