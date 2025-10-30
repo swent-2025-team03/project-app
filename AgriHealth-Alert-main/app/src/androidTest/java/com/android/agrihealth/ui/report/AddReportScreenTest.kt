@@ -1,4 +1,4 @@
-package com.android.agrihealth.ui.farmer
+package com.android.agrihealth.ui.report
 
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
