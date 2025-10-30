@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
@@ -25,6 +26,7 @@ import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
 
 object OverviewScreenTestTags {
@@ -33,8 +35,8 @@ object OverviewScreenTestTags {
   const val ADD_REPORT_BUTTON = "addReportFab"
   const val LOGOUT_BUTTON = "logoutButton"
   const val SCREEN = "OverviewScreen"
-  // Nouveau: tag commun pour chaque item de rapport (pour les tests E2E)
   const val REPORT_ITEM = "reportItem"
+  const val PROFILE_BUTTON = "ProfileButton"
 }
 
 /**
@@ -69,6 +71,13 @@ fun OverviewScreen(
                   "Overview",
                   style = MaterialTheme.typography.titleLarge,
                   modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE))
+            },
+            navigationIcon = {
+              IconButton(
+                  onClick = { navigationActions?.navigateTo(Screen.Profile) },
+                  modifier = Modifier.testTag("ProfileButton")) {
+                    Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "Profile")
+                  }
             },
             actions = {
               IconButton(
@@ -213,18 +222,36 @@ fun StatusTag(status: ReportStatus) {
 
 /** Preview of the OverviewScreen with dummy data. Temporarily commented out */
 
-/**
- * @Preview(showBackground = true)
- * @Composable fun PreviewOverviewScreen() { val dummyNavController = rememberNavController() val
- *   dummyNavigationActions = NavigationActions(dummyNavController)
- *
- * val dummyReports = listOf( Report( id = "1", title = "Cow coughing", description = "Coughing and
- * nasal discharge observed", photoUri = null, farmerId = "farmer_001", vetId = null, status =
- * ReportStatus.IN_PROGRESS, answer = null, location = null), Report( id = "2", title = "Sheep
- * limping", description = "Limping observed in the rear leg; mild swelling noted", photoUri = null,
- * farmerId = "farmer_002", vetId = null, status = ReportStatus.PENDING, answer = null, location =
- * null))
- *
- * OverviewScreen( userRole = UserRole.FARMER, onAddReport = {}, onReportClick = {},
- * navigationActions = dummyNavigationActions, reports = dummyReports, ) }
- */
+/*
+@Preview(showBackground = true)
+@Composable fun PreviewOverviewScreen() {
+    val dummyNavController = rememberNavController()
+    val dummyNavigationActions = NavigationActions(dummyNavController)
+    val dummyReports = listOf(
+        Report(
+            id = "1",
+            title = "Cow coughing",
+            description = "Coughing and nasal discharge observed",
+            photoUri = null,
+            farmerId = "farmer_001",
+            vetId = "vet_001",
+            status = ReportStatus.IN_PROGRESS,
+            answer = null,
+            location = null),
+        Report(
+            id = "2",
+            title = "Sheep limping",
+            description = "Limping observed in the rear leg; mild swelling noted",
+            photoUri = null,
+            farmerId = "farmer_002",
+            vetId = "vet_002",
+            status = ReportStatus.PENDING,
+            answer = null, location = null))
+    OverviewScreen(
+        userRole = UserRole.FARMER,
+        onAddReport = {},
+        onReportClick = {},
+        navigationActions = dummyNavigationActions,
+        reports = dummyReports, )
+}
+*/

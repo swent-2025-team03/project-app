@@ -30,6 +30,7 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
+import com.android.agrihealth.ui.profile.ProfileScreen
 import com.android.agrihealth.ui.report.AddReportScreen
 import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
@@ -156,6 +157,21 @@ fun AgriHealthApp(
                 viewModel = viewModel,
                 reportId = reportId)
           }
+      composable(Screen.Profile.route) {
+        val credentialManager = CredentialManager.create(LocalContext.current)
+        val overviewViewModel: OverviewViewModel = viewModel()
+
+        ProfileScreen(
+            userViewModel = userViewModel,
+            onGoBack = { navigationActions.goBack() },
+            onLogout = {
+              overviewViewModel.signOut(credentialManager)
+              navigationActions.navigateToAuthAndClear()
+            },
+            onEditProfile = {
+              // TODO: Later we will add edit profile functionality
+            })
+      }
     }
 
     navigation(
