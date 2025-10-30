@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.authentification
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,14 +10,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.R
 
 private val FieldBg = Color(0xFFF0F6F1)
 private val ButtonBg = Color(0xFF9BB9B4)
@@ -31,12 +36,14 @@ object SignInScreenTestTags {
   const val PASSWORD_FIELD = "passwordField"
   const val FORGOT_PASSWORD = "forgotPassword"
   const val LOGIN_DIVIDER = "loginDivider"
+  const val GOOGLE_LOGIN_BUTTON = "googleLoginButton"
   const val SNACKBAR = "snackbar"
 }
 
 @Composable
 fun SignInScreen(
     modifier: Modifier = Modifier,
+    credentialManager: CredentialManager = CredentialManager.create(LocalContext.current),
     onForgotPasswordClick: () -> Unit = {},
     onSignedIn: () -> Unit = {},
     goToSignUp: () -> Unit = {},
@@ -53,6 +60,8 @@ fun SignInScreen(
       signInViewModel.clearErrorMsg()
     }
   }
+
+  val context = LocalContext.current
 
   LaunchedEffect(signInUIState.user) { signInUIState.user?.let { onSignedIn() } }
 
@@ -139,7 +148,7 @@ fun SignInScreen(
               Spacer(Modifier.height(24.dp))
 
               Button(
-                  onClick = { signInViewModel.signIn() },
+                  onClick = { signInViewModel.signInWithEmailAndPassword() },
                   shape = RoundedCornerShape(28.dp),
                   colors = ButtonDefaults.buttonColors(containerColor = ButtonBg),
                   modifier =
@@ -161,6 +170,11 @@ fun SignInScreen(
                           .testTag(SignInScreenTestTags.SIGN_UP_BUTTON)) {
                     Text("Create an account", color = Color.Black)
                   }
+              Spacer(Modifier.height(32.dp))
+              GoogleSignInButton {
+                signInViewModel.signInWithGoogle(
+                    context = context, credentialManager = credentialManager)
+              }
             }
         SnackbarHost(
             hostState = snackbarHostState,
@@ -168,6 +182,40 @@ fun SignInScreen(
                 Modifier.align(Alignment.BottomCenter)
                     .padding(bottom = 16.dp)
                     .testTag(SignInScreenTestTags.SNACKBAR))
+      }
+}
+
+// function from bootcamp-25-B3-Solution
+@Composable
+fun GoogleSignInButton(onSignInClick: () -> Unit) {
+  Button(
+      onClick = onSignInClick,
+      colors = ButtonDefaults.buttonColors(containerColor = Color.White), // Button color
+      shape = RoundedCornerShape(50), // Circular edges for the button
+      modifier =
+          Modifier.padding(8.dp)
+              .height(48.dp) // Adjust height as needed
+              .testTag(SignInScreenTestTags.GOOGLE_LOGIN_BUTTON)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()) {
+              // Load the Google logo from resources
+              Image(
+                  painter =
+                      painterResource(id = R.drawable.google_logo), // Ensure this drawable exists
+                  contentDescription = "Google Logo",
+                  modifier =
+                      Modifier.size(30.dp) // Size of the Google logo
+                          .padding(end = 8.dp))
+
+              // Text for the button
+              Text(
+                  text = "Sign in with Google",
+                  color = Color.Black, // Text color
+                  fontSize = 16.sp, // Font size
+                  fontWeight = FontWeight.Medium)
+            }
       }
 }
 
