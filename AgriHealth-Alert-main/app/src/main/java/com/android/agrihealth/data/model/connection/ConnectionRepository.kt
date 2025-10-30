@@ -1,7 +1,6 @@
 package com.android.agrihealth.data.model.connection
 
 import com.google.firebase.Firebase
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Transaction
@@ -11,13 +10,6 @@ import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 
-data class ConnectionCode(
-    val code: String = "",
-    val vetId: String = "",
-    val status: String = "",
-    val createdAt: Timestamp? = null,
-)
-
 class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestore) {
   private companion object {
     private const val CODES_COLLECTION = FirestoreSchema.Collections.CONNECT_CODES
@@ -26,6 +18,8 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
     private const val STATUS_USED = FirestoreSchema.Status.USED
   }
 
+  // Generates a unique connection code for a vet, valid for a limited time (ttlMinutes).
+  // Returns: Result<String> containing the generated code, or an exception if failed.
   suspend fun generateCode(vetId: String, ttlMinutes: Long = 10): Result<String> = runCatching {
     repeat(20) {
       val code = Random.nextInt(100_000, 1_000_000).toString()
@@ -56,6 +50,8 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
     throw IllegalStateException("Failed to generate a unique code.")
   }
 
+  // Claims a connection code for a farmer, links the vet and farmer, and marks the code as used.
+  // Returns: Result<String> containing the vetId if successful, or an exception if failed.
   suspend fun claimCode(code: String, farmerId: String): Result<String> = runCatching {
     val docRef = db.collection(CODES_COLLECTION).document(code)
     db.runTransaction { tx ->
@@ -92,6 +88,8 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
         .await()
   }
 
+  // Creates a connection document between vet and farmer if it does not already exist.
+  // Returns: Unit. No value is returned.
   private fun linkUsers(tx: Transaction, vetId: String, farmerId: String) {
     val connId = connectionId(vetId, farmerId)
     val ref = db.collection(CONNECTIONS_COLLECTION).document(connId)
@@ -107,5 +105,11 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
     }
   }
 
+  // Generates a unique connection ID by sorting and joining vet and farmer IDs.
+  // Returns: String representing the connection ID.
+  // Rationale: sorting the two IDs before joining ensures the produced ID is symmetric
+  // and order-independent. This guarantees that connectionId(vet, farmer) ==
+  // connectionId(farmer, vet) so the same Firestore document is used for a pair
+  // of users regardless of call order, avoiding duplicate connection documents.
   private fun connectionId(a: String, b: String): String = listOf(a, b).sorted().joinToString("__")
 }

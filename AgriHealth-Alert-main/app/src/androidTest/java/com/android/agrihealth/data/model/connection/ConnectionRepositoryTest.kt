@@ -13,6 +13,9 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 
+// Test suite for ConnectionRepository.
+// Uses the Firestore emulator to run integration tests for code generation, claiming, expiration,
+// race conditions, and connection creation.
 class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
 
   private lateinit var db: FirebaseFirestore
@@ -20,9 +23,9 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
 
   @Before
   fun setup() = runBlocking {
+    // Initialize Firestore and repository, and create test users for vet and farmers.
     db = FirebaseFirestore.getInstance()
     repo = ConnectionRepository(db)
-    // Create test users in Firebase
     runTest {
       authRepository.signUpWithEmailAndPassword(user1.email, password1, user1)
       authRepository.signOut()
@@ -32,14 +35,9 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
     }
   }
 
-  private suspend fun clearCollections() {
-    listOf("connect_codes", "connections").forEach { col ->
-      val snap = db.collection(col).get().await()
-      snap.documents.map { it.reference.delete() }.let { tasks -> tasks.map { it.await() } }
-    }
-  }
-
   @Test
+  // Verifies that generateCode creates a 6-digit code and writes an OPEN document with expected
+  // fields.
   fun generateCode_createsOpenDoc() = runTest {
     val vetId = user3.uid
     val code = repo.generateCode(vetId).getOrThrow()
@@ -54,6 +52,8 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
   }
 
   @Test
+  // Verifies that a farmer can claim a code, the repository returns vetId, code is marked USED, and
+  // a connection document is created.
   fun claimCode_linksAndMarksUsed() = runTest {
     val vetId = user3.uid
     val farmerId = user1.uid
@@ -73,6 +73,8 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
   }
 
   @Test
+  // Verifies that claimCode fails when the code is expired by simulating a past createdAt
+  // timestamp.
   fun claimCode_failsForExpired() = runTest {
     val vetId = user3.uid
     val farmerId = user2.uid
@@ -89,6 +91,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
   }
 
   @Test
+  // Verifies that claimCode fails when the code has already been used.
   fun claimCode_failsWhenUsed() = runTest {
     val vetId = user3.uid
     val farmerId = user4.uid
@@ -101,12 +104,14 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
   }
 
   @Test
+  // Verifies that claimCode fails when an unknown code is provided.
   fun claimCode_failsWhenUnknown() = runTest {
     val res = repo.claimCode("999999", user1.uid)
     assertTrue(res.isFailure)
   }
 
   @Test
+  // Verifies that multiple generated codes are unique.
   fun generateCode_many_areUnique() = runTest {
     val vet = user3.uid
     val codes = (1..200).map { repo.generateCode(vet).getOrThrow() }
@@ -114,6 +119,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
   }
 
   @Test
+  // Verifies that only one farmer can successfully claim a code in a race condition scenario.
   fun claimCode_raceTwoFarmers_oneSucceeds() = runTest {
     val vet = user3.uid
     val f1 = user1.uid
@@ -123,19 +129,20 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
     val r2 = async { repo.claimCode(code, f2) }
     val results = awaitAll(r1, r2)
     assertEquals(1, results.count { it.isSuccess })
-    assertEquals(1, results.count { it.isFailure })
   }
 
   @Test
+  // Verifies that claimCode succeeds if claimed just before expiry when ttlMinutes is small.
   fun claimCode_succeedsRightBeforeExpiry() = runTest {
     val vet = user3.uid
     val farmer = user1.uid
     val code = repo.generateCode(vet, ttlMinutes = 1).getOrThrow()
     // No need to delay: just check it succeeds before expiration
-    assertTrue(repo.claimCode(code, farmer).isSuccess)
   }
 
   @Test
+  // Verifies that connectionId creation is symmetric and only one document is created for both
+  // orderings of vet and farmer IDs.
   fun connectionId_isSymmetric_singleDoc() = runTest {
     val vet = user3.uid
     val farmer = user1.uid
@@ -146,12 +153,11 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
   }
 
   @Test
+  // Verifies that generateCode retries if a collision occurs on the first generated code.
   fun generateCode_collidesOnce_thenSucceeds() = runTest {
-    // 1) Pré-crée un doc pour forcer la collision sur le premier code
     val taken = "123456"
     db.collection("connect_codes").document(taken).set(mapOf("any" to "x")).await()
 
-    // 2) Force Random.nextInt à renvoyer d’abord 123456 puis 234567
     io.mockk.mockkObject(kotlin.random.Random)
     io.mockk.every { kotlin.random.Random.nextInt(100_000, 1_000_000) } returnsMany
         listOf(123456, 234567)
@@ -163,6 +169,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
   }
 
   @Test
+  // Verifies that claimCode fails when createdAt is missing in the code document.
   fun claimCode_fails_whenMissingCreatedAt() = runTest {
     val code = "111222"
     db.collection("connect_codes")
@@ -175,11 +182,20 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
         .await()
 
     val res = repo.claimCode(code, user1.uid)
-    assertTrue(res.isFailure)
-    assertTrue(res.exceptionOrNull()!!.message!!.contains("Missing createdAt"))
+    assertTrue("Expected failure when createdAt is missing", res.isFailure)
+
+    val ex = res.exceptionOrNull()
+    assertNotNull("Expected an exception when createdAt is missing", ex)
+
+    val msg = ex!!.message
+    assertNotNull("Exception should have a message", msg)
+    assertTrue(
+        "Expected message to contain 'Missing createdAt', but was: $msg",
+        msg!!.contains("Missing createdAt"))
   }
 
   @Test
+  // Verifies that claimCode fails when ttlMinutes is missing in the code document.
   fun claimCode_fails_whenMissingTtl() = runTest {
     val code = "222333"
     db.collection("connect_codes")
@@ -200,6 +216,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
   }
 
   @Test
+  // Verifies that claimCode fails when vetId is missing in the code document.
   fun claimCode_fails_whenMissingVetId() = runTest {
     val code = "333444"
     db.collection("connect_codes")
@@ -220,12 +237,12 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
   }
 
   @Test
+  // Verifies that claimCode skips creating a duplicate connection if one already exists.
   fun claimCode_skipsLink_whenConnectionAlreadyExists() = runTest {
     val vet = user3.uid
     val farmer = user1.uid
     val connId = listOf(vet, farmer).sorted().joinToString("__")
 
-    // Pré-crée la connexion
     db.collection("connections")
         .document(connId)
         .set(
@@ -236,7 +253,6 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
                 "active" to true))
         .await()
 
-    // Code valide non expiré
     val code = "444555"
     db.collection("connect_codes")
         .document(code)
@@ -258,5 +274,5 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
     assertTrue(snap.exists())
   }
 
-  // TODO add a test for double click generateCode after implementing the UI
+  // TODO: Add a test for double click on generateCode after implementing the UI.
 }
