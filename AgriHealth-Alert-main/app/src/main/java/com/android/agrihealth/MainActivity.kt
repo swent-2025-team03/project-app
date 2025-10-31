@@ -148,7 +148,6 @@ fun AgriHealthApp(
             userId = currentUserId,
             onCreateReport = {
               reloadReports = !reloadReports
-              navigationActions.goBack()
             },
             addReportViewModel = createReportViewModel,
         )
