@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -88,6 +89,7 @@ fun RoleSelectionScreen(
                   style = MaterialTheme.typography.displaySmall,
                   color = textColor,
                   overflow = TextOverflow.Visible,
+                  textAlign = TextAlign.Center,
                   modifier = Modifier.testTag(RoleSelectionScreenTestTags.WELCOME).fillMaxWidth())
               Text(
                   text = "Please choose a role.",
