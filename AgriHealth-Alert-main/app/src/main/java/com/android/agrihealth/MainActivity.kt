@@ -10,6 +10,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.semantics
@@ -34,6 +37,7 @@ import com.android.agrihealth.ui.overview.OverviewViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreen
 import com.android.agrihealth.ui.profile.ProfileScreen
 import com.android.agrihealth.ui.report.AddReportScreen
+import com.android.agrihealth.ui.report.AddReportViewModel
 import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.theme.SampleAppTheme
@@ -81,7 +85,10 @@ fun AgriHealthApp(
 
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
+
+  var reloadReports by remember { mutableStateOf(false) }
   val currentUser by userViewModel.user.collectAsState()
+  val currentUserId = currentUser.uid
   val currentUserRole = currentUser.role
 
   val startDestination =
@@ -123,6 +130,7 @@ fun AgriHealthApp(
         OverviewScreen(
             credentialManager = credentialManager,
             userRole = currentUserRole,
+            userId = currentUserId,
             overviewViewModel = overviewViewModel,
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
             // TODO: Pass the selected report to the ViewReportScreen
@@ -133,9 +141,15 @@ fun AgriHealthApp(
         )
       }
       composable(Screen.AddReport.route) {
+        val createReportViewModel = AddReportViewModel(userId = currentUserId)
+
         AddReportScreen(
-            onCreateReport = { navigationActions.navigateTo(Screen.Overview) },
-            onBack = { navigationActions.goBack() })
+            onBack = { navigationActions.goBack() },
+            userRole = currentUserRole,
+            userId = currentUserId,
+            onCreateReport = { reloadReports = !reloadReports },
+            addReportViewModel = createReportViewModel,
+        )
       }
       composable(
           route = Screen.ViewReport.route,

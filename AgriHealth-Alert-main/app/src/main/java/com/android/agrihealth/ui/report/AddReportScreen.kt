@@ -28,7 +28,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import kotlinx.coroutines.launch
@@ -39,6 +40,8 @@ object AddReportScreenTestTags {
   const val DESCRIPTION_FIELD = "descriptionField"
   const val VET_DROPDOWN = "vetDropDown"
   const val CREATE_BUTTON = "createButton"
+
+  fun getTestTagForVet(vetId: String): String = "vetOption_$vetId"
 }
 
 /** Texts for the report creation feedback. For testing purposes */
@@ -61,7 +64,6 @@ private val createReportButtonColor = Color(0xFF96B7B1)
  * Displays the report creation screen for farmers
  *
  * @param onBack A callback invoked when the back button in the top bar is pressed.
- * @param onCreateReport A callback invoked when a report is successfully created.
  * @param createReportViewModel The [AddReportViewModel] instance responsible for managing report
  *   creation logic and UI state.
  * @see AddReportViewModel
@@ -70,11 +72,13 @@ private val createReportButtonColor = Color(0xFF96B7B1)
 @Composable
 fun AddReportScreen(
     onBack: () -> Unit = {},
+    userRole: UserRole,
+    userId: String,
     onCreateReport: () -> Unit = {},
-    createReportViewModel: AddReportViewModel = viewModel()
+    addReportViewModel: AddReportViewModelContract
 ) {
 
-  val uiState by createReportViewModel.uiState.collectAsState()
+  val uiState by addReportViewModel.uiState.collectAsState()
 
   // For the dropdown menu
   var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
@@ -125,12 +129,12 @@ fun AddReportScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
               Field(
                   uiState.title,
-                  { createReportViewModel.setTitle(it) },
+                  { addReportViewModel.setTitle(it) },
                   "Title",
                   AddReportScreenTestTags.TITLE_FIELD)
               Field(
                   uiState.description,
-                  { createReportViewModel.setDescription(it) },
+                  { addReportViewModel.setDescription(it) },
                   "Description",
                   AddReportScreenTestTags.DESCRIPTION_FIELD)
 
@@ -155,9 +159,12 @@ fun AddReportScreen(
                             DropdownMenuItem(
                                 text = { Text(option) },
                                 onClick = {
-                                  createReportViewModel.setVet(option)
+                                  addReportViewModel.setVet(option)
                                   expanded = false
-                                })
+                                },
+                                modifier =
+                                    Modifier.testTag(
+                                        AddReportScreenTestTags.getTestTagForVet(option)))
                           }
                         }
                   }
@@ -165,7 +172,7 @@ fun AddReportScreen(
               Button(
                   onClick = {
                     scope.launch {
-                      val created = createReportViewModel.createReport()
+                      val created = addReportViewModel.createReport()
                       if (created) {
                         showSuccessDialog = true
                       } else {
@@ -188,13 +195,14 @@ fun AddReportScreen(
           AlertDialog(
               onDismissRequest = {
                 showSuccessDialog = false
-                onCreateReport()
+                onBack()
               },
               confirmButton = {
                 TextButton(
                     onClick = {
                       showSuccessDialog = false
                       onCreateReport()
+                      onBack()
                     }) {
                       Text("OK")
                     }
@@ -234,5 +242,11 @@ private fun Field(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 fun AddReportScreenPreview() {
-  MaterialTheme { AddReportScreen() }
+  MaterialTheme {
+    AddReportScreen(
+        userRole = UserRole.FARMER,
+        userId = "FARMER_001",
+        onCreateReport = {},
+        addReportViewModel = FakeAddReportViewModel())
+  }
 }

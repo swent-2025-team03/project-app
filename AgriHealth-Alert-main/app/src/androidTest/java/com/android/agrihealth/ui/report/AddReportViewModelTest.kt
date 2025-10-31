@@ -26,6 +26,8 @@ class FakeReportRepository : ReportRepository {
 
   override suspend fun getReportsByFarmer(farmerId: String): List<Report> = emptyList()
 
+  override suspend fun getReportsByVet(vetId: String): List<Report> = emptyList()
+
   override suspend fun getReportById(reportId: String): Report? = null
 
   override suspend fun addReport(report: Report) {
@@ -47,7 +49,7 @@ class AddReportViewModelTest {
   fun setup() {
     Dispatchers.setMain(StandardTestDispatcher()) // Necessary for scheduling coroutines
     repository = FakeReportRepository()
-    viewModel = AddReportViewModel(repository)
+    viewModel = AddReportViewModel(userId = "fake-user-id", reportRepository = repository)
   }
 
   @After
