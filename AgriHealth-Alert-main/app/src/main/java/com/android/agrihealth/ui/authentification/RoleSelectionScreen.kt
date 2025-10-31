@@ -38,6 +38,12 @@ object RoleSelectionScreenTestTags {
   const val VET = "VetButton"
 }
 
+/**
+ * Minimalist composable function to display a screen to new google users, this should only display
+ * when the user logs in with a new google account for the first time. The point of this screen is
+ * to let the user choose a role as the other user information will be provided through the profile
+ * screen.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoleSelectionScreen(

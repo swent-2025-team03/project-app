@@ -38,6 +38,7 @@ import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.theme.SampleAppTheme
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.defaultUser
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
@@ -85,7 +86,8 @@ fun AgriHealthApp(
   val currentUserRole = currentUser.role
 
   val startDestination =
-      if (Firebase.auth.currentUser != null) Screen.Overview.name else Screen.Auth.name
+      if (Firebase.auth.currentUser == null) Screen.Auth.name
+      else if (currentUser == defaultUser) Screen.RoleSelection.name else Screen.Overview.name
 
   NavHost(navController = navController, startDestination = startDestination) {
     // --- Auth Graph ---
@@ -111,6 +113,8 @@ fun AgriHealthApp(
               navigationActions.navigateTo(Screen.Overview)
             })
       }
+    }
+    navigation(startDestination = Screen.RoleSelection.route, route = Screen.RoleSelection.name) {
       composable(Screen.RoleSelection.route) {
         RoleSelectionScreen(
             credentialManager = credentialManager,
