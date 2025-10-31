@@ -84,10 +84,10 @@ fun AgriHealthApp(
 
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
-  val overviewViewModel: OverviewViewModel = viewModel()
 
   var reloadReports by remember { mutableStateOf(false) }
   val currentUser by userViewModel.user.collectAsState()
+  val currentUserId = currentUser.uid
   val currentUserRole = currentUser.role
 
   val startDestination =
@@ -140,8 +140,6 @@ fun AgriHealthApp(
         )
       }
       composable(Screen.AddReport.route) {
-        val currentUserRole = userViewModel.userRole
-        val currentUserId = userViewModel.userId
         val createReportViewModel = AddReportViewModel(userId = currentUserId)
 
         AddReportScreen(
