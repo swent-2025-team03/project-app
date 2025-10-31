@@ -16,7 +16,7 @@ import org.junit.Test
 // Test suite for ConnectionRepository.
 // Uses the Firestore emulator to run integration tests for code generation, claiming, expiration,
 // race conditions, and connection creation.
-class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
+class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
 
   private lateinit var db: FirebaseFirestore
   private lateinit var repo: ConnectionRepository
