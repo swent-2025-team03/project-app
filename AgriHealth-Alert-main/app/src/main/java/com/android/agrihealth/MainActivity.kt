@@ -1,5 +1,6 @@
 package com.android.agrihealth
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -7,10 +8,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -18,7 +23,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
@@ -27,6 +31,7 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
+import com.android.agrihealth.ui.profile.ProfileScreen
 import com.android.agrihealth.ui.report.AddReportScreen
 import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
@@ -66,12 +71,17 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AgriHealthApp() {
+fun AgriHealthApp(
+    context: Context = LocalContext.current,
+    credentialManager: CredentialManager = CredentialManager.create(context)
+) {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
 
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
+  val currentUser by userViewModel.user.collectAsState()
+  val currentUserRole = currentUser.role
 
   val startDestination =
       if (Firebase.auth.currentUser != null) Screen.Overview.name else Screen.Auth.name
@@ -84,20 +94,18 @@ fun AgriHealthApp() {
     ) {
       composable(Screen.Auth.route) {
         SignInScreen(
+            credentialManager = credentialManager,
             onSignedIn = {
-              // TODO: Get user data from Firebase after login
-              userViewModel.userRole = UserRole.FARMER
-              userViewModel.userId = "FARMER_001"
+              userViewModel.refreshCurrentUser()
               navigationActions.navigateTo(Screen.Overview)
             },
             goToSignUp = { navigationActions.navigateTo(Screen.SignUp) })
       }
       composable(Screen.SignUp.route) {
         SignUpScreen(
+            onBack = { navigationActions.navigateTo(Screen.Auth) },
             onSignedUp = {
-              // TODO: After signup, set user info
-              userViewModel.userRole = UserRole.FARMER
-              userViewModel.userId = "FARMER_001"
+              userViewModel.refreshCurrentUser()
               navigationActions.navigateTo(Screen.Overview)
             })
       }
@@ -111,10 +119,8 @@ fun AgriHealthApp() {
       composable(Screen.Overview.route) {
         val overviewViewModel: OverviewViewModel = viewModel()
 
-        val currentUserRole = userViewModel.userRole
-        val currentUserId = userViewModel.userId
-
         OverviewScreen(
+            credentialManager = credentialManager,
             userRole = currentUserRole,
             overviewViewModel = overviewViewModel,
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
@@ -139,14 +145,27 @@ fun AgriHealthApp() {
             // You might fetch the report by ID here
             val viewModel: ReportViewModel = viewModel()
 
-            val currentUserRole = userViewModel.userRole
-
             ReportViewScreen(
                 navController = navController,
                 userRole = currentUserRole,
                 viewModel = viewModel,
                 reportId = reportId)
           }
+      composable(Screen.Profile.route) {
+        val credentialManager = CredentialManager.create(LocalContext.current)
+        val overviewViewModel: OverviewViewModel = viewModel()
+
+        ProfileScreen(
+            userViewModel = userViewModel,
+            onGoBack = { navigationActions.goBack() },
+            onLogout = {
+              overviewViewModel.signOut(credentialManager)
+              navigationActions.navigateToAuthAndClear()
+            },
+            onEditProfile = {
+              // TODO: Later we will add edit profile functionality
+            })
+      }
     }
 
     navigation(

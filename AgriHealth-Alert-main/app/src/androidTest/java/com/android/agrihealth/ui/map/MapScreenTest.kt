@@ -139,22 +139,23 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     val uid = Firebase.auth.currentUser!!.uid
 
     getUserReports(uid).forEach { report ->
-      composeRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
-          .assertIsDisplayed()
-          .performClick()
-      composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsDisplayed()
-      composeRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportTitle(report.id))
-          .assertIsDisplayed()
-      composeRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportDesc(report.id))
-          .assertIsDisplayed()
+        val reportId = report.id
+            composeRule
+                .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
+                .assertIsDisplayed()
+                .performClick()
+            composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsDisplayed()
+            composeRule
+                .onNodeWithTag(MapScreenTestTags.getTestTagForReportTitle(reportId))
+                .assertIsDisplayed()
+            composeRule
+                .onNodeWithTag(MapScreenTestTags.getTestTagForReportDesc(reportId))
+                .assertIsDisplayed()
 
-      composeRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
-          .performClick()
-      composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsNotDisplayed()
+            composeRule
+                .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
+                .performClick()
+            composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsNotDisplayed()
     }
   }
 }
