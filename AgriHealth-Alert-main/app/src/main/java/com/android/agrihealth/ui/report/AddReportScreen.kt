@@ -40,7 +40,8 @@ object AddReportScreenTestTags {
   const val DESCRIPTION_FIELD = "descriptionField"
   const val VET_DROPDOWN = "vetDropDown"
   const val CREATE_BUTTON = "createButton"
-    fun getTestTagForVet(vetId: String): String = "vetOption_$vetId"
+
+  fun getTestTagForVet(vetId: String): String = "vetOption_$vetId"
 }
 
 /** Texts for the report creation feedback. For testing purposes */
@@ -161,7 +162,9 @@ fun AddReportScreen(
                                   addReportViewModel.setVet(option)
                                   expanded = false
                                 },
-                                modifier = Modifier.testTag(AddReportScreenTestTags.getTestTagForVet(option)))
+                                modifier =
+                                    Modifier.testTag(
+                                        AddReportScreenTestTags.getTestTagForVet(option)))
                           }
                         }
                   }
