@@ -3,6 +3,7 @@ package com.android.agrihealth.ui.authentification
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -23,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
@@ -85,7 +87,8 @@ fun RoleSelectionScreen(
                   fontWeight = FontWeight.Medium,
                   style = MaterialTheme.typography.displaySmall,
                   color = textColor,
-                  modifier = Modifier.testTag(RoleSelectionScreenTestTags.WELCOME))
+                  overflow = TextOverflow.Visible,
+                  modifier = Modifier.testTag(RoleSelectionScreenTestTags.WELCOME).fillMaxWidth())
               Text(
                   text = "Please choose a role.",
                   style = MaterialTheme.typography.headlineMedium,

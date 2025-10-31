@@ -8,6 +8,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import com.android.agrihealth.AgriHealthApp
+import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.FirebaseEmulatorsTest
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
@@ -15,7 +16,6 @@ import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import junit.framework.TestCase
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -32,15 +32,8 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
   override fun setUp() {
     // Set the content to the Overview screen before each test
     super.setUp()
-    if (Firebase.auth.currentUser == null) {
-      runTest {
-        try {
-          Firebase.auth.createUserWithEmailAndPassword("navigation@test.ff", "123456").await()
-        } catch (e: Exception) {
-          Firebase.auth.signInWithEmailAndPassword("navigation@test.ff", "123456").await()
-        }
-      }
-    }
+    val repository = AuthRepositoryProvider.repository
+    runTest { repository.signUpWithEmailAndPassword("navigation@test.ff", "123456", user1) }
     assert(Firebase.auth.currentUser != null)
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule
