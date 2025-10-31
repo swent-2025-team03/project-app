@@ -29,7 +29,7 @@ object FirebaseEmulatorsManager {
      * Initializes Firebase emulators, prioritizing local emulators before falling back to the online one on okau.moe
      */
     fun linkEmulators() {
-        if (!emulatorInitialized) return
+        if (emulatorInitialized) return
 
         val shouldUseLocal = isLocalRunning(FIRESTORE_PORT) && isLocalRunning(AUTH_PORT)
 
