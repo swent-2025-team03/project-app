@@ -1,13 +1,18 @@
 package com.android.agrihealth
 
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.authentification.FirebaseEmulatorsTest
+import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.android.agrihealth.testutil.FakeOverviewViewModel
 import com.android.agrihealth.ui.authentification.SignInErrorMsg
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
@@ -15,6 +20,11 @@ import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
+import com.android.agrihealth.ui.report.AddReportConstants
+import com.android.agrihealth.ui.report.AddReportFeedbackTexts
+import com.android.agrihealth.ui.report.AddReportScreen
+import com.android.agrihealth.ui.report.AddReportScreenTestTags
+import com.android.agrihealth.ui.user.UserViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.test.runTest
@@ -29,6 +39,7 @@ class E2ETest : FirebaseEmulatorsTest(true) {
   @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
   // ----------- Helpers -----------
+    private val reportRepository = ReportRepositoryProvider.repository
 
   @Before
   override fun setUp() {
@@ -97,19 +108,32 @@ class E2ETest : FirebaseEmulatorsTest(true) {
         .performClick()
   }
 
+    private fun createReport(title: String, description: String, vetId: String) {
+        composeTestRule.onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON).assertIsDisplayed().performClick()
+        composeTestRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).assertIsDisplayed().performTextInput(title)
+        composeTestRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed().performTextInput(description)
+        composeTestRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).assertIsDisplayed().performClick()
+        composeTestRule.onNodeWithTag(AddReportScreenTestTags.getTestTagForVet(vetId)).assertIsDisplayed().performClick()
+        composeTestRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).assertIsDisplayed().performClick()
+        composeTestRule.onNodeWithText(AddReportFeedbackTexts.SUCCESS).assertIsDisplayed()
+        composeTestRule.onNodeWithText("OK").assertIsDisplayed().performClick()
+    }
+
   private fun clickFirstReportItem() {
     composeTestRule.onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)[0].performClick()
   }
 
   private fun checkOverviewScreenIsDisplayed() {
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    /*composeTestRule.waitUntil(timeoutMillis = 5_000) {
       composeTestRule
           .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
           .fetchSemanticsNodes()
           .isNotEmpty()
-    }
+    }*/
+      composeTestRule.waitUntil(timeoutMillis = 5_000) {
+          composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).isDisplayed()
+      }
 
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).assertIsDisplayed()
   }
 
   // ----------- Scenario: Vet -----------
@@ -171,6 +195,8 @@ class E2ETest : FirebaseEmulatorsTest(true) {
     composeTestRule.onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD).performTextClearance()
     completeSignIn(user1.email, "12345678")
     checkOverviewScreenIsDisplayed()
+    val vetId = AddReportConstants.vetOptions[0]
+    createReport("Report title", "Report description", vetId)
     clickFirstReportItem()
     composeTestRule
         .onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
