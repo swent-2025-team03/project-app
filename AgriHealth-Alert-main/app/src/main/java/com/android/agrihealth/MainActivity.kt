@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.semantics
@@ -21,7 +23,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
@@ -79,6 +80,8 @@ fun AgriHealthApp(
 
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
+  val currentUser by userViewModel.user.collectAsState()
+  val currentUserRole = currentUser.role
 
   val startDestination =
       if (Firebase.auth.currentUser != null) Screen.Overview.name else Screen.Auth.name
@@ -93,9 +96,7 @@ fun AgriHealthApp(
         SignInScreen(
             credentialManager = credentialManager,
             onSignedIn = {
-              // TODO: Get user data from Firebase after login
-              userViewModel.userRole = UserRole.FARMER
-              userViewModel.userId = "FARMER_001"
+              userViewModel.refreshCurrentUser()
               navigationActions.navigateTo(Screen.Overview)
             },
             goToSignUp = { navigationActions.navigateTo(Screen.SignUp) })
@@ -104,9 +105,7 @@ fun AgriHealthApp(
         SignUpScreen(
             onBack = { navigationActions.navigateTo(Screen.Auth) },
             onSignedUp = {
-              // TODO: After signup, set user info
-              userViewModel.userRole = UserRole.FARMER
-              userViewModel.userId = "FARMER_001"
+              userViewModel.refreshCurrentUser()
               navigationActions.navigateTo(Screen.Overview)
             })
       }
@@ -119,9 +118,6 @@ fun AgriHealthApp(
     ) {
       composable(Screen.Overview.route) {
         val overviewViewModel: OverviewViewModel = viewModel()
-
-        val currentUserRole = userViewModel.userRole
-        val currentUserId = userViewModel.userId
 
         OverviewScreen(
             credentialManager = credentialManager,
@@ -148,8 +144,6 @@ fun AgriHealthApp(
 
             // You might fetch the report by ID here
             val viewModel: ReportViewModel = viewModel()
-
-            val currentUserRole = userViewModel.userRole
 
             ReportViewScreen(
                 navController = navController,
