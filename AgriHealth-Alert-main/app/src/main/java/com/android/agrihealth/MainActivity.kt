@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.semantics
@@ -65,9 +65,7 @@ class MainActivity : ComponentActivity() {
       SampleAppTheme {
         // A surface container using the 'background' color from the theme
         Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .semantics { testTag = C.Tag.main_screen_container },
+            modifier = Modifier.fillMaxSize().semantics { testTag = C.Tag.main_screen_container },
             color = MaterialTheme.colorScheme.background) {
               AgriHealthApp()
             }
@@ -86,12 +84,11 @@ fun AgriHealthApp(
 
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
-  val overviewViewModel: OverviewViewModel = viewModel()
 
-    var reloadReports by remember { mutableStateOf(false) }
-    val currentUser by userViewModel.user.collectAsState()
-    val currentUserRole = currentUser.role
-    val currentUserId = currentUser.uid
+  var reloadReports by remember { mutableStateOf(false) }
+  val currentUser by userViewModel.user.collectAsState()
+  val currentUserId = currentUser.uid
+  val currentUserRole = currentUser.role
 
   val startDestination =
       if (Firebase.auth.currentUser != null) Screen.Overview.name else Screen.Auth.name
@@ -149,10 +146,7 @@ fun AgriHealthApp(
             onBack = { navigationActions.goBack() },
             userRole = currentUserRole,
             userId = currentUserId,
-            onCreateReport = {
-              reloadReports = !reloadReports
-              navigationActions.goBack()
-            },
+            onCreateReport = { reloadReports = !reloadReports },
             addReportViewModel = createReportViewModel,
         )
       }
