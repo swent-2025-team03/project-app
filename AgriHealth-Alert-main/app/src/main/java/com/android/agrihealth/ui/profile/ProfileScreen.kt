@@ -10,6 +10,8 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,8 +54,9 @@ fun ProfileScreen(
     onEditProfile: () -> Unit = {},
     onCode: () -> Unit = {}
 ) {
-  val user = userViewModel.user
-  val userRole = userViewModel.userRole
+
+  val user by userViewModel.user.collectAsState()
+  val userRole = user.role
 
   Scaffold(
       topBar = {
@@ -96,7 +99,7 @@ fun ProfileScreen(
                 Spacer(
                     modifier = Modifier.width(32.dp)) // Solution to center the name with edit icon
                 Text(
-                    text = "${user?.firstname ?: "Unknown"} ${user?.lastname ?: ""}",
+                    text = "${user.firstname} ${user.lastname}",
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.testTag(NAME_TEXT))
                 IconButton(onClick = onEditProfile, modifier = Modifier.testTag(EDIT_BUTTON)) {
@@ -108,7 +111,7 @@ fun ProfileScreen(
 
               // Email
               OutlinedTextField(
-                  value = user?.email ?: "",
+                  value = user.email,
                   onValueChange = {},
                   label = { Text("Email address") },
                   enabled = false,
@@ -131,7 +134,7 @@ fun ProfileScreen(
 
               // Address (Location)
               OutlinedTextField(
-                  value = user?.address?.toString() ?: "",
+                  value = user.address?.toString() ?: "",
                   onValueChange = {},
                   label = {
                     when (userRole) {
@@ -146,7 +149,7 @@ fun ProfileScreen(
               if (user is Farmer) {
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
-                    value = user.defaultVet ?: "",
+                    value = (user as Farmer).defaultVet ?: "",
                     onValueChange = {},
                     label = { Text("Default Vet") },
                     enabled = false,
