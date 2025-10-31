@@ -5,7 +5,6 @@ import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.agrihealth.data.model.*
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.location.Location
@@ -106,7 +105,6 @@ class OverviewViewModel(
     return when (userRole) {
       UserRole.FARMER -> allReports.filter { it.farmerId == userId }
       UserRole.VET -> allReports
-      else -> emptyList()
     }
   }
 

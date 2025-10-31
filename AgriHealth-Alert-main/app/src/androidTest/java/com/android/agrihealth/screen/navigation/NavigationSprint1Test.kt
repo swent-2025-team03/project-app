@@ -37,7 +37,7 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
       runTest {
         try {
           Firebase.auth.createUserWithEmailAndPassword("navigation@test.ff", "123456").await()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
           Firebase.auth.signInWithEmailAndPassword("navigation@test.ff", "123456").await()
         }
       }

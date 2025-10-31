@@ -12,7 +12,7 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
-import com.android.agrihealth.model.authentification.FirebaseEmulatorsTest
+import com.android.agrihealth.data.model.authentification.FirebaseEmulatorsTest
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
