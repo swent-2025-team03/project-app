@@ -47,7 +47,7 @@ object FirebaseEmulatorsManager {
         emulatorInitialized = true
     }
 
-    private fun isLocalRunning(port: Int, timeoutMs: Int = 1000): Boolean {
+    fun isLocalRunning(port: Int, timeoutMs: Int = 1000): Boolean {
         return try {
             Socket().use { socket ->
                 socket.connect(InetSocketAddress(LOCAL_HOST, port), timeoutMs)
