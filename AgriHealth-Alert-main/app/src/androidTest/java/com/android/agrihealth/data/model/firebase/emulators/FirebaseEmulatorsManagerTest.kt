@@ -6,14 +6,14 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class FirebaseEmulatorsManagerTest {
-    @Test
-    fun hostMatchesLocalIfRunning() {
-        FirebaseEmulatorsManager.linkEmulators()
+  @Test
+  fun hostMatchesLocalIfRunning() {
+    FirebaseEmulatorsManager.linkEmulators()
 
-        val environment = FirebaseEmulatorsManager.environment
-        val localhost = "10.0.2.2"
+    val environment = FirebaseEmulatorsManager.environment
+    val localhost = "10.0.2.2"
 
-        if (isLocalRunning(environment.firestorePort)) assertEquals(environment.host, localhost)
-        else assertNotEquals(environment.host, localhost)
-    }
+    if (isLocalRunning(environment.firestorePort)) assertEquals(environment.host, localhost)
+    else assertNotEquals(environment.host, localhost)
+  }
 }
