@@ -46,18 +46,6 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    // TODO: Remove useEmulator() lines when the app goes in production
-    val url = getString(R.string.FIREBASE_EMULATORS_URL)
-    val firestorePort = resources.getInteger(R.integer.FIREBASE_EMULATORS_FIRESTORE_PORT)
-    val authPort = resources.getInteger(R.integer.FIREBASE_EMULATORS_AUTH_PORT)
-    try {
-      Firebase.firestore.useEmulator(url, firestorePort)
-      Firebase.auth.useEmulator(url, authPort)
-    } catch (e: IllegalStateException) {
-      if (e.message != "Cannot call useEmulator() after instance has already been initialized.")
-          throw e
-    }
-
     setContent {
       SampleAppTheme {
         // A surface container using the 'background' color from the theme
