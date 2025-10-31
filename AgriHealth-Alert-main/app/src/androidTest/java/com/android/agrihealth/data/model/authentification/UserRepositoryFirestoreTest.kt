@@ -1,4 +1,4 @@
-package com.android.agrihealth.model.authentification
+package com.android.agrihealth.data.model.authentification
 
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
