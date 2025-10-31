@@ -32,7 +32,6 @@ class RoleSelectionViewModel(
   }
 
   fun signOut(credentialManager: CredentialManager) {
-    authRepository = AuthRepositoryProvider.repository
     viewModelScope.launch {
       authRepository.signOut()
       credentialManager.clearCredentialState(ClearCredentialStateRequest())
