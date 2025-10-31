@@ -6,7 +6,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,12 +43,12 @@ object EditProfileScreenTestTags {
 fun EditProfileScreen(
     userViewModel: UserViewModel = viewModel(),
     onGoBack: () -> Unit = {},
-    onSave: (User) -> Unit = {},
+    onSave: (User) -> Unit = { userViewModel.updateUser(it) },
     onAddVetCode: (String) -> Unit = {},
     openCodeField: Boolean = false
 ) {
-  val user = userViewModel.user
-  val userRole = userViewModel.userRole
+  val user by userViewModel.user.collectAsState()
+  val userRole = user.role
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
   val snackbarHostState = remember { SnackbarHostState() }
@@ -143,7 +143,7 @@ fun EditProfileScreen(
                             snackbarHostState.showSnackbar("Password change not possible yet.")
                           }
                         }) {
-                          Icon(Icons.Default.ArrowDropDown, contentDescription = "Change Password")
+                          Icon(Icons.Default.Edit, contentDescription = "Edit Password")
                         }
                   })
               // TODO: I put this here in advance but we still have not decided how we want to
@@ -188,7 +188,7 @@ fun EditProfileScreen(
                       ExposedDropdownMenu(
                           expanded = expandedVetDropdown,
                           onDismissRequest = { expandedVetDropdown = false }) {
-                            user.linkedVets.forEach { vetId ->
+                            (user as Farmer).linkedVets.forEach { vetId ->
                               DropdownMenuItem(
                                   text = { Text("Vet $vetId") }, // Placeholder name display
                                   onClick = {

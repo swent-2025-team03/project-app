@@ -9,7 +9,7 @@ import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.LOGOUT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_FARMER
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_VET_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
@@ -168,10 +168,10 @@ class ProfileScreenTest {
             Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
 
     composeTestRule.setContent {
-      MaterialTheme { ProfileScreen(userViewModel = vm, onCode = { clicked = true }) }
+      MaterialTheme { ProfileScreen(userViewModel = vm, onCodeFarmer = { clicked = true }) }
     }
 
-    composeTestRule.onNodeWithTag(CODE_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(CODE_BUTTON_FARMER).performClick()
     assert(clicked)
   }
 }

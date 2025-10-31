@@ -73,6 +73,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
       is Vet -> {
         base["address"] = user.address
         base["linkedFarmers"] = user.linkedFarmers
+        base["validCodes"] = user.validCodes
       }
     }
 
@@ -102,7 +103,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               lastname = lastname,
               email = email,
               address = data["address"] as? Location?,
-              linkedFarmers = data["linkedFarmers"] as? List<String> ?: emptyList())
+              linkedFarmers = data["linkedFarmers"] as? List<String> ?: emptyList(),
+              validCodes = data["validCodes"] as? List<String> ?: emptyList())
       else -> throw Exception("Unknown user type: $roleStr")
     }
   }
@@ -124,6 +126,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
       old is Vet && new is Vet -> {
         if (old.address != new.address) changes["address"] = new.address
         if (old.linkedFarmers != new.linkedFarmers) changes["linkedFarmers"] = new.linkedFarmers
+        if (old.validCodes != new.validCodes) changes["validCodes"] = new.validCodes
       }
       else -> throw IllegalArgumentException("Permission denied")
     }

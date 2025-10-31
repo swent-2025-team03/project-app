@@ -167,7 +167,7 @@ fun AgriHealthApp(
               // Navigate to EditProfile normally
               navController.navigate(Screen.EditProfile.route)
             },
-            onCode = {
+            onCodeFarmer = {
               // If farmer clicked "Add new Vet with Code", open EditProfile and focus code field
               navController.navigate("${Screen.EditProfile.route}?openCode=true")
             })
@@ -186,12 +186,12 @@ fun AgriHealthApp(
                 userViewModel = userViewModel,
                 onGoBack = { navigationActions.goBack() },
                 onSave = { updatedUser ->
-                  // Update shared ViewModel and go back to Profile
-                  userViewModel.user = updatedUser
+                  // Uses the ViewModel's update function to persist and update shared state
+                  userViewModel.updateUser(updatedUser)
                   navigationActions.goBack()
                 },
                 onAddVetCode = { _code ->
-                  // Placeholder for now — logic implemented separately
+                  // Placeholder for now, will implement the logic in a next commit probably
                 },
                 openCodeField = openCode)
           }

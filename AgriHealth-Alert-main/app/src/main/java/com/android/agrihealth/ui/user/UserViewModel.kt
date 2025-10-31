@@ -75,4 +75,16 @@ open class UserViewModel(
       loadUser(currentUser.uid)
     }
   }
+
+  /** Update user data (needed in profile screen) */
+  fun updateUser(user: User) {
+    viewModelScope.launch {
+      try {
+        userRepository.updateUser(user)
+        _user.value = user // update local state
+      } catch (e: Exception) {
+        Log.e("UserViewModel", "Failed to update user", e)
+      }
+    }
+  }
 }
