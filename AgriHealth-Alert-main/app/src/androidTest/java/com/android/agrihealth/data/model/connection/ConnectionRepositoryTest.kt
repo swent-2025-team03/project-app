@@ -1,6 +1,6 @@
 package com.android.agrihealth.data.model.connection
 
-import com.android.agrihealth.data.model.authentification.FirebaseEmulatorsTest
+import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import java.time.Instant

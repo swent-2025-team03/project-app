@@ -1,6 +1,7 @@
-package com.android.agrihealth.data.model.authentification
+package com.android.agrihealth.data.model.firebase.emulators
 
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsManager
+import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
+import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.Vet
 import kotlinx.coroutines.test.runTest
@@ -53,9 +54,9 @@ open class FirebaseEmulatorsTest() {
   open fun setUp() {
     //FirebaseEmulatorsManager.linkEmulators()
 
-    runTest {
-      clearEmulator(authEndpoint)
-      clearEmulator(firestoreEndpoint)
-    }
+      runTest {
+          clearEmulator(authEndpoint)
+          clearEmulator(firestoreEndpoint)
+      }
   }
 }
