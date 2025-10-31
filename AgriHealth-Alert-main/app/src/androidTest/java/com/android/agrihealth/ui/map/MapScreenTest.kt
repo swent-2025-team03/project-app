@@ -8,11 +8,11 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import com.android.agrihealth.AgriHealthApp
+import com.android.agrihealth.data.model.authentification.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
-import com.android.agrihealth.data.model.authentification.FirebaseEmulatorsTest
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -139,23 +139,23 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     val uid = Firebase.auth.currentUser!!.uid
 
     getUserReports(uid).forEach { report ->
-        val reportId = report.id
-            composeRule
-                .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
-                .assertIsDisplayed()
-                .performClick()
-            composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsDisplayed()
-            composeRule
-                .onNodeWithTag(MapScreenTestTags.getTestTagForReportTitle(reportId))
-                .assertIsDisplayed()
-            composeRule
-                .onNodeWithTag(MapScreenTestTags.getTestTagForReportDesc(reportId))
-                .assertIsDisplayed()
+      val reportId = report.id
+      composeRule
+          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
+          .assertIsDisplayed()
+          .performClick()
+      composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsDisplayed()
+      composeRule
+          .onNodeWithTag(MapScreenTestTags.getTestTagForReportTitle(reportId))
+          .assertIsDisplayed()
+      composeRule
+          .onNodeWithTag(MapScreenTestTags.getTestTagForReportDesc(reportId))
+          .assertIsDisplayed()
 
-            composeRule
-                .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
-                .performClick()
-            composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsNotDisplayed()
+      composeRule
+          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
+          .performClick()
+      composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsNotDisplayed()
     }
   }
 }

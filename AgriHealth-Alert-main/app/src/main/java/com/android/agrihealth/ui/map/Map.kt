@@ -127,9 +127,7 @@ fun MapScreen(
   }
 
   Scaffold(
-      topBar = {
-        if (!isViewedFromOverview)  MapTopBar(onBack = { navigationActions?.goBack() })
-      },
+      topBar = { if (!isViewedFromOverview) MapTopBar(onBack = { navigationActions?.goBack() }) },
       bottomBar = {
         if (isViewedFromOverview)
             BottomNavigationMenu(
@@ -180,29 +178,25 @@ fun MapScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapTopBar(onBack: () -> Unit) {
-    TopAppBar(
-        title = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Map",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier =
-                        Modifier.weight(1f).testTag(MapScreenTestTags.TOP_BAR_MAP_TITLE))
+  TopAppBar(
+      title = {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically) {
+              Text(
+                  text = "Map",
+                  style = MaterialTheme.typography.titleLarge,
+                  fontWeight = FontWeight.Bold,
+                  modifier = Modifier.weight(1f).testTag(MapScreenTestTags.TOP_BAR_MAP_TITLE))
             }
-        },
-        navigationIcon = {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back")
+      },
+      navigationIcon = {
+        IconButton(
+            onClick = onBack, modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
+              Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
-        })
+      })
 }
 
 @Composable
