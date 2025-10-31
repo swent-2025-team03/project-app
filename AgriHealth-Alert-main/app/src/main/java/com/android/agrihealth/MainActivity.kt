@@ -31,6 +31,7 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
+import com.android.agrihealth.ui.profile.EditProfileScreen
 import com.android.agrihealth.ui.profile.ProfileScreen
 import com.android.agrihealth.ui.report.AddReportScreen
 import com.android.agrihealth.ui.report.ReportViewModel
@@ -163,9 +164,37 @@ fun AgriHealthApp(
               navigationActions.navigateToAuthAndClear()
             },
             onEditProfile = {
-              // TODO: Later we will add edit profile functionality
+              // Navigate to EditProfile normally
+              navController.navigate(Screen.EditProfile.route)
+            },
+            onCode = {
+              // If farmer clicked "Add new Vet with Code", open EditProfile and focus code field
+              navController.navigate("${Screen.EditProfile.route}?openCode=true")
             })
       }
+      composable(
+          route = Screen.EditProfile.route + "?openCode={openCode}",
+          arguments =
+              listOf(
+                  navArgument("openCode") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                  })) { backStackEntry ->
+            val openCode = backStackEntry.arguments?.getBoolean("openCode") ?: false
+
+            EditProfileScreen(
+                userViewModel = userViewModel,
+                onGoBack = { navigationActions.goBack() },
+                onSave = { updatedUser ->
+                  // Update shared ViewModel and go back to Profile
+                  userViewModel.user = updatedUser
+                  navigationActions.goBack()
+                },
+                onAddVetCode = { _code ->
+                  // Placeholder for now — logic implemented separately
+                },
+                openCodeField = openCode)
+          }
     }
 
     navigation(
