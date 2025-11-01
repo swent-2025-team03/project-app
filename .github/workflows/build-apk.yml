@@ -24,7 +24,7 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
       - name: SignReport
-        run: cd AgriHealth-Alert-main && ./gradlew signedReport
+        run: cd AgriHealth-Alert-main && ./gradlew signingReport
 
       #Add google services file
       - name: Add google services json
