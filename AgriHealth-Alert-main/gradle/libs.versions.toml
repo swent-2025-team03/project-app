@@ -23,6 +23,11 @@ firebaseAuth = "24.0.1"
 firebaseDatabase = "22.0.1"
 firebaseFirestore = "26.0.1"
 okhttp = "4.12.0"
+playServicesAuth = "21.2.0"
+playServicesMaps = "19.0.0"
+playServicesLocation = "21.0.1"
+mapsCompose = "4.3.3"
+mapsComposeUtils = "4.3.0"
 googleid = "1.1.1"
 mockk = "1.13.7"
 mockkAgent = "1.13.7"
@@ -66,6 +71,12 @@ googleid = { group = "com.google.android.libraries.identity.googleid", name = "g
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 mockk-agent = { module = "io.mockk:mockk-agent", version.ref = "mockkAgent" }
 mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockkAndroid" }
+
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
+play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation"}
+maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
+maps-compose-utils = { module = "com.google.maps.android:maps-compose-utils", version.ref = "mapsComposeUtils" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

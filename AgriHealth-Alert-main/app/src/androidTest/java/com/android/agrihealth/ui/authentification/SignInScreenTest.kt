@@ -13,7 +13,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
-import com.android.agrihealth.data.model.authentification.FirebaseEmulatorsTest
+import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import org.junit.After
 import org.junit.Before

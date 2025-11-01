@@ -5,6 +5,9 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.user.UserViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.junit.Rule
 import org.junit.Test
 
@@ -16,34 +19,34 @@ class EditProfileScreenTest {
 
   private fun fakeFarmerViewModel(): UserViewModel {
     return object : UserViewModel() {
-      init {
-        userRole = UserRole.FARMER
-        user =
-            Farmer(
-                uid = "farmer_1",
-                firstname = "Alice",
-                lastname = "Johnson",
-                email = "alice@farmmail.com",
-                address = Location(0.0, 0.0, "Farm Address"),
-                linkedVets = listOf("vet123", "vet456"),
-                defaultVet = "vet123")
-      }
+      private val fakeUserFlow =
+          MutableStateFlow(
+              Farmer(
+                  uid = "farmer_1",
+                  firstname = "Alice",
+                  lastname = "Johnson",
+                  email = "alice@farmmail.com",
+                  address = Location(0.0, 0.0, "Farm Address"),
+                  linkedVets = listOf("vet123", "vet456"),
+                  defaultVet = "vet123"))
+
+      override var user: StateFlow<User> = fakeUserFlow.asStateFlow()
     }
   }
 
   private fun fakeVetViewModel(): UserViewModel {
     return object : UserViewModel() {
-      init {
-        userRole = UserRole.VET
-        user =
-            Vet(
-                uid = "vet_1",
-                firstname = "Bob",
-                lastname = "Smith",
-                email = "bob@vetcare.com",
-                address = Location(0.0, 0.0, "Clinic Address"),
-                linkedFarmers = listOf("farmer123", "farmer456"))
-      }
+      private val fakeUserFlow =
+          MutableStateFlow(
+              Vet(
+                  uid = "vet_1",
+                  firstname = "Bob",
+                  lastname = "Smith",
+                  email = "bob@vetcare.com",
+                  address = Location(0.0, 0.0, "Clinic Address"),
+                  linkedFarmers = listOf("farmer123", "farmer456")))
+
+      override var user: StateFlow<User> = fakeUserFlow.asStateFlow()
     }
   }
 

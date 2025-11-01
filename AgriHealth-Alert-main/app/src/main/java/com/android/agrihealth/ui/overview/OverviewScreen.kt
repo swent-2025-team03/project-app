@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
@@ -19,7 +18,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
@@ -52,15 +50,17 @@ object OverviewScreenTestTags {
 fun OverviewScreen(
     userRole: UserRole,
     credentialManager: CredentialManager = CredentialManager.create(LocalContext.current),
-    overviewViewModel: OverviewViewModel = viewModel(),
+    userId: String,
+    overviewViewModel: OverviewViewModelContract,
     onAddReport: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
-    navigationActions: NavigationActions? = null,
-    reports: List<Report> = overviewViewModel.uiState.collectAsState().value.reports,
+    navigationActions: NavigationActions? = null
 ) {
 
   val uiState by overviewViewModel.uiState.collectAsState()
   val reports: List<Report> = uiState.reports
+
+  LaunchedEffect(Unit) { overviewViewModel.loadReports(userRole, userId) }
 
   Scaffold(
       // -- Top App Bar with logout icon --

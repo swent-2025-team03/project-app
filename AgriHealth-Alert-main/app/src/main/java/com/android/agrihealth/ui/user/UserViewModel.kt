@@ -44,7 +44,7 @@ open class UserViewModel(
 
   /** The current user's role as a state flow. */
   // val userRole: StateFlow<UserRole> = _userRole.asStateFlow()
-  val user: StateFlow<User> = _user.asStateFlow()
+  open var user: StateFlow<User> = _user.asStateFlow()
 
   init {
     val currentUser = auth.currentUser
