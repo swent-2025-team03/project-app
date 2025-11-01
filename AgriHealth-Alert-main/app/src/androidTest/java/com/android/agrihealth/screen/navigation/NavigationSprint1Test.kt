@@ -8,7 +8,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import com.android.agrihealth.AgriHealthApp
-import com.android.agrihealth.data.model.authentification.FirebaseEmulatorsTest
+import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen

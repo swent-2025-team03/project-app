@@ -1,27 +1,27 @@
-package com.android.agrihealth.data.model.authentification
+package com.android.agrihealth.data.model.firebase.emulators
 
-import com.android.agrihealth.R
+import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
+import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.Vet
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
-import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.junit.Before
 
-open class FirebaseEmulatorsTest(shouldInitializeEmulators: Boolean = true) {
+open class FirebaseEmulatorsTest() {
   val userRepository = UserRepositoryProvider.repository
   val authRepository = AuthRepositoryProvider.repository
-  private val _shouldInitializeEmulators = shouldInitializeEmulators
   // from bootcamp
   val httpClient = OkHttpClient()
-  val contextHost =
-      androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
-  val host = contextHost.getString(R.string.FIREBASE_EMULATORS_URL)
-  val firestorePort = 8081
-  val authPort = 9099
+
+  init {
+    FirebaseEmulatorsManager.linkEmulators()
+  }
+
+  private val host = FirebaseEmulatorsManager.environment.host
+  private val firestorePort = FirebaseEmulatorsManager.environment.firestorePort
+  private val authPort = FirebaseEmulatorsManager.environment.authPort
 
   private val firestoreEndpoint by lazy {
     "http://${host}:${firestorePort}/emulator/v1/projects/agrihealth-alert/databases/(default)/documents"
@@ -50,30 +50,9 @@ open class FirebaseEmulatorsTest(shouldInitializeEmulators: Boolean = true) {
     assert(response.isSuccessful) { "Failed to clear emulator at $endpoint" }
   }
 
-  companion object {
-    var emulatorInitialized = false
-  }
-
   @Before
   open fun setUp() {
-    if (!emulatorInitialized && _shouldInitializeEmulators) {
-      val context =
-          androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
-      val url = context.getString(R.string.FIREBASE_EMULATORS_URL)
-      val firestorePort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_FIRESTORE_PORT)
-      val authPort = context.resources.getInteger(R.integer.FIREBASE_EMULATORS_AUTH_PORT)
-
-      // running all tests fails if e2e runs at the same time as this
-      try {
-        Firebase.firestore.useEmulator(url, firestorePort)
-        Firebase.auth.useEmulator(url, authPort)
-      } catch (e: IllegalStateException) {
-        if (e.message != "Cannot call useEmulator() after instance has already been initialized.")
-            throw e
-      } finally {
-        emulatorInitialized = true
-      }
-    }
+    // FirebaseEmulatorsManager.linkEmulators()
 
     runTest {
       clearEmulator(authEndpoint)
