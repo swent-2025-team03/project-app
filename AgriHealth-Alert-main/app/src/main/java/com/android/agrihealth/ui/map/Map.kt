@@ -111,7 +111,7 @@ fun MapScreen(
             LatLng(mapInitialLocation.latitude, mapInitialLocation.longitude), mapInitialZoom)
   }
 
-  val selectedReport = remember { mutableStateOf<Report?>(null) }
+  val selectedReport = remember { mutableStateOf(mapViewModel.selectedReport) }
   mapViewModel.refreshReports(user.uid)
 
   val googleMapUiSettings = remember {
@@ -179,32 +179,40 @@ fun MapScreen(
                       selectedFilter == "All" || it.status.displayString() == selectedFilter
                     }
                     .forEach { report ->
-                      val markerSize = if (report == selectedReport.value) 60f else 40f
-                      val markerIcon =
-                          when (report.status) {
-                            ReportStatus.PENDING -> createCircleMarker(Color.GRAY, markerSize)
-                            ReportStatus.IN_PROGRESS ->
-                                createCircleMarker(Color.rgb(242, 199, 119), markerSize) // yellow
-                            ReportStatus.RESOLVED ->
-                                createCircleMarker(Color.rgb(108, 166, 209), markerSize) // blue
-                            ReportStatus.SPAM ->
-                                createCircleMarker(Color.rgb(184, 92, 92), markerSize) // red
-                          }
-                      Marker(
-                          state =
-                              MarkerState(
-                                  position =
-                                      LatLng(
-                                          report.location!!.latitude, report.location.longitude)),
-                          title = report.title,
-                          snippet = report.description,
-                          icon = markerIcon,
-                          onClick = {
-                            selectedReport.value =
-                                if (selectedReport.value == report) null else report
-                            true
-                          },
-                          tag = MapScreenTestTags.getTestTagForReportMarker(report.id))
+                        val markerSize = if (report == selectedReport.value) 60f else 40f
+                        val markerIcon =
+                            when (report.status) {
+                                ReportStatus.PENDING -> createCircleMarker(Color.GRAY, markerSize)
+                                ReportStatus.IN_PROGRESS ->
+                                    createCircleMarker(
+                                        Color.rgb(242, 199, 119),
+                                        markerSize
+                                    ) // yellow
+                                ReportStatus.RESOLVED ->
+                                    createCircleMarker(Color.rgb(108, 166, 209), markerSize) // blue
+                                ReportStatus.SPAM ->
+                                    createCircleMarker(Color.rgb(184, 92, 92), markerSize) // red
+                            }
+                        val testTag = MapScreenTestTags.getTestTagForReportMarker(report.id)
+                            Marker(
+                                state =
+                                    MarkerState(
+                                        position =
+                                            LatLng(
+                                                report.location!!.latitude,
+                                                report.location.longitude
+                                            )
+                                    ),
+                                title = report.title,
+                                snippet = report.description,
+                                icon = markerIcon,
+                                onClick = {
+                                    selectedReport.value =
+                                        if (selectedReport.value == report) null else report
+                                    true
+                                },
+                                tag = testTag
+                            )
                     }
               }
 

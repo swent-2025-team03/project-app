@@ -32,6 +32,7 @@ import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
 import com.android.agrihealth.ui.map.MapScreen
+import com.android.agrihealth.ui.map.MapViewModel
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
@@ -214,14 +215,22 @@ fun AgriHealthApp(
                   type = NavType.StringType
                   nullable = true
                   defaultValue = null
+                },
+                navArgument("reportId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
                 })) { backStackEntry ->
           val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull()
           val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull()
+          val sourceReport = backStackEntry.arguments?.getString("reportId")
 
           val location = if (lat != null && lng != null) Location(lat, lng) else null
+          val mapViewModel = MapViewModel(selectedReportId = sourceReport)
           MapScreen(
+              mapViewModel = mapViewModel,
               navigationActions = navigationActions,
-              isViewedFromOverview = (location == null),
+              isViewedFromOverview = (sourceReport == null),
               startingPosition = location)
         }
   }

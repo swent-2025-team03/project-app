@@ -7,10 +7,8 @@ import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
-import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
-import com.android.agrihealth.ui.user.UserViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
@@ -27,7 +25,8 @@ data class MapUIState(
 
 class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
-    private val userRepository: UserRepository = UserRepositoryProvider.repository
+    private val userRepository: UserRepository = UserRepositoryProvider.repository,
+    val selectedReportId: String? = null
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(MapUIState())
   val uiState: StateFlow<MapUIState> = _uiState.asStateFlow()
@@ -36,6 +35,14 @@ class MapViewModel(
   val startingLocation = _startingLocation.asStateFlow()
   private val _zoom = MutableStateFlow(10f)
   val zoom = _zoom.asStateFlow()
+  var selectedReport: Report? = null
+  init {
+    if (selectedReportId != null) {
+      viewModelScope.launch {
+        selectedReport = reportRepository.getReportById(selectedReportId)
+      }
+    }
+  }
 
   fun refreshReports(uid: String) {
     fetchLocalizableReports(uid)

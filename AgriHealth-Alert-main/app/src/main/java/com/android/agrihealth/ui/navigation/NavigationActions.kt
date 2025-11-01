@@ -40,10 +40,10 @@ sealed class Screen(
     }
   }
 
-  data class Map(val lat: Double? = null, val lng: Double? = null) :
-      Screen(route = "map?lat=${lat}&lng=${lng}", name = "map", isTopLevelDestination = true) {
+  data class Map(val lat: Double? = null, val lng: Double? = null, val reportId: String? = null) :
+      Screen(route = "map?lat=${lat}&lng=${lng}&reportId=${reportId}", name = "map", isTopLevelDestination = true) {
     companion object {
-      const val route = "map?lat={lat}&lng={lng}"
+      const val route = "map?lat={lat}&lng={lng}&reportId={reportId}"
     }
   }
 }

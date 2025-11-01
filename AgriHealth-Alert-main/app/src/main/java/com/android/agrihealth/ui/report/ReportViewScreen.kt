@@ -248,7 +248,7 @@ fun ReportViewScreen(
                         modifier = Modifier.testTag(ReportViewScreenTestTags.VIEW_ON_MAP),
                         onClick = {
                           navigationActions.navigateTo(
-                              Screen.Map(report.location?.latitude, report.location?.longitude))
+                              Screen.Map(report.location?.latitude, report.location?.longitude, reportId))
                         }) {
                           Text("View on Map")
                         }
