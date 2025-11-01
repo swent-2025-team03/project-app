@@ -1,5 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <integer name="FIREBASE_EMULATORS_FIRESTORE_PORT">8081</integer>
-    <integer name="FIREBASE_EMULATORS_AUTH_PORT">9099</integer>
 </resources>
