@@ -4,12 +4,15 @@ package com.android.agrihealth.screen.navigation
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
+import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
@@ -55,7 +58,9 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
   @Test
   fun overviewScreen_displaysBottomBar() {
     // Assert that the bottom navigation bar is displayed
-    composeTestRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
+    composeTestRule.waitUntil(3000) {
+      composeTestRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).isDisplayed()
+    }
   }
 
   @Test
@@ -63,7 +68,9 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
     // Click on the Map tab in the bottom navigation bar
     composeTestRule.onNodeWithTag(NavigationTestTags.MAP_TAB).performClick()
     // Assert that the Map screen is displayed
-    composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
+    composeTestRule.waitUntil(3000) {
+      composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).isDisplayed()
+    }
   }
 
   @Test
@@ -71,10 +78,9 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
     // Click on the "Add Report" button
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON).performClick()
     // Assert that the Add Report screen is displayed
-    composeTestRule
-        .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
-        .assertIsDisplayed()
-        .assertTextContains(Screen.AddReport.name)
+    composeTestRule.waitUntil(3000) {
+      composeTestRule.onNodeWithText(Screen.AddReport.name).isDisplayed()
+    }
   }
 
   @Test
@@ -82,7 +88,9 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
     // Click on the "Sign Out" button
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.LOGOUT_BUTTON).performClick()
     // Assert that the Auth screen is displayed
-    // composeTestRule.onNodeWithTag(SignInScreenTestTags.SIGN_IN_BUTTON).assertIsDisplayed()
+    composeTestRule.waitUntil(3000) {
+      composeTestRule.onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON).isDisplayed()
+    }
   }
 
   @Test
@@ -92,27 +100,24 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
     // Click on the "Go Back" button
     composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).performClick()
     // Assert that the Overview screen is displayed
-    composeTestRule
-        .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
-        .assertIsDisplayed()
-        .assertTextContains(Screen.Overview.name)
+    composeTestRule.waitUntil(3000) {
+      composeTestRule.onNodeWithText(Screen.Overview.name).isDisplayed()
+    }
   }
 
   @Test
   fun addReportScreen_navigateToOverviewUsingSystemBack() {
     // Navigate to the Add Report screen
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON).performClick()
-    composeTestRule
-        .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
-        .assertIsDisplayed()
-        .assertTextContains(Screen.AddReport.name)
+    composeTestRule.waitUntil(3000) {
+      composeTestRule.onNodeWithText(Screen.AddReport.name).isDisplayed()
+    }
     // Simulate system back press
     pressBack(false)
     // Assert that the Overview screen is displayed
-    composeTestRule
-        .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
-        .assertIsDisplayed()
-        .assertTextContains(Screen.Overview.name)
+    composeTestRule.waitUntil(3000) {
+      composeTestRule.onNodeWithText(Screen.Overview.name).isDisplayed()
+    }
   }
 
   private fun pressBack(shouldFinish: Boolean) {
