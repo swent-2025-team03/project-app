@@ -57,6 +57,7 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
+import com.android.agrihealth.ui.user.UserViewModel
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -88,19 +89,21 @@ object MapScreenTestTags {
 
 @Composable
 fun MapScreen(
-    viewModel: MapViewModel = viewModel(),
+    mapViewModel: MapViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel(),
     navigationActions: NavigationActions? = null,
     isViewedFromOverview: Boolean = true,
     startingPosition: Location? = null
 ) {
-  val uiState by viewModel.uiState.collectAsState()
+  val uiState by mapViewModel.uiState.collectAsState()
+  val user by userViewModel.user.collectAsState()
   var selectedFilter by remember { mutableStateOf("All") }
 
-  val mapInitialLocation by viewModel.startingLocation.collectAsState()
-  val mapInitialZoom by viewModel.zoom.collectAsState()
+  val mapInitialLocation by mapViewModel.startingLocation.collectAsState()
+  val mapInitialZoom by mapViewModel.zoom.collectAsState()
   val cameraPositionState = rememberCameraPositionState {}
 
-  viewModel.setStartingLocation(startingPosition)
+  mapViewModel.setStartingLocation(startingPosition)
 
   LaunchedEffect(mapInitialLocation) {
     cameraPositionState.position =
@@ -109,7 +112,7 @@ fun MapScreen(
   }
 
   val selectedReport = remember { mutableStateOf<Report?>(null) }
-  viewModel.refreshReports()
+  mapViewModel.refreshReports(user.uid)
 
   val googleMapUiSettings = remember {
     MapUiSettings(
@@ -213,7 +216,7 @@ fun MapScreen(
           FloatingActionButton(
               modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
               shape = CircleShape,
-              onClick = { viewModel.refreshCameraPosition(cameraPositionState) }) {
+              onClick = { mapViewModel.refreshCameraPosition(cameraPositionState) }) {
                 Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh Location")
               }
 

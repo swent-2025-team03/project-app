@@ -7,6 +7,7 @@ import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.android.agrihealth.ui.user.UserViewModel
@@ -26,8 +27,7 @@ data class MapUIState(
 
 class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
-    private val userRepository: UserRepository = UserRepositoryProvider.repository,
-    private val userViewModel: UserViewModel = UserViewModel()
+    private val userRepository: UserRepository = UserRepositoryProvider.repository
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(MapUIState())
   val uiState: StateFlow<MapUIState> = _uiState.asStateFlow()
@@ -37,21 +37,16 @@ class MapViewModel(
   private val _zoom = MutableStateFlow(10f)
   val zoom = _zoom.asStateFlow()
 
-  init {
-    refreshReports()
+  fun refreshReports(uid: String) {
+    fetchLocalizableReports(uid)
   }
 
-  fun refreshReports() {
-    fetchLocalizableReports()
-  }
-
-  private fun fetchLocalizableReports() {
+  private fun fetchLocalizableReports(uid: String) {
     viewModelScope.launch {
       try {
-        val userId = userViewModel.user.value.uid
-        val reports = reportRepository.getAllReports(userId).filter { it.location != null }
+        val reports = reportRepository.getAllReports(uid).filter { it.location != null }
         _uiState.value = MapUIState(reports = reports)
-        Log.d("MapScreen", "Loaded ${reports.count()} reports")
+        Log.d("MapScreen", "Loaded ${reports.count()} reports for UID $uid")
       } catch (e: Exception) {
         Log.w("MapScreen", "Failed to load todos: ${e.message}")
       }
