@@ -26,6 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
@@ -45,6 +46,7 @@ import com.android.agrihealth.ui.user.UserViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.flow.StateFlow
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -201,7 +203,7 @@ fun AgriHealthApp(
                 onGoBack = { navigationActions.goBack() },
                 onSave = { updatedUser ->
                   // Update shared ViewModel and go back to Profile
-                  userViewModel.user = updatedUser
+                  userViewModel.user = updatedUser as StateFlow<User>
                   navigationActions.goBack()
                 },
                 onAddVetCode = { _code ->
