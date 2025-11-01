@@ -1,6 +1,7 @@
 package com.android.agrihealth.ui.report
 
 import androidx.lifecycle.ViewModel
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
@@ -52,7 +53,7 @@ class AddReportViewModel(
             vetId = "Best Vet Ever!", // TODO: Use the real vetID when implemented
             status = ReportStatus.PENDING,
             answer = null,
-            location = null // optional until implemented
+            location = Location(46.7990813, 6.6259961) //null // optional until implemented
             )
 
     withContext(Dispatchers.IO) { reportRepository.addReport(newReport) }
