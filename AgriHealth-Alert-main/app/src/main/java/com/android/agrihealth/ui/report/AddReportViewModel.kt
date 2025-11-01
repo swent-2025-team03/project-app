@@ -18,24 +18,25 @@ data class AddReportUiState(
 )
 
 class AddReportViewModel(
+    private val userId: String,
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository
-) : ViewModel() {
+) : ViewModel(), AddReportViewModelContract {
   private val _uiState = MutableStateFlow(AddReportUiState())
-  val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
+  override val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
 
-  fun setTitle(newTitle: String) {
+  override fun setTitle(newTitle: String) {
     _uiState.value = _uiState.value.copy(title = newTitle)
   }
 
-  fun setDescription(newDescription: String) {
+  override fun setDescription(newDescription: String) {
     _uiState.value = _uiState.value.copy(description = newDescription)
   }
 
-  fun setVet(option: String) {
+  override fun setVet(option: String) {
     _uiState.value = _uiState.value.copy(chosenVet = option)
   }
 
-  suspend fun createReport(): Boolean {
+  override suspend fun createReport(): Boolean {
     val uiState = _uiState.value
     if (uiState.title.isBlank() || uiState.description.isBlank()) {
       return false
@@ -47,7 +48,7 @@ class AddReportViewModel(
             title = uiState.title,
             description = uiState.description,
             photoUri = null, // currently unused
-            farmerId = "currentUserId", //
+            farmerId = userId,
             vetId = "Best Vet Ever!", // TODO: Use the real vetID when implemented
             status = ReportStatus.PENDING,
             answer = null,
@@ -62,7 +63,7 @@ class AddReportViewModel(
     return true
   }
 
-  fun clearInputs() {
+  override fun clearInputs() {
     _uiState.value = AddReportUiState()
   }
 }

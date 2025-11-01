@@ -1,6 +1,6 @@
 package com.android.agrihealth.data.model.connection
 
-import com.android.agrihealth.data.model.authentification.FirebaseEmulatorsTest
+import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import java.time.Instant
@@ -16,7 +16,7 @@ import org.junit.Test
 // Test suite for ConnectionRepository.
 // Uses the Firestore emulator to run integration tests for code generation, claiming, expiration,
 // race conditions, and connection creation.
-class ConnectionRepositoryTest : FirebaseEmulatorsTest(true) {
+class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
 
   private lateinit var db: FirebaseFirestore
   private lateinit var repo: ConnectionRepository
