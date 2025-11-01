@@ -148,10 +148,7 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     private fun reportViewClickViewOnMap() {
         composeTestRule.onNodeWithTag(ReportViewScreenTestTags.VIEW_ON_MAP).assertIsDisplayed().performClick()
-    }
-
-    private fun clickMapMarker(reportId: String) {
-        composeTestRule.onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId)).assertIsDisplayed().performClick()
+        composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsDisplayed().performClick()
     }
 
     private fun mapClickViewReport() {
@@ -208,10 +205,8 @@ class E2ETest : FirebaseEmulatorsTest() {
     createReport("Report title", "Report description", vetId)
     clickFirstReportItem()
       reportViewClickViewOnMap()
-      /* TODO: Figure out a way to get report ID
-      clickMapMarker(reportId)
       mapClickViewReport()
-      goBack()*/
+      goBack()
       goBack()
     goBack()
     checkOverviewScreenIsDisplayed()
