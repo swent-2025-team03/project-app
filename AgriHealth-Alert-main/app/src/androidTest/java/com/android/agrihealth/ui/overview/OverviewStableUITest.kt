@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.testutil.FakeOverviewRepository
 import org.junit.Rule
 import org.junit.Test
 
@@ -13,16 +14,25 @@ import org.junit.Test
  * Overview screen. It DOES NOT check the presence of dynamic data such as report items.
  */
 class OverviewStableUITest {
-
   @get:Rule val composeTestRule = createComposeRule()
 
   // --- Helper functions to set up screens ---
   private fun setFarmerScreen() {
-    composeTestRule.setContent { OverviewScreen(userRole = UserRole.FARMER) }
+    composeTestRule.setContent {
+      OverviewScreen(
+          userRole = UserRole.FARMER,
+          userId = "mock_farmer_id",
+          overviewViewModel = OverviewViewModel(FakeOverviewRepository()))
+    }
   }
 
   private fun setVetScreen() {
-    composeTestRule.setContent { OverviewScreen(userRole = UserRole.VET) }
+    composeTestRule.setContent {
+      OverviewScreen(
+          userRole = UserRole.VET,
+          userId = "mock_vet_id",
+          overviewViewModel = OverviewViewModel(FakeOverviewRepository()))
+    }
   }
 
   // --- TEST 1: Verify the top app bar title is displayed ---

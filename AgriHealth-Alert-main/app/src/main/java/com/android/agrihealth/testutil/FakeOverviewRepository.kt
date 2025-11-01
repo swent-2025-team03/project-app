@@ -1,8 +1,9 @@
-package com.android.agrihealth.data.repository
+package com.android.agrihealth.testutil
 
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.repository.ReportRepository
 
 class FakeOverviewRepository : ReportRepository {
 
@@ -44,11 +45,17 @@ class FakeOverviewRepository : ReportRepository {
     // no-op for test
   }
 
+  override suspend fun getReportsByVet(vetId: String): List<Report> {
+    return emptyList()
+  }
+
+  override suspend fun getReportsByFarmer(farmerId: String): List<Report> {
+    return emptyList()
+  }
+
   override suspend fun getReportById(id: String): Report? = null
 
   override suspend fun editReport(id: String, report: Report) {}
-
-  override suspend fun getReportsByFarmer(farmerId: String): List<Report> = emptyList()
 
   override suspend fun deleteReport(reportId: String) {}
 

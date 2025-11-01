@@ -47,8 +47,8 @@ fun EditProfileScreen(
     onAddVetCode: (String) -> Unit = {},
     openCodeField: Boolean = false
 ) {
-  val user = userViewModel.user
-  val userRole = userViewModel.userRole
+  val user by userViewModel.user.collectAsState()
+  val userRole = user.role
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
   val snackbarHostState = remember { SnackbarHostState() }
@@ -188,7 +188,7 @@ fun EditProfileScreen(
                       ExposedDropdownMenu(
                           expanded = expandedVetDropdown,
                           onDismissRequest = { expandedVetDropdown = false }) {
-                            user.linkedVets.forEach { vetId ->
+                            (user as Farmer).linkedVets.forEach { vetId ->
                               DropdownMenuItem(
                                   text = { Text("Vet $vetId") }, // Placeholder name display
                                   onClick = {
