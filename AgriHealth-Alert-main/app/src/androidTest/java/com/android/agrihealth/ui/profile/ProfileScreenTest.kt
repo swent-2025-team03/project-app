@@ -3,6 +3,7 @@ package com.android.agrihealth.ui.profile
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
@@ -19,7 +20,7 @@ import com.android.agrihealth.ui.user.UserViewModel
 import org.junit.Rule
 import org.junit.Test
 
-class ProfileScreenTest {
+class ProfileScreenTest : FirebaseEmulatorsTest() {
 
   @get:Rule val composeTestRule = createComposeRule()
 
