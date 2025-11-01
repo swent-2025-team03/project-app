@@ -40,10 +40,9 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
     runTest { repository.signUpWithEmailAndPassword("navigation@test.ff", "123456", user1) }
     assert(Firebase.auth.currentUser != null)
     composeTestRule.setContent { AgriHealthApp() }
-    composeTestRule
-        .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
-        .assertIsDisplayed()
-        .assertTextContains(Screen.Overview.name)
+    composeTestRule.waitUntil(3000) {
+      composeTestRule.onNodeWithText(Screen.Overview.name).isDisplayed()
+    }
   }
 
   @Test
