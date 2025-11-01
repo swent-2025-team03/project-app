@@ -23,21 +23,14 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-          
-      - name: Decode and restore keystore
-        run: |
-          echo "$KEYSTORE" | base64 --decode > debug.keystore
-
-      - name: Place keystore
-        run: |
-          mkdir -p ~/.android
-          mv debug.keystore ~/.android/debug.keystore
-
-
 
       #debug information
       - name: SignReport
-        run: cd AgriHealth-Alert-main && ./gradlew signingReport
+        run: |
+          echo "$KEYSTORE" | base64 --decode > debug.keystore
+          mkdir -p ~/.android
+          mv debug.keystore ~/.android/debug.keystore
+          cd AgriHealth-Alert-main && ./gradlew signingReport
 
       #Add google services file
       - name: Add google services json
@@ -46,7 +39,9 @@ jobs:
 
       #Build the debug APK
       - name: Build APK
-        run: cd AgriHealth-Alert-main && ./gradlew assembleDebug
+        run: |
+          cd AgriHealth-Alert-main && ./gradlew signingReport
+          ./gradlew assembleDebug
 
       #Upload the APK as artifact
       - name: Upload APK artifact
