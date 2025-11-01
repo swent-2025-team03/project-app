@@ -24,13 +24,12 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      #debug information
-      - name: SignReport
+      #Add KeyStore file
+      - name: Add KeyStore file
         run: |
           echo "${{secrets.KEYSTORE}}" | base64 --decode > debug.keystore
           mkdir -p ~/.config/.android
           mv debug.keystore ~/.config/.android/debug.keystore
-          cd AgriHealth-Alert-main && ./gradlew signingReport
 
       #Add google services file
       - name: Add google services json
@@ -40,13 +39,12 @@ jobs:
       #Build the debug APK
       - name: Build APK
         run: |
-          cd AgriHealth-Alert-main && ./gradlew signingReport
-          ./gradlew assembleDebug
+          cd AgriHealth-Alert-main && ./gradlew assembleDebug
 
       #Upload the APK as artifact
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: M1-APK
+          name: APK
           path: AgriHealth-Alert-main/app/build/outputs/apk/debug/app-debug.apk
           overwrite: true
