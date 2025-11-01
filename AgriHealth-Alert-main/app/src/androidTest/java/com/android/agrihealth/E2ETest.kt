@@ -1,9 +1,6 @@
 package com.android.agrihealth
 
-import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -139,21 +136,30 @@ class E2ETest : FirebaseEmulatorsTest() {
     }
   }
 
-    private fun goBack() {
-        composeTestRule
-            .onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
-            .assertIsDisplayed()
-            .performClick()
-    }
+  private fun goBack() {
+    composeTestRule
+        .onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+  }
 
-    private fun reportViewClickViewOnMap() {
-        composeTestRule.onNodeWithTag(ReportViewScreenTestTags.VIEW_ON_MAP).assertIsDisplayed().performClick()
-        composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsDisplayed().performClick()
-    }
+  private fun reportViewClickViewOnMap() {
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.VIEW_ON_MAP)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule
+        .onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX)
+        .assertIsDisplayed()
+        .performClick()
+  }
 
-    private fun mapClickViewReport() {
-        composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON).assertIsDisplayed().performClick()
-    }
+  private fun mapClickViewReport() {
+    composeTestRule
+        .onNodeWithTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+  }
 
   // ----------- Scenario: Vet -----------
   @Test
@@ -204,10 +210,10 @@ class E2ETest : FirebaseEmulatorsTest() {
     val vetId = AddReportConstants.vetOptions[0]
     createReport("Report title", "Report description", vetId)
     clickFirstReportItem()
-      reportViewClickViewOnMap()
-      mapClickViewReport()
-      goBack()
-      goBack()
+    reportViewClickViewOnMap()
+    mapClickViewReport()
+    goBack()
+    goBack()
     goBack()
     checkOverviewScreenIsDisplayed()
     signOutFromOverview()

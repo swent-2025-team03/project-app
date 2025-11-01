@@ -23,16 +23,17 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 
 object ReportViewScreenTestTags {
-    const val STATUS_BADGE_BOX = "StatusBadgeBox"
-    const val STATUS_BADGE_TEXT = "StatusBadgeText"
-    const val ROLE_INFO_LINE = "roleInfoLine"
-    const val ANSWER_FIELD = "AnswerField"
-    const val STATUS_DROPDOWN_BOX = "StatusDropdownBox"
-    const val STATUS_DROPDOWN_FIELD = "StatusDropdownField"
-    const val STATUS_DROPDOWN_MENU = "StatusDropdownMenu"
-    const val SPAM_BUTTON = "SpamButton"
-    const val VIEW_ON_MAP = "viewReportOnMap"
-    fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
+  const val STATUS_BADGE_BOX = "StatusBadgeBox"
+  const val STATUS_BADGE_TEXT = "StatusBadgeText"
+  const val ROLE_INFO_LINE = "roleInfoLine"
+  const val ANSWER_FIELD = "AnswerField"
+  const val STATUS_DROPDOWN_BOX = "StatusDropdownBox"
+  const val STATUS_DROPDOWN_FIELD = "StatusDropdownField"
+  const val STATUS_DROPDOWN_MENU = "StatusDropdownMenu"
+  const val SPAM_BUTTON = "SpamButton"
+  const val VIEW_ON_MAP = "viewReportOnMap"
+
+  fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
 }
 
 /**
@@ -101,7 +102,8 @@ fun ReportViewScreen(
                               text = selectedStatus.name.replace("_", " "),
                               style = MaterialTheme.typography.labelLarge,
                               color = MaterialTheme.colorScheme.onSurface,
-                              modifier = Modifier.testTag(ReportViewScreenTestTags.STATUS_BADGE_TEXT))
+                              modifier =
+                                  Modifier.testTag(ReportViewScreenTestTags.STATUS_BADGE_TEXT))
                         }
                   }
             },
@@ -169,8 +171,9 @@ fun ReportViewScreen(
                     onValueChange = { viewModel.onAnswerChange(it) },
                     placeholder = { Text("Write your answer here...") },
                     modifier =
-                        Modifier.fillMaxWidth().heightIn(min = 100.dp).testTag(
-                            ReportViewScreenTestTags.ANSWER_FIELD))
+                        Modifier.fillMaxWidth()
+                            .heightIn(min = 100.dp)
+                            .testTag(ReportViewScreenTestTags.ANSWER_FIELD))
               }
 
               // ---- Status dropdown (Vet only) ----
@@ -189,11 +192,14 @@ fun ReportViewScreen(
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                           },
                           modifier =
-                              Modifier.menuAnchor().fillMaxWidth().testTag(ReportViewScreenTestTags.STATUS_DROPDOWN_FIELD))
+                              Modifier.menuAnchor()
+                                  .fillMaxWidth()
+                                  .testTag(ReportViewScreenTestTags.STATUS_DROPDOWN_FIELD))
                       ExposedDropdownMenu(
                           expanded = expanded,
                           onDismissRequest = { expanded = false },
-                          modifier = Modifier.testTag(ReportViewScreenTestTags.STATUS_DROPDOWN_MENU)) {
+                          modifier =
+                              Modifier.testTag(ReportViewScreenTestTags.STATUS_DROPDOWN_MENU)) {
                             listOf(ReportStatus.IN_PROGRESS, ReportStatus.RESOLVED).forEach { status
                               ->
                               DropdownMenuItem(
@@ -202,7 +208,10 @@ fun ReportViewScreen(
                                     viewModel.onStatusChange(status)
                                     expanded = false
                                   },
-                                  modifier = Modifier.testTag(ReportViewScreenTestTags.getTagForStatusOption(status.name)))
+                                  modifier =
+                                      Modifier.testTag(
+                                          ReportViewScreenTestTags.getTagForStatusOption(
+                                              status.name)))
                             }
                           }
                     }
@@ -215,7 +224,8 @@ fun ReportViewScreen(
                     colors =
                         ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error),
-                    modifier = Modifier.fillMaxWidth().testTag(ReportViewScreenTestTags.SPAM_BUTTON)) {
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(ReportViewScreenTestTags.SPAM_BUTTON)) {
                       Text("Report as SPAM")
                     }
               }
@@ -248,7 +258,8 @@ fun ReportViewScreen(
                         modifier = Modifier.testTag(ReportViewScreenTestTags.VIEW_ON_MAP),
                         onClick = {
                           navigationActions.navigateTo(
-                              Screen.Map(report.location?.latitude, report.location?.longitude, reportId))
+                              Screen.Map(
+                                  report.location?.latitude, report.location?.longitude, reportId))
                         }) {
                           Text("View on Map")
                         }

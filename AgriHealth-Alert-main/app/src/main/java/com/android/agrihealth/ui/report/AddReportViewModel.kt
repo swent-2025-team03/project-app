@@ -53,7 +53,7 @@ class AddReportViewModel(
             vetId = "Best Vet Ever!", // TODO: Use the real vetID when implemented
             status = ReportStatus.PENDING,
             answer = null,
-            location = Location(46.7990813, 6.6259961) //null // optional until implemented
+            location = Location(46.7990813, 6.6259961) // null // optional until implemented
             )
 
     withContext(Dispatchers.IO) { reportRepository.addReport(newReport) }

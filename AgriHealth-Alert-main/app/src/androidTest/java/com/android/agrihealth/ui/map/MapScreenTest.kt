@@ -24,45 +24,41 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class FakeReportRepository: ReportRepository {
-    private val reports = mutableListOf<Report>()
+class FakeReportRepository : ReportRepository {
+  private val reports = mutableListOf<Report>()
 
-    override fun getNewReportId(): String {
-        TODO("Not yet implemented")
-    }
+  override fun getNewReportId(): String {
+    TODO("Not yet implemented")
+  }
 
-    override suspend fun getAllReports(userId: String): List<Report> {
-        return reports.toList()
-    }
+  override suspend fun getAllReports(userId: String): List<Report> {
+    return reports.toList()
+  }
 
-    override suspend fun getReportsByFarmer(farmerId: String): List<Report> {
-        return reports.filter { it -> it.farmerId == farmerId }.toList()
-    }
+  override suspend fun getReportsByFarmer(farmerId: String): List<Report> {
+    return reports.filter { it -> it.farmerId == farmerId }.toList()
+  }
 
-    override suspend fun getReportsByVet(vetId: String): List<Report> {
-        return reports.filter { it -> it.vetId == vetId }.toList()
-    }
+  override suspend fun getReportsByVet(vetId: String): List<Report> {
+    return reports.filter { it -> it.vetId == vetId }.toList()
+  }
 
-    override suspend fun getReportById(reportId: String): Report? {
-        return reports.first { it -> it.id == reportId }
-    }
+  override suspend fun getReportById(reportId: String): Report? {
+    return reports.first { it -> it.id == reportId }
+  }
 
-    override suspend fun addReport(report: Report) {
-        reports.add(report)
-    }
+  override suspend fun addReport(report: Report) {
+    reports.add(report)
+  }
 
-    override suspend fun editReport(
-        reportId: String,
-        newReport: Report
-    ) {
-        deleteReport(reportId)
-        addReport(newReport)
-    }
+  override suspend fun editReport(reportId: String, newReport: Report) {
+    deleteReport(reportId)
+    addReport(newReport)
+  }
 
-    override suspend fun deleteReport(reportId: String) {
-        reports.remove(getReportById(reportId))
-    }
-
+  override suspend fun deleteReport(reportId: String) {
+    reports.remove(getReportById(reportId))
+  }
 }
 
 object MapScreenTestReports {
@@ -118,7 +114,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
   val reportRepository = FakeReportRepository()
-    val userId = "farmerId"
+  val userId = "farmerId"
 
   @Before
   override fun setUp() {
@@ -251,25 +247,23 @@ class MapScreenTest : FirebaseEmulatorsTest() {
 
   @Test
   fun canNavigateFromMapToReport() = runTest {
-      val reports = reportRepository.getReportsByFarmer(userId)
-      val report = reports.first()
+    val reports = reportRepository.getReportsByFarmer(userId)
+    val report = reports.first()
 
-    val mapViewModel = MapViewModel(reportRepository = reportRepository, selectedReportId = report.id)
+    val mapViewModel =
+        MapViewModel(reportRepository = reportRepository, selectedReportId = report.id)
     composeRule.setContent { MaterialTheme { MapScreen(mapViewModel) } }
     // Go to map screen
     composeRule.onNodeWithTag(NavigationTestTags.MAP_TAB).assertIsDisplayed().performClick()
     composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
     // Click on report
 
-    composeRule
-        .onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX)
-        .assertIsDisplayed()
-        .performClick()
+    composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsDisplayed().performClick()
     composeRule
         .onNodeWithTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)
         .assertIsDisplayed()
         .performClick()
     // Check if report screen TODO: Actually show the report screen
-    //composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsNotDisplayed()
+    // composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsNotDisplayed()
   }
 }

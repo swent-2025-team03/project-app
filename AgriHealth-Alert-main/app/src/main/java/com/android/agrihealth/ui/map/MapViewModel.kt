@@ -36,11 +36,10 @@ class MapViewModel(
   private val _zoom = MutableStateFlow(10f)
   val zoom = _zoom.asStateFlow()
   var selectedReport: Report? = null
+
   init {
     if (selectedReportId != null) {
-      viewModelScope.launch {
-        selectedReport = reportRepository.getReportById(selectedReportId)
-      }
+      viewModelScope.launch { selectedReport = reportRepository.getReportById(selectedReportId) }
     }
   }
 
