@@ -148,7 +148,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     composeRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsNotDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
     composeRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsDisplayed()
-    composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForFilter("All")).assertIsDisplayed()
+    composeRule.onNodeWithTag(MapScreenTestTags.REFRESH_BUTTON).assertIsDisplayed()
   }
 
   @Test

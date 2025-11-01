@@ -76,6 +76,7 @@ object MapScreenTestTags {
   const val REPORT_INFO_BOX = "reportInfoBox"
   const val REPORT_FILTER_MENU = "reportFilterDropdownMenu"
   const val REPORT_NAVIGATION_BUTTON = "reportNavigationButton"
+  const val REFRESH_BUTTON = "mapRefreshButton"
 
   // from bootcamp map
   fun getTestTagForReportMarker(reportId: String): String = "reportMarker_$reportId"
@@ -222,7 +223,8 @@ fun MapScreen(
           }
 
           FloatingActionButton(
-              modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+              modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp).testTag(
+                  MapScreenTestTags.REFRESH_BUTTON),
               shape = CircleShape,
               onClick = { mapViewModel.refreshCameraPosition(cameraPositionState) }) {
                 Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh Location")

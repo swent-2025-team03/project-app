@@ -72,7 +72,7 @@ class OverviewViewModel(
     authRepository = AuthRepositoryProvider.repository
     viewModelScope.launch {
       authRepository.signOut()
-      credentialManager.clearCredentialState(ClearCredentialStateRequest())
+      //credentialManager.clearCredentialState(ClearCredentialStateRequest())
     }
   }
 }
