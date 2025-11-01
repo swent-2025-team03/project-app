@@ -204,7 +204,9 @@ fun AgriHealthApp(
         startDestination = Screen.Map.route,
         route = Screen.Map.name,
     ) {
-      composable(Screen.Map.route) { MapScreen(navigationActions) }
+      composable(Screen.Map.route) {
+        MapScreen(navigationActions = navigationActions, isViewedFromOverview = true)
+      }
     }
   }
 }
