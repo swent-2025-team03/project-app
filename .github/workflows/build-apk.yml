@@ -28,7 +28,7 @@ jobs:
       - name: SignReport
         run: |
           echo "$KEYSTORE" | base64 --decode > debug.keystore
-          mkdir -p ~/.android
+          mkdir -p ~/.config/.android
           mv debug.keystore ~/.android/debug.keystore
           cd AgriHealth-Alert-main && ./gradlew signingReport
 
