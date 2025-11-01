@@ -79,7 +79,7 @@ jobs:
         run: |
           firebase emulators:start --only auth,firestore --project demo-project & 
           sleep 10 
-          curl -X PATCH "http://localhost:9099/emulator/v1/projects/agrihealth-alert/config" \ 
+          curl -X PATCH "http://localhost:9099/emulator/v1/projects/demo-project/config" \ 
           -H "Content-Type: application/json" \
           -d '{"signIn": {"allowDuplicateEmails": true}}'
 
