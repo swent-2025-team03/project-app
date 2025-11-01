@@ -1,6 +1,9 @@
 package com.android.agrihealth
 
+import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -10,11 +13,13 @@ import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTes
 import com.android.agrihealth.ui.authentification.SignInErrorMsg
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
+import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.android.agrihealth.ui.report.AddReportConstants
 import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
+import com.android.agrihealth.ui.report.ReportViewScreenTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.test.runTest
@@ -134,6 +139,25 @@ class E2ETest : FirebaseEmulatorsTest() {
     }
   }
 
+    private fun goBack() {
+        composeTestRule
+            .onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
+            .assertIsDisplayed()
+            .performClick()
+    }
+
+    private fun reportViewClickViewOnMap() {
+        composeTestRule.onNodeWithTag(ReportViewScreenTestTags.VIEW_ON_MAP).assertIsDisplayed().performClick()
+    }
+
+    private fun clickMapMarker(reportId: String) {
+        composeTestRule.onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId)).assertIsDisplayed().performClick()
+    }
+
+    private fun mapClickViewReport() {
+        composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON).assertIsDisplayed().performClick()
+    }
+
   // ----------- Scenario: Vet -----------
   @Test
   fun testVet_SignUp_Logout_SignIn() {
@@ -183,10 +207,13 @@ class E2ETest : FirebaseEmulatorsTest() {
     val vetId = AddReportConstants.vetOptions[0]
     createReport("Report title", "Report description", vetId)
     clickFirstReportItem()
-    composeTestRule
-        .onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
+      reportViewClickViewOnMap()
+      /* TODO: Figure out a way to get report ID
+      clickMapMarker(reportId)
+      mapClickViewReport()
+      goBack()*/
+      goBack()
+    goBack()
     checkOverviewScreenIsDisplayed()
     signOutFromOverview()
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
