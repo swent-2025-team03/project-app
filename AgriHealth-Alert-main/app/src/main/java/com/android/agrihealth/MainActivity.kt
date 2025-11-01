@@ -221,7 +221,7 @@ fun AgriHealthApp(
           val location = if (lat != null && lng != null) Location(lat, lng) else null
           MapScreen(
               navigationActions = navigationActions,
-              isViewedFromOverview = true,
+              isViewedFromOverview = (location == null),
               startingPosition = location)
         }
   }
