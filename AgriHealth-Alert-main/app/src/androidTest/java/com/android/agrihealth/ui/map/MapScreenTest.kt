@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -14,8 +15,9 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
-import com.android.agrihealth.data.repository.ReportRepositoryProvider
+import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.report.ReportViewScreenTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.test.runTest
@@ -24,6 +26,47 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+
+class FakeReportRepository: ReportRepository {
+    private val reports = mutableListOf<Report>()
+
+    override fun getNewReportId(): String {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getAllReports(userId: String): List<Report> {
+        return reports.toList()
+    }
+
+    override suspend fun getReportsByFarmer(farmerId: String): List<Report> {
+        return reports.filter { it -> it.farmerId == farmerId }.toList()
+    }
+
+    override suspend fun getReportsByVet(vetId: String): List<Report> {
+        return reports.filter { it -> it.vetId == vetId }.toList()
+    }
+
+    override suspend fun getReportById(reportId: String): Report? {
+        return reports.first { it -> it.id == reportId }
+    }
+
+    override suspend fun addReport(report: Report) {
+        reports.add(report)
+    }
+
+    override suspend fun editReport(
+        reportId: String,
+        newReport: Report
+    ) {
+        deleteReport(reportId)
+        addReport(newReport)
+    }
+
+    override suspend fun deleteReport(reportId: String) {
+        reports.remove(getReportById(reportId))
+    }
+
+}
 
 object MapScreenTestReports {
   val report1 =
@@ -36,7 +79,7 @@ object MapScreenTestReports {
           "vetId1",
           ReportStatus.PENDING,
           null,
-          Location(46.5200948, 6.5651742, "Place name 1"))
+          Location(46.9481, 7.4474, "Place name 1"))
   val report2 =
       Report(
           "rep_id2",
@@ -47,7 +90,7 @@ object MapScreenTestReports {
           "vetId2",
           ReportStatus.IN_PROGRESS,
           "Vet answer",
-          Location(46.5183104, 6.5676777))
+          Location(46.9481, 7.4484))
   val report3 =
       Report(
           "rep_id3",
@@ -58,7 +101,7 @@ object MapScreenTestReports {
           "vetId1",
           ReportStatus.RESOLVED,
           null,
-          Location(46.5206231, 6.569927, "Place name 3"))
+          Location(46.9481, 7.4464, "Place name 3"))
   val report4 =
       Report(
           "rep_id4",
@@ -69,7 +112,7 @@ object MapScreenTestReports {
           "vetId4",
           ReportStatus.SPAM,
           "Vet answer 4",
-          Location(46.5232, 6.5681191))
+          Location(46.9491, 7.4474))
 
   val reportList = listOf(report1, report2, report3, report4)
 }
@@ -77,14 +120,14 @@ object MapScreenTestReports {
 class MapScreenTest : FirebaseEmulatorsTest() {
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-  val reportRepository = ReportRepositoryProvider.repository
+  val reportRepository = FakeReportRepository()
+    val userId = "farmerId"
 
   @Before
   override fun setUp() {
     super.setUp()
     runTest { authRepository.signUpWithEmailAndPassword(user1.email, password1, user1) }
     runTest {
-      val userId = Firebase.auth.currentUser!!.uid
       reportRepository.addReport(MapScreenTestReports.report1.copy(farmerId = userId))
       reportRepository.addReport(MapScreenTestReports.report2.copy(farmerId = userId))
       reportRepository.addReport(MapScreenTestReports.report3.copy(farmerId = userId))
@@ -210,18 +253,23 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   @Test fun mapCenteredOnDefaultIfNoAddress() {}
 
   @Test
-  fun canNavigateFromMapToReport() {
-    composeRule.setContent { MaterialTheme { AgriHealthApp() } }
+  fun canNavigateFromMapToReport() = runTest {
+    val mapViewModel = MapViewModel(reportRepository = reportRepository)
+    composeRule.setContent { MaterialTheme { MapScreen(mapViewModel) } }
     // Go to map screen
     composeRule.onNodeWithTag(NavigationTestTags.MAP_TAB).assertIsDisplayed().performClick()
     composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
     // Click on report
-    assertNotNull(Firebase.auth.currentUser)
-    val uid = Firebase.auth.currentUser!!.uid
-    val reports = getUserReports(uid)
-    val report = reports.first()
+
+    //val reports = getUserReports(userId)
+      val reports = reportRepository.getReportsByFarmer(userId)
+      val report = reports.first()
+      val reportId = report.id
+      composeRule.waitUntil(10_000) {
+          composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId)).isDisplayed()
+      }
     composeRule
-        .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+        .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
         .assertIsDisplayed()
         .performClick()
     composeRule
@@ -230,7 +278,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
         .performClick()
     // Check if report screen
     composeRule
-        .onNodeWithTag("StatusBadgeText")
+        .onNodeWithTag(ReportViewScreenTestTags.STATUS_BADGE_TEXT)
         .assertIsDisplayed()
         .assertTextContains(report.status.displayString(), ignoreCase = true)
   }
