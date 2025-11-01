@@ -29,7 +29,7 @@ jobs:
         run: |
           echo "$KEYSTORE" | base64 --decode > debug.keystore
           mkdir -p ~/.config/.android
-          mv debug.keystore ~/.android/debug.keystore
+          mv debug.keystore ~/.config/.android/debug.keystore
           cd AgriHealth-Alert-main && ./gradlew signingReport
 
       #Add google services file
