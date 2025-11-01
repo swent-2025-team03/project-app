@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -144,7 +145,9 @@ class MapScreenTest : FirebaseEmulatorsTest() {
           .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
           .assertIsDisplayed()
           .performClick()
-      composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsDisplayed()
+      composeRule.waitUntil(3000) {
+        composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).isDisplayed()
+      }
       composeRule
           .onNodeWithTag(MapScreenTestTags.getTestTagForReportTitle(reportId))
           .assertIsDisplayed()

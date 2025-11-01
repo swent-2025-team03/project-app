@@ -79,6 +79,10 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
         .onNodeWithTag(SignInScreenTestTags.GOOGLE_LOGIN_BUTTON)
         .assertIsDisplayed()
         .performClick()
+    composeTestRule.waitUntil(5000) {
+      composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).isDisplayed()
+    }
+    composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).performClick()
 
     composeTestRule.waitUntil(5000) {
       composeTestRule.onNodeWithTag(OverviewScreenTestTags.TOP_APP_BAR_TITLE).isDisplayed()

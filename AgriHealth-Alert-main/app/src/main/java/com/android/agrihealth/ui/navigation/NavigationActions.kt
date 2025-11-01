@@ -33,6 +33,8 @@ sealed class Screen(
 
   object SignUp : Screen(route = "sign_up", name = "Sign Up")
 
+  object RoleSelection : Screen(route = "role", name = "Role")
+
   data class ViewReport(val reportId: String) :
       Screen(route = "view_report/${reportId}", name = "view_report") {
     companion object {
