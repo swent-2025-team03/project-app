@@ -109,6 +109,7 @@ fun MapScreen(
   }
 
   val selectedReport = remember { mutableStateOf<Report?>(null) }
+  viewModel.refreshReports()
 
   val googleMapUiSettings = remember {
     MapUiSettings(

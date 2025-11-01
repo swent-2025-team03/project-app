@@ -38,6 +38,10 @@ class MapViewModel(
   val zoom = _zoom.asStateFlow()
 
   init {
+    refreshReports()
+  }
+
+  fun refreshReports() {
     fetchLocalizableReports()
   }
 
@@ -47,6 +51,7 @@ class MapViewModel(
         val userId = userViewModel.user.value.uid
         val reports = reportRepository.getAllReports(userId).filter { it.location != null }
         _uiState.value = MapUIState(reports = reports)
+        Log.d("MapScreen", "Loaded ${reports.count()} reports")
       } catch (e: Exception) {
         Log.w("MapScreen", "Failed to load todos: ${e.message}")
       }
