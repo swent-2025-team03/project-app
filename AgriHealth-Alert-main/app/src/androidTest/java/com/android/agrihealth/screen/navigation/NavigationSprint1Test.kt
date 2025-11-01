@@ -19,6 +19,7 @@ import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import java.lang.Thread.sleep
 import junit.framework.TestCase
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -40,9 +41,10 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
     runTest { repository.signUpWithEmailAndPassword("navigation@test.ff", "123456", user1) }
     assert(Firebase.auth.currentUser != null)
     composeTestRule.setContent { AgriHealthApp() }
-    composeTestRule.waitUntil(3000) {
-      composeTestRule.onNodeWithText(Screen.Overview.name).isDisplayed()
-    }
+    sleep(2000)
+    composeTestRule
+        .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
+        .assertTextContains(Screen.Overview.name)
   }
 
   @Test
@@ -99,9 +101,10 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
     // Click on the "Go Back" button
     composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).performClick()
     // Assert that the Overview screen is displayed
-    composeTestRule.waitUntil(3000) {
-      composeTestRule.onNodeWithText(Screen.Overview.name).isDisplayed()
-    }
+    sleep(2000)
+    composeTestRule
+        .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
+        .assertTextContains(Screen.Overview.name)
   }
 
   @Test
@@ -114,9 +117,10 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
     // Simulate system back press
     pressBack(false)
     // Assert that the Overview screen is displayed
-    composeTestRule.waitUntil(3000) {
-      composeTestRule.onNodeWithText(Screen.Overview.name).isDisplayed()
-    }
+    sleep(2000)
+    composeTestRule
+        .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
+        .assertTextContains(Screen.Overview.name)
   }
 
   private fun pressBack(shouldFinish: Boolean) {
