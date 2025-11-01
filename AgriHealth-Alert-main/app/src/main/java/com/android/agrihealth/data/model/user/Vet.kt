@@ -12,4 +12,4 @@ data class Vet(
     // account.
     val linkedFarmers: List<String> =
         emptyList<String>() // List of farmer IDs associated with the vet
-) : User(uid, firstname, lastname, UserRole.VET, email)
+) : User(uid, firstname, lastname, UserRole.VET, email, address)

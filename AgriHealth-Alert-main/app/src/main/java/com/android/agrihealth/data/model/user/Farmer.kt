@@ -12,4 +12,4 @@ data class Farmer(
     val linkedVets: List<String> =
         emptyList<String>(), // List of vet IDs associated with the farmer
     val defaultVet: String? // Default vet ID for quick access, can be changed in profile screen
-) : User(uid, firstname, lastname, UserRole.FARMER, email)
+) : User(uid, firstname, lastname, UserRole.FARMER, email, address)

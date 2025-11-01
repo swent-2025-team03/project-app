@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.ui.navigation.NavigationActions
 import org.junit.Rule
 import org.junit.Test
 
@@ -20,18 +21,20 @@ class ReportViewScreenTest {
   private fun setVetScreen() {
     composeTestRule.setContent {
       val navController = rememberNavController()
+      val navigationActions = NavigationActions(navController)
       val viewModel = ReportViewModel()
       ReportViewScreen(
-          navController = navController, userRole = UserRole.VET, viewModel = viewModel)
+          navigationActions = navigationActions, userRole = UserRole.VET, viewModel = viewModel)
     }
   }
 
   private fun setFarmerScreen() {
     composeTestRule.setContent {
       val navController = rememberNavController()
+      val navigationActions = NavigationActions(navController)
       val viewModel = ReportViewModel()
       ReportViewScreen(
-          navController = navController, userRole = UserRole.FARMER, viewModel = viewModel)
+          navigationActions = navigationActions, userRole = UserRole.FARMER, viewModel = viewModel)
     }
   }
 
@@ -120,7 +123,8 @@ class ReportViewScreenTest {
     val viewModel = ReportViewModel()
     composeTestRule.setContent {
       val navController = rememberNavController()
-      ReportViewScreen(navController, UserRole.VET, viewModel)
+      val navigationActions = NavigationActions(navController)
+      ReportViewScreen(navigationActions = navigationActions, UserRole.VET, viewModel)
     }
     composeTestRule.runOnUiThread { viewModel.onStatusChange(ReportStatus.RESOLVED) }
     composeTestRule.waitForIdle()
@@ -136,8 +140,9 @@ class ReportViewScreenTest {
     val viewModel = ReportViewModel()
     composeTestRule.setContent {
       val navController = rememberNavController()
+      val navigationActions = NavigationActions(navController)
       ReportViewScreen(
-          navController = navController, userRole = UserRole.VET, viewModel = viewModel)
+          navigationActions = navigationActions, userRole = UserRole.VET, viewModel = viewModel)
     }
     // Wait for composition + LaunchedEffect to run
     composeTestRule.waitForIdle()
@@ -151,8 +156,9 @@ class ReportViewScreenTest {
     val viewModel = ReportViewModel()
     composeTestRule.setContent {
       val navController = rememberNavController()
+      val navigationActions = NavigationActions(navController)
       ReportViewScreen(
-          navController = navController, userRole = UserRole.FARMER, viewModel = viewModel)
+          navigationActions = navigationActions, userRole = UserRole.FARMER, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
     // Default sample report has vetId "VET_456" (from ReportViewUIState)
@@ -165,8 +171,9 @@ class ReportViewScreenTest {
     val viewModel = ReportViewModel()
     composeTestRule.setContent {
       val navController = rememberNavController()
+      val navigationActions = NavigationActions(navController)
       ReportViewScreen(
-          navController = navController, userRole = UserRole.VET, viewModel = viewModel)
+          navigationActions = navigationActions, userRole = UserRole.VET, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
     // Default sample report has farmerId "FARMER_123"
@@ -179,8 +186,9 @@ class ReportViewScreenTest {
     val viewModel = ReportViewModel()
     composeTestRule.setContent {
       val navController = rememberNavController()
+      val navigationActions = NavigationActions(navController)
       ReportViewScreen(
-          navController = navController, userRole = UserRole.VET, viewModel = viewModel)
+          navigationActions = navigationActions, userRole = UserRole.VET, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 

@@ -21,6 +21,10 @@ sealed class Screen(
 ) {
   object Auth : Screen(route = "auth", name = "Authentication")
 
+  object Profile : Screen(route = "profile", name = "Profile")
+
+  object EditProfile : Screen(route = "edit_profile", name = "Edit Profile")
+
   object Overview : Screen(route = "overview", name = "Overview", isTopLevelDestination = true)
 
   object AddReport : Screen(route = "add_report", name = "Create a new report")

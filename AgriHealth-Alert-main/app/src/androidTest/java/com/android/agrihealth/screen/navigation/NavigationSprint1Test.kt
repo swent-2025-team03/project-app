@@ -1,6 +1,5 @@
 package com.android.agrihealth.screen.navigation
 
-// import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
@@ -8,6 +7,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import com.android.agrihealth.AgriHealthApp
+import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
@@ -25,17 +25,18 @@ import org.junit.Test
  * First implementation of navigation tests. Doesn't cover all auth and assumes that the first
  * screen of AgrihealthApp is Overview.
  */
-class NavigationSprint1Test {
+class NavigationSprint1Test : FirebaseEmulatorsTest() {
   @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
   @Before
-  fun setUp() {
+  override fun setUp() {
     // Set the content to the Overview screen before each test
+    super.setUp()
     if (Firebase.auth.currentUser == null) {
       runTest {
         try {
           Firebase.auth.createUserWithEmailAndPassword("navigation@test.ff", "123456").await()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
           Firebase.auth.signInWithEmailAndPassword("navigation@test.ff", "123456").await()
         }
       }

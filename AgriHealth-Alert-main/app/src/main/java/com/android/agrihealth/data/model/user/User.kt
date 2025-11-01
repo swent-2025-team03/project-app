@@ -8,7 +8,7 @@ sealed class User(
     open val lastname: String,
     open val role: UserRole,
     open val email: String,
-    open val address: Location? = null
+    open val address: Location?
 )
 
 enum class UserRole {
