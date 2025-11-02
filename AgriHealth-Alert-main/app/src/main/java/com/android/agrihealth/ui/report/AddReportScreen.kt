@@ -53,7 +53,7 @@ object AddReportFeedbackTexts {
   const val FAILURE = "Please fill in all required fields..."
 }
 
-// TODO: Dummy list must change later
+// Used for testing purposes
 object AddReportConstants {
   val vetOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")
 }
