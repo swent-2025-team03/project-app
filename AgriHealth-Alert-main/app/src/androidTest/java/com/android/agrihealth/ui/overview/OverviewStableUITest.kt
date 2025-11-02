@@ -76,4 +76,31 @@ class OverviewStableUITest {
     setFarmerScreen()
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.PROFILE_BUTTON).assertIsDisplayed()
   }
+
+  // --- TEST 7: Verify "Filter by Vet ID" is shown for farmers ---
+  @Test
+  fun vetIdFilter_isDisplayedForFarmer() {
+    setFarmerScreen()
+    composeTestRule.onNodeWithText("Filter by Vet ID").assertIsDisplayed()
+  }
+
+  // --- TEST 8: Verify "Filter by Farmer ID" is shown for vets ---
+  @Test
+  fun farmerIdFilter_isDisplayedForVet() {
+    setVetScreen()
+    composeTestRule.onNodeWithText("Filter by Farmer ID").assertIsDisplayed()
+  }
+
+  // --- TEST 9: Verify "Filter by Status" is always shown ---
+  @Test
+  fun statusFilter_isDisplayedForFarmer() {
+    setFarmerScreen()
+    composeTestRule.onNodeWithText("Filter by Status").assertIsDisplayed()
+  }
+
+  @Test
+  fun statusFilter_isDisplayedForVet() {
+    setVetScreen()
+    composeTestRule.onNodeWithText("Filter by Status").assertIsDisplayed()
+  }
 }

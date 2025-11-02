@@ -39,6 +39,8 @@ class FakeOverviewViewModel : ViewModel(), OverviewViewModelContract {
     _uiState.value = OverviewUIState(reports = dummyReports)
   }
 
+  override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {}
+
   override fun signOut(credentialManager: CredentialManager) {
     authRepository = AuthRepositoryProvider.repository
     viewModelScope.launch {

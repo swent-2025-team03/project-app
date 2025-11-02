@@ -130,12 +130,79 @@ fun OverviewScreen(
 
               Spacer(modifier = Modifier.height(15.dp))
 
+              // -- Create vetId list based on reports for current account
+              val vetOptions by
+                  remember(reports) { derivedStateOf { reports.map { it.vetId }.distinct() } }
+
+              var selectedStatus by remember { mutableStateOf<ReportStatus?>(null) }
+              var selectedVet by remember { mutableStateOf<String?>(null) }
+
+              // -- Status filter --
+              Row(
+                  verticalAlignment = Alignment.CenterVertically,
+                  modifier = Modifier.fillMaxWidth()) {
+                    Text("Filter by Status", fontWeight = FontWeight.Medium)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    DropdownMenuWrapper(
+                        options = listOf(null) + ReportStatus.entries,
+                        selectedOption = uiState.selectedStatus,
+                        onOptionSelected = {
+                          overviewViewModel.updateFilters(
+                              it, uiState.selectedVet, uiState.selectedFarmer)
+                        })
+                  }
+
+              // -- VetId filter (only for farmer) --
+              if (userRole == UserRole.FARMER) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()) {
+                      Text("Filter by Vet ID", fontWeight = FontWeight.Medium)
+                      Spacer(modifier = Modifier.width(8.dp))
+                      DropdownMenuWrapper(
+                          options = listOf(null) + uiState.vetOptions,
+                          selectedOption = uiState.selectedVet,
+                          onOptionSelected = {
+                            overviewViewModel.updateFilters(
+                                uiState.selectedStatus, it, farmerId = uiState.selectedFarmer)
+                          })
+                    }
+              }
+              // -- FarmerId filter (only for vet) --
+              if (userRole == UserRole.VET) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()) {
+                      Text("Filter by Farmer ID", fontWeight = FontWeight.Medium)
+                      Spacer(modifier = Modifier.width(8.dp))
+                      DropdownMenuWrapper(
+                          options = listOf(null) + uiState.farmerOptions,
+                          selectedOption = uiState.selectedFarmer,
+                          onOptionSelected = {
+                            overviewViewModel.updateFilters(
+                                status = uiState.selectedStatus,
+                                vetId = uiState.selectedVet,
+                                farmerId = it)
+                          })
+                    }
+              }
+
+              // -- Apply filter --
+              val filteredReports =
+                  reports.filter { report ->
+                    (selectedStatus == null || report.status == selectedStatus) &&
+                        (selectedVet == null || report.vetId == selectedVet)
+                  }
+
+              Spacer(modifier = Modifier.height(15.dp))
+
               // -- Past reports list --
               Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
               Spacer(modifier = Modifier.height(12.dp))
-              LazyColumn {
-                items(reports, key = { it.id }) { report ->
-                  // Ajout du testTag pour chaque item cliquable
+              LazyColumn(modifier = Modifier.weight(1f)) {
+                items(uiState.filteredReports) { report ->
                   ReportItem(
                       report = report,
                       onClick = { onReportClick(report.id) },
@@ -167,6 +234,27 @@ fun LatestAlertCard() {
       *    contentDescription = "Outbreak photo",
       *    modifier = Modifier.height(120.dp).fillMaxWidth()
       )*/
+    }
+  }
+}
+
+/** Composable displaying a simple dropdown menu for filtering or selecting options. */
+@Composable
+fun <T> DropdownMenuWrapper(options: List<T>, selectedOption: T?, onOptionSelected: (T?) -> Unit) {
+  var expanded by remember { mutableStateOf(false) }
+  val displayText = selectedOption?.toString() ?: "All"
+
+  Box {
+    Button(onClick = { expanded = true }) { Text(displayText) }
+    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+      options.forEach { option ->
+        DropdownMenuItem(
+            text = { Text(option?.toString() ?: "All") },
+            onClick = {
+              onOptionSelected(option)
+              expanded = false
+            })
+      }
     }
   }
 }
