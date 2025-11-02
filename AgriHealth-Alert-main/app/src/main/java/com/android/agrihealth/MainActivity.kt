@@ -106,7 +106,7 @@ fun AgriHealthApp(
             onBack = { navigationActions.navigateTo(Screen.Auth) },
             onSignedUp = {
               userViewModel.refreshCurrentUser()
-              navigationActions.navigateTo(Screen.Overview)
+              navigationActions.navigateTo(Screen.EditProfile)
             })
       }
     }
@@ -166,6 +166,13 @@ fun AgriHealthApp(
                 viewModel = viewModel,
                 reportId = reportId)
           }
+    }
+
+    // --- Profile Graph ---
+    navigation(
+        startDestination = Screen.Profile.route,
+        route = Screen.Profile.name,
+    ) {
       composable(Screen.Profile.route) {
         val credentialManager = CredentialManager.create(LocalContext.current)
         val overviewViewModel: OverviewViewModel = viewModel()
@@ -189,10 +196,10 @@ fun AgriHealthApp(
       composable(Screen.EditProfile.route) {
         EditProfileScreen(
             userViewModel = userViewModel,
-            onGoBack = { navigationActions.goBack() },
+            onGoBack = { navigationActions.navigateTo(Screen.Profile) },
             onSave = { updatedUser ->
               userViewModel.updateUser(updatedUser)
-              navigationActions.goBack()
+              navigationActions.navigateTo(Screen.Profile)
             },
             onAddVetCode = { _code ->
               // placeholder for now
