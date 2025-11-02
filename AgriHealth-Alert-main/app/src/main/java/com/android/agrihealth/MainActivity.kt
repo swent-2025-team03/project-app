@@ -27,6 +27,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.android.agrihealth.resources.C
+import com.android.agrihealth.ui.authentification.RoleSelectionScreen
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
 import com.android.agrihealth.ui.map.MapScreen
@@ -42,6 +43,7 @@ import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.theme.SampleAppTheme
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.defaultUser
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
@@ -79,7 +81,8 @@ fun AgriHealthApp(
   val currentUserRole = currentUser.role
 
   val startDestination =
-      if (Firebase.auth.currentUser != null) Screen.Overview.name else Screen.Auth.name
+      if (Firebase.auth.currentUser == null) Screen.Auth.name
+      else if (currentUser == defaultUser) Screen.RoleSelection.name else Screen.Overview.name
 
   NavHost(navController = navController, startDestination = startDestination) {
     // --- Auth Graph ---
@@ -94,7 +97,8 @@ fun AgriHealthApp(
               userViewModel.refreshCurrentUser()
               navigationActions.navigateTo(Screen.Overview)
             },
-            goToSignUp = { navigationActions.navigateTo(Screen.SignUp) })
+            goToSignUp = { navigationActions.navigateTo(Screen.SignUp) },
+            onNewGoogle = { navigationActions.navigateTo(Screen.RoleSelection) })
       }
       composable(Screen.SignUp.route) {
         SignUpScreen(
@@ -103,6 +107,14 @@ fun AgriHealthApp(
               userViewModel.refreshCurrentUser()
               navigationActions.navigateTo(Screen.Overview)
             })
+      }
+    }
+    navigation(startDestination = Screen.RoleSelection.route, route = Screen.RoleSelection.name) {
+      composable(Screen.RoleSelection.route) {
+        RoleSelectionScreen(
+            credentialManager = credentialManager,
+            onBack = { navigationActions.navigateTo(Screen.Auth) },
+            onButtonPressed = { navigationActions.navigateTo(Screen.Overview) })
       }
     }
 
