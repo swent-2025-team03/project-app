@@ -128,30 +128,32 @@ fun EditProfileScreen(
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LASTNAME_FIELD))
 
-              Spacer(modifier = Modifier.height(12.dp))
+              if (!user.isGoogleAccount) {
+                Spacer(modifier = Modifier.height(12.dp))
 
-              // Password
-              OutlinedTextField(
-                  value = "********",
-                  onValueChange = {},
-                  label = { Text("Password") },
-                  enabled = true,
-                  readOnly = true,
-                  modifier =
-                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
-                  keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                  trailingIcon = {
-                    IconButton(
-                        onClick = {
-                          scope.launch {
-                            snackbarHostState.showSnackbar("Password change not possible yet.")
+                // Password
+                OutlinedTextField(
+                    value = "********",
+                    onValueChange = {},
+                    label = { Text("Password") },
+                    enabled = true,
+                    readOnly = true,
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    trailingIcon = {
+                      IconButton(
+                          onClick = {
+                            scope.launch {
+                              snackbarHostState.showSnackbar("Password change not possible yet.")
+                            }
+                          }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit Password")
                           }
-                        }) {
-                          Icon(Icons.Default.Edit, contentDescription = "Edit Password")
-                        }
-                  })
-              // TODO: I put this here in advance but we still have not decided how we want to
-              // handle password changes.
+                    })
+                // TODO: I put this here in advance but we still have not decided how we want to
+                // handle password changes.
+              }
 
               Spacer(modifier = Modifier.height(12.dp))
 

@@ -43,24 +43,6 @@ class AuthRepositoryFirebase(
                 ?: return Result.failure(
                     IllegalStateException("Login failed : Could not retrieve user information"))
 
-        val userRepository = UserRepositoryProvider.repository
-        val existingUser = userRepository.getUserFromId(user.uid).getOrNull()
-
-        if (existingUser == null) {
-          // First time login with Google → create a minimal user record
-          val newUser =
-              Farmer( // Default to Farmer TODO: Adapt once roles are selectable
-                  uid = user.uid,
-                  firstname = user.displayName?.substringBefore(" ") ?: "",
-                  lastname = user.displayName?.substringAfter(" ", "") ?: "",
-                  email = user.email ?: "",
-                  address = null,
-                  linkedVets = emptyList(),
-                  defaultVet = null,
-                  isGoogleAccount = true)
-          userRepository.addUser(newUser)
-        }
-
         Result.success(user)
       } else {
         return Result.failure(

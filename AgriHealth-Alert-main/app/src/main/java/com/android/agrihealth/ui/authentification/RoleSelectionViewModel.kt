@@ -24,9 +24,17 @@ class RoleSelectionViewModel(
     val fireUser = Firebase.auth.currentUser!!
     val user =
         when (role) {
-          UserRole.VET -> Vet(fireUser.uid, fireUser.displayName ?: "", "", "", null)
+          UserRole.VET ->
+              Vet(fireUser.uid, fireUser.displayName ?: "", "", "", null, isGoogleAccount = true)
           UserRole.FARMER ->
-              Farmer(fireUser.uid, fireUser.displayName ?: "", "", "", null, defaultVet = null)
+              Farmer(
+                  fireUser.uid,
+                  fireUser.displayName ?: "",
+                  "",
+                  "",
+                  null,
+                  defaultVet = null,
+                  isGoogleAccount = true)
         }
     viewModelScope.launch { userRepository.addUser(user) }
   }

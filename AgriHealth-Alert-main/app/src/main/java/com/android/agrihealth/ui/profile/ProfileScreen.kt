@@ -129,28 +129,31 @@ fun ProfileScreen(
                 }
               }
 
-              Spacer(modifier = Modifier.height(24.dp))
+              if (!user.isGoogleAccount) {
+                Spacer(modifier = Modifier.height(24.dp))
 
-              // Email
-              OutlinedTextField(
-                  value = user.email,
-                  onValueChange = {},
-                  label = { Text("Email address") },
-                  enabled = false,
-                  modifier = Modifier.fillMaxWidth().testTag(EMAIL_FIELD))
+                // Email
+                OutlinedTextField(
+                    value = user.email,
+                    onValueChange = {},
+                    label = { Text("Email address") },
+                    enabled = false,
+                    modifier = Modifier.fillMaxWidth().testTag(EMAIL_FIELD))
 
-              Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-              // Password
-              OutlinedTextField(
-                  value = "********", // For now the password is not in the user model, so we use a
-                  // placeholder
-                  onValueChange = {},
-                  label = { Text("Password") },
-                  enabled = false,
-                  visualTransformation = PasswordVisualTransformation(),
-                  keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                  modifier = Modifier.fillMaxWidth().testTag(PASSWORD_FIELD))
+                // Password
+                OutlinedTextField(
+                    value =
+                        "********", // For now the password is not in the user model, so we use a
+                    // placeholder
+                    onValueChange = {},
+                    label = { Text("Password") },
+                    enabled = false,
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    modifier = Modifier.fillMaxWidth().testTag(PASSWORD_FIELD))
+              }
 
               Spacer(modifier = Modifier.height(12.dp))
 
