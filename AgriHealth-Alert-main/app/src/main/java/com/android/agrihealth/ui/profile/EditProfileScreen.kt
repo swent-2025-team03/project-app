@@ -227,6 +227,7 @@ fun EditProfileScreen(
                       if (vetCode.isBlank()) {
                         scope.launch { snackbarHostState.showSnackbar("Please enter a code.") }
                       } else {
+                        onAddVetCode(vetCode)
                         profileViewModel.claimVetCode(vetCode)
                       }
                     },
