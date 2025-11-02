@@ -19,9 +19,10 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
     private const val STATUS_USED = FirestoreSchema.Status.USED
   }
 
-    private fun getCurrentUserId(): String {
-        return Firebase.auth.currentUser?.uid ?: throw java.lang.IllegalStateException("User not logged in")
-    }
+  private fun getCurrentUserId(): String {
+    return Firebase.auth.currentUser?.uid
+        ?: throw java.lang.IllegalStateException("User not logged in")
+  }
 
   // Generates a unique connection code for a vet, valid for a limited time (ttlMinutes).
   // Returns: Result<String> containing the generated code, or an exception if failed.

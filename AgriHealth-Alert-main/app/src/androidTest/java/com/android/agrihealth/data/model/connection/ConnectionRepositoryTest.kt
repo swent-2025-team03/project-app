@@ -86,8 +86,6 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   // Verifies that claimCode fails when the code is expired by simulating a past createdAt
   // timestamp.
   fun claimCode_failsForExpired() = runTest {
-    val vetId = user3.uid
-    val farmerId = user2.uid
     val code = repo.generateCode(ttlMinutes = -1).getOrThrow() // immediate expiry
 
     authRepository.signOut()
@@ -101,8 +99,6 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   @Test
   // Verifies that claimCode fails when the code has already been used.
   fun claimCode_failsWhenUsed() = runTest {
-    val vetId = user3.uid
-    val farmerId = user1.uid
     val code = repo.generateCode().getOrThrow()
 
     authRepository.signOut()
@@ -124,7 +120,6 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   @Test
   // Verifies that multiple generated codes are unique.
   fun generateCode_many_areUnique() = runTest {
-    val vet = user3.uid
     val codes = (1..200).map { repo.generateCode().getOrThrow() }
     assertEquals(codes.size, codes.toSet().size)
   }
@@ -132,10 +127,6 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   @Test
   // Verifies that only one farmer can successfully claim a code in a race condition scenario.
   fun claimCode_raceTwoFarmers_oneSucceeds() = runTest {
-    val vet = user3.uid
-    val f1 = user1.uid
-    val f2 = user2.uid
-
     val code = repo.generateCode().getOrThrow()
 
     val r1 = async {
@@ -155,10 +146,11 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   @Test
   // Verifies that claimCode succeeds if claimed just before expiry when ttlMinutes is small.
   fun claimCode_succeedsRightBeforeExpiry() = runTest {
-    val vet = user3.uid
-    val farmer = user1.uid
     val code = repo.generateCode(ttlMinutes = 1).getOrThrow()
-    // No need to delay: just check it succeeds before expiration
+    authRepository.signOut()
+    authRepository.signInWithEmailAndPassword(user1.email, password1)
+    val res = repo.claimCode(code)
+    assertTrue(res.isSuccess)
   }
 
   @Test
@@ -230,7 +222,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
                 "code" to code,
                 "vetId" to user3.uid,
                 "status" to "OPEN",
-                "createdAt" to com.google.firebase.Timestamp.now()
+                "createdAt" to Timestamp.now()
                 // ttlMinutes ABSENT
                 ))
         .await()
@@ -250,7 +242,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
             mapOf(
                 "code" to code,
                 "status" to "OPEN",
-                "createdAt" to com.google.firebase.Timestamp.now(),
+                "createdAt" to Timestamp.now(),
                 "ttlMinutes" to 60L
                 // vetId ABSENT
                 ))
