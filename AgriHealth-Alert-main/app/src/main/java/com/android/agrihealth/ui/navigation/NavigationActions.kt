@@ -23,6 +23,8 @@ sealed class Screen(
 
   object Profile : Screen(route = "profile", name = "Profile")
 
+  object ChangePassword : Screen(route = "changePassword", name = "Change Your Password")
+
   object EditProfile : Screen(route = "edit_profile", name = "Edit Profile")
 
   object Overview : Screen(route = "overview", name = "Overview", isTopLevelDestination = true)

@@ -36,6 +36,8 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
+import com.android.agrihealth.ui.profile.ChangePasswordScreen
+import com.android.agrihealth.ui.profile.ChangePasswordViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreen
 import com.android.agrihealth.ui.profile.ProfileScreen
 import com.android.agrihealth.ui.report.AddReportScreen
@@ -186,6 +188,13 @@ fun AgriHealthApp(
               // If farmer clicked "Add new Vet with Code", open EditProfile and focus code field
               navController.navigate("${Screen.EditProfile.route}?openCode=true")
             })
+      }
+      composable(Screen.ChangePassword.route) {
+        ChangePasswordScreen(
+            onBack = { navigationActions.goBack() },
+            onUpdatePassword = { navigationActions.navigateTo(Screen.EditProfile) },
+            userEmail = currentUser.email,
+            changePasswordViewModel = ChangePasswordViewModel())
       }
       composable(
           route = Screen.EditProfile.route + "?openCode={openCode}",
