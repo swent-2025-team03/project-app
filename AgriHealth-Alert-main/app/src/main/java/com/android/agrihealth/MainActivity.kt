@@ -120,7 +120,6 @@ fun AgriHealthApp(
             userId = currentUserId,
             overviewViewModel = overviewViewModel,
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
-            // TODO: Pass the selected report to the ViewReportScreen
             onReportClick = { reportId ->
               navigationActions.navigateTo(Screen.ViewReport(reportId))
             },
@@ -134,6 +133,7 @@ fun AgriHealthApp(
             onBack = { navigationActions.goBack() },
             userRole = currentUserRole,
             userId = currentUserId,
+            userViewModel = userViewModel,
             onCreateReport = { reloadReports = !reloadReports },
             addReportViewModel = createReportViewModel,
         )
@@ -169,33 +169,22 @@ fun AgriHealthApp(
               navController.navigate(Screen.EditProfile.route)
             },
             onCodeFarmer = {
-              // If farmer clicked "Add new Vet with Code", open EditProfile and focus code field
-              navController.navigate("${Screen.EditProfile.route}?openCode=true")
+              // If farmer clicked "Add new Vet with Code", open EditProfile
+              navController.navigate(Screen.EditProfile.route)
             })
       }
-      composable(
-          route = Screen.EditProfile.route + "?openCode={openCode}",
-          arguments =
-              listOf(
-                  navArgument("openCode") {
-                    type = NavType.BoolType
-                    defaultValue = false
-                  })) { backStackEntry ->
-            val openCode = backStackEntry.arguments?.getBoolean("openCode") ?: false
-
-            EditProfileScreen(
-                userViewModel = userViewModel,
-                onGoBack = { navigationActions.goBack() },
-                onSave = { updatedUser ->
-                  // Uses the ViewModel's update function to persist and update shared state
-                  userViewModel.updateUser(updatedUser)
-                  navigationActions.goBack()
-                },
-                onAddVetCode = { _code ->
-                  // Placeholder for now — logic implemented separately
-                },
-                openCodeField = openCode)
-          }
+      composable(Screen.EditProfile.route) {
+        EditProfileScreen(
+            userViewModel = userViewModel,
+            onGoBack = { navigationActions.goBack() },
+            onSave = { updatedUser ->
+              userViewModel.updateUser(updatedUser)
+              navigationActions.goBack()
+            },
+            onAddVetCode = { _code ->
+              // placeholder for now
+            })
+      }
     }
 
     navigation(

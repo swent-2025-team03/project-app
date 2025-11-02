@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
@@ -44,14 +45,26 @@ fun EditProfileScreen(
     userViewModel: UserViewModel = viewModel(),
     onGoBack: () -> Unit = {},
     onSave: (User) -> Unit = { userViewModel.updateUser(it) },
-    onAddVetCode: (String) -> Unit = {},
-    openCodeField: Boolean = false
+    onAddVetCode: (String) -> Unit = {}
 ) {
   val user by userViewModel.user.collectAsState()
   val userRole = user.role
+
+  val profileViewModel: ProfileViewModel =
+      viewModel(
+          factory =
+              object : androidx.lifecycle.ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return ProfileViewModel(userViewModel) as T
+                }
+              })
+
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
   val snackbarHostState = remember { SnackbarHostState() }
+
+  val vetClaimMessage by profileViewModel.vetClaimMessage.collectAsState()
+  LaunchedEffect(vetClaimMessage) { vetClaimMessage?.let { snackbarHostState.showSnackbar(it) } }
 
   // Local mutable states
   var firstname by remember { mutableStateOf(user?.firstname ?: "") }
@@ -69,15 +82,6 @@ fun EditProfileScreen(
 
   // Vet-specific states
   var expandedCodesDropdown by remember { mutableStateOf(false) }
-
-  // If openCodeField is true and user is Farmer, request focus on the code text field
-  // I added this so when clicking on "Add Vet with Code" from ProfileScreen, the keyboard opens
-  // directly on the code input field.
-  LaunchedEffect(openCodeField) {
-    if (openCodeField && user is Farmer) {
-      scope.launch { codeFocusRequester.requestFocus() }
-    }
-  }
 
   Scaffold(
       topBar = {
@@ -170,6 +174,14 @@ fun EditProfileScreen(
               if (user is Farmer) {
                 Spacer(modifier = Modifier.height(12.dp))
 
+                if ((user as Farmer).linkedVets.isEmpty()) {
+                  Text(
+                      text = "You need to add vets before choosing your default one.",
+                      style = MaterialTheme.typography.bodySmall,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
+                      modifier = Modifier.padding(vertical = 4.dp))
+                }
+
                 ExposedDropdownMenuBox(
                     expanded = expandedVetDropdown,
                     onExpandedChange = { expandedVetDropdown = !expandedVetDropdown }) {
@@ -211,7 +223,13 @@ fun EditProfileScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = { onAddVetCode(vetCode) },
+                    onClick = {
+                      if (vetCode.isBlank()) {
+                        scope.launch { snackbarHostState.showSnackbar("Please enter a code.") }
+                      } else {
+                        profileViewModel.claimVetCode(vetCode)
+                      }
+                    },
                     modifier =
                         Modifier.align(Alignment.CenterHorizontally)
                             .testTag(EditProfileScreenTestTags.ADD_CODE_BUTTON)) {
@@ -242,12 +260,14 @@ fun EditProfileScreen(
                       ExposedDropdownMenu(
                           expanded = expandedCodesDropdown,
                           onDismissRequest = { expandedCodesDropdown = false }) {
-                            // TODO: Will be populated when Nico's logic is implemented
+                            (user as Vet).validCodes.forEach { code ->
+                              DropdownMenuItem(
+                                  text = { Text(code) },
+                                  onClick = { expandedCodesDropdown = false })
+                            }
                           }
                     }
               }
-              // TODO: I think we should add a variable for Vet users, that contains the list of
-              // code that are active right now.
 
               Spacer(modifier = Modifier.weight(1f))
 

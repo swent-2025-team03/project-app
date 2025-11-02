@@ -60,7 +60,10 @@ fun OverviewScreen(
   val uiState by overviewViewModel.uiState.collectAsState()
   val reports: List<Report> = uiState.reports
 
-  LaunchedEffect(Unit) { overviewViewModel.loadReports(userRole, userId) }
+  overviewViewModel.loadReports(
+      userRole,
+      userId) // TODO removing the launchedeffect fixed the issue of no recomposition but may cause
+  // performance issues
 
   Scaffold(
       // -- Top App Bar with logout icon --
@@ -137,9 +140,7 @@ fun OverviewScreen(
                 items(reports, key = { it.id }) { report ->
                   // Ajout du testTag pour chaque item cliquable
                   ReportItem(
-                      report = report,
-                      onClick = { onReportClick(report.id) },
-                  )
+                      report = report, onClick = { onReportClick(report.id) }, userRole = userRole)
                   HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                 }
               }
@@ -176,7 +177,7 @@ fun LatestAlertCard() {
  * description, and status tag.
  */
 @Composable
-fun ReportItem(report: Report, onClick: () -> Unit) {
+fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
   Row(
       modifier =
           Modifier.fillMaxWidth()
@@ -186,7 +187,10 @@ fun ReportItem(report: Report, onClick: () -> Unit) {
       verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
           Text(report.title, fontSize = 18.sp, fontWeight = FontWeight.Medium)
-          Text("Farmer ID: ${report.farmerId}")
+          when (userRole) {
+            UserRole.VET -> Text("Farmer ID: ${report.farmerId}")
+            UserRole.FARMER -> Text("Vet ID: ${report.vetId}")
+          }
           Text(
               text = report.description.let { if (it.length > 50) it.take(50) + "..." else it },
               style = MaterialTheme.typography.bodySmall,

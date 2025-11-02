@@ -31,4 +31,6 @@ interface UserRepository {
    * @param uid The ID of the user to fetch.
    */
   suspend fun getUserFromId(uid: String): Result<User>
+
+  companion object
 }

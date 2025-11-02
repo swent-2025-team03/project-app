@@ -7,15 +7,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -35,6 +40,7 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
+import kotlinx.coroutines.launch
 
 object ProfileScreenTestTags {
 
@@ -71,6 +77,8 @@ fun ProfileScreen(
               })
   val code by profileViewModel.generatedCode.collectAsState()
 
+  val snackbarHostState = remember { SnackbarHostState() }
+
   Scaffold(
       topBar = {
         TopAppBar(
@@ -90,7 +98,8 @@ fun ProfileScreen(
               }
             },
             modifier = Modifier.testTag(TOP_BAR))
-      }) { innerPadding ->
+      },
+      snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding).padding(16.dp).fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -189,7 +198,26 @@ fun ProfileScreen(
                     }
 
                 if (code != null && userRole == UserRole.VET) {
-                  Text("Generated Code: $code", style = MaterialTheme.typography.bodyLarge)
+                  val clipboard = LocalClipboardManager.current
+                  val scope = rememberCoroutineScope()
+
+                  Row(
+                      verticalAlignment = Alignment.CenterVertically,
+                      horizontalArrangement = Arrangement.Center) {
+                        Text(
+                            "Generated Code: $code",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(end = 8.dp))
+                        IconButton(
+                            onClick = {
+                              clipboard.setText(AnnotatedString(code!!))
+                              scope.launch { snackbarHostState.showSnackbar("Code copied!") }
+                            }) {
+                              Icon(
+                                  imageVector = Icons.Filled.ContentCopy,
+                                  contentDescription = "Copy Code")
+                            }
+                      }
                 }
               }
             }

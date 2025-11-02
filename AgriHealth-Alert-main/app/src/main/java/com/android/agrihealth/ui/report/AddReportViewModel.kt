@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 data class AddReportUiState(
     val title: String = "",
     val description: String = "",
-    val chosenVet: String = "", // TODO: Shouldn't be a string! Temporary measure
+    val chosenVet: String = "",
 )
 
 class AddReportViewModel(
@@ -49,7 +49,7 @@ class AddReportViewModel(
             description = uiState.description,
             photoUri = null, // currently unused
             farmerId = userId,
-            vetId = "Best Vet Ever!", // TODO: Use the real vetID when implemented
+            vetId = uiState.chosenVet,
             status = ReportStatus.PENDING,
             answer = null,
             location = null // optional until implemented
