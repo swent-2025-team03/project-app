@@ -41,16 +41,12 @@ class OverviewViewModel(
   /** Loads reports based on user role and ID. */
   override fun loadReports(userRole: UserRole, userId: String) {
     viewModelScope.launch {
-      // try {
       val reports =
           when (userRole) {
             UserRole.FARMER -> reportRepository.getReportsByFarmer(userId)
             UserRole.VET -> reportRepository.getReportsByVet(userId)
           }
       _uiState.value = OverviewUIState(reports = reports)
-      /*} catch (e: Exception) {
-        _uiState.value = OverviewUIState(reports = emptyList())
-      }*/
     }
   }
 

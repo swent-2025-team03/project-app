@@ -109,8 +109,7 @@ fun OverviewScreen(
                 Modifier.fillMaxSize()
                     .padding(paddingValues)
                     .padding(16.dp)
-                    .testTag(OverviewScreenTestTags.SCREEN) // ← tag stable sur le conteneur racine
-            ) {
+                    .testTag(OverviewScreenTestTags.SCREEN)) {
               // -- Latest alert section --
               Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
 
@@ -138,7 +137,6 @@ fun OverviewScreen(
               Spacer(modifier = Modifier.height(12.dp))
               LazyColumn {
                 items(reports, key = { it.id }) { report ->
-                  // Ajout du testTag pour chaque item cliquable
                   ReportItem(
                       report = report, onClick = { onReportClick(report.id) }, userRole = userRole)
                   HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)

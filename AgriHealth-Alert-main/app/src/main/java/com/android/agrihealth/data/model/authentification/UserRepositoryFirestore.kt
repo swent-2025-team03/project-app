@@ -61,7 +61,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
                 when (user) { // keep for type reconstruction
                   is Farmer -> "Farmer"
                   is Vet -> "Vet"
-                })
+                },
+            "isGoogleAccount" to user.isGoogleAccount)
 
     // Add type-specific fields
     when (user) {
@@ -85,6 +86,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     val lastname = data["lastname"] as? String ?: throw Exception("Missing lastname")
     val email = data["email"] as? String ?: throw Exception("Missing email")
     val roleStr = data["role"] as? String ?: throw Exception("Missing role")
+    val isGoogleAccount = data["isGoogleAccount"] as? Boolean ?: false
 
     return when (roleStr) {
       "Farmer" ->
@@ -95,7 +97,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               email = email,
               address = data["address"] as? Location?,
               linkedVets = data["linkedVets"] as? List<String> ?: emptyList(),
-              defaultVet = data["defaultVet"] as? String)
+              defaultVet = data["defaultVet"] as? String,
+              isGoogleAccount = isGoogleAccount)
       "Vet" ->
           Vet(
               uid = uid,
@@ -104,7 +107,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               email = email,
               address = data["address"] as? Location?,
               linkedFarmers = data["linkedFarmers"] as? List<String> ?: emptyList(),
-              validCodes = data["validCodes"] as? List<String> ?: emptyList())
+              validCodes = data["validCodes"] as? List<String> ?: emptyList(),
+              isGoogleAccount = isGoogleAccount)
       else -> throw Exception("Unknown user type: $roleStr")
     }
   }
@@ -116,6 +120,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     if (old.firstname != new.firstname) changes["firstname"] = new.firstname
     if (old.lastname != new.lastname) changes["lastname"] = new.lastname
     if (old.email != new.email) changes["email"] = new.email
+    if (old.isGoogleAccount != new.isGoogleAccount) changes["isGoogleAccount"] = new.isGoogleAccount
 
     when {
       old is Farmer && new is Farmer -> {

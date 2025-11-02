@@ -12,5 +12,6 @@ data class Vet(
     // account.
     val linkedFarmers: List<String> =
         emptyList<String>(), // List of farmer IDs associated with the vet
-    val validCodes: List<String> = emptyList()
-) : User(uid, firstname, lastname, UserRole.VET, email, address)
+    val validCodes: List<String> = emptyList(),
+    override val isGoogleAccount: Boolean = false
+) : User(uid, firstname, lastname, UserRole.VET, email, address, isGoogleAccount)
