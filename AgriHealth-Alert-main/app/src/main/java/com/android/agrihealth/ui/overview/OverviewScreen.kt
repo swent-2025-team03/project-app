@@ -35,9 +35,9 @@ object OverviewScreenTestTags {
   const val SCREEN = "OverviewScreen"
   const val REPORT_ITEM = "reportItem"
   const val PROFILE_BUTTON = "ProfileButton"
-    const val STATUS_DROPDOWN = "StatusFilterDropdown"
-    const val VET_ID_DROPDOWN = "VetIdFilterDropdown"
-    const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
+  const val STATUS_DROPDOWN = "StatusFilterDropdown"
+  const val VET_ID_DROPDOWN = "VetIdFilterDropdown"
+  const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
 }
 
 /**
@@ -149,8 +149,7 @@ fun OverviewScreen(
                           overviewViewModel.updateFilters(
                               it, uiState.selectedVet, uiState.selectedFarmer)
                         },
-                        modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN)
-                    )
+                        modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN))
                   }
 
               // -- VetId filter (only for farmer) --
@@ -168,8 +167,7 @@ fun OverviewScreen(
                             overviewViewModel.updateFilters(
                                 uiState.selectedStatus, it, farmerId = uiState.selectedFarmer)
                           },
-                          modifier = Modifier.testTag(OverviewScreenTestTags.VET_ID_DROPDOWN)
-                      )
+                          modifier = Modifier.testTag(OverviewScreenTestTags.VET_ID_DROPDOWN))
                     }
               }
               // -- FarmerId filter (only for vet) --
@@ -189,8 +187,7 @@ fun OverviewScreen(
                                 vetId = uiState.selectedVet,
                                 farmerId = it)
                           },
-                          modifier = Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN)
-                          )
+                          modifier = Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN))
                     }
               }
 
@@ -245,11 +242,16 @@ fun LatestAlertCard() {
 
 /** Composable displaying a simple dropdown menu for filtering or selecting options. */
 @Composable
-fun <T> DropdownMenuWrapper(options: List<T>, selectedOption: T?, onOptionSelected: (T?) -> Unit, modifier: Modifier = Modifier) {
+fun <T> DropdownMenuWrapper(
+    options: List<T>,
+    selectedOption: T?,
+    onOptionSelected: (T?) -> Unit,
+    modifier: Modifier = Modifier
+) {
   var expanded by remember { mutableStateOf(false) }
   val displayText = selectedOption?.toString() ?: "All"
 
-  Box (modifier = modifier) {
+  Box(modifier = modifier) {
     Button(onClick = { expanded = true }) { Text(displayText) }
     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
       options.forEach { option ->

@@ -79,7 +79,6 @@ class OverviewViewModelTest {
     Assert.assertTrue(state.filteredReports.all { it.vetId == vetId })
   }
 
-
   @After
   fun tearDown() {
     Dispatchers.resetMain()
