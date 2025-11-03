@@ -13,19 +13,13 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
-import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryLocal
-import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.android.agrihealth.ui.navigation.NavigationTestTags
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-
 
 object MapScreenTestReports {
   val report1 =
@@ -72,8 +66,6 @@ object MapScreenTestReports {
           ReportStatus.SPAM,
           "Vet answer 4",
           Location(46.9491, 7.4474))
-
-  val reportList = listOf(report1, report2, report3, report4)
 }
 
 class MapScreenTest : FirebaseEmulatorsTest() {
@@ -93,10 +85,23 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     }
   }
 
-  // Sets composeRule to the map screen with a predefined MapViewModel, using the local report repository among other things
-  private fun setContentToMapWithVM(isViewedFromOverview: Boolean = true, selectedReportId: String? = null, startingPosition: Location? = null) {
-    val mapViewModel = MapViewModel(reportRepository = reportRepository, selectedReportId = selectedReportId)
-    composeRule.setContent { MaterialTheme { MapScreen(mapViewModel = mapViewModel, isViewedFromOverview = isViewedFromOverview, startingPosition = startingPosition) } }
+  // Sets composeRule to the map screen with a predefined MapViewModel, using the local report
+  // repository among other things
+  private fun setContentToMapWithVM(
+      isViewedFromOverview: Boolean = true,
+      selectedReportId: String? = null,
+      startingPosition: Location? = null
+  ) {
+    val mapViewModel =
+        MapViewModel(reportRepository = reportRepository, selectedReportId = selectedReportId)
+    composeRule.setContent {
+      MaterialTheme {
+        MapScreen(
+            mapViewModel = mapViewModel,
+            isViewedFromOverview = isViewedFromOverview,
+            startingPosition = startingPosition)
+      }
+    }
   }
 
   @Test

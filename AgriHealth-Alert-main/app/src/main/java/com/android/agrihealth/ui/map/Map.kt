@@ -223,19 +223,15 @@ fun MapScreen(
                       .testTag(MapScreenTestTags.REFRESH_BUTTON),
               shape = CircleShape,
               onClick = {
-                  mapViewModel.refreshCameraPosition()
+                mapViewModel.refreshCameraPosition()
 
-                  val newPos = mapViewModel.startingLocation.value
-                  val newLat = newPos.latitude
-                  val newLng = newPos.longitude
-                  val newZoom = mapViewModel.zoom.value
+                val newPos = mapViewModel.startingLocation.value
+                val newLat = newPos.latitude
+                val newLng = newPos.longitude
+                val newZoom = mapViewModel.zoom.value
 
-                  cameraPositionState.move(
-                      CameraUpdateFactory.newLatLngZoom(
-                          LatLng(newLat, newLng),
-                          newZoom
-                      )
-                  )
+                cameraPositionState.move(
+                    CameraUpdateFactory.newLatLngZoom(LatLng(newLat, newLng), newZoom))
               }) {
                 Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh Location")
               }
