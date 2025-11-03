@@ -14,6 +14,8 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.repository.ReportRepository
+import com.android.agrihealth.data.repository.ReportRepositoryLocal
+import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -24,42 +26,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class FakeReportRepository : ReportRepository {
-  private val reports = mutableListOf<Report>()
-
-  override fun getNewReportId(): String {
-    TODO("Not yet implemented")
-  }
-
-  override suspend fun getAllReports(userId: String): List<Report> {
-    return reports.toList()
-  }
-
-  override suspend fun getReportsByFarmer(farmerId: String): List<Report> {
-    return reports.filter { it -> it.farmerId == farmerId }.toList()
-  }
-
-  override suspend fun getReportsByVet(vetId: String): List<Report> {
-    return reports.filter { it -> it.vetId == vetId }.toList()
-  }
-
-  override suspend fun getReportById(reportId: String): Report? {
-    return reports.first { it -> it.id == reportId }
-  }
-
-  override suspend fun addReport(report: Report) {
-    reports.add(report)
-  }
-
-  override suspend fun editReport(reportId: String, newReport: Report) {
-    deleteReport(reportId)
-    addReport(newReport)
-  }
-
-  override suspend fun deleteReport(reportId: String) {
-    reports.remove(getReportById(reportId))
-  }
-}
 
 object MapScreenTestReports {
   val report1 =
@@ -113,19 +79,24 @@ object MapScreenTestReports {
 class MapScreenTest : FirebaseEmulatorsTest() {
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-  val reportRepository = FakeReportRepository()
+  val reportRepository = ReportRepositoryLocal()
   val userId = "farmerId"
 
   @Before
   override fun setUp() {
     super.setUp()
-    runTest { authRepository.signUpWithEmailAndPassword(user1.email, password1, user1) }
     runTest {
       reportRepository.addReport(MapScreenTestReports.report1.copy(farmerId = userId))
       reportRepository.addReport(MapScreenTestReports.report2.copy(farmerId = userId))
       reportRepository.addReport(MapScreenTestReports.report3.copy(farmerId = userId))
       reportRepository.addReport(MapScreenTestReports.report4.copy(farmerId = userId))
     }
+  }
+
+  // Sets composeRule to the map screen with a predefined MapViewModel, using the local report repository among other things
+  private fun setContentToMapWithVM(isViewedFromOverview: Boolean = true, selectedReportId: String? = null, startingPosition: Location? = null) {
+    val mapViewModel = MapViewModel(reportRepository = reportRepository, selectedReportId = selectedReportId)
+    composeRule.setContent { MaterialTheme { MapScreen(mapViewModel = mapViewModel, isViewedFromOverview = isViewedFromOverview, startingPosition = startingPosition) } }
   }
 
   @Test
@@ -138,7 +109,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
 
   @Test
   fun displayAllFieldsAndButtonsFromOverview() {
-    composeRule.setContent { MaterialTheme { MapScreen(isViewedFromOverview = true) } }
+    setContentToMapWithVM(isViewedFromOverview = true)
     composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
     composeRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsNotDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsNotDisplayed()
@@ -149,7 +120,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
 
   @Test
   fun displayAllFieldsAndButtonsFromReportView() {
-    composeRule.setContent { MaterialTheme { MapScreen(isViewedFromOverview = false) } }
+    setContentToMapWithVM(isViewedFromOverview = false)
     composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
     composeRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsDisplayed()
@@ -157,17 +128,11 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     composeRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsNotDisplayed()
   }
 
-  private fun getUserReports(uid: String): List<Report> {
-    return MapScreenTestReports.reportList.filter { it.farmerId == uid || it.vetId == uid }
-  }
-
   @Test
-  fun displayReportsFromUser() {
-    composeRule.setContent { MaterialTheme { MapScreen() } }
-    assertNotNull(Firebase.auth.currentUser)
-    val uid = Firebase.auth.currentUser!!.uid
+  fun displayReportsFromUser() = runTest {
+    setContentToMapWithVM()
 
-    getUserReports(uid).forEach { report ->
+    reportRepository.getReportsByFarmer(userId).forEach { report ->
       composeRule
           .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
           .assertIsDisplayed()
@@ -175,12 +140,10 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun displayReportInfo() {
-    composeRule.setContent { MaterialTheme { MapScreen() } }
-    assertNotNull(Firebase.auth.currentUser)
-    val uid = Firebase.auth.currentUser!!.uid
+  fun displayReportInfo() = runTest {
+    setContentToMapWithVM()
 
-    getUserReports(uid).forEach { report ->
+    reportRepository.getReportsByFarmer(userId).forEach { report ->
       val reportId = report.id
       composeRule
           .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
@@ -202,11 +165,9 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun filterReportsByStatus() {
-    composeRule.setContent { MaterialTheme { MapScreen() } }
-    assertNotNull(Firebase.auth.currentUser)
-    val uid = Firebase.auth.currentUser!!.uid
-    val reports = getUserReports(uid)
+  fun filterReportsByStatus() = runTest {
+    setContentToMapWithVM()
+    val reports = reportRepository.getReportsByFarmer(userId)
     val filters = listOf("All") + ReportStatus.entries.map { it.displayString() }
 
     filters.forEach { filter ->
@@ -236,7 +197,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun canOverrideStartingPosition() {
     val yverdon = Location(46.7815062, 6.6463836) // Station d'épuration d'Yverdon-les-Bains
-    composeRule.setContent { MaterialTheme { MapScreen(startingPosition = yverdon) } }
+    setContentToMapWithVM(startingPosition = yverdon)
     // how do i test this
     assertTrue(true)
   }
@@ -249,21 +210,17 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   fun canNavigateFromMapToReport() = runTest {
     val reports = reportRepository.getReportsByFarmer(userId)
     val report = reports.first()
+    setContentToMapWithVM(selectedReportId = report.id)
 
-    val mapViewModel =
-        MapViewModel(reportRepository = reportRepository, selectedReportId = report.id)
-    composeRule.setContent { MaterialTheme { MapScreen(mapViewModel) } }
     // Go to map screen
     composeRule.onNodeWithTag(NavigationTestTags.MAP_TAB).assertIsDisplayed().performClick()
     composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
     // Click on report
-
     composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsDisplayed().performClick()
     composeRule
         .onNodeWithTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)
         .assertIsDisplayed()
         .performClick()
     // Check if report screen TODO: Actually show the report screen
-    // composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsNotDisplayed()
   }
 }
