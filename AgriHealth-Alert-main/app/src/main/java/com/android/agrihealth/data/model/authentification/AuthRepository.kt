@@ -13,6 +13,19 @@ interface AuthRepository {
   suspend fun signInWithEmailAndPassword(email: String, password: String): Result<FirebaseUser>
 
   /**
+   * Re-signs in the User for sensitive account modifications (ex: changing password)
+   *
+   * @return A [Result] indicating success or failure.
+   */
+  suspend fun reAuthenticate(email: String, password: String): Result<Unit>
+
+  /**
+   * Updates a User's password, the user needs be reauthenticated before this.
+   *
+   * @return A [Result] indicating success or failure.
+   */
+  suspend fun changePassword(password: String): Result<Unit>
+  /**
    * Signs in the user using their google account.
    *
    * @return A [Result] containing a [FirebaseUser] on success, or an exception on failure.
