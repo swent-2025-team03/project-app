@@ -20,7 +20,7 @@ class ReportRepositoryLocalTest {
           id = "1",
           title = "Test Report",
           description = "This is a test report",
-          photoUri = "http://example.com/photo.jpg",
+          photoUri = null,
           farmerId = "farmer123",
           vetId = "vet456",
           status = ReportStatus.PENDING,

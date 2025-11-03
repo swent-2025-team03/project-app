@@ -1,5 +1,6 @@
 package com.android.agrihealth.data.model.report
 
+import android.net.Uri
 import com.android.agrihealth.data.model.location.Location
 import java.time.Instant
 
@@ -14,7 +15,7 @@ data class Report(
     val id: String,
     val title: String,
     val description: String,
-    val photoUri: String?, // For now, unused (will show placeholder)
+    val photoUri: Uri?,
     val farmerId: String,
     val vetId: String,
     val status: ReportStatus,
