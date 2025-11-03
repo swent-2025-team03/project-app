@@ -1,6 +1,7 @@
 package com.android.agrihealth.data.model.connection
 
 import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Transaction
@@ -18,9 +19,15 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
     private const val STATUS_USED = FirestoreSchema.Status.USED
   }
 
+  private fun getCurrentUserId(): String {
+    return Firebase.auth.currentUser?.uid
+        ?: throw java.lang.IllegalStateException("User not logged in")
+  }
+
   // Generates a unique connection code for a vet, valid for a limited time (ttlMinutes).
   // Returns: Result<String> containing the generated code, or an exception if failed.
-  suspend fun generateCode(vetId: String, ttlMinutes: Long = 10): Result<String> = runCatching {
+  suspend fun generateCode(ttlMinutes: Long = 10): Result<String> = runCatching {
+    val vetId = getCurrentUserId()
     repeat(20) {
       val code = Random.nextInt(100_000, 1_000_000).toString()
       val maybeCode =
@@ -52,7 +59,8 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
 
   // Claims a connection code for a farmer, links the vet and farmer, and marks the code as used.
   // Returns: Result<String> containing the vetId if successful, or an exception if failed.
-  suspend fun claimCode(code: String, farmerId: String): Result<String> = runCatching {
+  suspend fun claimCode(code: String): Result<String> = runCatching {
+    val farmerId = getCurrentUserId()
     val docRef = db.collection(CODES_COLLECTION).document(code)
     db.runTransaction { tx ->
           val snap = tx.get(docRef)
