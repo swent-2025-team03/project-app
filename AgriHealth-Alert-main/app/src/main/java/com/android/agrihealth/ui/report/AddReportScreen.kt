@@ -1,5 +1,8 @@
 package com.android.agrihealth.ui.report
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -59,6 +62,7 @@ object AddReportConstants {
 private val unfocusedFieldColor = Color(0xFFF0F7F1)
 private val focusedFieldColor = Color(0xFFF0F7F1)
 private val createReportButtonColor = Color(0xFF96B7B1)
+private val imageUploadButtonColor = Color(0xFF96B7B1)
 
 /**
  * Displays the report creation screen for farmers
@@ -169,25 +173,15 @@ fun AddReportScreen(
                         }
                   }
 
-              Button(
-                  onClick = {
-                    scope.launch {
-                      val created = addReportViewModel.createReport()
-                      if (created) {
-                        showSuccessDialog = true
-                      } else {
-                        snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
-                      }
-                    }
-                  },
-                  modifier =
-                      Modifier.fillMaxWidth()
-                          .height(56.dp)
-                          .testTag(AddReportScreenTestTags.CREATE_BUTTON),
-                  shape = RoundedCornerShape(20.dp),
-                  colors = ButtonDefaults.buttonColors(containerColor = createReportButtonColor)) {
-                    Text("Create Report", fontSize = 24.sp)
-                  }
+              ImageUploadButton(
+                  photoUri = uiState.photoUri, onImagePicked = { addReportViewModel.setPhoto(it) })
+
+              CreateReportButton(
+                addReportViewModel = addReportViewModel,
+                snackbarHostState = snackbarHostState,
+                onSuccess = { showSuccessDialog = true }
+              )
+
             }
 
         // If adding the report was successful
@@ -233,6 +227,54 @@ private fun Field(
               focusedContainerColor = focusedFieldColor,
               unfocusedBorderColor = Color.Transparent,
               focusedBorderColor = Color.Transparent))
+}
+
+@Composable
+fun ImageUploadButton(
+    photoUri: Uri?,
+    onImagePicked: (Uri?) -> Unit
+) {
+  val imagePickerLauncher =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri?
+        ->
+        onImagePicked(uri)
+      }
+  Button(
+      onClick = { imagePickerLauncher.launch("image/*") },
+      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+      shape = RoundedCornerShape(20.dp),
+      colors = ButtonDefaults.buttonColors(containerColor = imageUploadButtonColor)) {
+        Text(text = photoUri?.let { "Image Selected" } ?: "Upload Image", fontSize = 18.sp)
+      }
+}
+
+@Composable
+fun CreateReportButton(
+  addReportViewModel: AddReportViewModelContract,
+  snackbarHostState: SnackbarHostState,
+  onSuccess: () -> Unit
+) {
+  val scope = rememberCoroutineScope()
+  Button(
+    onClick = {
+      scope.launch {
+        val created = addReportViewModel.createReport()
+        if (created) {
+          onSuccess()
+        } else {
+          snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
+        }
+      }
+    },
+    modifier = Modifier
+      .fillMaxWidth()
+      .height(56.dp)
+      .testTag(AddReportScreenTestTags.CREATE_BUTTON),
+    shape = RoundedCornerShape(20.dp),
+    colors = ButtonDefaults.buttonColors(containerColor = createReportButtonColor)
+  ) {
+    Text("Create Report", fontSize = 24.sp)
+  }
 }
 
 /**

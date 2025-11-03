@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import android.net.Uri
 import kotlinx.coroutines.flow.StateFlow
 
 interface AddReportViewModelContract {
@@ -14,4 +15,6 @@ interface AddReportViewModelContract {
   suspend fun createReport(): Boolean
 
   fun clearInputs()
+
+  fun setPhoto(uri: Uri?)
 }

@@ -1,5 +1,6 @@
 package com.android.agrihealth.testutil
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import com.android.agrihealth.ui.report.AddReportUiState
 import com.android.agrihealth.ui.report.AddReportViewModelContract
@@ -28,5 +29,9 @@ class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
 
   override fun clearInputs() {
     _uiState.value = AddReportUiState()
+  }
+
+  override fun setPhoto(uri: Uri?) {
+    _uiState.value = _uiState.value.copy(photoUri = uri)
   }
 }

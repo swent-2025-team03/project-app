@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
@@ -15,6 +16,7 @@ data class AddReportUiState(
     val title: String = "",
     val description: String = "",
     val chosenVet: String = "", // TODO: Shouldn't be a string! Temporary measure
+    val photoUri: Uri? = null
 )
 
 class AddReportViewModel(
@@ -34,6 +36,10 @@ class AddReportViewModel(
 
   override fun setVet(option: String) {
     _uiState.value = _uiState.value.copy(chosenVet = option)
+  }
+
+  override fun setPhoto(uri: Uri?) {
+    _uiState.value = _uiState.value.copy(photoUri = uri)
   }
 
   override suspend fun createReport(): Boolean {
