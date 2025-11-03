@@ -36,6 +36,7 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_FARME
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_VET
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_VET_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.GENERATED_CODE_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
@@ -52,6 +53,8 @@ object ProfileScreenTestTags {
   const val DEFAULT_VET_FIELD = "DefaultVetField"
   const val CODE_BUTTON_FARMER = "CodeButtonFarmer"
   const val CODE_BUTTON_VET = "CodeButtonVet"
+
+  const val GENERATED_CODE_TEXT = "GeneratedCodeText"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -210,7 +213,7 @@ fun ProfileScreen(
                         Text(
                             "Generated Code: $code",
                             style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(end = 8.dp))
+                            modifier = Modifier.padding(end = 8.dp).testTag(GENERATED_CODE_TEXT))
                         IconButton(
                             onClick = {
                               clipboard.setText(AnnotatedString(code!!))

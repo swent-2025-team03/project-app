@@ -13,6 +13,8 @@ import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
+import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags
 import com.android.agrihealth.ui.report.AddReportConstants
 import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
@@ -89,7 +91,46 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performClick()
   }
 
+  private fun completeEditProfile(firstName: String, lastName: String) {
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD)
+        .assertIsDisplayed()
+        .performTextClearance()
+
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD)
+        .assertIsDisplayed()
+        .performTextInput(firstName)
+
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.LASTNAME_FIELD)
+        .assertIsDisplayed()
+        .performTextClearance()
+
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.LASTNAME_FIELD)
+        .assertIsDisplayed()
+        .performTextInput(firstName)
+
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.SAVE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+  }
+
+  private fun checkIsGoogleAccount() {
+    composeTestRule.onNodeWithTag(SignInScreenTestTags.EMAIL_FIELD).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD).assertIsNotDisplayed()
+  }
+
   private fun signOutFromOverview() {
+    composeTestRule
+        .onNodeWithTag(OverviewScreenTestTags.LOGOUT_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+  }
+
+  private fun signOutFromProfile() {
     composeTestRule
         .onNodeWithTag(OverviewScreenTestTags.LOGOUT_BUTTON)
         .assertIsDisplayed()
@@ -135,6 +176,30 @@ class E2ETest : FirebaseEmulatorsTest() {
     }
   }
 
+  private fun checkEditProfileScreenIsDisplayed() {
+    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+      composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).isDisplayed()
+    }
+  }
+
+  private fun generateFarmerCode() {
+    composeTestRule
+        .onNodeWithTag(ProfileScreenTestTags.CODE_BUTTON_VET)
+        .assertIsDisplayed()
+        .performClick()
+
+    composeTestRule.waitUntil {
+      composeTestRule
+          .onAllNodesWithTag(ProfileScreenTestTags.GENERATED_CODE_TEXT)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+
+    // I am looking for a way to keep the code I generated with the vet to use it in the test when
+    // the farmer connects
+    // return code
+  }
+
   // ----------- Scenario: Vet -----------
   @Test
   fun testVet_SignUp_Logout_SignIn() {
@@ -153,8 +218,11 @@ class E2ETest : FirebaseEmulatorsTest() {
       composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).isDisplayed()
     }
     composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).performClick()
-    checkOverviewScreenIsDisplayed()
-    signOutFromOverview()
+    checkEditProfileScreenIsDisplayed()
+    checkIsGoogleAccount()
+    completeEditProfile("VetFirstName", "VetLastName")
+    signOutFromProfile()
+
     var uid = Firebase.auth.uid
     composeTestRule
         .onNodeWithTag(SignInScreenTestTags.SIGN_UP_BUTTON)
@@ -185,6 +253,8 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD).performTextClearance()
     completeSignIn(user1.email, "12345678")
     checkOverviewScreenIsDisplayed()
+    // This needs to be replaced by first connecting to a vet with a code, then selecting him in the
+    // add report screen
     val vetId = AddReportConstants.vetOptions[0]
     createReport("Report title", "Report description", vetId)
     clickFirstReportItem()
