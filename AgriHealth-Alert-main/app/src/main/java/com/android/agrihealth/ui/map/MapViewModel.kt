@@ -82,11 +82,7 @@ class MapViewModel(
     return user.getOrNull()?.address
   }
 
-  fun refreshCameraPosition(cameraPositionState: CameraPositionState) {
+  fun refreshCameraPosition() {
     setStartingLocation(null, useCurrentLocation = true)
-    cameraPositionState.move(
-        CameraUpdateFactory.newLatLngZoom(
-            LatLng(_startingLocation.value.latitude, _startingLocation.value.longitude),
-            _zoom.value))
   }
 }

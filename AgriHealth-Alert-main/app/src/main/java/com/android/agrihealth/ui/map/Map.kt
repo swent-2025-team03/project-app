@@ -58,6 +58,7 @@ import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
 import com.android.agrihealth.ui.user.UserViewModel
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -221,7 +222,21 @@ fun MapScreen(
                       .padding(16.dp)
                       .testTag(MapScreenTestTags.REFRESH_BUTTON),
               shape = CircleShape,
-              onClick = { mapViewModel.refreshCameraPosition(cameraPositionState) }) {
+              onClick = {
+                  mapViewModel.refreshCameraPosition()
+
+                  val newPos = mapViewModel.startingLocation.value
+                  val newLat = newPos.latitude
+                  val newLng = newPos.longitude
+                  val newZoom = mapViewModel.zoom.value
+
+                  cameraPositionState.move(
+                      CameraUpdateFactory.newLatLngZoom(
+                          LatLng(newLat, newLng),
+                          newZoom
+                      )
+                  )
+              }) {
                 Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh Location")
               }
 
