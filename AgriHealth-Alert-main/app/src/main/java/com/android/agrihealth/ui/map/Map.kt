@@ -209,29 +209,33 @@ fun MapScreen(
                                 if (selectedReport.value == report) null else report
                             true
                           },
-                          /*tag = testTag*/)
+                      /*tag = testTag*/ )
                     }
               }
 
           // Debug box to make tests work
-          // Because Google map markers aren't accessible in compose tests, so I have to make this item
+          // Because Google map markers aren't accessible in compose tests, so I have to make this
+          // item
           // If the box is empty or has size 0, the composable doesn't exist and tests fail
           // Yes, this sucks
           uiState.reports
               .filter { report ->
-                  selectedFilter == "All" || report.status.displayString() == selectedFilter
+                selectedFilter == "All" || report.status.displayString() == selectedFilter
               }
               .forEach { report ->
-              Log.d("MapScreen", "Creating debug box ${report.id}")
-              Box(modifier = Modifier
-                  .testTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
-                  .clickable { selectedReport.value = if (selectedReport.value == report) null else report }
-                  .alpha(0f)
-                  .size(1.dp)
-              ) {
-                  Text(":)")
+                Log.d("MapScreen", "Creating debug box ${report.id}")
+                Box(
+                    modifier =
+                        Modifier.testTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+                            .clickable {
+                              selectedReport.value =
+                                  if (selectedReport.value == report) null else report
+                            }
+                            .alpha(0f)
+                            .size(1.dp)) {
+                      Text(":)")
+                    }
               }
-          }
 
           if (isViewedFromOverview) {
             val options = listOf("All") + ReportStatus.entries.map { it.displayString() }

@@ -4,11 +4,9 @@ import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
-import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
@@ -133,7 +131,8 @@ class MapScreenTest : FirebaseEmulatorsTest() {
 
     reportRepository.getReportsByFarmer(userId).forEach { report ->
       composeRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id), useUnmergedTree = true)
+          .onNodeWithTag(
+              MapScreenTestTags.getTestTagForReportMarker(report.id), useUnmergedTree = true)
           .assertIsDisplayed()
     }
   }
@@ -142,23 +141,24 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   fun displayReportInfo() = runTest {
     setContentToMapWithVM()
 
-    val report = reportRepository.getReportsByFarmer(userId).last() // because of debug boxes, they stack so you have to take the last
-      val reportId = report.id
-      composeRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
-          .assertIsDisplayed()
-          .performClick()
-      composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsDisplayed()
-      composeRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportTitle(reportId))
-          .assertIsDisplayed()
-      composeRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportDesc(reportId))
-          .assertIsDisplayed()
-      composeRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
-          .performClick()
-      composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsNotDisplayed()
+    val report =
+        reportRepository
+            .getReportsByFarmer(userId)
+            .last() // because of debug boxes, they stack so you have to take the last
+    val reportId = report.id
+    composeRule
+        .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
+        .assertIsDisplayed()
+        .performClick()
+    composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsDisplayed()
+    composeRule
+        .onNodeWithTag(MapScreenTestTags.getTestTagForReportTitle(reportId))
+        .assertIsDisplayed()
+    composeRule
+        .onNodeWithTag(MapScreenTestTags.getTestTagForReportDesc(reportId))
+        .assertIsDisplayed()
+    composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId)).performClick()
+    composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsNotDisplayed()
   }
 
   @Test
