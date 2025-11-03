@@ -17,6 +17,7 @@ import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import java.lang.Thread.sleep
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertNotNull
 import org.junit.Before
@@ -94,6 +95,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   fun canNavigateFromOverview() {
     composeRule.setContent { MaterialTheme { AgriHealthApp() } }
     composeRule.onNodeWithTag(NavigationTestTags.MAP_TAB).assertIsDisplayed().performClick()
+    sleep(1000)
     composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
   }
