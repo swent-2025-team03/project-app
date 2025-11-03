@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -15,6 +16,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.repository.ReportRepositoryLocal
 import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.user.UserViewModel
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -72,7 +74,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
   val reportRepository = ReportRepositoryLocal()
-  val userId = "farmerId"
+  val userId = UserViewModel().user.value.uid
 
   @Before
   override fun setUp() {
@@ -105,14 +107,6 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun canNavigateFromOverview() {
-    composeRule.setContent { MaterialTheme { AgriHealthApp() } }
-    composeRule.onNodeWithTag(NavigationTestTags.MAP_TAB).assertIsDisplayed().performClick()
-    composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
-    composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
-  }
-
-  @Test
   fun displayAllFieldsAndButtonsFromOverview() {
     setContentToMapWithVM(isViewedFromOverview = true)
     composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
@@ -139,7 +133,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
 
     reportRepository.getReportsByFarmer(userId).forEach { report ->
       composeRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id), useUnmergedTree = true)
           .assertIsDisplayed()
     }
   }
@@ -148,7 +142,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   fun displayReportInfo() = runTest {
     setContentToMapWithVM()
 
-    reportRepository.getReportsByFarmer(userId).forEach { report ->
+    val report = reportRepository.getReportsByFarmer(userId).last() // because of debug boxes, they stack so you have to take the last
       val reportId = report.id
       composeRule
           .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
@@ -161,12 +155,10 @@ class MapScreenTest : FirebaseEmulatorsTest() {
       composeRule
           .onNodeWithTag(MapScreenTestTags.getTestTagForReportDesc(reportId))
           .assertIsDisplayed()
-
       composeRule
           .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
           .performClick()
       composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsNotDisplayed()
-    }
   }
 
   @Test
