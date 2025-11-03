@@ -17,8 +17,10 @@ import kotlinx.coroutines.launch
 
 data class FakeOverviewUiState(val reports: List<Report> = emptyList())
 
-class FakeOverviewViewModel : ViewModel(), OverviewViewModelContract {
-  private val _uiState = MutableStateFlow(OverviewUIState())
+class FakeOverviewViewModel (
+    initialState: OverviewUIState = OverviewUIState()
+) : ViewModel(), OverviewViewModelContract {
+  private val _uiState = MutableStateFlow(initialState)
   override val uiState: StateFlow<OverviewUIState> = _uiState
 
   private lateinit var authRepository: AuthRepository
