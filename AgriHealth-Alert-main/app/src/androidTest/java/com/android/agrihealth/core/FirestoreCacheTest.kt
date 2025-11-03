@@ -2,6 +2,7 @@ package com.android.agrihealth.core
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsManager
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Source
@@ -23,6 +24,18 @@ class FirestoreCacheTest {
     // Route Firestore/Auth to the emulator before any instance is created
     FirebaseEmulatorsManager.linkEmulators()
     FirebaseFirestore.setLoggingEnabled(true)
+
+    // Authenticate and ensure the user document exists with role "Vet"
+    runBlocking {
+      val auth = FirebaseAuth.getInstance()
+      if (auth.currentUser == null) {
+        auth.signInAnonymously().await()
+      }
+      val uid = auth.currentUser!!.uid
+      val db = FirebaseFirestore.getInstance()
+      // Create users/{uid} with role Vet so connect_codes writes pass rules
+      db.collection("users").document(uid).set(mapOf("uid" to uid, "role" to "Vet")).await()
+    }
   }
 
   @Test

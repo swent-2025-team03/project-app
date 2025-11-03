@@ -1,7 +1,6 @@
 package com.android.agrihealth.core
 
 import android.app.Application
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsManager
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
@@ -14,7 +13,6 @@ class App : Application() {
 
     // Link Firebase emulators BEFORE any Firestore instance is created
     // This ensures Firestore/Auth point to the emulator and avoids calling useEmulator() after init
-    FirebaseEmulatorsManager.linkEmulators()
 
     // Enable local Firestore persistence (offline cache)
     val db = FirebaseFirestore.getInstance()
