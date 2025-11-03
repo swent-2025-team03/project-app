@@ -87,4 +87,8 @@ open class UserViewModel(
       }
     }
   }
+  /** Sets the current user. */
+  fun setUser(user: User) {
+    _user.value = user
+  }
 }

@@ -102,11 +102,9 @@ fun AgriHealthApp(
       }
       composable(Screen.SignUp.route) {
         SignUpScreen(
+            userViewModel = userViewModel,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onSignedUp = {
-              userViewModel.refreshCurrentUser()
-              navController.navigate(Screen.EditProfile.route)
-            })
+            onSignedUp = { navigationActions.navigateTo(Screen.EditProfile) })
       }
     }
     navigation(startDestination = Screen.RoleSelection.route, route = Screen.RoleSelection.name) {
@@ -114,7 +112,7 @@ fun AgriHealthApp(
         RoleSelectionScreen(
             credentialManager = credentialManager,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onButtonPressed = { navController.navigate(Screen.EditProfile.route) })
+            onButtonPressed = { navigationActions.navigateTo(Screen.EditProfile) })
       }
     }
 
@@ -178,7 +176,7 @@ fun AgriHealthApp(
 
         ProfileScreen(
             userViewModel = userViewModel,
-            onGoBack = { navigationActions.goBack() },
+            onGoBack = { navigationActions.navigateTo(Screen.Overview) },
             onLogout = {
               overviewViewModel.signOut(credentialManager)
               navigationActions.navigateToAuthAndClear()
@@ -188,10 +186,14 @@ fun AgriHealthApp(
               navController.navigate(Screen.EditProfile.route)
             },
             onCodeFarmer = {
-              // If farmer clicked "Add new Vet with Code", open EditProfile
+              // If farmer clicked "Add new Vet with Code", open EditProfile too
               navController.navigate(Screen.EditProfile.route)
             })
       }
+    }
+
+    // --- Edit Profile Graph ---
+    navigation(startDestination = Screen.EditProfile.route, route = Screen.EditProfile.name) {
       composable(Screen.EditProfile.route) {
         EditProfileScreen(
             userViewModel = userViewModel,
