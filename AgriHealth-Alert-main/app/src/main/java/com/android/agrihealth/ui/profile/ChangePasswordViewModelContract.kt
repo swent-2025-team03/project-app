@@ -12,5 +12,5 @@ interface ChangePasswordViewModelContract {
 
   fun setEmail(string: String)
 
-  fun changePassword(): Boolean
+  fun changePassword()
 }

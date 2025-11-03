@@ -12,9 +12,10 @@ import kotlinx.coroutines.launch
 data class ChangePasswordUiState(
     val email: String = "",
     val oldPassword: String = "",
-    val oldWrong: Boolean = true,
+    val success: Boolean = false,
+    val oldWrong: Boolean = false,
     val newPassword: String = "",
-    val newWeak: Boolean = true
+    val newWeak: Boolean = false
 ) {
   fun isWeak(): Boolean {
     return newPassword.length < 6
@@ -39,24 +40,19 @@ class ChangePasswordViewModel(
     _uiState.value = _uiState.value.copy(email = string)
   }
 
-  override fun changePassword(): Boolean {
+  override fun changePassword() {
     _uiState.value = _uiState.value.copy(newWeak = false, oldWrong = false)
     if (_uiState.value.isWeak()) {
       _uiState.value = _uiState.value.copy(newWeak = true)
-      return false
     }
-    try {
-      viewModelScope.launch {
-        repository.reAuthenticate(_uiState.value.email, _uiState.value.oldPassword).fold({
-          repository.changePassword(_uiState.value.newPassword)
-        }) { failure ->
-          throw IllegalStateException()
-        }
+    viewModelScope.launch {
+      repository.reAuthenticate(_uiState.value.email, _uiState.value.oldPassword).fold({
+        repository.changePassword(_uiState.value.newPassword).fold({
+          _uiState.value = _uiState.value.copy(success = true)
+        }) {}
+      }) {
+        _uiState.value = _uiState.value.copy(oldWrong = true)
       }
-    } catch (_: Exception) {
-      _uiState.value = _uiState.value.copy(oldWrong = true)
-      return false
     }
-    return true
   }
 }

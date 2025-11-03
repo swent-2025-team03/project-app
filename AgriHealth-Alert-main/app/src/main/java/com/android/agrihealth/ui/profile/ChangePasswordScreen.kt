@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -58,6 +59,7 @@ fun ChangePasswordScreen(
   val uiState by changePasswordViewModel.uiState.collectAsState()
   changePasswordViewModel.setEmail(userEmail)
 
+  LaunchedEffect(uiState.success) { if (uiState.success) onUpdatePassword.invoke() }
   Scaffold(
       topBar = {
         // Top bar with back arrow and title/status
@@ -108,11 +110,7 @@ fun ChangePasswordScreen(
                   placeholder = "New Password",
                   error = uiState.newWeak)
               Button(
-                  onClick = {
-                    if (changePasswordViewModel.changePassword()) {
-                      onUpdatePassword.invoke()
-                    }
-                  },
+                  onClick = { changePasswordViewModel.changePassword() },
                   modifier =
                       Modifier.fillMaxWidth()
                           .height(56.dp)
@@ -137,7 +135,7 @@ private fun Field(
   OutlinedTextField(
       value = value,
       placeholder = { Text(placeholder) },
-      onValueChange = { it -> onValueChange(it) },
+      onValueChange = onValueChange,
       singleLine = true,
       shape = RoundedCornerShape(28.dp),
       modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),

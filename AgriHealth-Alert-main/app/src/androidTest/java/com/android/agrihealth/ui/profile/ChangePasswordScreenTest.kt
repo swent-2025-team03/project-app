@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.android.agrihealth.testutil.FakeChangePasswordViewModel
+import junit.framework.TestCase.assertFalse
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -48,7 +49,7 @@ class ChangePasswordScreenTest {
     composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
     composeTestRule.onNodeWithText(ChangePasswordFeedbackTexts.OLD_WRONG).assertIsDisplayed()
     composeTestRule.onNodeWithText(ChangePasswordFeedbackTexts.NEW_WEAK).assertIsNotDisplayed()
-    assert(!success)
+    assertFalse(success)
   }
 
   @Test
