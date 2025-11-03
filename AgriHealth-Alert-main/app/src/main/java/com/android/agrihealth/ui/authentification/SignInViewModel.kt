@@ -9,6 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.R
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
+import com.android.agrihealth.data.model.authentification.UserRepository
+import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuthException
@@ -32,14 +34,17 @@ data class SignInUIState(
     val emailIsInvalid: Boolean = false,
     val passwordIsInvalid: Boolean = false,
     val user: FirebaseUser? = Firebase.auth.currentUser,
+    val isNewGoogle: Boolean = false,
     val errorMsg: String? = null,
 ) {
   val isValid: Boolean
     get() = email.isNotEmpty() && password.isNotEmpty()
 }
 
-class SignInViewModel(private val repository: AuthRepository = AuthRepositoryProvider.repository) :
-    ViewModel() {
+class SignInViewModel(
+    private val authRepository: AuthRepository = AuthRepositoryProvider.repository,
+    private val userRepository: UserRepository = UserRepositoryProvider.repository
+) : ViewModel() {
 
   private val _uiState = MutableStateFlow(SignInUIState())
   val uiState: StateFlow<SignInUIState> = _uiState
@@ -66,15 +71,14 @@ class SignInViewModel(private val repository: AuthRepository = AuthRepositoryPro
   fun signInWithEmailAndPassword() {
     if (_uiState.value.isValid) {
       viewModelScope.launch {
-        repository.signInWithEmailAndPassword(_uiState.value.email, _uiState.value.password).fold({
-            user ->
-          _uiState.update { it.copy(user = user) }
-        }) { failure ->
-          when (failure) {
-            is FirebaseAuthException -> setErrorMsg(SignInErrorMsg.INVALID_CREDENTIALS)
-            else -> setErrorMsg(SignInErrorMsg.TIMEOUT)
-          }
-        }
+        authRepository
+            .signInWithEmailAndPassword(_uiState.value.email, _uiState.value.password)
+            .fold({ user -> _uiState.update { it.copy(user = user) } }) { failure ->
+              when (failure) {
+                is FirebaseAuthException -> setErrorMsg(SignInErrorMsg.INVALID_CREDENTIALS)
+                else -> setErrorMsg(SignInErrorMsg.TIMEOUT)
+              }
+            }
       }
     } else {
       if (_uiState.value.email.isEmpty()) {
@@ -113,8 +117,10 @@ class SignInViewModel(private val repository: AuthRepository = AuthRepositoryPro
         val credential = getCredential(context, signInRequest, credentialManager)
 
         // Pass the credential to your repository
-        repository.signInWithGoogle(credential).fold({ user ->
-          _uiState.update { it.copy(user = user) }
+        authRepository.signInWithGoogle(credential).fold({ user ->
+          if (userRepository.getUserFromId(user.uid).isFailure)
+              _uiState.update { it.copy(user = user, isNewGoogle = true) }
+          else _uiState.update { it.copy(user = user) }
         }) { failure ->
           _uiState.update { it.copy(user = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
         }
