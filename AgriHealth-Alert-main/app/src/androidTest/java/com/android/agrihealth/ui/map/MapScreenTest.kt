@@ -94,8 +94,8 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun canNavigateFromOverview() {
     composeRule.setContent { MaterialTheme { AgriHealthApp() } }
-    composeRule.onNodeWithTag(NavigationTestTags.MAP_TAB).assertIsDisplayed().performClick()
     sleep(1000)
+    composeRule.onNodeWithTag(NavigationTestTags.MAP_TAB).assertIsDisplayed().performClick()
     composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
   }
