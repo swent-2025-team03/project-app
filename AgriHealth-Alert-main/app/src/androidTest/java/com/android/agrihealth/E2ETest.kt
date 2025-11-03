@@ -11,11 +11,13 @@ import com.android.agrihealth.ui.authentification.RoleSelectionScreenTestTags
 import com.android.agrihealth.ui.authentification.SignInErrorMsg
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
+import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.android.agrihealth.ui.report.AddReportConstants
 import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
+import com.android.agrihealth.ui.report.ReportViewScreenTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.test.runTest
@@ -135,6 +137,31 @@ class E2ETest : FirebaseEmulatorsTest() {
     }
   }
 
+  private fun goBack() {
+    composeTestRule
+        .onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+  }
+
+  private fun reportViewClickViewOnMap() {
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.VIEW_ON_MAP)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule
+        .onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX)
+        .assertIsDisplayed()
+        .performClick()
+  }
+
+  private fun mapClickViewReport() {
+    composeTestRule
+        .onNodeWithTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+  }
+
   // ----------- Scenario: Vet -----------
   @Test
   fun testVet_SignUp_Logout_SignIn() {
@@ -188,10 +215,11 @@ class E2ETest : FirebaseEmulatorsTest() {
     val vetId = AddReportConstants.vetOptions[0]
     createReport("Report title", "Report description", vetId)
     clickFirstReportItem()
-    composeTestRule
-        .onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
+    reportViewClickViewOnMap()
+    mapClickViewReport()
+    goBack()
+    goBack()
+    goBack()
     checkOverviewScreenIsDisplayed()
     signOutFromOverview()
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()

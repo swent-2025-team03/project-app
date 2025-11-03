@@ -1,6 +1,5 @@
 package com.android.agrihealth.screen.navigation
 
-// import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
