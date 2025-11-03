@@ -26,11 +26,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.RoleSelectionScreen
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
 import com.android.agrihealth.ui.map.MapScreen
+import com.android.agrihealth.ui.map.MapViewModel
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
@@ -158,7 +160,7 @@ fun AgriHealthApp(
             val viewModel: ReportViewModel = viewModel()
 
             ReportViewScreen(
-                navController = navController,
+                navigationActions = navigationActions,
                 userRole = currentUserRole,
                 viewModel = viewModel,
                 reportId = reportId)
@@ -208,14 +210,37 @@ fun AgriHealthApp(
       }
     }
 
-    navigation(
-        startDestination = Screen.Map.route,
-        route = Screen.Map.name,
-    ) {
-      composable(Screen.Map.route) {
-        MapScreen(navigationActions = navigationActions, isViewedFromOverview = true)
-      }
-    }
+    composable(
+        route = Screen.Map.route,
+        arguments =
+            listOf(
+                navArgument("lat") {
+                  type = NavType.StringType
+                  nullable = true
+                  defaultValue = null
+                },
+                navArgument("lng") {
+                  type = NavType.StringType
+                  nullable = true
+                  defaultValue = null
+                },
+                navArgument("reportId") {
+                  type = NavType.StringType
+                  nullable = true
+                  defaultValue = null
+                })) { backStackEntry ->
+          val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull()
+          val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull()
+          val sourceReport = backStackEntry.arguments?.getString("reportId")
+
+          val location = if (lat != null && lng != null) Location(lat, lng) else null
+          val mapViewModel = MapViewModel(selectedReportId = sourceReport)
+          MapScreen(
+              mapViewModel = mapViewModel,
+              navigationActions = navigationActions,
+              isViewedFromOverview = (sourceReport == null),
+              startingPosition = location)
+        }
   }
 }
 

@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 sealed class Tab(val name: String, val icon: ImageVector, val destination: Screen) {
   object Overview : Tab("Overview", Icons.Outlined.Menu, Screen.Overview)
 
-  object Map : Tab("Map", Icons.Outlined.Place, Screen.Map)
+  object Map : Tab("Map", Icons.Outlined.Place, Screen.Map())
 }
 
 private val tabs =
