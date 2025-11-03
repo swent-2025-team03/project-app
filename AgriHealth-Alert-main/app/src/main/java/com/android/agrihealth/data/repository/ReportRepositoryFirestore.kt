@@ -97,7 +97,7 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
         answer = answer,
         location = location)
   } catch (e: Exception) {
-    Log.e("ReportRepositoryFirestore", "Error converting document to Report", e)
+    Log.e("ReportRepositoryFirestore", "Error converting document ${doc.id} to Report", e)
     null
   }
 }
