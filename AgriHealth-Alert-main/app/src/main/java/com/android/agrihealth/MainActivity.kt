@@ -43,6 +43,7 @@ import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.theme.SampleAppTheme
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.defaultUser
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
@@ -79,11 +80,9 @@ fun AgriHealthApp(
   val currentUserId = currentUser.uid
   val currentUserRole = currentUser.role
 
-  //  val startDestination =
-  //      if (Firebase.auth.currentUser == null) Screen.Auth.name
-  //      else if (currentUser == defaultUser) Screen.RoleSelection.name else Screen.Overview.name
   val startDestination =
-      if (Firebase.auth.currentUser == null) Screen.Auth.name else Screen.Overview.name
+      if (Firebase.auth.currentUser == null) Screen.Auth.name
+      else if (currentUser == defaultUser) Screen.RoleSelection.name else Screen.Overview.name
 
   NavHost(navController = navController, startDestination = startDestination) {
     // --- Auth Graph ---
@@ -106,7 +105,7 @@ fun AgriHealthApp(
             onBack = { navigationActions.navigateTo(Screen.Auth) },
             onSignedUp = {
               userViewModel.refreshCurrentUser()
-              navigationActions.navigateTo(Screen.EditProfile)
+              navController.navigate(Screen.EditProfile.route)
             })
       }
     }
@@ -115,7 +114,7 @@ fun AgriHealthApp(
         RoleSelectionScreen(
             credentialManager = credentialManager,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onButtonPressed = { navigationActions.navigateTo(Screen.Overview) })
+            onButtonPressed = { navController.navigate(Screen.EditProfile.route) })
       }
     }
 
