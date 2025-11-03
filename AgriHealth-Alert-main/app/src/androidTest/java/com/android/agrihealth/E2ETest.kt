@@ -16,7 +16,6 @@ import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags
-import com.android.agrihealth.ui.report.AddReportConstants
 import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags
@@ -156,10 +155,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN)
         .assertIsDisplayed()
         .performClick()
-    composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.getTestTagForVet(vetId))
-        .assertIsDisplayed()
-        .performClick()
+    composeTestRule.onNodeWithText(vetId).assertIsDisplayed().performClick()
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON)
         .assertIsDisplayed()
@@ -257,7 +253,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performClick()
 
     completeSignUp(email, pwd, isVet = true)
-    checkOverviewScreenIsDisplayed()
+    checkEditProfileScreenIsDisplayed()
     assert(uid != Firebase.auth.uid)
     uid = Firebase.auth.uid
     signOutFromOverview()
@@ -280,9 +276,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD).performTextClearance()
     completeSignIn(user1.email, "12345678")
     checkOverviewScreenIsDisplayed()
-    // This needs to be replaced by first connecting to a vet with a code, then selecting him in the
-    // add report screen
-    val vetId = AddReportConstants.vetOptions[0]
+    val vetId = "Best Vet Ever!"
     createReport("Report title", "Report description", vetId)
     clickFirstReportItem()
     reportViewClickViewOnMap()

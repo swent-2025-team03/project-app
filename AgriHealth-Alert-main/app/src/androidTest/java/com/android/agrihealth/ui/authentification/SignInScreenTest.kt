@@ -14,7 +14,7 @@ import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
-import com.android.agrihealth.ui.overview.OverviewScreenTestTags
+import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -85,7 +85,7 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).performClick()
 
     composeTestRule.waitUntil(5000) {
-      composeTestRule.onNodeWithTag(OverviewScreenTestTags.TOP_APP_BAR_TITLE).isDisplayed()
+      composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).isDisplayed()
     }
   }
 
