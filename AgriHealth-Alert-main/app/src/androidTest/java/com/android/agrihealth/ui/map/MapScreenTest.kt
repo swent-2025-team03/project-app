@@ -4,22 +4,19 @@ import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
-import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
-import com.android.agrihealth.data.repository.ReportRepositoryProvider
+import com.android.agrihealth.data.model.report.displayString
+import com.android.agrihealth.data.repository.ReportRepositoryLocal
 import com.android.agrihealth.ui.navigation.NavigationTestTags
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
-import java.lang.Thread.sleep
+import com.android.agrihealth.ui.user.UserViewModel
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -35,7 +32,7 @@ object MapScreenTestReports {
           "vetId1",
           ReportStatus.PENDING,
           null,
-          Location(46.5200948, 6.5651742, "Place name 1"))
+          Location(46.9481, 7.4474, "Place name 1"))
   val report2 =
       Report(
           "rep_id2",
@@ -46,7 +43,7 @@ object MapScreenTestReports {
           "vetId2",
           ReportStatus.IN_PROGRESS,
           "Vet answer",
-          Location(46.5183104, 6.5676777))
+          Location(46.9481, 7.4484))
   val report3 =
       Report(
           "rep_id3",
@@ -57,7 +54,7 @@ object MapScreenTestReports {
           "vetId1",
           ReportStatus.RESOLVED,
           null,
-          Location(46.5206231, 6.569927, "Place name 3"))
+          Location(46.9481, 7.4464, "Place name 3"))
   val report4 =
       Report(
           "rep_id4",
@@ -68,22 +65,19 @@ object MapScreenTestReports {
           "vetId4",
           ReportStatus.SPAM,
           "Vet answer 4",
-          Location(46.5232, 6.5681191))
-
-  val reportList = listOf(report1, report2, report3, report4)
+          Location(46.9491, 7.4474))
 }
 
 class MapScreenTest : FirebaseEmulatorsTest() {
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-  val reportRepository = ReportRepositoryProvider.repository
+  val reportRepository = ReportRepositoryLocal()
+  val userId = UserViewModel().user.value.uid
 
   @Before
   override fun setUp() {
     super.setUp()
-    runTest { authRepository.signUpWithEmailAndPassword(user1.email, password1, user1) }
     runTest {
-      val userId = Firebase.auth.currentUser!!.uid
       reportRepository.addReport(MapScreenTestReports.report1.copy(farmerId = userId))
       reportRepository.addReport(MapScreenTestReports.report2.copy(farmerId = userId))
       reportRepository.addReport(MapScreenTestReports.report3.copy(farmerId = userId))
@@ -91,76 +85,139 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     }
   }
 
-  @Test
-  fun canNavigateFromOverview() {
-    composeRule.setContent { MaterialTheme { AgriHealthApp() } }
-    sleep(1000)
-    composeRule.onNodeWithTag(NavigationTestTags.MAP_TAB).assertIsDisplayed().performClick()
-    composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
-    composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
+  // Sets composeRule to the map screen with a predefined MapViewModel, using the local report
+  // repository among other things
+  private fun setContentToMapWithVM(
+      isViewedFromOverview: Boolean = true,
+      selectedReportId: String? = null,
+      startingPosition: Location? = null
+  ) {
+    val mapViewModel =
+        MapViewModel(reportRepository = reportRepository, selectedReportId = selectedReportId)
+    composeRule.setContent {
+      MaterialTheme {
+        MapScreen(
+            mapViewModel = mapViewModel,
+            isViewedFromOverview = isViewedFromOverview,
+            startingPosition = startingPosition)
+      }
+    }
   }
 
   @Test
   fun displayAllFieldsAndButtonsFromOverview() {
-    composeRule.setContent { MaterialTheme { MapScreen(isViewedFromOverview = true) } }
+    setContentToMapWithVM(isViewedFromOverview = true)
     composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
     composeRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsNotDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsNotDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
+    composeRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsDisplayed()
+    composeRule.onNodeWithTag(MapScreenTestTags.REFRESH_BUTTON).assertIsDisplayed()
   }
 
   @Test
   fun displayAllFieldsAndButtonsFromReportView() {
-    composeRule.setContent { MaterialTheme { MapScreen(isViewedFromOverview = false) } }
+    setContentToMapWithVM(isViewedFromOverview = false)
     composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
     composeRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsDisplayed()
     composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsNotDisplayed()
-  }
-
-  private fun getUserReports(uid: String): List<Report> {
-    return MapScreenTestReports.reportList.filter { it.farmerId == uid || it.vetId == uid }
+    composeRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsNotDisplayed()
   }
 
   @Test
-  fun displayReportsFromUser() {
-    composeRule.setContent { MaterialTheme { MapScreen() } }
-    assertNotNull(Firebase.auth.currentUser)
-    val uid = Firebase.auth.currentUser!!.uid
+  fun displayReportsFromUser() = runTest {
+    setContentToMapWithVM()
 
-    getUserReports(uid).forEach { report ->
+    reportRepository.getReportsByFarmer(userId).forEach { report ->
       composeRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+          .onNodeWithTag(
+              MapScreenTestTags.getTestTagForReportMarker(report.id), useUnmergedTree = true)
           .assertIsDisplayed()
     }
   }
 
   @Test
-  fun displayReportInfo() {
-    composeRule.setContent { MaterialTheme { MapScreen() } }
-    assertNotNull(Firebase.auth.currentUser)
-    val uid = Firebase.auth.currentUser!!.uid
+  fun displayReportInfo() = runTest {
+    setContentToMapWithVM()
 
-    getUserReports(uid).forEach { report ->
-      val reportId = report.id
+    val report =
+        reportRepository
+            .getReportsByFarmer(userId)
+            .last() // because of debug boxes, they stack so you have to take the last
+    val reportId = report.id
+    composeRule
+        .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
+        .assertIsDisplayed()
+        .performClick()
+    composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsDisplayed()
+    composeRule
+        .onNodeWithTag(MapScreenTestTags.getTestTagForReportTitle(reportId))
+        .assertIsDisplayed()
+    composeRule
+        .onNodeWithTag(MapScreenTestTags.getTestTagForReportDesc(reportId))
+        .assertIsDisplayed()
+    composeRule.onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId)).performClick()
+    composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsNotDisplayed()
+  }
+
+  @Test
+  fun filterReportsByStatus() = runTest {
+    setContentToMapWithVM()
+    val reports = reportRepository.getReportsByFarmer(userId)
+    val filters = listOf("All") + ReportStatus.entries.map { it.displayString() }
+
+    filters.forEach { filter ->
       composeRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
+          .onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU)
           .assertIsDisplayed()
           .performClick()
-      composeRule.waitUntil(3000) {
-        composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).isDisplayed()
+      composeRule
+          .onNodeWithTag(MapScreenTestTags.getTestTagForFilter(filter))
+          .assertIsDisplayed()
+          .performClick()
+      val (matches, nonMatches) =
+          reports.partition { it -> filter == "All" || it.status.displayString() == filter }
+      matches.forEach { report ->
+        composeRule
+            .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+            .assertIsDisplayed()
       }
-      composeRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportTitle(reportId))
-          .assertIsDisplayed()
-      composeRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportDesc(reportId))
-          .assertIsDisplayed()
-
-      composeRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
-          .performClick()
-      composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsNotDisplayed()
+      nonMatches.forEach { report ->
+        composeRule
+            .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+            .assertIsNotDisplayed()
+      }
     }
+  }
+
+  @Test
+  fun canOverrideStartingPosition() {
+    val yverdon = Location(46.7815062, 6.6463836) // Station d'épuration d'Yverdon-les-Bains
+    setContentToMapWithVM(startingPosition = yverdon)
+    // how do i test this
+    assertTrue(true)
+  }
+
+  @Test fun mapCenteredOnUserAddress() {}
+
+  @Test fun mapCenteredOnDefaultIfNoAddress() {}
+
+  @Test
+  fun canNavigateFromMapToReport() = runTest {
+    val reports = reportRepository.getReportsByFarmer(userId)
+    val report = reports.first()
+    setContentToMapWithVM(selectedReportId = report.id)
+
+    // Go to map screen
+    composeRule.onNodeWithTag(NavigationTestTags.MAP_TAB).assertIsDisplayed().performClick()
+    composeRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
+    // Click on report
+    composeRule.onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX).assertIsDisplayed().performClick()
+    composeRule
+        .onNodeWithTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    // Check if report screen TODO: Actually show the report screen
   }
 }
