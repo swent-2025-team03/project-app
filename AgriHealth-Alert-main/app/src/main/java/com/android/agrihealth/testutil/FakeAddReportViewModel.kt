@@ -34,4 +34,8 @@ class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
   override fun setPhoto(uri: Uri?) {
     _uiState.value = _uiState.value.copy(photoUri = uri)
   }
+
+  override fun removePhoto() {
+    _uiState.value.copy(photoUri = null)
+  }
 }

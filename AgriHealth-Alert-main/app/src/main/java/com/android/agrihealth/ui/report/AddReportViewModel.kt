@@ -42,6 +42,10 @@ class AddReportViewModel(
     _uiState.value = _uiState.value.copy(photoUri = uri)
   }
 
+  override fun removePhoto() {
+    _uiState.value = _uiState.value.copy(photoUri = null)
+  }
+
   override suspend fun createReport(): Boolean {
     val uiState = _uiState.value
     if (uiState.title.isBlank() || uiState.description.isBlank()) {

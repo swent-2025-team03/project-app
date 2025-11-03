@@ -3,6 +3,7 @@ package com.android.agrihealth.ui.report
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,11 +27,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -43,6 +47,8 @@ object AddReportScreenTestTags {
   const val DESCRIPTION_FIELD = "descriptionField"
   const val VET_DROPDOWN = "vetDropDown"
   const val CREATE_BUTTON = "createButton"
+  const val UPLOAD_IMAGE_BUTTON = "uploadImageButton"
+  const val IMAGE_PREVIEW = "imageDisplay"
 
   fun getTestTagForVet(vetId: String): String = "vetOption_$vetId"
 }
@@ -62,7 +68,8 @@ object AddReportConstants {
 private val unfocusedFieldColor = Color(0xFFF0F7F1)
 private val focusedFieldColor = Color(0xFFF0F7F1)
 private val createReportButtonColor = Color(0xFF96B7B1)
-private val imageUploadButtonColor = Color(0xFF96B7B1)
+private val imageUploadButton_UploadColor = Color(0xFF43b593)
+private val imageUploadButton_RemoveColor = Color(0xFFd45d5d)
 
 /**
  * Displays the report creation screen for farmers
@@ -173,8 +180,13 @@ fun AddReportScreen(
                         }
                   }
 
+              UploadedImagePreview(photoUri = uiState.photoUri)
+
               ImageUploadButton(
-                  photoUri = uiState.photoUri, onImagePicked = { addReportViewModel.setPhoto(it) })
+                photoUri = uiState.photoUri,
+                onImagePicked = { addReportViewModel.setPhoto(it) },
+                onImageRemoved = { addReportViewModel.removePhoto() }
+              )
 
               CreateReportButton(
                 addReportViewModel = addReportViewModel,
@@ -231,21 +243,53 @@ private fun Field(
 
 @Composable
 fun ImageUploadButton(
-    photoUri: Uri?,
-    onImagePicked: (Uri?) -> Unit
+  photoUri: Uri?,
+  onImagePicked: (Uri?) -> Unit,
+  onImageRemoved: () -> Unit,
 ) {
   val imagePickerLauncher =
-      rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri?
-        ->
-        onImagePicked(uri)
-      }
+    rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
+      onImagePicked(uri)
+    }
+  val imageAlreadyUploaded = photoUri != null
+  val buttonColor = if (imageAlreadyUploaded) imageUploadButton_RemoveColor else imageUploadButton_UploadColor
+
   Button(
-      onClick = { imagePickerLauncher.launch("image/*") },
-      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-      shape = RoundedCornerShape(20.dp),
-      colors = ButtonDefaults.buttonColors(containerColor = imageUploadButtonColor)) {
-        Text(text = photoUri?.let { "Image Selected" } ?: "Upload Image", fontSize = 18.sp)
+    onClick = {
+      if (imageAlreadyUploaded) {
+        // Remove existing image
+        onImageRemoved()
+      } else {
+        // Pick/upload new image
+        imagePickerLauncher.launch("image/*")
       }
+    },
+    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
+    shape = RoundedCornerShape(20.dp),
+    colors = ButtonDefaults.buttonColors(containerColor = buttonColor)
+  ) {
+    Text(
+      text = if (imageAlreadyUploaded) "Remove Image" else "Upload Image",
+      fontSize = 18.sp
+    )
+  }
+}
+
+
+@Composable
+fun UploadedImagePreview(photoUri: Uri?, modifier: Modifier = Modifier) {
+  if (photoUri != null) {
+    AsyncImage(
+      model = photoUri,
+      contentDescription = "Uploaded image",
+      modifier = modifier
+        .fillMaxWidth()
+        .height(180.dp)
+        .padding(bottom = 8.dp)
+        .testTag(AddReportScreenTestTags.IMAGE_PREVIEW),
+      contentScale = ContentScale.Fit
+    )
+  }
 }
 
 @Composable
