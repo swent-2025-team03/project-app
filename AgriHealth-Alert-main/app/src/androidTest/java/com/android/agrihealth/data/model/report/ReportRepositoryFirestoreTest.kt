@@ -7,12 +7,12 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import java.time.Instant
+import java.util.UUID
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
-import java.util.UUID
 
 class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
 
@@ -48,23 +48,21 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
 
   val baseReport3 = baseReport1.copy(id = "2", title = "report3", description = "description3")
 
-    var report1 = baseReport1
-    var report2 = baseReport2
-    var report3 = baseReport3
+  var report1 = baseReport1
+  var report2 = baseReport2
+  var report3 = baseReport3
 
+  private fun Report.fixUID(): Report = copy(farmerId = user1.uid)
 
-    private fun Report.fixUID(): Report = copy(farmerId = user1.uid)
-
-
-    @Before
+  @Before
   override fun setUp() {
     super.setUp()
     runTest { authRepository.signUpWithEmailAndPassword(user1.email, password1, user1) }
     assertNotNull(Firebase.auth.currentUser)
-      val uuid = UUID.randomUUID()
-      report1 = baseReport1.copy(id = "${baseReport1.id} $uuid")
-      report2 = baseReport2.copy(id = "${baseReport2.id} $uuid")
-      report3 = baseReport3.copy(id = "${baseReport3.id} $uuid")
+    val uuid = UUID.randomUUID()
+    report1 = baseReport1.copy(id = "${baseReport1.id} $uuid")
+    report2 = baseReport2.copy(id = "${baseReport2.id} $uuid")
+    report3 = baseReport3.copy(id = "${baseReport3.id} $uuid")
   }
 
   @Test
@@ -173,7 +171,8 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     reports =
         reports.map {
           it.copy(
-              farmerId = if (it.id == report2.id) report2.farmerId else report3.farmerId, createdAt = now)
+              farmerId = if (it.id == report2.id) report2.farmerId else report3.farmerId,
+              createdAt = now)
         }
     val expectedReports = setOf(report2, report3)
     assertEquals(expectedReports, reports.toSet())
