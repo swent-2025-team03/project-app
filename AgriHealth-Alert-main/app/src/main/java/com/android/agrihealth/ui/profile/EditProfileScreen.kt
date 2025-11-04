@@ -45,7 +45,8 @@ fun EditProfileScreen(
     userViewModel: UserViewModel = viewModel(),
     onGoBack: () -> Unit = {},
     onSave: (User) -> Unit = { userViewModel.updateUser(it) },
-    onAddVetCode: (String) -> Unit = {}
+    onAddVetCode: (String) -> Unit = {},
+    onPasswordChange: () -> Unit = {}
 ) {
   val user by userViewModel.user.collectAsState()
   val userRole = user.role
@@ -142,17 +143,10 @@ fun EditProfileScreen(
                         Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     trailingIcon = {
-                      IconButton(
-                          onClick = {
-                            scope.launch {
-                              snackbarHostState.showSnackbar("Password change not possible yet.")
-                            }
-                          }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit Password")
-                          }
+                      IconButton(onClick = { onPasswordChange() }) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit Password")
+                      }
                     })
-                // TODO: I put this here in advance but we still have not decided how we want to
-                // handle password changes.
               }
 
               Spacer(modifier = Modifier.height(12.dp))
