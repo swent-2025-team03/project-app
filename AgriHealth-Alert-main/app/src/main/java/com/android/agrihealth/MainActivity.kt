@@ -37,6 +37,8 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
+import com.android.agrihealth.ui.profile.ChangePasswordScreen
+import com.android.agrihealth.ui.profile.ChangePasswordViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreen
 import com.android.agrihealth.ui.profile.ProfileScreen
 import com.android.agrihealth.ui.report.AddReportScreen
@@ -114,7 +116,7 @@ fun AgriHealthApp(
         RoleSelectionScreen(
             credentialManager = credentialManager,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onButtonPressed = { navigationActions.navigateTo(Screen.EditProfile) })
+            onButtonPressed = { navigationActions.navigateTo(Screen.Overview) })
       }
     }
 
@@ -193,6 +195,13 @@ fun AgriHealthApp(
             })
       }
     }
+      composable(Screen.ChangePassword.route) {
+        ChangePasswordScreen(
+            onBack = { navigationActions.goBack() },
+            onUpdatePassword = { navigationActions.navigateTo(Screen.EditProfile) },
+            userEmail = currentUser.email,
+            changePasswordViewModel = ChangePasswordViewModel())
+      }
 
     // --- Edit Profile Graph ---
     navigation(startDestination = Screen.EditProfile.route, route = Screen.EditProfile.name) {

@@ -7,6 +7,7 @@ import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.firebase.Firebase
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
@@ -26,6 +27,25 @@ class AuthRepositoryFirebase(
       val user = loginResult.user ?: return Result.failure(NullPointerException("Log in failed"))
 
       Result.success(user)
+    } catch (e: Exception) {
+      Result.failure(e)
+    }
+  }
+
+  override suspend fun reAuthenticate(email: String, password: String): Result<Unit> {
+    return try {
+      val credential = EmailAuthProvider.getCredential(email, password)
+      auth.currentUser!!.reauthenticate(credential).await()
+      Result.success(Unit)
+    } catch (e: Exception) {
+      Result.failure(e)
+    }
+  }
+
+  override suspend fun changePassword(password: String): Result<Unit> {
+    return try {
+      auth.currentUser!!.updatePassword(password)
+      Result.success(Unit)
     } catch (e: Exception) {
       Result.failure(e)
     }
@@ -77,7 +97,7 @@ class AuthRepositoryFirebase(
 
       try {
         userRepository.addUser(updatedUser)
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         user.delete().await()
         Result.failure<FirebaseUser>(NullPointerException("Account creation failed"))
       }
