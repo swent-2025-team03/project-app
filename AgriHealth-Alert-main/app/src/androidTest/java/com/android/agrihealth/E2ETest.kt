@@ -166,7 +166,9 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON)
         .assertIsDisplayed()
         .performClick()
-    composeTestRule.onNodeWithText(AddReportFeedbackTexts.SUCCESS).assertIsDisplayed()
+    composeTestRule.waitUntil(5000) {
+      composeTestRule.onNodeWithText(AddReportFeedbackTexts.SUCCESS).isDisplayed()
+    }
     composeTestRule.onNodeWithText("OK").assertIsDisplayed().performClick()
   }
 
