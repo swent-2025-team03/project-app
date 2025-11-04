@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.overview
 
+import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -71,7 +72,7 @@ class OverviewViewModel(
     authRepository = AuthRepositoryProvider.repository
     viewModelScope.launch {
       authRepository.signOut()
-      // credentialManager.clearCredentialState(ClearCredentialStateRequest())
+      credentialManager.clearCredentialState(ClearCredentialStateRequest())
     }
   }
 }
