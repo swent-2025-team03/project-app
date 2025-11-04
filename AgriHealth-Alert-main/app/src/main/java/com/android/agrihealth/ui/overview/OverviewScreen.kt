@@ -65,7 +65,6 @@ fun OverviewScreen(
 ) {
 
   val uiState by overviewViewModel.uiState.collectAsState()
-  val reports: List<Report> = uiState.reports
 
   LaunchedEffect(Unit) { overviewViewModel.loadReports(userRole, userId) }
 

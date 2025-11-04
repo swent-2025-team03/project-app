@@ -40,6 +40,7 @@ class FakeOverviewViewModel(initialState: OverviewUIState = OverviewUIState()) :
     _uiState.value = OverviewUIState(reports = dummyReports)
   }
 
+  // updateFilters is not used for tests so it is remained empty
   override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {}
 
   override fun signOut(credentialManager: CredentialManager) {
