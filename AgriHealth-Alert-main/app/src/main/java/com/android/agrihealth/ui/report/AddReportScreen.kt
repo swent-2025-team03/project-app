@@ -3,7 +3,6 @@ package com.android.agrihealth.ui.report
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,7 +33,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -62,6 +60,11 @@ object AddReportFeedbackTexts {
 // TODO: Dummy list must change later
 object AddReportConstants {
   val vetOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")
+}
+
+object AddReport_UploadButtonTexts {
+  const val UPLOAD_IMAGE = "Upload Image"
+  const val REMOVE_IMAGE = "Remove Image"
 }
 
 // TODO: Replace these with the theme colors (in a global theme file or similar)
@@ -183,17 +186,14 @@ fun AddReportScreen(
               UploadedImagePreview(photoUri = uiState.photoUri)
 
               ImageUploadButton(
-                photoUri = uiState.photoUri,
-                onImagePicked = { addReportViewModel.setPhoto(it) },
-                onImageRemoved = { addReportViewModel.removePhoto() }
-              )
+                  photoUri = uiState.photoUri,
+                  onImagePicked = { addReportViewModel.setPhoto(it) },
+                  onImageRemoved = { addReportViewModel.removePhoto() })
 
               CreateReportButton(
-                addReportViewModel = addReportViewModel,
-                snackbarHostState = snackbarHostState,
-                onSuccess = { showSuccessDialog = true }
-              )
-
+                  addReportViewModel = addReportViewModel,
+                  snackbarHostState = snackbarHostState,
+                  onSuccess = { showSuccessDialog = true })
             }
 
         // If adding the report was successful
@@ -243,82 +243,79 @@ private fun Field(
 
 @Composable
 fun ImageUploadButton(
-  photoUri: Uri?,
-  onImagePicked: (Uri?) -> Unit,
-  onImageRemoved: () -> Unit,
+    photoUri: Uri?,
+    onImagePicked: (Uri?) -> Unit,
+    onImageRemoved: () -> Unit,
 ) {
   val imagePickerLauncher =
-    rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
-      onImagePicked(uri)
-    }
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri?
+        ->
+        onImagePicked(uri)
+      }
   val imageAlreadyUploaded = photoUri != null
-  val buttonColor = if (imageAlreadyUploaded) imageUploadButton_RemoveColor else imageUploadButton_UploadColor
+  val buttonColor =
+      if (imageAlreadyUploaded) imageUploadButton_RemoveColor else imageUploadButton_UploadColor
 
   Button(
-    onClick = {
-      if (imageAlreadyUploaded) {
-        // Remove existing image
-        onImageRemoved()
-      } else {
-        // Pick/upload new image
-        imagePickerLauncher.launch("image/*")
+      onClick = {
+        if (imageAlreadyUploaded) {
+          // Remove existing image
+          onImageRemoved()
+        } else {
+          // Pick/upload new image
+          imagePickerLauncher.launch("image/*")
+        }
+      },
+      modifier =
+          Modifier.fillMaxWidth()
+              .padding(vertical = 8.dp)
+              .testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
+      shape = RoundedCornerShape(20.dp),
+      colors = ButtonDefaults.buttonColors(containerColor = buttonColor)) {
+        Text(text = if (imageAlreadyUploaded) "Remove Image" else "Upload Image", fontSize = 18.sp)
       }
-    },
-    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
-    shape = RoundedCornerShape(20.dp),
-    colors = ButtonDefaults.buttonColors(containerColor = buttonColor)
-  ) {
-    Text(
-      text = if (imageAlreadyUploaded) "Remove Image" else "Upload Image",
-      fontSize = 18.sp
-    )
-  }
 }
-
 
 @Composable
 fun UploadedImagePreview(photoUri: Uri?, modifier: Modifier = Modifier) {
   if (photoUri != null) {
     AsyncImage(
-      model = photoUri,
-      contentDescription = "Uploaded image",
-      modifier = modifier
-        .fillMaxWidth()
-        .height(180.dp)
-        .padding(bottom = 8.dp)
-        .testTag(AddReportScreenTestTags.IMAGE_PREVIEW),
-      contentScale = ContentScale.Fit
-    )
+        model = photoUri,
+        contentDescription = "Uploaded image",
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .padding(bottom = 8.dp)
+                .testTag(AddReportScreenTestTags.IMAGE_PREVIEW),
+        contentScale = ContentScale.Fit)
   }
 }
 
 @Composable
 fun CreateReportButton(
-  addReportViewModel: AddReportViewModelContract,
-  snackbarHostState: SnackbarHostState,
-  onSuccess: () -> Unit
+    addReportViewModel: AddReportViewModelContract,
+    snackbarHostState: SnackbarHostState,
+    onSuccess: () -> Unit
 ) {
   val scope = rememberCoroutineScope()
   Button(
-    onClick = {
-      scope.launch {
-        val created = addReportViewModel.createReport()
-        if (created) {
-          onSuccess()
-        } else {
-          snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
+      onClick = {
+        scope.launch {
+          val created = addReportViewModel.createReport()
+          if (created) {
+            onSuccess()
+          } else {
+            snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
+          }
         }
+      },
+      modifier =
+          Modifier.fillMaxWidth().height(56.dp).testTag(AddReportScreenTestTags.CREATE_BUTTON),
+      shape = RoundedCornerShape(20.dp),
+      colors = ButtonDefaults.buttonColors(containerColor = createReportButtonColor)) {
+        Text("Create Report", fontSize = 24.sp)
       }
-    },
-    modifier = Modifier
-      .fillMaxWidth()
-      .height(56.dp)
-      .testTag(AddReportScreenTestTags.CREATE_BUTTON),
-    shape = RoundedCornerShape(20.dp),
-    colors = ButtonDefaults.buttonColors(containerColor = createReportButtonColor)
-  ) {
-    Text("Create Report", fontSize = 24.sp)
-  }
 }
 
 /**

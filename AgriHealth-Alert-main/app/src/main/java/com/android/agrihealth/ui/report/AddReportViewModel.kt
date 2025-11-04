@@ -57,7 +57,7 @@ class AddReportViewModel(
             id = reportRepository.getNewReportId(),
             title = uiState.title,
             description = uiState.description,
-            photoUri = uiState.photoUri, // currently unused
+            photoUri = uiState.photoUri,
             farmerId = userId,
             vetId = "Best Vet Ever!", // TODO: Use the real vetID when implemented
             status = ReportStatus.PENDING,

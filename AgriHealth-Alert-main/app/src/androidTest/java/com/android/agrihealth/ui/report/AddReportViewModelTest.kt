@@ -1,8 +1,11 @@
 package com.android.agrihealth.ui.report
 
+import android.net.Uri
+import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -39,6 +42,8 @@ class FakeReportRepository : ReportRepository {
   override suspend fun deleteReport(reportId: String) {}
 }
 
+val FAKE_PICTURE_FILE = "report_image_cat.jpg"
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddReportViewModelTest {
 
@@ -63,6 +68,7 @@ class AddReportViewModelTest {
     assertEquals("", state.title)
     assertEquals("", state.description)
     assertEquals("", state.chosenVet)
+    assertNull(viewModel.uiState.value.photoUri)
   }
 
   @Test
@@ -70,6 +76,7 @@ class AddReportViewModelTest {
     viewModel.setTitle("Hello")
     assertEquals("Hello", viewModel.uiState.value.title)
     assertEquals("", viewModel.uiState.value.description)
+    assertNull(viewModel.uiState.value.photoUri)
   }
 
   @Test
@@ -77,12 +84,20 @@ class AddReportViewModelTest {
     viewModel.setDescription("Desc")
     assertEquals("Desc", viewModel.uiState.value.description)
     assertEquals("", viewModel.uiState.value.title)
+    assertNull(viewModel.uiState.value.photoUri)
   }
 
   @Test
   fun setVet_updatesVetOnly() {
     viewModel.setVet("Vet")
     assertEquals("Vet", viewModel.uiState.value.chosenVet)
+  }
+
+  @Test
+  fun setPhoto_updatesPhotoOnly() {
+    val fakePicture = getPicture(FAKE_PICTURE_FILE)
+    viewModel.setPhoto(fakePicture)
+    assertEquals(fakePicture, viewModel.uiState.value.photoUri)
   }
 
   @Test
@@ -124,5 +139,15 @@ class AddReportViewModelTest {
     assertEquals("", state.title)
     assertEquals("", state.description)
     assertEquals("", state.chosenVet)
+    assertEquals(null, state.photoUri)
+  }
+
+  private fun getPicture(pictureName: String): Uri {
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+    val file = File(context.cacheDir, pictureName)
+    val assetManager = InstrumentationRegistry.getInstrumentation().context.assets
+    val inputStream = assetManager.open(pictureName)
+    inputStream.use { input -> file.outputStream().use { output -> input.copyTo(output) } }
+    return Uri.fromFile(file)
   }
 }
