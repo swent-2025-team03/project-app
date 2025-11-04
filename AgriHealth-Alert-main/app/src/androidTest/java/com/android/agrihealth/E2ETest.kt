@@ -253,7 +253,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performClick()
 
     completeSignUp(email, pwd, isVet = true)
-    checkEditProfileScreenIsDisplayed()
+    checkOverviewScreenIsDisplayed()
     assert(uid != Firebase.auth.uid)
     uid = Firebase.auth.uid
     signOutFromOverview()

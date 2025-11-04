@@ -116,7 +116,7 @@ fun AgriHealthApp(
         RoleSelectionScreen(
             credentialManager = credentialManager,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onButtonPressed = { navigationActions.navigateTo(Screen.Overview) })
+            onButtonPressed = { navigationActions.navigateTo(Screen.EditProfile) })
       }
     }
 

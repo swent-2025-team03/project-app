@@ -56,9 +56,6 @@ fun SignUpScreen(
     }
   }
 
-  //  LaunchedEffect(signUpUIState.user) { signUpUIState.user?.let {
-  //      onSignedUp() } }
-
   LaunchedEffect(signUpUIState.user) {
     signUpUIState.user?.let { firebaseUser ->
       // Build a minimal local user object right away (synchronous update)
