@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
+import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
@@ -280,15 +281,8 @@ fun ReportItem(report: Report, onClick: () -> Unit) {
  */
 @Composable
 fun StatusTag(status: ReportStatus) {
-  val color =
-      when (status) {
-        ReportStatus.PENDING -> MaterialTheme.colorScheme.surfaceVariant
-        ReportStatus.IN_PROGRESS -> MaterialTheme.colorScheme.tertiaryContainer
-        ReportStatus.RESOLVED -> MaterialTheme.colorScheme.secondaryContainer
-        ReportStatus.SPAM -> MaterialTheme.colorScheme.error
-      }
   Surface(
-      color = color,
+      color = statusColor(status),
       shape = MaterialTheme.shapes.small,
       modifier = Modifier.padding(start = 8.dp)) {
         Text(

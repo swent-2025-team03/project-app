@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.android.agrihealth.data.model.report.ReportStatus
 
 private val DarkColorScheme =
     darkColorScheme(primary = Purple80, secondary = PurpleGrey80, tertiary = Pink80)
@@ -86,4 +87,15 @@ fun AgriHealthAppTheme(
   }
 
   MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)
+}
+
+@Composable
+fun statusColor(status: ReportStatus): Color {
+  val colors = LocalStatusColors.current
+  return when (status) {
+    ReportStatus.PENDING -> colors.pending
+    ReportStatus.IN_PROGRESS -> colors.inProgress
+    ReportStatus.RESOLVED -> colors.resolved
+    ReportStatus.SPAM -> colors.spam
+  }
 }

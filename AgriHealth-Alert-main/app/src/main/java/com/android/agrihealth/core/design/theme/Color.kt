@@ -1,5 +1,6 @@
 package com.android.agrihealth.core.design.theme
 
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 val Purple80 = Color(0xFFD0BCFF)
@@ -15,3 +16,12 @@ val SurfaceDim = Color(0xFFCFD9CF)
 val ButtonBg = Color(0xFF9BB9B4)
 val TitleColor = Color(0xFF000000)
 val Test = Color(0xFF9AB8B3)
+
+data class StatusColors(
+    val pending: Color = Color(0xFFBDBDBD),
+    val inProgress: Color = Color(0xFFFFF59D),
+    val resolved: Color = Color(0xFFA5D6A7),
+    val spam: Color = Color(0xFFEF9A9A)
+)
+
+val LocalStatusColors = staticCompositionLocalOf { StatusColors() }
