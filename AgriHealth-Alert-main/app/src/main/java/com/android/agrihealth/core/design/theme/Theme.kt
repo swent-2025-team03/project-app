@@ -3,6 +3,7 @@ package com.android.agrihealth.core.design.theme
 import android.app.Activity
 import android.os.Build
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -13,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.font.FontWeight
 import androidx.core.view.WindowCompat
 import com.android.agrihealth.data.model.report.ReportStatus
 
@@ -37,6 +39,8 @@ private val LightColorScheme =
         primaryContainer = ButtonBg,
         onPrimaryContainer = Color.Black,
         surfaceBright = Color.White,
+        tertiaryContainer = Color.LightGray,
+        onTertiaryContainer = Color.Black,
 
         // Keep default values
         // error = ,
@@ -46,8 +50,6 @@ private val LightColorScheme =
         // tertiary = ,
         // inversePrimary = ,
         // onTertiary = ,
-        // tertiaryContainer = ,
-        // onTertiaryContainer = ,
         // inverseSurface = ,
         // inverseOnSurface = ,
         // outline = ,
@@ -86,7 +88,10 @@ fun AgriHealthAppTheme(
     }
   }
 
-  MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)
+  val typography =
+      Typography(displaySmall = Typography().displaySmall.copy(fontWeight = FontWeight.Bold))
+
+  MaterialTheme(colorScheme = colorScheme, typography = typography, content = content)
 }
 
 @Composable

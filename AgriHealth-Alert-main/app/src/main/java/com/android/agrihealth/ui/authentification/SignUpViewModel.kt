@@ -61,7 +61,7 @@ data class SignUpUIState(
   }
 }
 
-class SignUpViewModel(
+open class SignUpViewModel(
     private val authRepository: AuthRepository = AuthRepositoryProvider.repository
 ) : ViewModel() {
 
