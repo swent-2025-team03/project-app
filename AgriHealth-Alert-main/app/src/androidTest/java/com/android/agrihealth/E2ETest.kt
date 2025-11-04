@@ -1,6 +1,8 @@
 package com.android.agrihealth
 
+import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -200,6 +202,85 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   // ----------- Scenario: Farmer -----------
+
+    @Test
+    fun testFarmer_OverviewFilters_WorkCorrectly() {
+        composeTestRule.setContent { AgriHealthApp() }
+        completeSignIn(user1.email, "12345678")
+        checkOverviewScreenIsDisplayed()
+        val vet1 = AddReportConstants.vetOptions[0]
+        val vet2 = AddReportConstants.vetOptions[1]
+        createReport("Report 1", "Description 1", vet1)
+        createReport("Report 2", "Description 2", vet2)
+
+        // Report 1 appears when filtering for "In progress"
+        composeTestRule
+            .onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN)
+            .performClick()
+        composeTestRule
+            .onNodeWithTag("OPTION_PENDING")
+            .performClick()
+        composeTestRule
+            .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
+            .assertAny(hasText("Report 1"))
+
+        // Report 1 does not appears when filtering for "Resolved"
+        composeTestRule
+            .onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN)
+            .performClick()
+        composeTestRule
+            .onNodeWithTag("OPTION_RESOLVED")
+            .performClick()
+        composeTestRule
+            .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
+            .filter(hasText("Report 1"))
+            .assertCountEquals(0)
+
+        // Report 1 appears, report 2 does not appears when filtering for vet1
+        composeTestRule
+            .onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN)
+            .performClick()
+        composeTestRule
+            .onNodeWithTag("OPTION_All")
+            .performClick()
+        composeTestRule
+            .onNodeWithTag(OverviewScreenTestTags.VET_ID_DROPDOWN)
+            .performClick()
+        composeTestRule
+            .onNodeWithTag("OPTION_$vet1")
+            .performClick()
+        composeTestRule
+            .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
+            .assertAny(hasText("Report 1"))
+        /*
+        * Some features (e.g., vetId assignment) depend on the upcoming Complete Profile Screen PR.
+        * As a result, vetId filtering is currently not fully testable due to hardcoded values.
+        * Temporarily commenting out this section.
+        *
+        composeTestRule
+            .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
+            .filter(hasText("Report 2"))
+            .assertCountEquals(0)
+        */
+
+        // Report 1 and 2 both appear when filtering for All
+        composeTestRule
+            .onNodeWithTag(OverviewScreenTestTags.VET_ID_DROPDOWN)
+            .performClick()
+        composeTestRule
+            .onNodeWithTag("OPTION_All")
+            .performClick()
+        composeTestRule
+            .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
+            .assertAny(hasText("Report 1"))
+        composeTestRule
+            .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
+            .assertAny(hasText("Report 2"))
+
+        signOutFromOverview()
+        composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
+    }
+
   @Test
   fun testFarmer_SignIn_ClickReport_Back_Logout() {
     composeTestRule.setContent { AgriHealthApp() }

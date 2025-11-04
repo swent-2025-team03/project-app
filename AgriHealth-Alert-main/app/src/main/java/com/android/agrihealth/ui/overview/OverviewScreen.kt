@@ -14,9 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
@@ -26,9 +24,14 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
+// -- imports for preview --
+/*
+import androidx.compose.ui.tooling.preview.Preview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+*/
 
 object OverviewScreenTestTags {
-
   const val TOP_APP_BAR_TITLE = NavigationTestTags.TOP_BAR_TITLE
   const val ADD_REPORT_BUTTON = "addReportFab"
   const val LOGOUT_BUTTON = "logoutButton"
@@ -106,7 +109,8 @@ fun OverviewScreen(
       content = { paddingValues ->
         Column(
             modifier =
-                Modifier.fillMaxSize()
+                Modifier
+                    .fillMaxSize()
                     .padding(paddingValues)
                     .padding(16.dp)
                     .testTag(OverviewScreenTestTags.SCREEN) // ← tag stable sur le conteneur racine
@@ -125,23 +129,22 @@ fun OverviewScreen(
                 Button(
                     onClick = onAddReport,
                     modifier =
-                        Modifier.align(Alignment.CenterHorizontally)
+                        Modifier
+                            .align(Alignment.CenterHorizontally)
                             .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
                       Text("Create a new report")
                     }
               }
 
-              Spacer(modifier = Modifier.height(15.dp))
+            Spacer(modifier = Modifier.height(15.dp))
+            // -- Past reports list --
+            Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
+            Spacer(modifier = Modifier.height(12.dp))
 
-              var selectedStatus by remember { mutableStateOf<ReportStatus?>(null) }
-              var selectedVet by remember { mutableStateOf<String?>(null) }
-
-              // -- Status filter --
               Row(
                   verticalAlignment = Alignment.CenterVertically,
                   modifier = Modifier.fillMaxWidth()) {
-                    Text("Filter by Status", fontWeight = FontWeight.Medium)
-                    Spacer(modifier = Modifier.width(8.dp))
+                    // -- Status filter --
                     DropdownMenuWrapper(
                         options = listOf(null) + ReportStatus.entries,
                         selectedOption = uiState.selectedStatus,
@@ -149,60 +152,38 @@ fun OverviewScreen(
                           overviewViewModel.updateFilters(
                               it, uiState.selectedVet, uiState.selectedFarmer)
                         },
-                        modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN))
-                  }
-
-              // -- VetId filter (only for farmer) --
-              if (userRole == UserRole.FARMER) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()) {
-                      Text("Filter by Vet ID", fontWeight = FontWeight.Medium)
-                      Spacer(modifier = Modifier.width(8.dp))
+                        modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN)
+                    )
+                  Spacer(modifier = Modifier.width(8.dp))
+                  if (userRole == UserRole.FARMER) {
+                      // -- VetId filter (only for farmer) --
                       DropdownMenuWrapper(
                           options = listOf(null) + uiState.vetOptions,
                           selectedOption = uiState.selectedVet,
                           onOptionSelected = {
-                            overviewViewModel.updateFilters(
-                                uiState.selectedStatus, it, farmerId = uiState.selectedFarmer)
+                              overviewViewModel.updateFilters(
+                                  status = uiState.selectedStatus,
+                                  vetId = it,
+                                  farmerId = uiState.selectedFarmer)
                           },
-                          modifier = Modifier.testTag(OverviewScreenTestTags.VET_ID_DROPDOWN))
-                    }
-              }
-              // -- FarmerId filter (only for vet) --
-              if (userRole == UserRole.VET) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()) {
-                      Text("Filter by Farmer ID", fontWeight = FontWeight.Medium)
-                      Spacer(modifier = Modifier.width(8.dp))
+                          modifier = Modifier.testTag(OverviewScreenTestTags.VET_ID_DROPDOWN)
+                      )
+                  } else if (userRole == UserRole.VET) {
+                      // -- FarmerId filter (only for vet) --
                       DropdownMenuWrapper(
                           options = listOf(null) + uiState.farmerOptions,
                           selectedOption = uiState.selectedFarmer,
                           onOptionSelected = {
-                            overviewViewModel.updateFilters(
-                                status = uiState.selectedStatus,
-                                vetId = uiState.selectedVet,
-                                farmerId = it)
+                              overviewViewModel.updateFilters(
+                                  status = uiState.selectedStatus,
+                                  vetId = uiState.selectedVet,
+                                  farmerId = it)
                           },
-                          modifier = Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN))
-                    }
-              }
-
-              // -- Apply filter --
-              val filteredReports =
-                  reports.filter { report ->
-                    (selectedStatus == null || report.status == selectedStatus) &&
-                        (selectedVet == null || report.vetId == selectedVet)
+                          modifier = Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN)
+                      )
+                  }
                   }
 
-              Spacer(modifier = Modifier.height(15.dp))
-
-              // -- Past reports list --
-              Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
-              Spacer(modifier = Modifier.height(12.dp))
               LazyColumn(modifier = Modifier.weight(1f)) {
                 items(uiState.filteredReports) { report ->
                   ReportItem(
@@ -225,11 +206,11 @@ fun LatestAlertCard() {
   Card(modifier = Modifier.fillMaxWidth()) {
     Column(modifier = Modifier.padding(16.dp)) {
       // Using mock data for now, will implement the logics for LatestAlert later
-      Text("Influenza Detected", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-      Text("Outbreak: 08/10/2025")
-      Text("Symptoms: Sudden drop in egg production, respiratory distress")
-      Text("Region: Vaud, Switzerland")
-      Spacer(modifier = Modifier.height(8.dp))
+        Text("Influenza Detected", style = MaterialTheme.typography.titleMedium)
+        Text("Outbreak: 08/10/2025", style = MaterialTheme.typography.bodyMedium)
+        Text("Symptoms: Sudden drop in egg production, respiratory distress", style = MaterialTheme.typography.bodyMedium)
+        Text("Region: Vaud, Switzerland", style = MaterialTheme.typography.bodyMedium)
+        Spacer(modifier = Modifier.height(8.dp))
       // Will need to put outbreak photo
       /*Image(
       *    painter = painterResource(id = R.drawable.placeholder),
@@ -251,16 +232,26 @@ fun <T> DropdownMenuWrapper(
   var expanded by remember { mutableStateOf(false) }
   val displayText = selectedOption?.toString() ?: "All"
 
-  Box(modifier = modifier) {
-    Button(onClick = { expanded = true }) { Text(displayText) }
-    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+  Box {
+    Button(
+        onClick = { expanded = true },
+        modifier = modifier
+    ) {
+        Text(displayText, style = MaterialTheme.typography.bodyMedium)
+    }
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false }
+    ) {
       options.forEach { option ->
         DropdownMenuItem(
-            text = { Text(option?.toString() ?: "All") },
+            modifier = Modifier.testTag("OPTION_${option?.toString() ?: "All"}"),
+            text = { Text(option?.toString() ?: "All", style = MaterialTheme.typography.bodyMedium) },
             onClick = {
               onOptionSelected(option)
               expanded = false
-            })
+            }
+        )
       }
     }
   }
@@ -274,15 +265,16 @@ fun <T> DropdownMenuWrapper(
 fun ReportItem(report: Report, onClick: () -> Unit) {
   Row(
       modifier =
-          Modifier.fillMaxWidth()
+          Modifier
+              .fillMaxWidth()
               .testTag(OverviewScreenTestTags.REPORT_ITEM)
               .clickable { onClick() }
               .padding(vertical = 8.dp),
       verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
-          Text(report.title, fontSize = 18.sp, fontWeight = FontWeight.Medium)
-          Text("Farmer ID: ${report.farmerId}")
-          Text(
+            Text(report.title, style = MaterialTheme.typography.titleSmall)
+            Text("Farmer ID: ${report.farmerId}", style = MaterialTheme.typography.bodyMedium)
+            Text(
               text = report.description.let { if (it.length > 50) it.take(50) + "..." else it },
               style = MaterialTheme.typography.bodySmall,
               maxLines = 1)
@@ -316,12 +308,10 @@ fun StatusTag(status: ReportStatus) {
 }
 
 /** Preview of the OverviewScreen with dummy data. Temporarily commented out */
-
 /*
 @Preview(showBackground = true)
-@Composable fun PreviewOverviewScreen() {
-    val dummyNavController = rememberNavController()
-    val dummyNavigationActions = NavigationActions(dummyNavController)
+@Composable
+fun PreviewOverviewScreen() {
     val dummyReports = listOf(
         Report(
             id = "1",
@@ -341,12 +331,30 @@ fun StatusTag(status: ReportStatus) {
             farmerId = "farmer_002",
             vetId = "vet_002",
             status = ReportStatus.PENDING,
-            answer = null, location = null))
+            answer = null, location = null)
+    )
+    val dummyUiState = OverviewUIState(
+        reports = dummyReports,
+        filteredReports = dummyReports,
+        selectedStatus = null,
+        selectedVet = null,
+        selectedFarmer = null,
+        vetOptions = listOf("vet_001", "vet_002"),
+        farmerOptions = listOf("farmer_001", "farmer_002")
+    )
+    val dummyViewModel = object : OverviewViewModelContract {
+        override val uiState: StateFlow<OverviewUIState> = MutableStateFlow(dummyUiState)
+        override fun loadReports(userRole: UserRole, userId: String) {}
+        override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {}
+        override fun signOut(credentialManager: CredentialManager) {}
+    }
     OverviewScreen(
         userRole = UserRole.FARMER,
+        userId = "farmer_001",
+        overviewViewModel = dummyViewModel,
         onAddReport = {},
         onReportClick = {},
-        navigationActions = dummyNavigationActions,
-        reports = dummyReports, )
+        navigationActions = null
+    )
 }
 */
