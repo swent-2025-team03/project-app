@@ -87,19 +87,6 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.ADD_CODE_BUTTON).assertDoesNotExist()
   }
 
-  @OptIn(ExperimentalTestApi::class)
-  @Test
-  fun clickingPasswordField_showsSnackbarMessage() {
-    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeFarmerViewModel()) }
-
-    // Click trailing icon in password field
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.PASSWORD_FIELD).onChild().performClick()
-
-    // Wait for snackbar to appear
-    composeTestRule.waitUntilExactlyOneExists(
-        hasText("Password change not possible yet."), timeoutMillis = 3000)
-  }
-
   @Test
   fun saveButton_triggersSaveCallback() {
     var saved = false
