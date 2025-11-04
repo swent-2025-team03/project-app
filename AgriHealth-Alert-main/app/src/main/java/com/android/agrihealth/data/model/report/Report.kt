@@ -23,3 +23,9 @@ data class Report(
     val location: Location?,
     val createdAt: Instant = Instant.now() // Auto-set creation timestamp
 )
+
+fun ReportStatus.displayString(): String =
+    name
+        .lowercase()
+        .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+        .replace("_", " ")

@@ -26,16 +26,20 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.RoleSelectionScreen
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
 import com.android.agrihealth.ui.map.MapScreen
+import com.android.agrihealth.ui.map.MapViewModel
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
+import com.android.agrihealth.ui.profile.ChangePasswordScreen
+import com.android.agrihealth.ui.profile.ChangePasswordViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreen
 import com.android.agrihealth.ui.profile.ProfileScreen
 import com.android.agrihealth.ui.report.AddReportScreen
@@ -162,7 +166,7 @@ fun AgriHealthApp(
             val viewModel: ReportViewModel = viewModel()
 
             ReportViewScreen(
-                navController = navController,
+                navigationActions = navigationActions,
                 userRole = currentUserRole,
                 viewModel = viewModel,
                 reportId = reportId)
@@ -186,6 +190,13 @@ fun AgriHealthApp(
               // If farmer clicked "Add new Vet with Code", open EditProfile and focus code field
               navController.navigate("${Screen.EditProfile.route}?openCode=true")
             })
+      }
+      composable(Screen.ChangePassword.route) {
+        ChangePasswordScreen(
+            onBack = { navigationActions.goBack() },
+            onUpdatePassword = { navigationActions.navigateTo(Screen.EditProfile) },
+            userEmail = currentUser.email,
+            changePasswordViewModel = ChangePasswordViewModel())
       }
       composable(
           route = Screen.EditProfile.route + "?openCode={openCode}",
@@ -212,14 +223,37 @@ fun AgriHealthApp(
           }
     }
 
-    navigation(
-        startDestination = Screen.Map.route,
-        route = Screen.Map.name,
-    ) {
-      composable(Screen.Map.route) {
-        MapScreen(navigationActions = navigationActions, isViewedFromOverview = true)
-      }
-    }
+    composable(
+        route = Screen.Map.route,
+        arguments =
+            listOf(
+                navArgument("lat") {
+                  type = NavType.StringType
+                  nullable = true
+                  defaultValue = null
+                },
+                navArgument("lng") {
+                  type = NavType.StringType
+                  nullable = true
+                  defaultValue = null
+                },
+                navArgument("reportId") {
+                  type = NavType.StringType
+                  nullable = true
+                  defaultValue = null
+                })) { backStackEntry ->
+          val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull()
+          val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull()
+          val sourceReport = backStackEntry.arguments?.getString("reportId")
+
+          val location = if (lat != null && lng != null) Location(lat, lng) else null
+          val mapViewModel = MapViewModel(selectedReportId = sourceReport)
+          MapScreen(
+              mapViewModel = mapViewModel,
+              navigationActions = navigationActions,
+              isViewedFromOverview = (sourceReport == null),
+              startingPosition = location)
+        }
   }
 }
 
