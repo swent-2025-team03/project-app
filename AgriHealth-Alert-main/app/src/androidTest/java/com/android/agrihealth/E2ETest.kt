@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
+import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.ui.authentification.RoleSelectionScreenTestTags
 import com.android.agrihealth.ui.authentification.SignInErrorMsg
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
@@ -14,13 +15,18 @@ import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
 import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
+import com.android.agrihealth.ui.profile.ChangePasswordScreenTestTags
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags
+import com.android.agrihealth.ui.profile.ProfileViewModel
 import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags
+import com.android.agrihealth.ui.user.UserViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -180,24 +186,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     }
   }
 
-  private fun generateFarmerCode() {
-    composeTestRule
-        .onNodeWithTag(ProfileScreenTestTags.CODE_BUTTON_VET)
-        .assertIsDisplayed()
-        .performClick()
-
-    composeTestRule.waitUntil {
-      composeTestRule
-          .onAllNodesWithTag(ProfileScreenTestTags.GENERATED_CODE_TEXT)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
-
-    // I am looking for a way to keep the code I generated with the vet to use it in the test when
-    // the farmer connects
-    // return code
-  }
-
   private fun goBack() {
     composeTestRule
         .onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
@@ -287,5 +275,83 @@ class E2ETest : FirebaseEmulatorsTest() {
     checkOverviewScreenIsDisplayed()
     signOutFromOverview()
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
+  }
+
+  @Test
+  fun testVetFarmerLinkAndPasswordChange() {
+    composeTestRule.setContent { AgriHealthApp() }
+
+    val farmerEmail = "farmer.link@example.com"
+    val password = "Password!123"
+
+    val vet =
+        Vet(
+            uid = "vet_001",
+            firstname = "Dr",
+            lastname = "Vet",
+            email = "vet@test.com",
+            address = null,
+            linkedFarmers = emptyList(),
+            validCodes = emptyList())
+
+    val userViewModel = UserViewModel(initialUser = vet)
+    val profileViewModel = ProfileViewModel(userViewModel)
+    profileViewModel.generateVetCode()
+
+    // Wait for the code to appear in StateFlow
+    val vetCode = runBlocking { profileViewModel.generatedCode.first { it != null } }
+
+    println("Generated vet code: $vetCode")
+
+    composeTestRule.onNodeWithTag(SignInScreenTestTags.SIGN_UP_BUTTON).performClick()
+    completeSignUp(farmerEmail, password, isVet = false)
+    checkOverviewScreenIsDisplayed()
+
+    composeTestRule
+        .onNodeWithTag(OverviewScreenTestTags.PROFILE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule
+        .onNodeWithTag(ProfileScreenTestTags.CODE_BUTTON_FARMER)
+        .assertIsDisplayed()
+        .performClick()
+
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.CODE_FIELD)
+        .assertIsDisplayed()
+        .performTextInput((vetCode)!!)
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.ADD_CODE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.PASSWORD_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+
+    composeTestRule.waitUntil {
+      composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD).isDisplayed()
+    }
+
+    val newPassword = "NewPassword!456"
+    composeTestRule
+        .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
+        .performTextInput(password)
+    composeTestRule
+        .onNodeWithTag(ChangePasswordScreenTestTags.NEW_PASSWORD)
+        .performTextInput(newPassword)
+    composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
+
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).isDisplayed()
+    }
   }
 }

@@ -22,6 +22,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
@@ -37,6 +38,8 @@ object EditProfileScreenTestTags {
   const val ADD_CODE_BUTTON = "AddVetButton"
   const val ACTIVE_CODES_DROPDOWN = "ActiveCodesDropdown"
   const val SAVE_BUTTON = "SaveButton"
+
+  const val PASSWORD_BUTTON = "PasswordButton"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -143,9 +146,11 @@ fun EditProfileScreen(
                         Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     trailingIcon = {
-                      IconButton(onClick = { onPasswordChange() }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit Password")
-                      }
+                      IconButton(
+                          onClick = { onPasswordChange() },
+                          modifier = Modifier.testTag(PASSWORD_BUTTON)) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit Password")
+                          }
                     })
               }
 
