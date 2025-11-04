@@ -195,13 +195,13 @@ fun AgriHealthApp(
             })
       }
     }
-      composable(Screen.ChangePassword.route) {
-        ChangePasswordScreen(
-            onBack = { navigationActions.goBack() },
-            onUpdatePassword = { navigationActions.navigateTo(Screen.EditProfile) },
-            userEmail = currentUser.email,
-            changePasswordViewModel = ChangePasswordViewModel())
-      }
+    composable(Screen.ChangePassword.route) {
+      ChangePasswordScreen(
+          onBack = { navigationActions.goBack() },
+          onUpdatePassword = { navigationActions.navigateTo(Screen.EditProfile) },
+          userEmail = currentUser.email,
+          changePasswordViewModel = ChangePasswordViewModel())
+    }
 
     // --- Edit Profile Graph ---
     navigation(startDestination = Screen.EditProfile.route, route = Screen.EditProfile.name) {
