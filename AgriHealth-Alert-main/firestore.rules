@@ -40,5 +40,21 @@ service cloud.firestore {
 	     request.auth.uid == request.resource.data.farmerId);
 	  allow read: if request.auth != null;
 	}
+
+    // Reports Collection
+    match /reports/{reportID} {
+      allow read, delete: if request.auth != null &&
+        (request.auth.uid == resource.data.farmerId ||
+         request.auth.uid == resource.data.vetId);
+
+      allow update: if request.auth != null &&
+        (request.auth.uid == resource.data.farmerId ||
+        request.auth.uid == resource.data.vetId) &&
+        !(request.resource.data.diff(resource.data).changedKeys().hasAny(['vetId'])) &&
+        !(request.resource.data.diff(resource.data).changedKeys().hasAny(['farmerId']));
+
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.farmerId;
+    }
   }
 }
