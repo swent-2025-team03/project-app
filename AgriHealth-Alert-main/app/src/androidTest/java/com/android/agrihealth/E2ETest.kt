@@ -410,6 +410,8 @@ class E2ETest : FirebaseEmulatorsTest() {
       }
     }
 
+      composeTestRule.waitForIdle()
+
     val newPassword = "NewPassword!456"
     composeTestRule
         .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
