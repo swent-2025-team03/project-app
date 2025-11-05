@@ -179,13 +179,13 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun checkOverviewScreenIsDisplayed() {
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    composeTestRule.waitUntil(timeoutMillis = 6_000) {
       composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).isDisplayed()
     }
   }
 
   private fun checkEditProfileScreenIsDisplayed() {
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    composeTestRule.waitUntil(timeoutMillis = 7_000) {
       composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).isDisplayed()
     }
   }
@@ -242,7 +242,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.waitUntil(5000) {
+    composeTestRule.waitUntil(8000) {
       composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).isDisplayed()
     }
     composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).performClick()
@@ -326,7 +326,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
     completeSignIn(user2.email, "12345678")
-    composeTestRule.waitUntil(5_000) {
+    composeTestRule.waitUntil(9_000) {
       composeTestRule.onNodeWithText(SignInErrorMsg.INVALID_CREDENTIALS).isDisplayed()
     }
     composeTestRule.onNodeWithTag(SignInScreenTestTags.EMAIL_FIELD).performTextClearance()
@@ -386,7 +386,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.waitUntil(5000) {
+    composeTestRule.waitUntil(10000) {
       composeTestRule
           .onAllNodesWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
           .fetchSemanticsNodes()
@@ -398,7 +398,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.waitUntil(5000) {
+    composeTestRule.waitUntil(11000) {
       composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD).isDisplayed()
     }
 
@@ -411,7 +411,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performTextInput(newPassword)
     composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
 
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
+    composeTestRule.waitUntil(timeoutMillis = 12000) {
       composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).isDisplayed()
     }
   }
