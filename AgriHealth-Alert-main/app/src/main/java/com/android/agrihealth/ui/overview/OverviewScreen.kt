@@ -112,8 +112,7 @@ fun OverviewScreen(
                 Modifier.fillMaxSize()
                     .padding(paddingValues)
                     .padding(16.dp)
-                    .testTag(OverviewScreenTestTags.SCREEN) // ← tag stable sur le conteneur racine
-            ) {
+                    .testTag(OverviewScreenTestTags.SCREEN)) {
               // -- Latest alert section --
               Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
 
@@ -182,6 +181,7 @@ fun OverviewScreen(
               LazyColumn(modifier = Modifier.weight(1f)) {
                 items(uiState.filteredReports) { report ->
                   ReportItem(
+                      userRole = userRole,
                       report = report,
                       onClick = { onReportClick(report.id) },
                   )
@@ -254,7 +254,7 @@ fun <T> DropdownMenuWrapper(
  * description, and status tag.
  */
 @Composable
-fun ReportItem(report: Report, onClick: () -> Unit) {
+fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
   Row(
       modifier =
           Modifier.fillMaxWidth()
@@ -264,7 +264,12 @@ fun ReportItem(report: Report, onClick: () -> Unit) {
       verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
           Text(report.title, style = MaterialTheme.typography.titleSmall)
-          Text("Farmer ID: ${report.farmerId}", style = MaterialTheme.typography.bodyMedium)
+          when (userRole) {
+            UserRole.FARMER ->
+                Text("Vet ID: ${report.vetId}", style = MaterialTheme.typography.bodyMedium)
+            UserRole.VET ->
+                Text("Farmer ID: ${report.farmerId}", style = MaterialTheme.typography.bodyMedium)
+          }
           Text(
               text = report.description.let { if (it.length > 50) it.take(50) + "..." else it },
               style = MaterialTheme.typography.bodySmall,

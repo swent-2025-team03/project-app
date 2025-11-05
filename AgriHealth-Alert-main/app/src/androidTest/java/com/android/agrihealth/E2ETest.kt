@@ -1,7 +1,10 @@
 package com.android.agrihealth
 
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.*
+import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
@@ -200,10 +203,6 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(ReportViewScreenTestTags.VIEW_ON_MAP)
         .assertIsDisplayed()
         .performClick()
-    composeTestRule
-        .onNodeWithTag(MapScreenTestTags.REPORT_INFO_BOX)
-        .assertIsDisplayed()
-        .performClick()
   }
 
   private fun mapClickViewReport() {
@@ -211,6 +210,24 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)
         .assertIsDisplayed()
         .performClick()
+  }
+
+  // To fix E2E test clicking on random report marker on map (without needing to know its ID)
+  fun ComposeTestRule.clickRandomReportMarker() {
+
+    val allMarkers = onAllNodes(hasTestTagThatStartsWith("reportMarker_"))
+    if (allMarkers.fetchSemanticsNodes().isEmpty()) {
+      throw AssertionError("No report markers found on map!")
+    }
+    val randomIndex = (0 until allMarkers.fetchSemanticsNodes().size).random()
+    allMarkers[randomIndex].performClick()
+  }
+
+  fun hasTestTagThatStartsWith(prefix: String): SemanticsMatcher {
+    return SemanticsMatcher("${SemanticsProperties.TestTag.name} starts with $prefix") { node ->
+      val tag = node.config.getOrNull(SemanticsProperties.TestTag)
+      tag?.startsWith(prefix) == true
+    }
   }
 
   // ----------- Scenario: Vet -----------
@@ -260,8 +277,8 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.setContent { AgriHealthApp() }
     completeSignIn(user1.email, "12345678")
     checkOverviewScreenIsDisplayed()
-    val vet1 = AddReportConstants.vetOptions[0]
-    val vet2 = AddReportConstants.vetOptions[1]
+    val vet1 = "Best Vet Ever!"
+    val vet2 = "Meh Vet"
     createReport("Report 1", "Description 1", vet1)
     createReport("Report 2", "Description 2", vet2)
 
@@ -288,16 +305,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule
         .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
         .assertAny(hasText("Report 1"))
-    /*
-    * Some features (e.g., vetId assignment) depend on the upcoming Complete Profile Screen PR.
-    * As a result, vetId filtering is currently not fully testable due to hardcoded values.
-    * Temporarily commenting out this section.
-    *
-    composeTestRule
-        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
-        .filter(hasText("Report 2"))
-        .assertCountEquals(0)
-    */
 
     // Report 1 and 2 both appear when filtering for All
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.VET_ID_DROPDOWN).performClick()
@@ -329,6 +336,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     createReport("Report title", "Report description", vetId)
     clickFirstReportItem()
     reportViewClickViewOnMap()
+    composeTestRule.clickRandomReportMarker()
     mapClickViewReport()
     goBack()
     goBack()
