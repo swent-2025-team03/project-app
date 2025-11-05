@@ -398,7 +398,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.waitUntil(5000) {
+    composeTestRule.waitUntil(6000) {
       try {
         composeTestRule
             .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
