@@ -410,7 +410,7 @@ class E2ETest : FirebaseEmulatorsTest() {
       }
     }
 
-      composeTestRule.waitForIdle()
+    composeTestRule.waitForIdle()
 
     val newPassword = "NewPassword!456"
     composeTestRule
