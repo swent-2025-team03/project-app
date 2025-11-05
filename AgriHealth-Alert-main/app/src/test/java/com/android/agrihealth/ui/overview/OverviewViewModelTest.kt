@@ -66,6 +66,19 @@ class OverviewViewModelTest {
     // No crash = success
   }
 
+  @Test
+  fun `updateFilters applies filters correctly`() = runTest {
+    viewModel.loadReports(UserRole.VET, "VET_001")
+    advanceUntilIdle()
+
+    val vetId = viewModel.uiState.value.vetOptions.firstOrNull()
+    viewModel.updateFilters(status = null, vetId = vetId, farmerId = null)
+    val state = viewModel.uiState.value
+
+    Assert.assertEquals(vetId, state.selectedVet)
+    Assert.assertTrue(state.filteredReports.all { it.vetId == vetId })
+  }
+
   @After
   fun tearDown() {
     Dispatchers.resetMain()
