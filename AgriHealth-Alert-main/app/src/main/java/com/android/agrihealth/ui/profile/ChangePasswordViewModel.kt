@@ -49,9 +49,12 @@ class ChangePasswordViewModel(
       repository.reAuthenticate(_uiState.value.email, _uiState.value.oldPassword).fold({
         repository.changePassword(_uiState.value.newPassword).fold({
           _uiState.value = _uiState.value.copy(success = true)
-        }) {}
-      }) {
+        }) { failure ->
+          throw failure
+        }
+      }) { failure ->
         _uiState.value = _uiState.value.copy(oldWrong = true)
+        throw failure
       }
     }
   }
