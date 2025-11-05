@@ -27,7 +27,6 @@ import com.android.agrihealth.ui.report.ReportViewScreenTestTags
 import com.android.agrihealth.ui.user.UserViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import java.lang.Thread.sleep
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -400,7 +399,15 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performClick()
 
     composeTestRule.waitUntil(5000) {
-      composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD).isDisplayed()
+      try {
+        composeTestRule
+            .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
+            .assertIsDisplayed()
+            .assertIsEnabled()
+        true
+      } catch (_: Exception) {
+        false
+      }
     }
 
     val newPassword = "NewPassword!456"
@@ -410,7 +417,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule
         .onNodeWithTag(ChangePasswordScreenTestTags.NEW_PASSWORD)
         .performTextInput(newPassword)
-    sleep(1000)
     composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
 
     composeTestRule.waitUntil(timeoutMillis = 5000) {
