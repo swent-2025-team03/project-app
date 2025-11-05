@@ -83,6 +83,7 @@ fun AgriHealthApp(
   val currentUser by userViewModel.user.collectAsState()
   val currentUserId = currentUser.uid
   val currentUserRole = currentUser.role
+  val currentUserEmail = currentUser.email
 
   val startDestination = remember {
     if (Firebase.auth.currentUser == null) Screen.Auth.name
@@ -217,11 +218,12 @@ fun AgriHealthApp(
     // --- Change Password Graph ---
     navigation(startDestination = Screen.ChangePassword.route, route = Screen.ChangePassword.name) {
       composable(Screen.ChangePassword.route) {
+        val changePasswordViewModel: ChangePasswordViewModel = viewModel()
         ChangePasswordScreen(
             onBack = { navigationActions.goBack() },
             onUpdatePassword = { navigationActions.navigateTo(Screen.EditProfile) },
-            userEmail = currentUser.email,
-            changePasswordViewModel = ChangePasswordViewModel())
+            userEmail = currentUserEmail,
+            changePasswordViewModel = changePasswordViewModel)
       }
     }
 
