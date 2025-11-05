@@ -416,9 +416,11 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule
         .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
         .performTextInput(password)
+    composeTestRule.onNodeWithText(password).assertIsDisplayed()
     composeTestRule
         .onNodeWithTag(ChangePasswordScreenTestTags.NEW_PASSWORD)
         .performTextInput(newPassword)
+    composeTestRule.onNodeWithText(newPassword).assertIsDisplayed()
     composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
 
     composeTestRule.waitUntil(timeoutMillis = 5000) {
