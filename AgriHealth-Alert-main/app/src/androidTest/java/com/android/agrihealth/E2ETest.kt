@@ -213,14 +213,13 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   // To fix E2E test clicking on random report marker on map (without needing to know its ID)
-  fun ComposeTestRule.clickRandomReportMarker() {
-
+  fun ComposeTestRule.clickFirstReportMarker() {
     val allMarkers = onAllNodes(hasTestTagThatStartsWith("reportMarker_"))
-    if (allMarkers.fetchSemanticsNodes().isEmpty()) {
+    val markerNodes = allMarkers.fetchSemanticsNodes()
+    if (markerNodes.isEmpty()) {
       throw AssertionError("No report markers found on map!")
     }
-    val randomIndex = (0 until allMarkers.fetchSemanticsNodes().size).random()
-    allMarkers[randomIndex].performClick()
+    allMarkers[0].performClick()
   }
 
   fun hasTestTagThatStartsWith(prefix: String): SemanticsMatcher {
@@ -336,7 +335,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     createReport("Report title", "Report description", vetId)
     clickFirstReportItem()
     reportViewClickViewOnMap()
-    composeTestRule.clickRandomReportMarker()
+    composeTestRule.clickFirstReportMarker()
     mapClickViewReport()
     goBack()
     goBack()
