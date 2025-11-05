@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 val defaultUser =
     Farmer(
@@ -49,7 +50,7 @@ open class UserViewModel(
   init {
     val currentUser = auth.currentUser
     if (currentUser != null) {
-      loadUser(currentUser.uid)
+      runBlocking { loadUser(currentUser.uid) }
     }
   }
 
@@ -58,14 +59,12 @@ open class UserViewModel(
    *
    * @param userId The ID of the user whose role is to be loaded.
    */
-  fun loadUser(userId: String) {
-    viewModelScope.launch {
-      val result = userRepository.getUserFromId(userId)
+  suspend fun loadUser(userId: String) {
+    val result = userRepository.getUserFromId(userId)
 
-      result.fold(
-          onSuccess = { user -> _user.value = user },
-          onFailure = { e -> Log.e("UserViewModel", "Failed to load user role", e) })
-    }
+    result.fold(
+        onSuccess = { user -> _user.value = user },
+        onFailure = { e -> Log.e("UserViewModel", "Failed to load user role", e) })
   }
 
   /** Refreshes the current user's role by reloading it from the repository. */

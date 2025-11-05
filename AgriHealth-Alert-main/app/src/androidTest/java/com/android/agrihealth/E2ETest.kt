@@ -20,7 +20,6 @@ import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.android.agrihealth.ui.profile.ChangePasswordScreenTestTags
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags
 import com.android.agrihealth.ui.profile.ProfileViewModel
 import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
@@ -213,13 +212,13 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   // To fix E2E test clicking on random report marker on map (without needing to know its ID)
-  fun ComposeTestRule.clickFirstReportMarker() {
-    val allMarkers = onAllNodes(hasTestTagThatStartsWith("reportMarker_"))
-    val markerNodes = allMarkers.fetchSemanticsNodes()
-    if (markerNodes.isEmpty()) {
-      throw AssertionError("No report markers found on map!")
+  fun ComposeTestRule.clickRandomReportMarker() {
+    waitUntil {
+      onAllNodes(hasTestTagThatStartsWith("reportMarker_")).fetchSemanticsNodes().isNotEmpty()
     }
-    allMarkers[0].performClick()
+    val allMarkers = onAllNodes(hasTestTagThatStartsWith("reportMarker_"))
+    val randomIndex = (0 until allMarkers.fetchSemanticsNodes().size).random()
+    allMarkers[randomIndex].performClick()
   }
 
   fun hasTestTagThatStartsWith(prefix: String): SemanticsMatcher {
@@ -259,6 +258,9 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performClick()
 
     completeSignUp(email, pwd, isVet = true)
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
     checkOverviewScreenIsDisplayed()
     assert(uid != Firebase.auth.uid)
     uid = Firebase.auth.uid
@@ -335,7 +337,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     createReport("Report title", "Report description", vetId)
     clickFirstReportItem()
     reportViewClickViewOnMap()
-    composeTestRule.clickFirstReportMarker()
+    composeTestRule.clickRandomReportMarker()
     mapClickViewReport()
     goBack()
     goBack()
@@ -373,16 +375,7 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SIGN_UP_BUTTON).performClick()
     completeSignUp(farmerEmail, password, isVet = false)
-    checkOverviewScreenIsDisplayed()
-
-    composeTestRule
-        .onNodeWithTag(OverviewScreenTestTags.PROFILE_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-    composeTestRule
-        .onNodeWithTag(ProfileScreenTestTags.CODE_BUTTON_FARMER)
-        .assertIsDisplayed()
-        .performClick()
+    checkEditProfileScreenIsDisplayed()
 
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.CODE_FIELD)
@@ -393,7 +386,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
+    composeTestRule.waitUntil(5000) {
       composeTestRule
           .onAllNodesWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
           .fetchSemanticsNodes()
@@ -405,7 +398,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.waitUntil {
+    composeTestRule.waitUntil(5000) {
       composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD).isDisplayed()
     }
 

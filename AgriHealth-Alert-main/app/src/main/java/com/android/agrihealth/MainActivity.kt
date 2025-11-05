@@ -84,9 +84,10 @@ fun AgriHealthApp(
   val currentUserId = currentUser.uid
   val currentUserRole = currentUser.role
 
-  val startDestination =
-      if (Firebase.auth.currentUser == null) Screen.Auth.name
-      else if (currentUser == defaultUser) Screen.RoleSelection.name else Screen.Overview.name
+  val startDestination = remember {
+    if (Firebase.auth.currentUser == null) Screen.Auth.name
+    else if (currentUser == defaultUser) Screen.RoleSelection.name else Screen.Overview.name
+  }
 
   NavHost(navController = navController, startDestination = startDestination) {
     // --- Auth Graph ---
