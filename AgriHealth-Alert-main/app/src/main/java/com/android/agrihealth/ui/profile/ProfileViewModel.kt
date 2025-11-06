@@ -27,7 +27,9 @@ class ProfileViewModel(
   }
 
   fun generateVetCode() {
-    val vet = userViewModel.user.value as? Vet ?: return
+    val currentUser = userViewModel.user.value
+    val vet = currentUser as? Vet ?: return
+
     viewModelScope.launch {
       val result = connectionRepository.generateCode(vet.uid)
       result.fold(
@@ -56,15 +58,7 @@ class ProfileViewModel(
                 farmer.copy(linkedVets = updatedLinkedVets, defaultVet = newDefaultVet)
             userViewModel.updateUser(updatedFarmer)
 
-            // Also update the vet so it knows the farmer is linked
-            val currentUser = userViewModel.user.value
-            if (currentUser is Vet && currentUser.uid == vetId) {
-              val updatedVet =
-                  currentUser.copy(
-                      validCodes = currentUser.validCodes - code,
-                      linkedFarmers = (currentUser.linkedFarmers + farmer.uid).distinct())
-              userViewModel.updateUser(updatedVet)
-            }
+            // TODO: find a way to also update the Vet's linkedFarmers list
 
             _vetClaimMessage.value = "Vet successfully added!"
           },
