@@ -30,9 +30,6 @@ import com.android.agrihealth.data.model.user.User
 import com.google.firebase.auth.FirebaseUser
 */
 
-private val FieldBg = Color(0xFFF0F6F1)
-private val ButtonBg = Color(0xFF9BB9B4)
-
 object SignInScreenTestTags {
   const val SCREEN = "SignInScreen"
   const val LOGIN_BUTTON = "loginButton"
