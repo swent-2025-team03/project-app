@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.overview
 
-// -- imports for preview --
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,10 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
@@ -28,8 +25,13 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
+
+// -- imports for preview --
+/*
+import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+*/
 
 object OverviewScreenTestTags {
   const val TOP_APP_BAR_TITLE = NavigationTestTags.TOP_BAR_TITLE
@@ -289,7 +291,7 @@ fun StatusTag(status: ReportStatus) {
             style = MaterialTheme.typography.labelSmall)
       }
 }
-
+/*
 /** Preview of the OverviewScreen with dummy data. Temporarily commented out */
 @Preview(showBackground = true)
 @Composable
@@ -345,3 +347,4 @@ fun PreviewOverviewScreen() {
         navigationActions = null)
   }
 }
+*/
