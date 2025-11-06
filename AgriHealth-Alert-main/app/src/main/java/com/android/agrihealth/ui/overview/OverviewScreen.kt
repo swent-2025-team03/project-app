@@ -21,6 +21,7 @@ import androidx.credentials.CredentialManager
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -186,7 +187,11 @@ fun ReportItem(report: Report, onClick: () -> Unit) {
       verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
           Text(report.title, fontSize = 18.sp, fontWeight = FontWeight.Medium)
-          Text("Farmer ID: ${report.farmerId}")
+          // Replace UID by author full name
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Author: ")
+            AuthorName(uid = report.farmerId, showRole = false)
+          }
           Text(
               text = report.description.let { if (it.length > 50) it.take(50) + "..." else it },
               style = MaterialTheme.typography.bodySmall,

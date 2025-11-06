@@ -2,36 +2,53 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Allow users to R/W their own info
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Build a symmetric connection id so that (a,b) == (b,a)
+    function sortedConnId(a, b) {
+      return (a < b ? a : b) + "__" + (a < b ? b : a);
+    }
+
+    // User is allowed to read another user's doc only if they are connected and active
+    function isLinkedWith(otherId) {
+      let me = request.auth.uid;
+      if (me == otherId) return true; // self read
+      let connId = sortedConnId(me, otherId);
+      let connPath = /databases/$(database)/documents/connections/$(connId);
+      return exists(connPath) && get(connPath).data.active == true;
+    }
+
+    // Users collection rules
     match /users/{userID} {
-    	allow read: if request.auth != null &&
-      						request.auth.uid == userID;
-                  
-      allow create: if request.auth != null &&
-      							request.auth.uid == userID;
+      // Read self or a linked user
+      allow get: if isSignedIn() && isLinkedWith(userID);
+      // Disallow listing to avoid user discovery
+      allow list: if false;
 
-      allow delete: if request.auth != null &&
-                                request.auth.uid == userID;
+      // Create/delete own doc only
+      allow create: if isSignedIn() && request.auth.uid == userID;
+      allow delete: if isSignedIn() && request.auth.uid == userID;
 
-      // Prevent role escalation
-      allow update: if request.auth != null &&
-      							request.auth.uid == userID &&
+      // Prevent role/uid escalation while allowing user to update own profile
+      allow update: if isSignedIn() &&
+                    request.auth.uid == userID &&
                     !(request.resource.data.diff(resource.data).changedKeys().hasAny(['role'])) &&
                     !(request.resource.data.diff(resource.data).changedKeys().hasAny(['uid']));
     }
-	
-	// Linking codes for vets and farmers
-	match /connect_codes/{code} {
-	  //allow create: if request.auth.token.role == "Veterinarian";
-	  //allow update: if request.auth.token.role == "Farmer";
-	  //allow read: if request.auth != null;
-	  allow read, write: if true;
-	}
-	
-	match /connections/{id} {
-	  //allow read, write: if request.auth.uid in [resource.data.vetId, resource.data.farmerId];
-	  allow read, write: if true;
-	}
+
+    // Linking codes for vets and farmers
+    match /connect_codes/{code} {
+      // tighten later if needed; left open for dev/tests
+      allow read, write: if true;
+    }
+
+    // Connections between users
+    match /connections/{id} {
+      // tighten later if needed; left open for dev/tests
+      allow read, write: if true;
+    }
   }
 }
