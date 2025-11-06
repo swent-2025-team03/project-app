@@ -2,7 +2,9 @@ package com.android.agrihealth.core.design.theme
 
 import android.app.Activity
 import android.os.Build
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -15,6 +17,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import com.android.agrihealth.data.model.report.ReportStatus
@@ -95,9 +98,21 @@ fun AgriHealthAppTheme(
           displaySmall =
               Typography()
                   .displaySmall
-                  .copy(fontSize = 40.sp, fontWeight = FontWeight.Medium, color = TitleColor))
+                  .copy(fontSize = 40.sp, fontWeight = FontWeight.Medium, color = TitleColor),
+          titleLarge = Typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+      )
 
-  MaterialTheme(colorScheme = colorScheme, typography = typography, content = content)
+  val shapes =
+      Shapes(
+          extraSmall = RoundedCornerShape(20.dp),
+          small = RoundedCornerShape(20.dp),
+          RoundedCornerShape(20.dp),
+          RoundedCornerShape(20.dp),
+          RoundedCornerShape(20.dp),
+      )
+
+  MaterialTheme(
+      colorScheme = colorScheme, shapes = shapes, typography = typography, content = content)
 }
 
 @Composable
