@@ -97,18 +97,4 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.SAVE_BUTTON).performClick()
     assert(saved)
   }
-
-  @Test
-  fun addVetButton_triggersCallback() {
-    var addedCode: String? = null
-    composeTestRule.setContent {
-      EditProfileScreen(userViewModel = fakeFarmerViewModel(), onAddVetCode = { addedCode = it })
-    }
-
-    val testCode = "NEWVETCODE"
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.CODE_FIELD).performTextInput(testCode)
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.ADD_CODE_BUTTON).performClick()
-
-    assert(addedCode == testCode)
-  }
 }

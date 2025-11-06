@@ -24,7 +24,8 @@ val defaultUser =
         email = "",
         address = null,
         linkedVets = emptyList(),
-        defaultVet = null)
+        defaultVet = null,
+        isGoogleAccount = false)
 
 /**
  * ViewModel for managing user-related data and operations.

@@ -21,7 +21,7 @@ class RoleSelectionViewModel(
 ) : ViewModel() {
 
   fun createUser(role: UserRole) {
-    val fireUser = Firebase.auth.currentUser!!
+    val fireUser = Firebase.auth.currentUser ?: throw IllegalStateException("No signed-in user")
     val user =
         when (role) {
           UserRole.VET ->

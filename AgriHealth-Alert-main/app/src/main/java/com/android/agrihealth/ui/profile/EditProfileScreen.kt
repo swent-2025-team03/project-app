@@ -54,14 +54,14 @@ fun EditProfileScreen(
   val user by userViewModel.user.collectAsState()
   val userRole = user.role
 
-  val profileViewModel: ProfileViewModel =
-      viewModel(
-          factory =
-              object : androidx.lifecycle.ViewModelProvider.Factory {
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                  return ProfileViewModel(userViewModel) as T
-                }
-              })
+  val factory = remember {
+    object : androidx.lifecycle.ViewModelProvider.Factory {
+      override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return ProfileViewModel(userViewModel) as T
+      }
+    }
+  }
+  val profileViewModel: ProfileViewModel = viewModel(factory = factory)
 
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
@@ -228,7 +228,6 @@ fun EditProfileScreen(
                       if (vetCode.isBlank()) {
                         scope.launch { snackbarHostState.showSnackbar("Please enter a code.") }
                       } else {
-                        onAddVetCode(vetCode)
                         profileViewModel.claimVetCode(vetCode)
                       }
                     },

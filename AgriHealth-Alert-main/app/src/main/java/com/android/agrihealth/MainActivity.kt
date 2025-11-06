@@ -208,9 +208,6 @@ fun AgriHealthApp(
               userViewModel.updateUser(updatedUser)
               navigationActions.navigateTo(Screen.Profile)
             },
-            onAddVetCode = { _code ->
-              // placeholder for now
-            },
             onPasswordChange = { navigationActions.navigateTo(Screen.ChangePassword) })
       }
     }

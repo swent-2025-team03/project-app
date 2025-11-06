@@ -230,6 +230,8 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   // ----------- Scenario: Vet -----------
+  // For this test to work, don't forget to go on the Firebase Emulator console and enable multiple
+  // accounts with the same email address
   @Test
   fun testVet_SignUp_Logout_SignIn() {
     val email = "vet@example.com"

@@ -70,14 +70,14 @@ fun ProfileScreen(
   val user by userViewModel.user.collectAsState()
   val userRole = user.role
 
-  val profileViewModel: ProfileViewModel =
-      viewModel(
-          factory =
-              object : androidx.lifecycle.ViewModelProvider.Factory {
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                  return ProfileViewModel(userViewModel) as T
-                }
-              })
+  val factory = remember {
+    object : androidx.lifecycle.ViewModelProvider.Factory {
+      override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return ProfileViewModel(userViewModel) as T
+      }
+    }
+  }
+  val profileViewModel: ProfileViewModel = viewModel(factory = factory)
   val code by profileViewModel.generatedCode.collectAsState()
 
   val snackbarHostState = remember { SnackbarHostState() }
