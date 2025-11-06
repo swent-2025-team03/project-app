@@ -28,10 +28,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.user.UserViewModel
 import kotlinx.coroutines.launch
 
 /** Tags for the various components. For testing purposes */
@@ -50,7 +53,7 @@ object AddReportFeedbackTexts {
   const val FAILURE = "Please fill in all required fields..."
 }
 
-// TODO: Dummy list must change later
+// Used for testing purposes
 object AddReportConstants {
   val vetOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")
 }
@@ -71,6 +74,7 @@ private val createReportButtonColor = Color(0xFF96B7B1)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddReportScreen(
+    userViewModel: UserViewModel = viewModel(),
     onBack: () -> Unit = {},
     userRole: UserRole,
     userId: String,
@@ -79,10 +83,13 @@ fun AddReportScreen(
 ) {
 
   val uiState by addReportViewModel.uiState.collectAsState()
+  val user by userViewModel.user.collectAsState()
+  val vets = (user as Farmer).linkedVets
 
   // For the dropdown menu
   var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
-  val selectedOption = uiState.chosenVet
+  var selectedOption by remember { mutableStateOf((user as Farmer).defaultVet ?: "") }
+  addReportViewModel.setVet(selectedOption)
 
   // For the confirmation snackbar (i.e alter window)
   val snackbarHostState = remember { SnackbarHostState() }
@@ -155,10 +162,11 @@ fun AddReportScreen(
 
                     ExposedDropdownMenu(
                         expanded = expanded, onDismissRequest = { expanded = false }) {
-                          AddReportConstants.vetOptions.forEach { option ->
+                          vets.forEach { option ->
                             DropdownMenuItem(
                                 text = { Text(option) },
                                 onClick = {
+                                  selectedOption = option
                                   addReportViewModel.setVet(option)
                                   expanded = false
                                 },
