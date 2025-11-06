@@ -132,14 +132,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD).assertIsNotDisplayed()
   }
 
-  private fun signOutFromOverview() {
-    composeTestRule
-        .onNodeWithTag(OverviewScreenTestTags.LOGOUT_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-  }
-
-  private fun signOutFromProfile() {
+  private fun signOutFromScreen() {
     composeTestRule
         .onNodeWithTag(OverviewScreenTestTags.LOGOUT_BUTTON)
         .assertIsDisplayed()
@@ -257,7 +250,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     checkEditProfileScreenIsDisplayed()
     checkIsGoogleAccount()
     completeEditProfile("VetFirstName", "VetLastName")
-    signOutFromProfile()
+    signOutFromScreen()
 
     var uid = Firebase.auth.uid
     composeTestRule
@@ -272,7 +265,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     checkOverviewScreenIsDisplayed()
     assert(uid != Firebase.auth.uid)
     uid = Firebase.auth.uid
-    signOutFromOverview()
+    signOutFromScreen()
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
     completeSignIn(email, pwd)
     checkOverviewScreenIsDisplayed()
@@ -325,7 +318,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
         .assertAny(hasText("Report 2"))
 
-    signOutFromOverview()
+    signOutFromScreen()
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
   }
 
@@ -351,7 +344,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     goBack()
     goBack()
     checkOverviewScreenIsDisplayed()
-    signOutFromOverview()
+    signOutFromScreen()
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
   }
 
@@ -404,17 +397,17 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.waitUntil(6000) {
-      try {
-        composeTestRule
-            .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
-            .assertIsDisplayed()
-            .assertIsEnabled()
-        true
-      } catch (_: Exception) {
-        false
-      }
+    composeTestRule.waitUntil(timeoutMillis = 6000) {
+      composeTestRule
+          .onAllNodesWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
     }
+
+    composeTestRule
+        .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
+        .assertIsDisplayed()
+        .assertIsEnabled()
 
     composeTestRule.waitForIdle()
 
