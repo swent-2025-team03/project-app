@@ -119,7 +119,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.LASTNAME_FIELD)
         .assertIsDisplayed()
-        .performTextInput(firstName)
+        .performTextInput(lastName)
 
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.SAVE_BUTTON)
@@ -180,14 +180,22 @@ class E2ETest : FirebaseEmulatorsTest() {
 
   private fun checkOverviewScreenIsDisplayed() {
     composeTestRule.waitUntil(timeoutMillis = 5_000) {
-      composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).isDisplayed()
+      composeTestRule
+          .onAllNodesWithTag(OverviewScreenTestTags.SCREEN)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
     }
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).assertIsDisplayed()
   }
 
   private fun checkEditProfileScreenIsDisplayed() {
     composeTestRule.waitUntil(timeoutMillis = 5_000) {
-      composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).isDisplayed()
+      composeTestRule
+          .onAllNodesWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
     }
+    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).assertIsDisplayed()
   }
 
   private fun goBack() {
@@ -212,13 +220,13 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   // To fix E2E test clicking on random report marker on map (without needing to know its ID)
-  fun ComposeTestRule.clickRandomReportMarker() {
-    waitUntil {
-      onAllNodes(hasTestTagThatStartsWith("reportMarker_")).fetchSemanticsNodes().isNotEmpty()
-    }
+  fun ComposeTestRule.clickFirstReportMarker() {
     val allMarkers = onAllNodes(hasTestTagThatStartsWith("reportMarker_"))
-    val randomIndex = (0 until allMarkers.fetchSemanticsNodes().size).random()
-    allMarkers[randomIndex].performClick()
+    val markerNodes = allMarkers.fetchSemanticsNodes()
+    if (markerNodes.isEmpty()) {
+      throw AssertionError("No report markers found on map!")
+    }
+    allMarkers[0].performClick()
   }
 
   fun hasTestTagThatStartsWith(prefix: String): SemanticsMatcher {
@@ -337,7 +345,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     createReport("Report title", "Report description", vetId)
     clickFirstReportItem()
     reportViewClickViewOnMap()
-    composeTestRule.clickRandomReportMarker()
+    composeTestRule.clickFirstReportMarker()
     mapClickViewReport()
     goBack()
     goBack()
@@ -370,8 +378,6 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     // Wait for the code to appear in StateFlow
     val vetCode = runBlocking { profileViewModel.generatedCode.first { it != null } }
-
-    println("Generated vet code: $vetCode")
 
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SIGN_UP_BUTTON).performClick()
     completeSignUp(farmerEmail, password, isVet = false)
