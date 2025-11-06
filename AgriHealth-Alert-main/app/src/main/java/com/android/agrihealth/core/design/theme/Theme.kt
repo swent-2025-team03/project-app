@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import com.android.agrihealth.data.model.report.ReportStatus
 
@@ -23,7 +24,7 @@ private val DarkColorScheme =
 
 private val LightColorScheme =
     lightColorScheme(
-        background = Color.White,
+        background = FieldBg,
         onBackground = Color.Black,
         surface = FieldBg,
         onSurface = Color.Black,
@@ -41,6 +42,8 @@ private val LightColorScheme =
         surfaceBright = Color.White,
         tertiaryContainer = Color.LightGray,
         onTertiaryContainer = Color.Black,
+        outline = Color.LightGray,
+        outlineVariant = Color.Black,
 
         // Keep default values
         // error = ,
@@ -52,8 +55,7 @@ private val LightColorScheme =
         // onTertiary = ,
         // inverseSurface = ,
         // inverseOnSurface = ,
-        // outline = ,
-        // outlineVariant = ,
+
         // scrim = ,
         // surfaceDim = ,
         // surfaceContainer = ,
@@ -89,7 +91,11 @@ fun AgriHealthAppTheme(
   }
 
   val typography =
-      Typography(displaySmall = Typography().displaySmall.copy(fontWeight = FontWeight.Bold))
+      Typography(
+          displaySmall =
+              Typography()
+                  .displaySmall
+                  .copy(fontSize = 40.sp, fontWeight = FontWeight.Medium, color = TitleColor))
 
   MaterialTheme(colorScheme = colorScheme, typography = typography, content = content)
 }

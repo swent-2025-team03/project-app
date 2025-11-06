@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.overview
 
+// -- imports for preview --
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,8 +15,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
@@ -25,13 +28,8 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
-
-// -- imports for preview --
-/*
-import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-*/
 
 object OverviewScreenTestTags {
   const val TOP_APP_BAR_TITLE = NavigationTestTags.TOP_BAR_TITLE
@@ -293,53 +291,57 @@ fun StatusTag(status: ReportStatus) {
 }
 
 /** Preview of the OverviewScreen with dummy data. Temporarily commented out */
-/*
 @Preview(showBackground = true)
 @Composable
 fun PreviewOverviewScreen() {
-    val dummyReports = listOf(
-        Report(
-            id = "1",
-            title = "Cow coughing",
-            description = "Coughing and nasal discharge observed",
-            photoUri = null,
-            farmerId = "farmer_001",
-            vetId = "vet_001",
-            status = ReportStatus.IN_PROGRESS,
-            answer = null,
-            location = null),
-        Report(
-            id = "2",
-            title = "Sheep limping",
-            description = "Limping observed in the rear leg; mild swelling noted",
-            photoUri = null,
-            farmerId = "farmer_002",
-            vetId = "vet_002",
-            status = ReportStatus.PENDING,
-            answer = null, location = null)
-    )
-    val dummyUiState = OverviewUIState(
-        reports = dummyReports,
-        filteredReports = dummyReports,
-        selectedStatus = null,
-        selectedVet = null,
-        selectedFarmer = null,
-        vetOptions = listOf("vet_001", "vet_002"),
-        farmerOptions = listOf("farmer_001", "farmer_002")
-    )
-    val dummyViewModel = object : OverviewViewModelContract {
+  val dummyReports =
+      listOf(
+          Report(
+              id = "1",
+              title = "Cow coughing",
+              description = "Coughing and nasal discharge observed",
+              photoUri = null,
+              farmerId = "farmer_001",
+              vetId = "vet_001",
+              status = ReportStatus.IN_PROGRESS,
+              answer = null,
+              location = null),
+          Report(
+              id = "2",
+              title = "Sheep limping",
+              description = "Limping observed in the rear leg; mild swelling noted",
+              photoUri = null,
+              farmerId = "farmer_002",
+              vetId = "vet_002",
+              status = ReportStatus.PENDING,
+              answer = null,
+              location = null))
+  val dummyUiState =
+      OverviewUIState(
+          reports = dummyReports,
+          filteredReports = dummyReports,
+          selectedStatus = null,
+          selectedVet = null,
+          selectedFarmer = null,
+          vetOptions = listOf("vet_001", "vet_002"),
+          farmerOptions = listOf("farmer_001", "farmer_002"))
+  val dummyViewModel =
+      object : OverviewViewModelContract {
         override val uiState: StateFlow<OverviewUIState> = MutableStateFlow(dummyUiState)
+
         override fun loadReports(userRole: UserRole, userId: String) {}
+
         override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {}
+
         override fun signOut(credentialManager: CredentialManager) {}
-    }
+      }
+  AgriHealthAppTheme {
     OverviewScreen(
         userRole = UserRole.FARMER,
         userId = "farmer_001",
         overviewViewModel = dummyViewModel,
         onAddReport = {},
         onReportClick = {},
-        navigationActions = null
-    )
+        navigationActions = null)
+  }
 }
-*/
