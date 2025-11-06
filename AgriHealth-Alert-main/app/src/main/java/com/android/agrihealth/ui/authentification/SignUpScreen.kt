@@ -58,27 +58,7 @@ fun SignUpScreen(
 
   LaunchedEffect(signUpUIState.user) {
     signUpUIState.user?.let { firebaseUser ->
-      // Build a minimal local user object right away (synchronous update)
-      val newUser =
-          when (signUpUIState.role) {
-            UserRole.FARMER ->
-                com.android.agrihealth.data.model.user.Farmer(
-                    uid = firebaseUser.uid,
-                    firstname = signUpUIState.firstname,
-                    lastname = signUpUIState.lastname,
-                    email = signUpUIState.email,
-                    address = null,
-                    linkedVets = emptyList(),
-                    defaultVet = null)
-            UserRole.VET ->
-                com.android.agrihealth.data.model.user.Vet(
-                    uid = firebaseUser.uid,
-                    firstname = signUpUIState.firstname,
-                    lastname = signUpUIState.lastname,
-                    email = signUpUIState.email,
-                    address = null)
-            else -> null
-          }
+      val newUser = signUpViewModel.createLocalUser(firebaseUser)
 
       if (newUser != null) {
         userViewModel.setUser(newUser)
