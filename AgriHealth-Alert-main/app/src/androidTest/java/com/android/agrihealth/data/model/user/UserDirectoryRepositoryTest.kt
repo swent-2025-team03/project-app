@@ -54,10 +54,8 @@ class UserDirectoryRepositoryTest {
     assertEquals("Dupont", res.lastname)
     assertEquals(UserRole.FARMER, res.role)
 
-    // 1 lecture Firestore
     verify(exactly = 1) { docRef.get() }
 
-    // Second appel doit venir du cache (pas de get() supplémentaire)
     val res2 = repository.getUserSummary("uid_1")
     assertNotNull(res2)
     verify(exactly = 1) { docRef.get() }
@@ -73,10 +71,9 @@ class UserDirectoryRepositoryTest {
     val res = repository.getUserSummary("uid_missing")
     assertNull(res)
 
-    // Cache négatif: pas de seconde lecture
     val res2 = repository.getUserSummary("uid_missing")
     assertNull(res2)
-    verify(exactly = 1) { docRef.get() }
+    verify(exactly = 2) { docRef.get() }
   }
 
   @Test

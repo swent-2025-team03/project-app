@@ -38,17 +38,34 @@ service cloud.firestore {
                     !(request.resource.data.diff(resource.data).changedKeys().hasAny(['role'])) &&
                     !(request.resource.data.diff(resource.data).changedKeys().hasAny(['uid']));
     }
+	
+	// Linking codes for vets and farmers
+	match /connect_codes/{code} {
+	  //allow create: if request.auth.token.role == "Veterinarian";
+	  //allow update: if request.auth.token.role == "Farmer";
+	  //allow read: if request.auth != null;
+	  allow read, write: if true;
+	}
+	
+	match /connections/{id} {
+	  //allow read, write: if request.auth.uid in [resource.data.vetId, resource.data.farmerId];
+	  allow read, write: if true;
+	}
 
-    // Linking codes for vets and farmers
-    match /connect_codes/{code} {
-      // tighten later if needed; left open for dev/tests
-      allow read, write: if true;
-    }
+    // Reports Collection
+    match /reports/{reportID} {
+      allow read, delete: if request.auth != null &&
+        (request.auth.uid == resource.data.farmerId ||
+         request.auth.uid == resource.data.vetId);
 
-    // Connections between users
-    match /connections/{id} {
-      // tighten later if needed; left open for dev/tests
-      allow read, write: if true;
+      allow update: if request.auth != null &&
+        (request.auth.uid == resource.data.farmerId ||
+        request.auth.uid == resource.data.vetId) &&
+        !(request.resource.data.diff(resource.data).changedKeys().hasAny(['vetId'])) &&
+        !(request.resource.data.diff(resource.data).changedKeys().hasAny(['farmerId']));
+
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.farmerId;
     }
   }
 }
