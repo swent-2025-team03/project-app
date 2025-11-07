@@ -38,7 +38,7 @@ jobs:
 
       #add map api key
       - name: Add map api key
-        run: echo "MAPS_API_KEY=${{screts.MAPS_API_KEY}}" > AgriHealth-Alert-main/local.properties
+        run: echo "MAPS_API_KEY=${{secrets.MAPS_API_KEY}}" > AgriHealth-Alert-main/local.properties
 
       #Build the debug APK
       - name: Build APK
