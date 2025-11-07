@@ -92,7 +92,8 @@ fun SignUpScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 24.dp)
-                .testTag(SignUpScreenTestTags.SCREEN).verticalScroll(rememberScrollState()),
+                .testTag(SignUpScreenTestTags.SCREEN)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally) {
               Spacer(Modifier.height(24.dp))
               Text(

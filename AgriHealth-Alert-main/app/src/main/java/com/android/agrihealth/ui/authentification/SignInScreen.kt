@@ -70,20 +70,18 @@ fun SignInScreen(
     signInUIState.user?.let { if (signInUIState.isNewGoogle) onNewGoogle() else onSignedIn() }
   }
 
-  Scaffold (
+  Scaffold(
       modifier = modifier.background(FieldBg).testTag(SignInScreenTestTags.SCREEN),
       snackbarHost = {
-          SnackbarHost(
-              hostState = snackbarHostState,
-              modifier =
-                  Modifier
-                      .padding(bottom = 16.dp)
-                      .testTag(SignInScreenTestTags.SNACKBAR)
-          )
-      }
-      ) { padding ->
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.padding(bottom = 16.dp).testTag(SignInScreenTestTags.SNACKBAR))
+      }) { padding ->
         Column(
-            modifier = Modifier.padding(padding).padding(horizontal = 32.dp).verticalScroll(rememberScrollState()),
+            modifier =
+                Modifier.padding(padding)
+                    .padding(horizontal = 32.dp)
+                    .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally) {
               Spacer(Modifier.height(96.dp))
 

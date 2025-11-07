@@ -14,9 +14,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollDispatcher
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -117,7 +114,8 @@ fun OverviewScreen(
                 Modifier.fillMaxSize()
                     .padding(paddingValues)
                     .padding(16.dp)
-                    .testTag(OverviewScreenTestTags.SCREEN).verticalScroll(rememberScrollState())) {
+                    .testTag(OverviewScreenTestTags.SCREEN)
+                    .verticalScroll(rememberScrollState())) {
               // -- Latest alert section --
               Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
 

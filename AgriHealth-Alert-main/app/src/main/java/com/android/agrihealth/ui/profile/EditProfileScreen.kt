@@ -102,9 +102,11 @@ fun EditProfileScreen(
       },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
         Column(
-            modifier = Modifier.padding(innerPadding).padding(16.dp).fillMaxSize().verticalScroll(
-                rememberScrollState()
-            ),
+            modifier =
+                Modifier.padding(innerPadding)
+                    .padding(16.dp)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
