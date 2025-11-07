@@ -181,7 +181,7 @@ fun OverviewScreen(
                     }
                   }
 
-              LazyColumn(modifier = Modifier.height(150.dp)) {
+              LazyColumn(modifier = Modifier.height(300.dp)) {
                 items(uiState.filteredReports) { report ->
                   ReportItem(
                       userRole = userRole,
