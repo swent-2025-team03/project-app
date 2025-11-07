@@ -4,7 +4,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -68,11 +70,20 @@ fun SignInScreen(
     signInUIState.user?.let { if (signInUIState.isNewGoogle) onNewGoogle() else onSignedIn() }
   }
 
-  Box(
-      modifier = modifier.background(FieldBg).fillMaxSize().testTag(SignInScreenTestTags.SCREEN),
-      contentAlignment = Alignment.TopCenter) {
+  Scaffold (
+      modifier = modifier.background(FieldBg).testTag(SignInScreenTestTags.SCREEN),
+      snackbarHost = {
+          SnackbarHost(
+              hostState = snackbarHostState,
+              modifier =
+                  Modifier
+                      .padding(bottom = 16.dp)
+                      .testTag(SignInScreenTestTags.SNACKBAR)
+          )
+      }
+      ) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp),
+            modifier = Modifier.padding(padding).padding(horizontal = 32.dp).verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally) {
               Spacer(Modifier.height(96.dp))
 
@@ -179,12 +190,6 @@ fun SignInScreen(
                     context = context, credentialManager = credentialManager)
               }
             }
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier =
-                Modifier.align(Alignment.BottomCenter)
-                    .padding(bottom = 16.dp)
-                    .testTag(SignInScreenTestTags.SNACKBAR))
       }
 }
 

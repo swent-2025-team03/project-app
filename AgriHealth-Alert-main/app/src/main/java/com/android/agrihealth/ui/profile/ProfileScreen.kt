@@ -1,8 +1,10 @@
 package com.android.agrihealth.ui.profile
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -104,7 +106,9 @@ fun ProfileScreen(
       },
       snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
         Column(
-            modifier = Modifier.padding(innerPadding).padding(16.dp).fillMaxSize(),
+            modifier = Modifier.padding(innerPadding).padding(16.dp).verticalScroll(
+                rememberScrollState()
+            ).fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))

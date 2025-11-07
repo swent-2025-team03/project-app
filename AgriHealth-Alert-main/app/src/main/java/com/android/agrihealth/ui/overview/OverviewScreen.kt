@@ -4,6 +4,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
@@ -12,6 +14,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollDispatcher
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -112,7 +117,7 @@ fun OverviewScreen(
                 Modifier.fillMaxSize()
                     .padding(paddingValues)
                     .padding(16.dp)
-                    .testTag(OverviewScreenTestTags.SCREEN)) {
+                    .testTag(OverviewScreenTestTags.SCREEN).verticalScroll(rememberScrollState())) {
               // -- Latest alert section --
               Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
 
@@ -178,7 +183,7 @@ fun OverviewScreen(
                     }
                   }
 
-              LazyColumn(modifier = Modifier.weight(1f)) {
+              LazyColumn(modifier = Modifier.height(150.dp)) {
                 items(uiState.filteredReports) { report ->
                   ReportItem(
                       userRole = userRole,
