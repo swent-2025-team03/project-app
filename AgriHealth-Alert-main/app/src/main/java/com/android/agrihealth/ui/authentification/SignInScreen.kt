@@ -8,7 +8,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -139,7 +138,7 @@ fun SignInScreen(
                       Modifier.fillMaxWidth()
                           .height(56.dp)
                           .testTag(SignInScreenTestTags.LOGIN_BUTTON)) {
-                    Text("Log In", color = Color.Black)
+                    Text("Log In", color = MaterialTheme.colorScheme.onPrimary)
                   }
 
               Spacer(Modifier.height(16.dp))
