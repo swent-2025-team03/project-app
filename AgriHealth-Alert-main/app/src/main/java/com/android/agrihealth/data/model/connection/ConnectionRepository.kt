@@ -85,6 +85,7 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
 
           val vetId = snap.getString(FirestoreSchema.ConnectCodes.VET_ID)
           if (vetId == null) throw IllegalArgumentException("Invalid vet ID.")
+
           linkUsers(tx, vetId, farmerId)
 
           tx.update(
