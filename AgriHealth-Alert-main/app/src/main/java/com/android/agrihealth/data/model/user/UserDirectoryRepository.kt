@@ -42,9 +42,13 @@ class UserDirectoryRepository(
       val firstname = snap.getString("firstname") ?: ""
       val lastname = snap.getString("lastname") ?: ""
       val roleStr = snap.getString("role")
-      val role = roleStr?.let { runCatching { UserRole.valueOf(it) }.getOrNull() }
+      val role = roleStr?.let {
+        // Accepts 'Farmer', 'farmer', 'FARMER', etc.
+        runCatching { UserRole.valueOf(it.uppercase()) }.getOrNull()
+      }
 
       val summary = UserSummary(uid, firstname, lastname, role)
+      Log.d(TAG, "Fetched user $uid: $firstname $lastname, role=$roleStr -> $role")
       cache[uid] = summary
       summary
     } catch (t: Exception) {

@@ -135,10 +135,8 @@ fun ReportViewScreen(
                   verticalAlignment = Alignment.CenterVertically,
                   modifier = Modifier.testTag(ReportViewScreenTestTags.ROLE_INFO_LINE)) {
                     if (userRole == UserRole.VET) {
-                      Text(text = "Farmer: ")
-                      AuthorName(uid = report.farmerId, showRole = false)
+                      AuthorName(uid = report.farmerId, showRole = true)
                     } else {
-                      Text(text = "Vet: ")
                       AuthorName(uid = report.vetId, showRole = true)
                     }
                   }

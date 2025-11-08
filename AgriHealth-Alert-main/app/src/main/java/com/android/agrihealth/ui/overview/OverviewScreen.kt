@@ -266,13 +266,10 @@ fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
       verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
           Text(report.title, style = MaterialTheme.typography.titleSmall)
-          // Affiche le nom complet en fonction du rôle du viewer
-          val (label, uid, showRole) =
-              if (userRole == UserRole.VET) Triple("Farmer: ", report.farmerId, false)
-              else Triple("Vet: ", report.vetId, true)
+          val uid = if (userRole == UserRole.VET) report.farmerId else report.vetId
           Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(label, style = MaterialTheme.typography.bodyMedium)
-            AuthorName(uid = uid, showRole = showRole)
+            // Show full name and role, no label
+            AuthorName(uid = uid, showRole = true)
           }
           Text(
               text = report.description.let { if (it.length > 50) it.take(50) + "..." else it },
@@ -280,7 +277,7 @@ fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
               maxLines = 1)
         }
         StatusTag(report.status)
-      }
+  }
 }
 
 /**
