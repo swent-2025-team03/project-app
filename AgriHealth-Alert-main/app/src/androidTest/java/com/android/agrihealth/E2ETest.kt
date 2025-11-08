@@ -169,7 +169,7 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun clickFirstReportItem() {
-    composeTestRule.waitUntil(5000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)[0].isDisplayed()
     }
     composeTestRule.onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)[0].performClick()
@@ -218,7 +218,7 @@ class E2ETest : FirebaseEmulatorsTest() {
 
   // To fix E2E test clicking on random report marker on map (without needing to know its ID)
   fun ComposeTestRule.clickFirstReportMarker() {
-    waitUntil(5000) {
+    waitUntil(TestConstants.LONG_TIMEOUT) {
       onAllNodes(hasTestTagThatStartsWith("reportMarker_")).fetchSemanticsNodes().isNotEmpty()
     }
     val allMarkers = onAllNodes(hasTestTagThatStartsWith("reportMarker_"))
