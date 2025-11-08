@@ -12,6 +12,7 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 val FieldBg = Color(0xFFF0F6F1)
+val SurfaceVariant = Color(0xFFCCE7DA)
 val SurfaceDim = Color(0xFFCFD9CF)
 val ButtonBg = Color(0xFF9BB9B4)
 val TitleColor = Color(0xFF000000)
