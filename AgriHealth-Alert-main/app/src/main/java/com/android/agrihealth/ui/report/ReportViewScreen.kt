@@ -12,11 +12,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
@@ -66,17 +66,6 @@ fun ReportViewScreen(
   val context = LocalContext.current
 
   var isSpamDialogOpen by remember { mutableStateOf(false) }
-
-  // ---- Helper: Color based on status ----
-  @Composable
-  fun statusColor(status: ReportStatus): Color {
-    return when (status) {
-      ReportStatus.PENDING -> MaterialTheme.colorScheme.surfaceVariant
-      ReportStatus.IN_PROGRESS -> MaterialTheme.colorScheme.tertiaryContainer
-      ReportStatus.RESOLVED -> MaterialTheme.colorScheme.secondaryContainer
-      ReportStatus.SPAM -> MaterialTheme.colorScheme.error
-    }
-  }
 
   Scaffold(
       topBar = {
