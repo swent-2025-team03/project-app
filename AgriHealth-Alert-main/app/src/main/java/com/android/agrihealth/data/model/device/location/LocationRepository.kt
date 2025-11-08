@@ -20,7 +20,7 @@ class LocationRepository(
 ) {
   /**
    * Helper function to convert an Android device location to a location used in the rest of the
-   * Agrihealth app
+   * Agrihealth app. Shouldn't be used outside of this class; if that is your case, you most likely imported the wrong "Location" package
    */
   fun AndroidLocation.toLocation(): AgrihealthLocation {
     return AgrihealthLocation(latitude, longitude)
@@ -33,7 +33,7 @@ class LocationRepository(
 
   /**
    * Checks if the user allowed access to the precise location of the device. Necessary for location
-   * services
+   * services. Not meant to be used directly, use the ViewModel instead
    */
   fun hasFineLocationPermission(): Boolean {
     return hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -41,13 +41,13 @@ class LocationRepository(
 
   /**
    * Checks if the user allowed access to the approximate location of the device. Necessary for
-   * location services, but not sufficient
+   * location services, but not sufficient. Not meant to be used directly, use the ViewModel instead
    */
   fun hasCoarseLocationPermission(): Boolean {
     return hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
   }
 
-  /** Gets the last known location, or, if unavailable, the current device location */
+  /** Gets the last known location, or, if unavailable, the current device location. Not meant to be used directly, use the ViewModel instead */
   @RequiresPermission(
       allOf =
           [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
@@ -58,7 +58,7 @@ class LocationRepository(
     return getCurrentLocation()
   }
 
-  /** Gets the current device location. More expensive on the battery than last known location */
+  /** Gets the current device location. More expensive on the battery than last known location. Not meant to be used directly, use the ViewModel instead */
   @RequiresPermission(
       allOf =
           [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])

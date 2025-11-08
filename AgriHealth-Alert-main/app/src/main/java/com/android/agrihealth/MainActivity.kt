@@ -29,6 +29,7 @@ import androidx.navigation.navArgument
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.RoleSelectionScreen
@@ -80,7 +81,10 @@ fun AgriHealthApp(
 
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
+
+  // Location services: Use the ViewModel and not the repository
   LocationRepositoryProvider.repository = LocationRepository(context)
+  val locationViewModel: LocationViewModel = viewModel()
 
   var reloadReports by remember { mutableStateOf(false) }
   val currentUser by userViewModel.user.collectAsState()
