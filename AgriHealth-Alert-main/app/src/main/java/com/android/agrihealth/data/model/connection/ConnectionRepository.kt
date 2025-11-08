@@ -2,6 +2,7 @@ package com.android.agrihealth.data.model.connection
 
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Transaction
@@ -57,6 +58,22 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
     throw IllegalStateException("Failed to generate a unique code.")
   }
 
+  private fun checkCodeValidity(snap: DocumentSnapshot) {
+    if (!snap.exists()) throw IllegalArgumentException("Code not found.")
+
+    val status = snap.getString(FirestoreSchema.ConnectCodes.STATUS)
+    if (status != STATUS_OPEN) throw IllegalStateException("Code already used.")
+
+    val createdAt = snap.getTimestamp(FirestoreSchema.ConnectCodes.CREATED_AT)
+    if (createdAt == null) throw IllegalArgumentException("Missing createdAt")
+
+    val ttlMinutes = snap.getLong(FirestoreSchema.ConnectCodes.TTL_MINUTES)
+    if (ttlMinutes == null) throw IllegalArgumentException("Missing TTL value")
+
+    val expiresAtMs = createdAt.toDate().time + ttlMinutes * 60_000
+    if (Instant.now().toEpochMilli() > expiresAtMs) throw IllegalStateException("Code expired.")
+  }
+
   // Claims a connection code for a farmer, links the vet and farmer, and marks the code as used.
   // Returns: Result<String> containing the vetId if successful, or an exception if failed.
   suspend fun claimCode(code: String): Result<String> = runCatching {
@@ -64,24 +81,10 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
     val docRef = db.collection(CODES_COLLECTION).document(code)
     db.runTransaction { tx ->
           val snap = tx.get(docRef)
-          if (!snap.exists()) throw IllegalArgumentException("Code not found.")
-
-          val status = snap.getString(FirestoreSchema.ConnectCodes.STATUS)
-          if (status != STATUS_OPEN) throw IllegalStateException("Code already used.")
-
-          val createdAt = snap.getTimestamp(FirestoreSchema.ConnectCodes.CREATED_AT)
-          if (createdAt == null) throw IllegalArgumentException("Missing createdAt")
-
-          val ttlMinutes = snap.getLong(FirestoreSchema.ConnectCodes.TTL_MINUTES)
-          if (ttlMinutes == null) throw IllegalArgumentException("Missing TTL value")
-
-          val expiresAtMs = createdAt.toDate().time + ttlMinutes * 60_000
-          if (Instant.now().toEpochMilli() > expiresAtMs)
-              throw IllegalStateException("Code expired.")
+          checkCodeValidity(snap)
 
           val vetId = snap.getString(FirestoreSchema.ConnectCodes.VET_ID)
           if (vetId == null) throw IllegalArgumentException("Invalid vet ID.")
-
           linkUsers(tx, vetId, farmerId)
 
           tx.update(
@@ -101,16 +104,14 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
   private fun linkUsers(tx: Transaction, vetId: String, farmerId: String) {
     val connId = connectionId(vetId, farmerId)
     val ref = db.collection(CONNECTIONS_COLLECTION).document(connId)
-    val existing = tx.get(ref)
-    if (!existing.exists()) {
-      tx.set(
-          ref,
-          mapOf(
-              FirestoreSchema.Connections.VET_ID to vetId,
-              FirestoreSchema.Connections.FARMER_ID to farmerId,
-              FirestoreSchema.Connections.CREATED_AT to FieldValue.serverTimestamp(),
-              FirestoreSchema.Connections.ACTIVE to true))
-    }
+    // Assume the connection doesn't exist. If not, only the timestamp changes, is it really that
+    // bad?
+    tx.set(
+        ref,
+        mapOf(
+            FirestoreSchema.Connections.VET_ID to vetId,
+            FirestoreSchema.Connections.FARMER_ID to farmerId,
+            FirestoreSchema.Connections.CREATED_AT to FieldValue.serverTimestamp()))
   }
 
   // Generates a unique connection ID by sorting and joining vet and farmer IDs.
