@@ -168,6 +168,9 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun clickFirstReportItem() {
+    composeTestRule.waitUntil(5000) {
+      composeTestRule.onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)[0].isDisplayed()
+    }
     composeTestRule.onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)[0].performClick()
   }
 
