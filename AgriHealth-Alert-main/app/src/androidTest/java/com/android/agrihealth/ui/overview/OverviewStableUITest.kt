@@ -87,11 +87,12 @@ class OverviewStableUITest {
 
     composeTestRule.setContent {
       DropdownMenuWrapper(
-          options = options, selectedOption = null, onOptionSelected = { selectedOption = it })
+          options = options,
+          selectedOption = null,
+          onOptionSelected = { selectedOption = it },
+          placeholder = "All")
     }
-
     composeTestRule.onNodeWithText("All").performClick()
-
     composeTestRule.onNodeWithText("Option 1").performClick()
 
     assertEquals("Option 1", selectedOption)

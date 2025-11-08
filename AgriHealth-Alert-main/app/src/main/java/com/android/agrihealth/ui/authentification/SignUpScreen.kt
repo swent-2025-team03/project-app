@@ -11,7 +11,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -21,6 +20,7 @@ import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.ui.user.UserViewModel
 import com.google.firebase.auth.FirebaseUser
 
 object SignUpScreenTestTags {
@@ -42,7 +42,8 @@ object SignUpScreenTestTags {
 fun SignUpScreen(
     onBack: () -> Unit = {},
     onSignedUp: () -> Unit = {},
-    signUpViewModel: SignUpViewModel = viewModel()
+    signUpViewModel: SignUpViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel()
 ) {
   val signUpUIState by signUpViewModel.uiState.collectAsState()
   val snackbarHostState = remember { SnackbarHostState() }
@@ -55,7 +56,18 @@ fun SignUpScreen(
     }
   }
 
-  LaunchedEffect(signUpUIState.user) { signUpUIState.user?.let { onSignedUp() } }
+  LaunchedEffect(signUpUIState.user) {
+    signUpUIState.user?.let { firebaseUser ->
+      val newUser = signUpViewModel.createLocalUser(firebaseUser)
+
+      if (newUser != null) {
+        userViewModel.setUser(newUser)
+      }
+
+      // Navigate away only after updating in-memory user
+      onSignedUp()
+    }
+  }
 
   Scaffold(
       snackbarHost = {
@@ -178,9 +190,6 @@ private fun SelectablePill(
         }
       }
 }
-
-private val unfocusedFieldColor = Color(0xFFF0F7F1)
-private val focusedFieldColor = Color(0xFFF0F7F1)
 
 @Composable
 private fun Field(
