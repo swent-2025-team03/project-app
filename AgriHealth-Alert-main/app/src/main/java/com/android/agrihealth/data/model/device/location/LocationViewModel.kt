@@ -18,10 +18,13 @@ class LocationViewModel() : ViewModel() {
 
   private fun exceptionLogMsg(e: Exception) = "Missing permissions for location: ${e.message}"
 
-  init {}
+  private fun throwIfNotAllowed() {
+    if (!hasLocationPermissions()) throw IllegalStateException("Location permissions not granted")
+  }
 
   /** Gets the last known location, or, if unavailable, the current device location */
   fun getLastKnownLocation() {
+    throwIfNotAllowed()
     viewModelScope.launch {
       try {
         _locationState.value = locationRepository.getLastKnownLocation()
@@ -33,6 +36,7 @@ class LocationViewModel() : ViewModel() {
 
   /** Gets the current device location. More expensive on the battery than last known location */
   fun getCurrentLocation() {
+    throwIfNotAllowed()
     viewModelScope.launch {
       try {
         _locationState.value = locationRepository.getCurrentLocation()
@@ -40,5 +44,12 @@ class LocationViewModel() : ViewModel() {
         Log.e(exceptionLogTag, exceptionLogMsg(e))
       }
     }
+  }
+
+  /**
+   * Checks if the user allowed all device location permissions on the app
+   */
+  fun hasLocationPermissions(): Boolean {
+    return locationRepository.hasFineLocationPermission() && locationRepository.hasCoarseLocationPermission()
   }
 }

@@ -2,8 +2,10 @@ package com.android.agrihealth.data.model.device.location
 
 import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.location.Location as AndroidLocation
 import androidx.annotation.RequiresPermission
+import androidx.core.content.ContextCompat
 import com.android.agrihealth.data.model.location.Location as AgrihealthLocation
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -23,6 +25,24 @@ class LocationRepository(
   fun AndroidLocation.toLocation(): AgrihealthLocation {
     return AgrihealthLocation(latitude, longitude)
   }
+
+    private fun hasPermission(permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+    }
+
+    /**
+     * Checks if the user allowed access to the precise location of the device. Necessary for location services
+     */
+    fun hasFineLocationPermission(): Boolean {
+        return hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    }
+
+    /**
+     * Checks if the user allowed access to the approximate location of the device. Necessary for location services, but not sufficient
+     */
+    fun hasCoarseLocationPermission(): Boolean {
+        return hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+    }
 
   /** Gets the last known location, or, if unavailable, the current device location */
   @RequiresPermission(
