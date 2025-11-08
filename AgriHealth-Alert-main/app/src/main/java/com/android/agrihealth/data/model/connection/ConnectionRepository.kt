@@ -112,7 +112,8 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
         mapOf(
             FirestoreSchema.Connections.VET_ID to vetId,
             FirestoreSchema.Connections.FARMER_ID to farmerId,
-            FirestoreSchema.Connections.CREATED_AT to FieldValue.serverTimestamp()))
+            FirestoreSchema.Connections.CREATED_AT to FieldValue.serverTimestamp(),
+            FirestoreSchema.Connections.ACTIVE to true)) // this line NEEDS to be here or tests fail
   }
 
   // Generates a unique connection ID by sorting and joining vet and farmer IDs.
