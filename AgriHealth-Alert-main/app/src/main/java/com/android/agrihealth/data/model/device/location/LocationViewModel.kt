@@ -22,7 +22,11 @@ class LocationViewModel() : ViewModel() {
     if (!hasLocationPermissions()) throw IllegalStateException("Location permissions not granted")
   }
 
-  /** Gets the last known location, or, if unavailable, the current device location. Make sure the user has given permissions first, for example using the "LocationPermissionsRequester" composable */
+  /**
+   * Gets the last known location, or, if unavailable, the current device location. Make sure the
+   * user has given permissions first, for example using the "LocationPermissionsRequester"
+   * composable
+   */
   fun getLastKnownLocation() {
     throwIfNotAllowed()
     viewModelScope.launch {
@@ -34,7 +38,11 @@ class LocationViewModel() : ViewModel() {
     }
   }
 
-  /** Gets the current device location. More expensive on the battery than last known location. Make sure the user has given permissions first, for example using the "LocationPermissionsRequester" composable */
+  /**
+   * Gets the current device location. More expensive on the battery than last known location. Make
+   * sure the user has given permissions first, for example using the "LocationPermissionsRequester"
+   * composable
+   */
   fun getCurrentLocation() {
     throwIfNotAllowed()
     viewModelScope.launch {
