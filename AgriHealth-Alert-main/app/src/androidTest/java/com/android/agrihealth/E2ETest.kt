@@ -340,6 +340,9 @@ class E2ETest : FirebaseEmulatorsTest() {
     createReport("Report title", "Report description", vetId)
     clickFirstReportItem()
     reportViewClickViewOnMap()
+    composeTestRule.waitUntil(5000) {
+      composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).isDisplayed()
+    }
     composeTestRule.clickFirstReportMarker()
     mapClickViewReport()
     goBack()
