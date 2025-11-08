@@ -11,6 +11,7 @@ import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.authentification.RoleSelectionScreenTestTags
 import com.android.agrihealth.ui.authentification.SignInErrorMsg
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
@@ -161,7 +162,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON)
         .assertIsDisplayed()
         .performClick()
-    composeTestRule.waitUntil(5000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithText(AddReportFeedbackTexts.SUCCESS).isDisplayed()
     }
     composeTestRule.onNodeWithText("OK").assertIsDisplayed().performClick()
@@ -175,7 +176,7 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun checkOverviewScreenIsDisplayed() {
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule
           .onAllNodesWithTag(OverviewScreenTestTags.SCREEN)
           .fetchSemanticsNodes()
@@ -185,7 +186,7 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun checkEditProfileScreenIsDisplayed() {
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule
           .onAllNodesWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD)
           .fetchSemanticsNodes()
@@ -252,7 +253,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.waitUntil(5000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).isDisplayed()
     }
     composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).performClick()
@@ -349,7 +350,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     createReport("Report title", "Report description", vetId)
     clickFirstReportItem()
     reportViewClickViewOnMap()
-    composeTestRule.waitUntil(5000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).isDisplayed()
     }
     composeTestRule.clickFirstReportMarker()
@@ -400,7 +401,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.waitUntil(5000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule
           .onAllNodesWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
           .fetchSemanticsNodes()
@@ -412,7 +413,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.waitUntil(timeoutMillis = 6000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule
           .onAllNodesWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
           .fetchSemanticsNodes()
@@ -437,7 +438,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithText(newPassword).assertIsDisplayed()
     composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
 
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).isDisplayed()
     }
   }
