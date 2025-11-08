@@ -27,7 +27,6 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.RoleSelectionScreen
 import com.android.agrihealth.ui.authentification.SignInScreen
@@ -51,7 +50,6 @@ import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.defaultUser
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import kotlinx.coroutines.flow.StateFlow
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,10 +83,12 @@ fun AgriHealthApp(
   val currentUser by userViewModel.user.collectAsState()
   val currentUserId = currentUser.uid
   val currentUserRole = currentUser.role
+  val currentUserEmail = currentUser.email
 
-  val startDestination =
-      if (Firebase.auth.currentUser == null) Screen.Auth.name
-      else if (currentUser == defaultUser) Screen.RoleSelection.name else Screen.Overview.name
+  val startDestination = remember {
+    if (Firebase.auth.currentUser == null) Screen.Auth.name
+    else if (currentUser == defaultUser) Screen.RoleSelection.name else Screen.Overview.name
+  }
 
   NavHost(navController = navController, startDestination = startDestination) {
     // --- Auth Graph ---
@@ -108,11 +108,9 @@ fun AgriHealthApp(
       }
       composable(Screen.SignUp.route) {
         SignUpScreen(
+            userViewModel = userViewModel,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onSignedUp = {
-              userViewModel.refreshCurrentUser()
-              navigationActions.navigateTo(Screen.Overview)
-            })
+            onSignedUp = { navigationActions.navigateTo(Screen.EditProfile) })
       }
     }
     navigation(startDestination = Screen.RoleSelection.route, route = Screen.RoleSelection.name) {
@@ -120,7 +118,7 @@ fun AgriHealthApp(
         RoleSelectionScreen(
             credentialManager = credentialManager,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onButtonPressed = { navigationActions.navigateTo(Screen.Overview) })
+            onButtonPressed = { navigationActions.navigateTo(Screen.EditProfile) })
       }
     }
 
@@ -138,7 +136,6 @@ fun AgriHealthApp(
             userId = currentUserId,
             overviewViewModel = overviewViewModel,
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
-            // TODO: Pass the selected report to the ViewReportScreen
             onReportClick = { reportId ->
               navigationActions.navigateTo(Screen.ViewReport(reportId))
             },
@@ -152,6 +149,7 @@ fun AgriHealthApp(
             onBack = { navigationActions.goBack() },
             userRole = currentUserRole,
             userId = currentUserId,
+            userViewModel = userViewModel,
             onCreateReport = { reloadReports = !reloadReports },
             addReportViewModel = createReportViewModel,
         )
@@ -171,13 +169,20 @@ fun AgriHealthApp(
                 viewModel = viewModel,
                 reportId = reportId)
           }
+    }
+
+    // --- Profile Graph ---
+    navigation(
+        startDestination = Screen.Profile.route,
+        route = Screen.Profile.name,
+    ) {
       composable(Screen.Profile.route) {
         val credentialManager = CredentialManager.create(LocalContext.current)
         val overviewViewModel: OverviewViewModel = viewModel()
 
         ProfileScreen(
             userViewModel = userViewModel,
-            onGoBack = { navigationActions.goBack() },
+            onGoBack = { navigationActions.navigateTo(Screen.Overview) },
             onLogout = {
               overviewViewModel.signOut(credentialManager)
               navigationActions.navigateToAuthAndClear()
@@ -186,41 +191,37 @@ fun AgriHealthApp(
               // Navigate to EditProfile normally
               navController.navigate(Screen.EditProfile.route)
             },
-            onCode = {
-              // If farmer clicked "Add new Vet with Code", open EditProfile and focus code field
-              navController.navigate("${Screen.EditProfile.route}?openCode=true")
+            onCodeFarmer = {
+              // If farmer clicked "Add new Vet with Code", open EditProfile too
+              navController.navigate(Screen.EditProfile.route)
             })
       }
+    }
+
+    // --- Edit Profile Graph ---
+    navigation(startDestination = Screen.EditProfile.route, route = Screen.EditProfile.name) {
+      composable(Screen.EditProfile.route) {
+        EditProfileScreen(
+            userViewModel = userViewModel,
+            onGoBack = { navigationActions.navigateTo(Screen.Profile) },
+            onSave = { updatedUser ->
+              userViewModel.updateUser(updatedUser)
+              navigationActions.navigateTo(Screen.Profile)
+            },
+            onPasswordChange = { navigationActions.navigateTo(Screen.ChangePassword) })
+      }
+    }
+
+    // --- Change Password Graph ---
+    navigation(startDestination = Screen.ChangePassword.route, route = Screen.ChangePassword.name) {
       composable(Screen.ChangePassword.route) {
+        val changePasswordViewModel: ChangePasswordViewModel = viewModel()
         ChangePasswordScreen(
             onBack = { navigationActions.goBack() },
             onUpdatePassword = { navigationActions.navigateTo(Screen.EditProfile) },
-            userEmail = currentUser.email,
-            changePasswordViewModel = ChangePasswordViewModel())
+            userEmail = currentUserEmail,
+            changePasswordViewModel = changePasswordViewModel)
       }
-      composable(
-          route = Screen.EditProfile.route + "?openCode={openCode}",
-          arguments =
-              listOf(
-                  navArgument("openCode") {
-                    type = NavType.BoolType
-                    defaultValue = false
-                  })) { backStackEntry ->
-            val openCode = backStackEntry.arguments?.getBoolean("openCode") ?: false
-
-            EditProfileScreen(
-                userViewModel = userViewModel,
-                onGoBack = { navigationActions.goBack() },
-                onSave = { updatedUser ->
-                  // Update shared ViewModel and go back to Profile
-                  userViewModel.user = updatedUser as StateFlow<User>
-                  navigationActions.goBack()
-                },
-                onAddVetCode = { _code ->
-                  // Placeholder for now — logic implemented separately
-                },
-                openCodeField = openCode)
-          }
     }
 
     composable(

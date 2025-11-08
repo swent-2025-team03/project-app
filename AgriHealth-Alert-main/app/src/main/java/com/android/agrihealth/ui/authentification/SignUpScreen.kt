@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.ui.user.UserViewModel
 
 private val FieldBg = Color(0xFFF0F6F1)
 
@@ -41,7 +42,8 @@ object SignUpScreenTestTags {
 fun SignUpScreen(
     onBack: () -> Unit = {},
     onSignedUp: () -> Unit = {},
-    signUpViewModel: SignUpViewModel = viewModel()
+    signUpViewModel: SignUpViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel()
 ) {
   val signUpUIState by signUpViewModel.uiState.collectAsState()
   val snackbarHostState = remember { SnackbarHostState() }
@@ -54,7 +56,18 @@ fun SignUpScreen(
     }
   }
 
-  LaunchedEffect(signUpUIState.user) { signUpUIState.user?.let { onSignedUp() } }
+  LaunchedEffect(signUpUIState.user) {
+    signUpUIState.user?.let { firebaseUser ->
+      val newUser = signUpViewModel.createLocalUser(firebaseUser)
+
+      if (newUser != null) {
+        userViewModel.setUser(newUser)
+      }
+
+      // Navigate away only after updating in-memory user
+      onSignedUp()
+    }
+  }
 
   Scaffold(
       snackbarHost = {

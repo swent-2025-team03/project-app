@@ -6,7 +6,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,9 +18,11 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
@@ -36,6 +38,8 @@ object EditProfileScreenTestTags {
   const val ADD_CODE_BUTTON = "AddVetButton"
   const val ACTIVE_CODES_DROPDOWN = "ActiveCodesDropdown"
   const val SAVE_BUTTON = "SaveButton"
+
+  const val PASSWORD_BUTTON = "PasswordButton"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,15 +47,28 @@ object EditProfileScreenTestTags {
 fun EditProfileScreen(
     userViewModel: UserViewModel = viewModel(),
     onGoBack: () -> Unit = {},
-    onSave: (User) -> Unit = {},
+    onSave: (User) -> Unit = { userViewModel.updateUser(it) },
     onAddVetCode: (String) -> Unit = {},
-    openCodeField: Boolean = false
+    onPasswordChange: () -> Unit = {}
 ) {
   val user by userViewModel.user.collectAsState()
   val userRole = user.role
+
+  val factory = remember {
+    object : androidx.lifecycle.ViewModelProvider.Factory {
+      override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return ProfileViewModel(userViewModel) as T
+      }
+    }
+  }
+  val profileViewModel: ProfileViewModel = viewModel(factory = factory)
+
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
   val snackbarHostState = remember { SnackbarHostState() }
+
+  val vetClaimMessage by profileViewModel.vetClaimMessage.collectAsState()
+  LaunchedEffect(vetClaimMessage) { vetClaimMessage?.let { snackbarHostState.showSnackbar(it) } }
 
   // Local mutable states
   var firstname by remember { mutableStateOf(user?.firstname ?: "") }
@@ -69,15 +86,6 @@ fun EditProfileScreen(
 
   // Vet-specific states
   var expandedCodesDropdown by remember { mutableStateOf(false) }
-
-  // If openCodeField is true and user is Farmer, request focus on the code text field
-  // I added this so when clicking on "Add Vet with Code" from ProfileScreen, the keyboard opens
-  // directly on the code input field.
-  LaunchedEffect(openCodeField) {
-    if (openCodeField && user is Farmer) {
-      scope.launch { codeFocusRequester.requestFocus() }
-    }
-  }
 
   Scaffold(
       topBar = {
@@ -124,30 +132,27 @@ fun EditProfileScreen(
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LASTNAME_FIELD))
 
-              Spacer(modifier = Modifier.height(12.dp))
+              if (!user.isGoogleAccount) {
+                Spacer(modifier = Modifier.height(12.dp))
 
-              // Password
-              OutlinedTextField(
-                  value = "********",
-                  onValueChange = {},
-                  label = { Text("Password") },
-                  enabled = true,
-                  readOnly = true,
-                  modifier =
-                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
-                  keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                  trailingIcon = {
-                    IconButton(
-                        onClick = {
-                          scope.launch {
-                            snackbarHostState.showSnackbar("Password change not possible yet.")
+                // Password
+                OutlinedTextField(
+                    value = "********",
+                    onValueChange = {},
+                    label = { Text("Password") },
+                    enabled = true,
+                    readOnly = true,
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    trailingIcon = {
+                      IconButton(
+                          onClick = { onPasswordChange() },
+                          modifier = Modifier.testTag(PASSWORD_BUTTON)) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit Password")
                           }
-                        }) {
-                          Icon(Icons.Default.ArrowDropDown, contentDescription = "Change Password")
-                        }
-                  })
-              // TODO: I put this here in advance but we still have not decided how we want to
-              // handle password changes.
+                    })
+              }
 
               Spacer(modifier = Modifier.height(12.dp))
 
@@ -169,6 +174,14 @@ fun EditProfileScreen(
               // Default Vet Selection and Code Input (Farmers only)
               if (user is Farmer) {
                 Spacer(modifier = Modifier.height(12.dp))
+
+                if ((user as Farmer).linkedVets.isEmpty()) {
+                  Text(
+                      text = "You need to add vets before choosing your default one.",
+                      style = MaterialTheme.typography.bodySmall,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
+                      modifier = Modifier.padding(vertical = 4.dp))
+                }
 
                 ExposedDropdownMenuBox(
                     expanded = expandedVetDropdown,
@@ -211,7 +224,13 @@ fun EditProfileScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = { onAddVetCode(vetCode) },
+                    onClick = {
+                      if (vetCode.isBlank()) {
+                        scope.launch { snackbarHostState.showSnackbar("Please enter a code.") }
+                      } else {
+                        profileViewModel.claimVetCode(vetCode)
+                      }
+                    },
                     modifier =
                         Modifier.align(Alignment.CenterHorizontally)
                             .testTag(EditProfileScreenTestTags.ADD_CODE_BUTTON)) {
@@ -242,12 +261,14 @@ fun EditProfileScreen(
                       ExposedDropdownMenu(
                           expanded = expandedCodesDropdown,
                           onDismissRequest = { expandedCodesDropdown = false }) {
-                            // TODO: Will be populated when Nico's logic is implemented
+                            (user as Vet).validCodes.forEach { code ->
+                              DropdownMenuItem(
+                                  text = { Text(code) },
+                                  onClick = { expandedCodesDropdown = false })
+                            }
                           }
                     }
               }
-              // TODO: I think we should add a variable for Vet users, that contains the list of
-              // code that are active right now.
 
               Spacer(modifier = Modifier.weight(1f))
 

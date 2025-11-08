@@ -13,6 +13,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -50,14 +51,15 @@ class UserDirectoryRepositoryTest {
     val res = repository.getUserSummary("uid_1")
 
     assertNotNull(res)
+    verify(exactly = 1) { users.document("uid_1") }
     assertEquals("Jean", res!!.firstname)
     assertEquals("Dupont", res.lastname)
     assertEquals(UserRole.FARMER, res.role)
 
-    verify(exactly = 1) { docRef.get() }
-
+    // Second call should hit cache
     val res2 = repository.getUserSummary("uid_1")
     assertNotNull(res2)
+    assertSame(res, res2)
     verify(exactly = 1) { docRef.get() }
   }
 
@@ -70,10 +72,13 @@ class UserDirectoryRepositoryTest {
 
     val res = repository.getUserSummary("uid_missing")
     assertNull(res)
+    verify(exactly = 1) { users.document("uid_missing") }
+    verify(exactly = 1) { docRef.get() }
 
     val res2 = repository.getUserSummary("uid_missing")
     assertNull(res2)
-    verify(exactly = 2) { docRef.get() }
+    // Negative cache: no second Firestore read
+    verify(exactly = 1) { docRef.get() }
   }
 
   @Test
@@ -89,8 +94,26 @@ class UserDirectoryRepositoryTest {
     val res = repository.getUserSummary("uid_2")
 
     assertNotNull(res)
+    verify(exactly = 1) { users.document("uid_2") }
     assertEquals("Alice", res!!.firstname)
     assertEquals("Martin", res.lastname)
     assertNull(res.role)
+  }
+
+  @Test
+  fun getUserSummary_returnsNull_andDoesNotCache_onError() = runBlocking {
+    // Simulate Firestore exception: repo should return null and NOT cache
+    every { docRef.get() } returns Tasks.forException(RuntimeException("boom"))
+
+    val r1 = repository.getUserSummary("uid_err")
+    assertNull(r1)
+    verify(exactly = 1) { users.document("uid_err") }
+    verify(exactly = 1) { docRef.get() }
+
+    val r2 = repository.getUserSummary("uid_err")
+    assertNull(r2)
+    // No negative cache on exception: second call triggers a new read
+    verify(exactly = 2) { users.document("uid_err") }
+    verify(exactly = 2) { docRef.get() }
   }
 }

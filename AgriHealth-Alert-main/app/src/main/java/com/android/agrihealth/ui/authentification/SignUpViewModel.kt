@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.auth.FirebaseUser
@@ -142,6 +143,29 @@ class SignUpViewModel(
             else -> null
           }
       errorMsg?.let { setErrorMsg(it) }
+    }
+  }
+
+  fun createLocalUser(firebaseUser: FirebaseUser): User? {
+    val state = _uiState.value
+    return when (state.role) {
+      UserRole.FARMER ->
+          Farmer(
+              uid = firebaseUser.uid,
+              firstname = state.firstname,
+              lastname = state.lastname,
+              email = state.email,
+              address = null,
+              linkedVets = emptyList(),
+              defaultVet = null)
+      UserRole.VET ->
+          Vet(
+              uid = firebaseUser.uid,
+              firstname = state.firstname,
+              lastname = state.lastname,
+              email = state.email,
+              address = null)
+      else -> null
     }
   }
 }

@@ -31,7 +31,15 @@ open class FirebaseEmulatorsTest() {
   }
 
   // Definition of test users
-  val user1 = Farmer("abc123", "Rushia", "Uruha", "email1@thing.com", null, emptyList(), null)
+  val user1 =
+      Farmer(
+          "abc123",
+          "Rushia",
+          "Uruha",
+          "email1@thing.com",
+          null,
+          listOf("Best Vet Ever!", "Meh Vet"),
+          "Test?")
   val user2 = Farmer("def456", "mike", "neko", "email2@aaaaa.balls", null, emptyList(), null)
   val user3 = Vet("ghi789", "Nazuna", "Amemiya", "email3@kms.josh", null)
   val user4 = Farmer("jklABC", "John", "Fake", "fakeUser.glorp", null, emptyList(), null)
