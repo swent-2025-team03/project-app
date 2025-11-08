@@ -4,6 +4,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -294,6 +295,7 @@ fun FilterDropdown(
           Modifier.padding(16.dp)
               .clickable { expanded = true }
               .defaultMinSize(minWidth = 100.dp, minHeight = 40.dp)
+              .background(color = MaterialTheme.colorScheme.surface)
               .border(2.dp, MaterialTheme.colorScheme.primary)
               .testTag(MapScreenTestTags.REPORT_FILTER_MENU),
       contentAlignment = Alignment.Center) {
@@ -317,28 +319,36 @@ fun ShowReportInfo(report: Report?, onReportClick: (String) -> Unit = {}) {
   if (report == null) return
 
   Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.REPORT_INFO_BOX)) {
-    Column(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(16.dp)) {
-      Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(
-            text = report.title,
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.testTag(MapScreenTestTags.getTestTagForReportTitle(report.id)))
+    Column(
+        modifier =
+            Modifier.background(color = MaterialTheme.colorScheme.surface)
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(16.dp)) {
+          Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(
+                    text = report.title,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier =
+                        Modifier.testTag(MapScreenTestTags.getTestTagForReportTitle(report.id)))
 
-        Button(
-            onClick = { onReportClick(report.id) },
-            modifier =
-                Modifier.align(Alignment.CenterVertically)
-                    .testTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)) {
-              Text("See report")
-            }
-      }
+                Button(
+                    onClick = { onReportClick(report.id) },
+                    modifier =
+                        Modifier.align(Alignment.CenterVertically)
+                            .testTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)) {
+                      Text("See report")
+                    }
+              }
 
-      Spacer(modifier = Modifier.height(4.dp))
-      Text(
-          text = report.description,
-          modifier = Modifier.testTag(MapScreenTestTags.getTestTagForReportDesc(report.id)))
-      Spacer(modifier = Modifier.height(8.dp))
-    }
+          Spacer(modifier = Modifier.height(4.dp))
+          Text(
+              text = report.description,
+              modifier = Modifier.testTag(MapScreenTestTags.getTestTagForReportDesc(report.id)))
+          Spacer(modifier = Modifier.height(8.dp))
+        }
   }
 }
 
