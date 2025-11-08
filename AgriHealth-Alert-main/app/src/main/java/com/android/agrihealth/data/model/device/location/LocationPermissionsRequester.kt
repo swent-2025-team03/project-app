@@ -39,11 +39,12 @@ fun LocationPermissionsRequester(locationViewModel: LocationViewModel = viewMode
   }
 }
 
+// TODO: Remove this block once location services are implemented somewhere else in the app
+/*
 @Composable
 @Preview
 fun LocationTestScreen() {
-  // TODO: Remove this block once location services are implemented somewhere else in the app
-  /*Box {
+  Box {
     LocationRepositoryProvider.repository = LocationRepository(LocalContext.current)
     val viewModel = LocationViewModel()
 
@@ -60,5 +61,5 @@ fun LocationTestScreen() {
         Text("Fetching location...")
       }
     }
-  }*/
-}
+  }
+}*/
