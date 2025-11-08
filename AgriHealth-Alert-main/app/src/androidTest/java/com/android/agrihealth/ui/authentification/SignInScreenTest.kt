@@ -14,6 +14,7 @@ import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
+import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
 import org.junit.After
 import org.junit.Before
@@ -79,12 +80,12 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
         .onNodeWithTag(SignInScreenTestTags.GOOGLE_LOGIN_BUTTON)
         .assertIsDisplayed()
         .performClick()
-    composeTestRule.waitUntil(5000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).isDisplayed()
     }
     composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).performClick()
 
-    composeTestRule.waitUntil(5000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).isDisplayed()
     }
   }
@@ -93,7 +94,7 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
   fun signInWithEmptyFieldsFail() {
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON).performClick()
-    composeTestRule.waitUntil(3000) {
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignInErrorMsg.EMPTY_EMAIL_OR_PASSWORD).isDisplayed()
     }
   }
@@ -102,7 +103,7 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
   fun signInWithUnregisteredAccountFails() {
     composeTestRule.setContent { AgriHealthApp() }
     completeSignIn(user4.email, password4)
-    composeTestRule.waitUntil(3000) {
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignInErrorMsg.INVALID_CREDENTIALS).isDisplayed()
     }
   }
@@ -112,7 +113,7 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
     composeTestRule.setContent { AgriHealthApp() }
     setNetworkEnabled(false)
     completeSignIn(user4.email, password4)
-    composeTestRule.waitUntil(3000) {
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignInErrorMsg.TIMEOUT).isDisplayed()
     }
   }
