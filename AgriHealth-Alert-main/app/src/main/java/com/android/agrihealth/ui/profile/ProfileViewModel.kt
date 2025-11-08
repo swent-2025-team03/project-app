@@ -31,7 +31,7 @@ class ProfileViewModel(
     val vet = currentUser as? Vet ?: return
 
     viewModelScope.launch {
-      val result = connectionRepository.generateCode(vet.uid)
+      val result = connectionRepository.generateCode()
       result.fold(
           onSuccess = { code ->
             _generatedCode.value = code
@@ -48,7 +48,7 @@ class ProfileViewModel(
   fun claimVetCode(code: String) {
     val farmer = userViewModel.user.value as? Farmer ?: return
     viewModelScope.launch {
-      val result = connectionRepository.claimCode(code, farmer.uid)
+      val result = connectionRepository.claimCode(code)
       result.fold(
           onSuccess = { vetId ->
             // Update farmer: add vetId to linkedVets (avoid duplicates)
