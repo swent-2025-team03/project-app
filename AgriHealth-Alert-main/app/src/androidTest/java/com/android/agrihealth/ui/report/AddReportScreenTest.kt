@@ -11,12 +11,36 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import java.io.File
+import com.android.agrihealth.ui.user.UserViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
+
+private fun fakeFarmerViewModel(): UserViewModel {
+  return object : UserViewModel() {
+    private val fakeUserFlow =
+        MutableStateFlow(
+            Farmer(
+                uid = "test_user",
+                firstname = "Farmer",
+                lastname = "Joe",
+                email = "email@email.com",
+                address = Location(0.0, 0.0, "123 Farm Lane"),
+                linkedVets = listOf("Best Vet Ever!", "Meh Vet", "Great Vet"),
+                defaultVet = null))
+
+    override var user: StateFlow<User> = fakeUserFlow.asStateFlow()
+  }
+}
 
 class AddReportScreenTest {
 
@@ -59,17 +83,21 @@ class AddReportScreenTest {
 
   @Test
   fun selectingVet_updatesDisplayedOption() {
+    val fakeUserViewModel = fakeFarmerViewModel()
+
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
+            userViewModel = fakeUserViewModel,
             userRole = UserRole.FARMER,
             userId = "test_user",
             onCreateReport = {},
             addReportViewModel = FakeAddReportViewModel())
       }
     }
+
     composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).performClick()
-    val firstVet = AddReportConstants.vetOptions[0]
+    val firstVet = "Best Vet Ever!"
     composeRule.onNodeWithText(firstVet).assertIsDisplayed().performClick()
     composeRule.onNodeWithText(firstVet).assertIsDisplayed()
   }

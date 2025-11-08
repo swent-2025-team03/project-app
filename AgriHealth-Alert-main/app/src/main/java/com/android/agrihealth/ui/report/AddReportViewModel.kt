@@ -60,7 +60,7 @@ class AddReportViewModel(
             description = uiState.description,
             photoUri = uiState.photoUri,
             farmerId = userId,
-            vetId = "Best Vet Ever!", // TODO: Use the real vetID when implemented
+            vetId = uiState.chosenVet,
             status = ReportStatus.PENDING,
             answer = null,
             location = Location(46.7990813, 6.6259961) // null // optional until implemented

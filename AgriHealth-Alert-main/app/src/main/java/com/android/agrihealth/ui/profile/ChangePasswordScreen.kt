@@ -57,7 +57,7 @@ fun ChangePasswordScreen(
 ) {
 
   val uiState by changePasswordViewModel.uiState.collectAsState()
-  changePasswordViewModel.setEmail(userEmail)
+  LaunchedEffect(Unit) { changePasswordViewModel.setEmail(userEmail) }
 
   LaunchedEffect(uiState.success) { if (uiState.success) onUpdatePassword.invoke() }
   Scaffold(

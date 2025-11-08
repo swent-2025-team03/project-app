@@ -10,7 +10,7 @@ interface AddReportViewModelContract {
 
   fun setDescription(newDescription: String)
 
-  fun setVet(option: String)
+  fun setVet(vetId: String)
 
   suspend fun createReport(): Boolean
 

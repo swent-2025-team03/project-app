@@ -17,8 +17,9 @@ import kotlinx.coroutines.launch
 
 data class FakeOverviewUiState(val reports: List<Report> = emptyList())
 
-class FakeOverviewViewModel : ViewModel(), OverviewViewModelContract {
-  private val _uiState = MutableStateFlow(OverviewUIState())
+class FakeOverviewViewModel(initialState: OverviewUIState = OverviewUIState()) :
+    ViewModel(), OverviewViewModelContract {
+  private val _uiState = MutableStateFlow(initialState)
   override val uiState: StateFlow<OverviewUIState> = _uiState
 
   private lateinit var authRepository: AuthRepository
@@ -38,6 +39,9 @@ class FakeOverviewViewModel : ViewModel(), OverviewViewModelContract {
                 location = null))
     _uiState.value = OverviewUIState(reports = dummyReports)
   }
+
+  // updateFilters is not used for tests so it is remained empty
+  override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {}
 
   override fun signOut(credentialManager: CredentialManager) {
     authRepository = AuthRepositoryProvider.repository

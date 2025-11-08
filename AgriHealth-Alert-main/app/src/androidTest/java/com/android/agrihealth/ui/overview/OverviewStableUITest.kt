@@ -4,8 +4,10 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeOverviewRepository
+import junit.framework.TestCase.assertEquals
 import org.junit.Rule
 import org.junit.Test
 
@@ -75,5 +77,24 @@ class OverviewStableUITest {
   fun profileButton_isDisplayed() {
     setFarmerScreen()
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.PROFILE_BUTTON).assertIsDisplayed()
+  }
+
+  // --- TEST 7: Verify the dropdown
+  @Test
+  fun dropdownMenuWrapper_selectOption_callsOnOptionSelected() {
+    var selectedOption: String? = null
+    val options = listOf("Option 1", "Option 2")
+
+    composeTestRule.setContent {
+      DropdownMenuWrapper(
+          options = options,
+          selectedOption = null,
+          onOptionSelected = { selectedOption = it },
+          placeholder = "All")
+    }
+    composeTestRule.onNodeWithText("All").performClick()
+    composeTestRule.onNodeWithText("Option 1").performClick()
+
+    assertEquals("Option 1", selectedOption)
   }
 }

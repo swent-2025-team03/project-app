@@ -21,12 +21,20 @@ class RoleSelectionViewModel(
 ) : ViewModel() {
 
   fun createUser(role: UserRole) {
-    val fireUser = Firebase.auth.currentUser!!
+    val fireUser = Firebase.auth.currentUser ?: throw IllegalStateException("No signed-in user")
     val user =
         when (role) {
-          UserRole.VET -> Vet(fireUser.uid, fireUser.displayName ?: "", "", "", null)
+          UserRole.VET ->
+              Vet(fireUser.uid, fireUser.displayName ?: "", "", "", null, isGoogleAccount = true)
           UserRole.FARMER ->
-              Farmer(fireUser.uid, fireUser.displayName ?: "", "", "", null, defaultVet = null)
+              Farmer(
+                  fireUser.uid,
+                  fireUser.displayName ?: "",
+                  "",
+                  "",
+                  null,
+                  defaultVet = null,
+                  isGoogleAccount = true)
         }
     viewModelScope.launch { userRepository.addUser(user) }
   }
