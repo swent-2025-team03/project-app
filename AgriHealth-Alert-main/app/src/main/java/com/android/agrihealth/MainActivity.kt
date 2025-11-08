@@ -187,29 +187,33 @@ fun AgriHealthApp(
               overviewViewModel.signOut(credentialManager)
               navigationActions.navigateToAuthAndClear()
             },
-            onEditProfile = {
-              // Navigate to EditProfile normally
-              navController.navigate(Screen.EditProfile.route)
-            },
-            onCodeFarmer = {
-              // If farmer clicked "Add new Vet with Code", open EditProfile too
-              navController.navigate(Screen.EditProfile.route)
-            })
+            onEditProfile = { navController.navigate("edit_profile?showOnlyVetField=false") },
+            onCodeFarmer = { navController.navigate("edit_profile?showOnlyVetField=true") })
       }
     }
 
     // --- Edit Profile Graph ---
     navigation(startDestination = Screen.EditProfile.route, route = Screen.EditProfile.name) {
-      composable(Screen.EditProfile.route) {
-        EditProfileScreen(
-            userViewModel = userViewModel,
-            onGoBack = { navigationActions.navigateTo(Screen.Profile) },
-            onSave = { updatedUser ->
-              userViewModel.updateUser(updatedUser)
-              navigationActions.navigateTo(Screen.Profile)
-            },
-            onPasswordChange = { navigationActions.navigateTo(Screen.ChangePassword) })
-      }
+      composable(
+          route = Screen.EditProfile.route,
+          arguments =
+              listOf(
+                  navArgument("showOnlyVetField") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                  })) { backStackEntry ->
+            val showOnlyVetField = backStackEntry.arguments?.getBoolean("showOnlyVetField") ?: false
+
+            EditProfileScreen(
+                userViewModel = userViewModel,
+                onGoBack = { navigationActions.navigateTo(Screen.Profile) },
+                onSave = { updatedUser ->
+                  userViewModel.updateUser(updatedUser)
+                  navigationActions.navigateTo(Screen.Profile)
+                },
+                onPasswordChange = { navigationActions.navigateTo(Screen.ChangePassword) },
+                showOnlyVetField = showOnlyVetField)
+          }
     }
 
     // --- Change Password Graph ---

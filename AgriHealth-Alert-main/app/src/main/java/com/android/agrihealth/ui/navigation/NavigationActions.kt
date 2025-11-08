@@ -25,7 +25,14 @@ sealed class Screen(
 
   object ChangePassword : Screen(route = "changePassword", name = "Change Your Password")
 
-  object EditProfile : Screen(route = "edit_profile", name = "Edit Profile")
+  object EditProfile :
+      Screen(route = "edit_profile?showOnlyVetField={showOnlyVetField}", name = "Edit Profile") {
+    const val baseRoute = "edit_profile"
+
+    fun createRoute(showOnlyVetField: Boolean = false): String {
+      return "$baseRoute?showOnlyVetField=$showOnlyVetField"
+    }
+  }
 
   object Overview : Screen(route = "overview", name = "Overview", isTopLevelDestination = true)
 

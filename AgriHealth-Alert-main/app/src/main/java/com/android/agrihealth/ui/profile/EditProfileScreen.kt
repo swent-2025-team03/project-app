@@ -48,8 +48,8 @@ fun EditProfileScreen(
     userViewModel: UserViewModel = viewModel(),
     onGoBack: () -> Unit = {},
     onSave: (User) -> Unit = { userViewModel.updateUser(it) },
-    onAddVetCode: (String) -> Unit = {},
-    onPasswordChange: () -> Unit = {}
+    onPasswordChange: () -> Unit = {},
+    showOnlyVetField: Boolean = false
 ) {
   val user by userViewModel.user.collectAsState()
   val userRole = user.role
@@ -105,112 +105,119 @@ fun EditProfileScreen(
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
 
-              // Profile Image Placeholder
-              Icon(
-                  imageVector = Icons.Default.AccountCircle,
-                  contentDescription = "Profile Picture",
-                  modifier = Modifier.size(120.dp).clip(CircleShape).testTag(PROFILE_IMAGE),
-                  tint = MaterialTheme.colorScheme.primary)
+              if (!showOnlyVetField) {
 
-              Spacer(modifier = Modifier.height(24.dp))
+                // Profile Image Placeholder
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier.size(120.dp).clip(CircleShape).testTag(PROFILE_IMAGE),
+                    tint = MaterialTheme.colorScheme.primary)
 
-              // First name
-              OutlinedTextField(
-                  value = firstname,
-                  onValueChange = { firstname = it },
-                  label = { Text("First Name") },
-                  modifier =
-                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.FIRSTNAME_FIELD))
+                Spacer(modifier = Modifier.height(24.dp))
 
-              Spacer(modifier = Modifier.height(12.dp))
-
-              // Last name
-              OutlinedTextField(
-                  value = lastname,
-                  onValueChange = { lastname = it },
-                  label = { Text("Last Name") },
-                  modifier =
-                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LASTNAME_FIELD))
-
-              if (!user.isGoogleAccount) {
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Password
+                // First name
                 OutlinedTextField(
-                    value = "********",
-                    onValueChange = {},
-                    label = { Text("Password") },
-                    enabled = true,
-                    readOnly = true,
+                    value = firstname,
+                    onValueChange = { firstname = it },
+                    label = { Text("First Name") },
                     modifier =
-                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    trailingIcon = {
-                      IconButton(
-                          onClick = { onPasswordChange() },
-                          modifier = Modifier.testTag(PASSWORD_BUTTON)) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit Password")
-                          }
-                    })
-              }
+                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.FIRSTNAME_FIELD))
 
-              Spacer(modifier = Modifier.height(12.dp))
-
-              // Address
-              OutlinedTextField(
-                  value = address,
-                  onValueChange = { address = it },
-                  label = {
-                    when (userRole) {
-                      UserRole.FARMER -> Text("Farm Address")
-                      UserRole.VET -> Text("Clinic Address")
-                    }
-                  },
-                  modifier =
-                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
-              // TODO: right now addresses are displayed as Location(...), I think we will change
-              // this once we work on the implementation of Location in more details.
-
-              // Default Vet Selection and Code Input (Farmers only)
-              if (user is Farmer) {
                 Spacer(modifier = Modifier.height(12.dp))
 
-                if ((user as Farmer).linkedVets.isEmpty()) {
-                  Text(
-                      text = "You need to add vets before choosing your default one.",
-                      style = MaterialTheme.typography.bodySmall,
-                      color = MaterialTheme.colorScheme.onSurfaceVariant,
-                      modifier = Modifier.padding(vertical = 4.dp))
+                // Last name
+                OutlinedTextField(
+                    value = lastname,
+                    onValueChange = { lastname = it },
+                    label = { Text("Last Name") },
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LASTNAME_FIELD))
+
+                if (!user.isGoogleAccount) {
+                  Spacer(modifier = Modifier.height(12.dp))
+
+                  // Password
+                  OutlinedTextField(
+                      value = "********",
+                      onValueChange = {},
+                      label = { Text("Password") },
+                      enabled = true,
+                      readOnly = true,
+                      modifier =
+                          Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
+                      keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                      trailingIcon = {
+                        IconButton(
+                            onClick = { onPasswordChange() },
+                            modifier = Modifier.testTag(PASSWORD_BUTTON)) {
+                              Icon(Icons.Default.Edit, contentDescription = "Edit Password")
+                            }
+                      })
                 }
 
-                ExposedDropdownMenuBox(
-                    expanded = expandedVetDropdown,
-                    onExpandedChange = { expandedVetDropdown = !expandedVetDropdown }) {
-                      OutlinedTextField(
-                          value = selectedDefaultVet,
-                          onValueChange = {},
-                          readOnly = true,
-                          label = { Text("Default Vet") },
-                          trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVetDropdown)
-                          },
-                          modifier =
-                              Modifier.menuAnchor()
-                                  .fillMaxWidth()
-                                  .testTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN))
-                      ExposedDropdownMenu(
-                          expanded = expandedVetDropdown,
-                          onDismissRequest = { expandedVetDropdown = false }) {
-                            (user as Farmer).linkedVets.forEach { vetId ->
-                              DropdownMenuItem(
-                                  text = { Text("Vet $vetId") }, // Placeholder name display
-                                  onClick = {
-                                    selectedDefaultVet = vetId
-                                    expandedVetDropdown = false
-                                  })
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Address
+                OutlinedTextField(
+                    value = address,
+                    onValueChange = { address = it },
+                    label = {
+                      when (userRole) {
+                        UserRole.FARMER -> Text("Farm Address")
+                        UserRole.VET -> Text("Clinic Address")
+                      }
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
+                // TODO: right now addresses are displayed as Location(...), I think we will change
+                // this once we work on the implementation of Location in more details.
+
+                // Default Vet Selection and Code Input (Farmers only)
+                if (user is Farmer) {
+                  Spacer(modifier = Modifier.height(12.dp))
+
+                  if ((user as Farmer).linkedVets.isEmpty()) {
+                    Text(
+                        text = "You need to add vets before choosing your default one.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 4.dp))
+                  }
+
+                  ExposedDropdownMenuBox(
+                      expanded = expandedVetDropdown,
+                      onExpandedChange = { expandedVetDropdown = !expandedVetDropdown }) {
+                        OutlinedTextField(
+                            value = selectedDefaultVet,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Default Vet") },
+                            trailingIcon = {
+                              ExposedDropdownMenuDefaults.TrailingIcon(
+                                  expanded = expandedVetDropdown)
+                            },
+                            modifier =
+                                Modifier.menuAnchor()
+                                    .fillMaxWidth()
+                                    .testTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN))
+                        ExposedDropdownMenu(
+                            expanded = expandedVetDropdown,
+                            onDismissRequest = { expandedVetDropdown = false }) {
+                              (user as Farmer).linkedVets.forEach { vetId ->
+                                DropdownMenuItem(
+                                    text = { Text("Vet $vetId") }, // Placeholder name display
+                                    onClick = {
+                                      selectedDefaultVet = vetId
+                                      expandedVetDropdown = false
+                                    })
+                              }
                             }
-                          }
-                    }
+                      }
+                }
+              }
+
+              if (user is Farmer) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
