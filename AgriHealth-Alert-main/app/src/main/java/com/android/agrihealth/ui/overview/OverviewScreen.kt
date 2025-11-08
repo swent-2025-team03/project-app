@@ -277,7 +277,7 @@ fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
               maxLines = 1)
         }
         StatusTag(report.status)
-  }
+      }
 }
 
 /**
