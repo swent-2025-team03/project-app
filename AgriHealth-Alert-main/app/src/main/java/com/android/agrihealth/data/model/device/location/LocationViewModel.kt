@@ -46,10 +46,9 @@ class LocationViewModel() : ViewModel() {
     }
   }
 
-  /**
-   * Checks if the user allowed all device location permissions on the app
-   */
+  /** Checks if the user allowed all device location permissions on the app */
   fun hasLocationPermissions(): Boolean {
-    return locationRepository.hasFineLocationPermission() && locationRepository.hasCoarseLocationPermission()
+    return locationRepository.hasFineLocationPermission() &&
+        locationRepository.hasCoarseLocationPermission()
   }
 }

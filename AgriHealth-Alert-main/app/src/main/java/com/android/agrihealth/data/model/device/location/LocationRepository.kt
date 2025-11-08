@@ -26,23 +26,26 @@ class LocationRepository(
     return AgrihealthLocation(latitude, longitude)
   }
 
-    private fun hasPermission(permission: String): Boolean {
-        return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
-    }
+  private fun hasPermission(permission: String): Boolean {
+    return ContextCompat.checkSelfPermission(context, permission) ==
+        PackageManager.PERMISSION_GRANTED
+  }
 
-    /**
-     * Checks if the user allowed access to the precise location of the device. Necessary for location services
-     */
-    fun hasFineLocationPermission(): Boolean {
-        return hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    }
+  /**
+   * Checks if the user allowed access to the precise location of the device. Necessary for location
+   * services
+   */
+  fun hasFineLocationPermission(): Boolean {
+    return hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+  }
 
-    /**
-     * Checks if the user allowed access to the approximate location of the device. Necessary for location services, but not sufficient
-     */
-    fun hasCoarseLocationPermission(): Boolean {
-        return hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
-    }
+  /**
+   * Checks if the user allowed access to the approximate location of the device. Necessary for
+   * location services, but not sufficient
+   */
+  fun hasCoarseLocationPermission(): Boolean {
+    return hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+  }
 
   /** Gets the last known location, or, if unavailable, the current device location */
   @RequiresPermission(
