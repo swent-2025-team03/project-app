@@ -26,6 +26,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.android.agrihealth.data.model.device.location.LocationRepository
+import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.RoleSelectionScreen
@@ -78,6 +80,7 @@ fun AgriHealthApp(
 
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
+  LocationRepositoryProvider.repository = LocationRepository(context)
 
   var reloadReports by remember { mutableStateOf(false) }
   val currentUser by userViewModel.user.collectAsState()
