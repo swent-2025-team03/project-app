@@ -18,8 +18,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
+import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -152,7 +154,9 @@ fun OverviewScreen(
                           overviewViewModel.updateFilters(
                               it, uiState.selectedVet, uiState.selectedFarmer)
                         },
-                        modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN))
+                        modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN),
+                        placeholder = "Filter by status",
+                        labelProvider = { status -> status?.displayString() ?: "-" })
                     Spacer(modifier = Modifier.width(8.dp))
                     if (userRole == UserRole.FARMER) {
                       // -- VetId filter (only for farmer) --
@@ -165,7 +169,8 @@ fun OverviewScreen(
                                 vetId = it,
                                 farmerId = uiState.selectedFarmer)
                           },
-                          modifier = Modifier.testTag(OverviewScreenTestTags.VET_ID_DROPDOWN))
+                          modifier = Modifier.testTag(OverviewScreenTestTags.VET_ID_DROPDOWN),
+                          placeholder = "Filter by vets")
                     } else if (userRole == UserRole.VET) {
                       // -- FarmerId filter (only for vet) --
                       DropdownMenuWrapper(
@@ -177,7 +182,8 @@ fun OverviewScreen(
                                 vetId = uiState.selectedVet,
                                 farmerId = it)
                           },
-                          modifier = Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN))
+                          modifier = Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN),
+                          placeholder = "Filter by farmers")
                     }
                   }
 
@@ -227,10 +233,12 @@ fun <T> DropdownMenuWrapper(
     options: List<T>,
     selectedOption: T?,
     onOptionSelected: (T?) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    placeholder: String,
+    labelProvider: (T?) -> String = { it?.toString() ?: "-" }
 ) {
   var expanded by remember { mutableStateOf(false) }
-  val displayText = selectedOption?.toString() ?: "All"
+  val displayText = selectedOption?.let { labelProvider(it) } ?: placeholder
 
   Box {
     Button(onClick = { expanded = true }, modifier = modifier) {
@@ -240,9 +248,7 @@ fun <T> DropdownMenuWrapper(
       options.forEach { option ->
         DropdownMenuItem(
             modifier = Modifier.testTag("OPTION_${option?.toString() ?: "All"}"),
-            text = {
-              Text(option?.toString() ?: "All", style = MaterialTheme.typography.bodyMedium)
-            },
+            text = { Text(labelProvider(option), style = MaterialTheme.typography.bodyMedium) },
             onClick = {
               onOptionSelected(option)
               expanded = false
@@ -288,15 +294,8 @@ fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
  */
 @Composable
 fun StatusTag(status: ReportStatus) {
-  val color =
-      when (status) {
-        ReportStatus.PENDING -> MaterialTheme.colorScheme.surfaceVariant
-        ReportStatus.IN_PROGRESS -> MaterialTheme.colorScheme.tertiaryContainer
-        ReportStatus.RESOLVED -> MaterialTheme.colorScheme.secondaryContainer
-        ReportStatus.SPAM -> MaterialTheme.colorScheme.error
-      }
   Surface(
-      color = color,
+      color = statusColor(status),
       shape = MaterialTheme.shapes.small,
       modifier = Modifier.padding(start = 8.dp)) {
         Text(
@@ -305,55 +304,60 @@ fun StatusTag(status: ReportStatus) {
             style = MaterialTheme.typography.labelSmall)
       }
 }
-
-/** Preview of the OverviewScreen with dummy data. Temporarily commented out */
 /*
+/** Preview of the OverviewScreen with dummy data. Temporarily commented out */
 @Preview(showBackground = true)
 @Composable
 fun PreviewOverviewScreen() {
-    val dummyReports = listOf(
-        Report(
-            id = "1",
-            title = "Cow coughing",
-            description = "Coughing and nasal discharge observed",
-            photoUri = null,
-            farmerId = "farmer_001",
-            vetId = "vet_001",
-            status = ReportStatus.IN_PROGRESS,
-            answer = null,
-            location = null),
-        Report(
-            id = "2",
-            title = "Sheep limping",
-            description = "Limping observed in the rear leg; mild swelling noted",
-            photoUri = null,
-            farmerId = "farmer_002",
-            vetId = "vet_002",
-            status = ReportStatus.PENDING,
-            answer = null, location = null)
-    )
-    val dummyUiState = OverviewUIState(
-        reports = dummyReports,
-        filteredReports = dummyReports,
-        selectedStatus = null,
-        selectedVet = null,
-        selectedFarmer = null,
-        vetOptions = listOf("vet_001", "vet_002"),
-        farmerOptions = listOf("farmer_001", "farmer_002")
-    )
-    val dummyViewModel = object : OverviewViewModelContract {
+  val dummyReports =
+      listOf(
+          Report(
+              id = "1",
+              title = "Cow coughing",
+              description = "Coughing and nasal discharge observed",
+              photoUri = null,
+              farmerId = "farmer_001",
+              vetId = "vet_001",
+              status = ReportStatus.IN_PROGRESS,
+              answer = null,
+              location = null),
+          Report(
+              id = "2",
+              title = "Sheep limping",
+              description = "Limping observed in the rear leg; mild swelling noted",
+              photoUri = null,
+              farmerId = "farmer_002",
+              vetId = "vet_002",
+              status = ReportStatus.PENDING,
+              answer = null,
+              location = null))
+  val dummyUiState =
+      OverviewUIState(
+          reports = dummyReports,
+          filteredReports = dummyReports,
+          selectedStatus = null,
+          selectedVet = null,
+          selectedFarmer = null,
+          vetOptions = listOf("vet_001", "vet_002"),
+          farmerOptions = listOf("farmer_001", "farmer_002"))
+  val dummyViewModel =
+      object : OverviewViewModelContract {
         override val uiState: StateFlow<OverviewUIState> = MutableStateFlow(dummyUiState)
+
         override fun loadReports(userRole: UserRole, userId: String) {}
+
         override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {}
+
         override fun signOut(credentialManager: CredentialManager) {}
-    }
+      }
+  AgriHealthAppTheme {
     OverviewScreen(
         userRole = UserRole.FARMER,
         userId = "farmer_001",
         overviewViewModel = dummyViewModel,
         onAddReport = {},
         onReportClick = {},
-        navigationActions = null
-    )
+        navigationActions = null)
+  }
 }
 */

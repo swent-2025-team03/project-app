@@ -26,6 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.RoleSelectionScreen
@@ -45,7 +46,6 @@ import com.android.agrihealth.ui.report.AddReportScreen
 import com.android.agrihealth.ui.report.AddReportViewModel
 import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
-import com.android.agrihealth.ui.theme.SampleAppTheme
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.defaultUser
 import com.google.firebase.Firebase
@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
 
     setContent {
-      SampleAppTheme {
+      AgriHealthAppTheme {
         // A surface container using the 'background' color from the theme
         Surface(
             modifier = Modifier.fillMaxSize().semantics { testTag = C.Tag.main_screen_container },
@@ -261,5 +261,5 @@ fun AgriHealthApp(
 @Preview(showBackground = true)
 @Composable
 fun AgriHealthPreview() {
-  SampleAppTheme { AgriHealthApp() }
+  AgriHealthAppTheme { AgriHealthApp() }
 }
