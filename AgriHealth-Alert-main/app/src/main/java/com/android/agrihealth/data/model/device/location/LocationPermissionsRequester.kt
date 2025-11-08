@@ -24,7 +24,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun LocationPermissionsRequest(locationViewModel: LocationViewModel = viewModel()) {
+fun LocationPermissionsRequester(locationViewModel: LocationViewModel = viewModel()) {
   val context = LocalContext.current
   val permissions =
       arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -57,7 +57,7 @@ fun LocationTestScreen() {
 
     val location by viewModel.locationState.collectAsState()
 
-    LocationPermissionsRequest()
+    LocationPermissionsRequester()
     viewModel.getCurrentLocation()
 
     Column(Modifier.padding(16.dp).background(color = White)) {
