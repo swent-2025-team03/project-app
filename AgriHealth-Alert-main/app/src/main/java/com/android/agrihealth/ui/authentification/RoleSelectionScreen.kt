@@ -32,6 +32,7 @@ import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.user.UserViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
@@ -54,6 +55,7 @@ fun RoleSelectionScreen(
     vm: RoleSelectionViewModel = viewModel(),
     onBack: () -> Unit = {},
     onButtonPressed: () -> Unit = {},
+    userViewModel: UserViewModel = viewModel()
 ) {
   val textColor = Color.Black
   val buttonColor = Color(0xFFDDF4E7)
@@ -62,6 +64,7 @@ fun RoleSelectionScreen(
       "Welcome, ${Firebase.auth.currentUser!!.displayName}!"
     } else "Welcome!"
   }
+
   Scaffold(
       modifier = Modifier.fillMaxSize(),
       topBar = {
@@ -97,6 +100,20 @@ fun RoleSelectionScreen(
                   color = textColor)
               Button(
                   onClick = {
+                    val firebaseUser = Firebase.auth.currentUser
+                    if (firebaseUser != null) {
+                      val newUser =
+                          com.android.agrihealth.data.model.user.Farmer(
+                              uid = firebaseUser.uid,
+                              firstname = firebaseUser.displayName ?: "",
+                              lastname = "",
+                              email = firebaseUser.email ?: "",
+                              address = null,
+                              linkedVets = emptyList(),
+                              defaultVet = null)
+                      userViewModel.setUser(newUser) // synchronous in-memory set
+                    }
+
                     vm.createUser(UserRole.FARMER)
                     onButtonPressed.invoke()
                   },
@@ -106,6 +123,18 @@ fun RoleSelectionScreen(
                   }
               Button(
                   onClick = {
+                    val firebaseUser = Firebase.auth.currentUser
+                    if (firebaseUser != null) {
+                      val newUser =
+                          com.android.agrihealth.data.model.user.Vet(
+                              uid = firebaseUser.uid,
+                              firstname = firebaseUser.displayName ?: "",
+                              lastname = "",
+                              email = firebaseUser.email ?: "",
+                              address = null)
+                      userViewModel.setUser(newUser) // synchronous in-memory set
+                    }
+
                     vm.createUser(UserRole.VET)
                     onButtonPressed.invoke()
                   },

@@ -11,5 +11,6 @@ data class Farmer(
         Location?, // This should be the farm location, set just after creating an account.
     val linkedVets: List<String> =
         emptyList<String>(), // List of vet IDs associated with the farmer
-    val defaultVet: String? // Default vet ID for quick access, can be changed in profile screen
-) : User(uid, firstname, lastname, UserRole.FARMER, email, address)
+    var defaultVet: String?, // Default vet ID for quick access, can be changed in profile screen
+    override val isGoogleAccount: Boolean = false
+) : User(uid, firstname, lastname, UserRole.FARMER, email, address, isGoogleAccount)

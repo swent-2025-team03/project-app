@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -22,16 +21,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.user.UserViewModel
 import kotlinx.coroutines.launch
 
 /** Tags for the various components. For testing purposes */
@@ -50,15 +50,10 @@ object AddReportFeedbackTexts {
   const val FAILURE = "Please fill in all required fields..."
 }
 
-// TODO: Dummy list must change later
+// Used for testing purposes
 object AddReportConstants {
   val vetOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")
 }
-
-// TODO: Replace these with the theme colors (in a global theme file or similar)
-private val unfocusedFieldColor = Color(0xFFF0F7F1)
-private val focusedFieldColor = Color(0xFFF0F7F1)
-private val createReportButtonColor = Color(0xFF96B7B1)
 
 /**
  * Displays the report creation screen for farmers
@@ -71,6 +66,7 @@ private val createReportButtonColor = Color(0xFF96B7B1)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddReportScreen(
+    userViewModel: UserViewModel = viewModel(),
     onBack: () -> Unit = {},
     userRole: UserRole,
     userId: String,
@@ -79,10 +75,13 @@ fun AddReportScreen(
 ) {
 
   val uiState by addReportViewModel.uiState.collectAsState()
+  val user by userViewModel.user.collectAsState()
+  val vets = (user as Farmer).linkedVets
 
   // For the dropdown menu
   var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
-  val selectedOption = uiState.chosenVet
+  var selectedOption by remember { mutableStateOf((user as Farmer).defaultVet ?: "") }
+  addReportViewModel.setVet(selectedOption)
 
   // For the confirmation snackbar (i.e alter window)
   val snackbarHostState = remember { SnackbarHostState() }
@@ -104,7 +103,6 @@ fun AddReportScreen(
                     Text(
                         text = Screen.AddReport.name,
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f).testTag(NavigationTestTags.TOP_BAR_TITLE))
                   }
             },
@@ -155,10 +153,11 @@ fun AddReportScreen(
 
                     ExposedDropdownMenu(
                         expanded = expanded, onDismissRequest = { expanded = false }) {
-                          AddReportConstants.vetOptions.forEach { option ->
+                          vets.forEach { option ->
                             DropdownMenuItem(
                                 text = { Text(option) },
                                 onClick = {
+                                  selectedOption = option
                                   addReportViewModel.setVet(option)
                                   expanded = false
                                 },
@@ -183,10 +182,8 @@ fun AddReportScreen(
                   modifier =
                       Modifier.fillMaxWidth()
                           .height(56.dp)
-                          .testTag(AddReportScreenTestTags.CREATE_BUTTON),
-                  shape = RoundedCornerShape(20.dp),
-                  colors = ButtonDefaults.buttonColors(containerColor = createReportButtonColor)) {
-                    Text("Create Report", fontSize = 24.sp)
+                          .testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
+                    Text("Create Report", style = MaterialTheme.typography.titleLarge)
                   }
             }
 
@@ -225,14 +222,8 @@ private fun Field(
       onValueChange = onValueChange,
       placeholder = { Text(placeholder) },
       singleLine = true,
-      shape = RoundedCornerShape(28.dp),
       modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
-      colors =
-          OutlinedTextFieldDefaults.colors(
-              unfocusedContainerColor = unfocusedFieldColor,
-              focusedContainerColor = focusedFieldColor,
-              unfocusedBorderColor = Color.Transparent,
-              focusedBorderColor = Color.Transparent))
+  )
 }
 
 /**
@@ -242,7 +233,7 @@ private fun Field(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 fun AddReportScreenPreview() {
-  MaterialTheme {
+  AgriHealthAppTheme {
     AddReportScreen(
         userRole = UserRole.FARMER,
         userId = "FARMER_001",

@@ -1,7 +1,6 @@
 package com.android.agrihealth.ui.authentification
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,19 +12,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.R
 
-private val FieldBg = Color(0xFFF0F6F1)
-private val ButtonBg = Color(0xFF9BB9B4)
-private val TitleColor = Color(0xFF000000)
+// Imports for preview
+/*
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.credentials.Credential
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.authentification.AuthRepository
+import com.android.agrihealth.data.model.authentification.UserRepository
+import com.android.agrihealth.data.model.user.User
+import com.google.firebase.auth.FirebaseUser
+*/
 
 object SignInScreenTestTags {
   const val SCREEN = "SignInScreen"
@@ -69,7 +72,7 @@ fun SignInScreen(
   }
 
   Box(
-      modifier = modifier.background(FieldBg).fillMaxSize().testTag(SignInScreenTestTags.SCREEN),
+      modifier = modifier.fillMaxSize().testTag(SignInScreenTestTags.SCREEN),
       contentAlignment = Alignment.TopCenter) {
         Column(
             modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp),
@@ -78,9 +81,7 @@ fun SignInScreen(
 
               Text(
                   text = "AgriHealth",
-                  fontSize = 40.sp,
-                  fontWeight = FontWeight.Medium,
-                  color = TitleColor,
+                  style = MaterialTheme.typography.displaySmall,
                   modifier = Modifier.testTag(SignInScreenTestTags.LOGIN_TITLE))
 
               Spacer(Modifier.height(56.dp))
@@ -90,15 +91,7 @@ fun SignInScreen(
                   onValueChange = { signInViewModel.setEmail(it) },
                   placeholder = { Text("Email") },
                   singleLine = true,
-                  shape = RoundedCornerShape(28.dp),
                   isError = signInUIState.emailIsInvalid && signInUIState.email.isEmpty(),
-                  colors =
-                      TextFieldDefaults.colors(
-                          focusedContainerColor = FieldBg,
-                          unfocusedContainerColor = FieldBg,
-                          disabledContainerColor = FieldBg,
-                          focusedIndicatorColor = Color.Transparent,
-                          unfocusedIndicatorColor = Color.Transparent),
                   modifier =
                       Modifier.fillMaxWidth()
                           .height(56.dp)
@@ -112,15 +105,7 @@ fun SignInScreen(
                   placeholder = { Text("Password") },
                   singleLine = true,
                   visualTransformation = PasswordVisualTransformation(),
-                  shape = RoundedCornerShape(28.dp),
                   isError = signInUIState.passwordIsInvalid && signInUIState.password.isEmpty(),
-                  colors =
-                      TextFieldDefaults.colors(
-                          focusedContainerColor = FieldBg,
-                          unfocusedContainerColor = FieldBg,
-                          disabledContainerColor = FieldBg,
-                          focusedIndicatorColor = Color.Transparent,
-                          unfocusedIndicatorColor = Color.Transparent),
                   modifier =
                       Modifier.fillMaxWidth()
                           .height(56.dp)
@@ -132,8 +117,7 @@ fun SignInScreen(
                 Spacer(Modifier.weight(1f))
                 Text(
                     text = "Forgot password",
-                    fontSize = 14.sp,
-                    color = Color.Black,
+                    style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.End,
                     modifier =
                         Modifier.padding(top = 4.dp)
@@ -144,7 +128,6 @@ fun SignInScreen(
               Spacer(Modifier.height(16.dp))
 
               HorizontalDivider(
-                  color = Color.Black,
                   thickness = 1.dp,
                   modifier =
                       Modifier.fillMaxWidth(0.8f).testTag(SignInScreenTestTags.LOGIN_DIVIDER))
@@ -152,8 +135,6 @@ fun SignInScreen(
 
               Button(
                   onClick = { signInViewModel.signInWithEmailAndPassword() },
-                  shape = RoundedCornerShape(28.dp),
-                  colors = ButtonDefaults.buttonColors(containerColor = ButtonBg),
                   modifier =
                       Modifier.fillMaxWidth()
                           .height(56.dp)
@@ -166,12 +147,15 @@ fun SignInScreen(
               Button(
                   onClick = goToSignUp,
                   shape = RoundedCornerShape(28.dp),
-                  colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                  colors =
+                      ButtonDefaults.buttonColors(
+                          containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                          contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
                   modifier =
                       Modifier.fillMaxWidth()
                           .height(56.dp)
                           .testTag(SignInScreenTestTags.SIGN_UP_BUTTON)) {
-                    Text("Create an account", color = Color.Black)
+                    Text("Create an account")
                   }
               Spacer(Modifier.height(32.dp))
               GoogleSignInButton {
@@ -193,8 +177,10 @@ fun SignInScreen(
 fun GoogleSignInButton(onSignInClick: () -> Unit) {
   Button(
       onClick = onSignInClick,
-      colors = ButtonDefaults.buttonColors(containerColor = Color.White), // Button color
-      shape = RoundedCornerShape(50), // Circular edges for the button
+      colors =
+          ButtonDefaults.buttonColors(
+              containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+              contentColor = MaterialTheme.colorScheme.onTertiaryContainer), // Button color
       modifier =
           Modifier.padding(8.dp)
               .height(48.dp) // Adjust height as needed
@@ -213,17 +199,54 @@ fun GoogleSignInButton(onSignInClick: () -> Unit) {
                           .padding(end = 8.dp))
 
               // Text for the button
-              Text(
-                  text = "Sign in with Google",
-                  color = Color.Black, // Text color
-                  fontSize = 16.sp, // Font size
-                  fontWeight = FontWeight.Medium)
+              Text(text = "Sign in with Google")
             }
       }
 }
 
+/*
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun SignInScreenPreview() {
-  MaterialTheme { SignInScreen() }
+    val authRepo = object : AuthRepository {
+        override suspend fun signInWithEmailAndPassword(
+            email: String,
+            password: String
+        ): Result<FirebaseUser> {TODO()}
+
+        override suspend fun reAuthenticate(
+            email: String,
+            password: String
+        ): Result<Unit> {TODO()}
+
+        override suspend fun changePassword(password: String): Result<Unit> {TODO()}
+
+        override suspend fun signInWithGoogle(credential: Credential): Result<FirebaseUser> {TODO()}
+
+        override suspend fun signUpWithEmailAndPassword(
+            email: String,
+            password: String,
+            userData: User
+        ): Result<FirebaseUser> {TODO()}
+
+        override fun signOut(): Result<Unit> {TODO()}
+
+        override suspend fun deleteAccount(): Result<Unit> {TODO()}
+
+    }
+    val userRepo =object : UserRepository{
+        override suspend fun addUser(user: User) {TODO()}
+
+        override suspend fun updateUser(user: User) {TODO()}
+
+        override suspend fun deleteUser(uid: String) {TODO()}
+
+        override suspend fun getUserFromId(uid: String): Result<User> {TODO()}
+    }
+    val vm = object : SignInViewModel(authRepo, userRepo){
+    }
+    AgriHealthAppTheme { SignInScreen(
+          credentialManager = CredentialManager.create(LocalContext.current),
+        signInViewModel = vm) }
 }
+*/
