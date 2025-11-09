@@ -4,7 +4,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.Log
-import com.android.agrihealth.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -51,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.R
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.location.Location
@@ -126,14 +126,12 @@ fun MapScreen(
         zoomControlsEnabled = false,
     )
   }
-    val context = LocalContext.current
-    val darkTheme = isSystemInDarkTheme()
-    val styleRes = if (darkTheme) R.raw.map_style_dark else R.raw.map_style_light
-    val style = MapStyleOptions.loadRawResourceStyle(context, styleRes)
+  val context = LocalContext.current
+  val darkTheme = isSystemInDarkTheme()
+  val styleRes = if (darkTheme) R.raw.map_style_dark else R.raw.map_style_light
+  val style = MapStyleOptions.loadRawResourceStyle(context, styleRes)
 
-  val googleMapMapProperties = remember (style) {
-      MapProperties(mapStyleOptions = style)
-  }
+  val googleMapMapProperties = remember(style) { MapProperties(mapStyleOptions = style) }
 
   Scaffold(
       topBar = { if (!isViewedFromOverview) MapTopBar(onBack = { navigationActions?.goBack() }) },
