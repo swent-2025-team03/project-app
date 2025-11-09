@@ -149,20 +149,18 @@ fun MapScreen(
               properties = googleMapMapProperties,
               uiSettings = googleMapUiSettings,
               modifier = Modifier.testTag(MapScreenTestTags.GOOGLE_MAP_SCREEN)) {
-                uiState.reports
+                mapViewModel
+                    .spiderifiedReports()
                     .filter { it ->
-                      selectedFilter == "All" || it.status.displayString() == selectedFilter
+                      selectedFilter == "All" || it.first.status.displayString() == selectedFilter
                     }
-                    .forEach { report ->
+                    .forEach { it ->
+                      val report = it.first
                       val markerSize = if (report == selectedReport.value) 60f else 40f
                       val markerIcon =
                           createCircleMarker(statusColor(report.status).toArgb(), markerSize)
                       Marker(
-                          state =
-                              MarkerState(
-                                  position =
-                                      LatLng(
-                                          report.location!!.latitude, report.location.longitude)),
+                          state = MarkerState(position = it.second),
                           title = report.title,
                           snippet = report.description,
                           icon = markerIcon,

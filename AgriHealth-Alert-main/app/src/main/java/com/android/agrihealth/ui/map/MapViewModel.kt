@@ -9,8 +9,11 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -81,5 +84,38 @@ class MapViewModel(
 
   fun refreshCameraPosition() {
     setStartingLocation(null, useCurrentLocation = true)
+  }
+
+  fun spiderifiedReports(): List<Pair<Report, LatLng>> {
+    val groups =
+        uiState.value.reports.groupBy { Pair(it.location!!.latitude, it.location.longitude) }
+    val result = mutableListOf<Pair<Report, LatLng>>()
+
+    for ((latLong, group) in groups) {
+      val baseLat = latLong.first
+      val baseLng = latLong.second
+      val center = LatLng(baseLat, baseLng)
+
+      if (group.size == 1) {
+        result.add(group.first() to center)
+      } else {
+        val radiusMeters = 20.0 + group.size * 5.0
+        val angleStep = 2 * Math.PI / group.size
+        group.forEachIndexed { index, report ->
+          val angle = index * angleStep
+          val offset = offsetLatLng(baseLat, baseLng, radiusMeters, angle)
+          result.add(report to offset)
+        }
+      }
+    }
+    return result
+  }
+
+  fun offsetLatLng(lat: Double, lng: Double, distanceMeters: Double, angleRadians: Double): LatLng {
+    val earthRadius = 6371000.0 // meters
+    val dLat = (distanceMeters / earthRadius) * sin(angleRadians)
+    val dLng = (distanceMeters / (earthRadius * cos(Math.toRadians(lat)))) * cos(angleRadians)
+
+    return LatLng(lat + Math.toDegrees(dLat), lng + Math.toDegrees(dLng))
   }
 }
