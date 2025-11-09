@@ -19,7 +19,7 @@ class LocationViewModel() : ViewModel() {
   private fun exceptionLogMsg(e: Exception) = "Missing permissions for location: ${e.message}"
 
   private fun throwIfNotAllowed() {
-    if (!hasLocationPermissions()) throw IllegalStateException("Location permissions not granted")
+    check(hasLocationPermissions()) { "Location permissions not granted" }
   }
 
   /**
