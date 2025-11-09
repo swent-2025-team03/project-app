@@ -3,12 +3,13 @@ package com.android.agrihealth.ui.authentification
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -71,11 +72,18 @@ fun SignInScreen(
     signInUIState.user?.let { if (signInUIState.isNewGoogle) onNewGoogle() else onSignedIn() }
   }
 
-  Box(
-      modifier = modifier.fillMaxSize().testTag(SignInScreenTestTags.SCREEN),
-      contentAlignment = Alignment.TopCenter) {
+  Scaffold(
+      modifier = modifier.testTag(SignInScreenTestTags.SCREEN),
+      snackbarHost = {
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.padding(bottom = 16.dp).testTag(SignInScreenTestTags.SNACKBAR))
+      }) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp),
+            modifier =
+                Modifier.padding(padding)
+                    .padding(horizontal = 32.dp)
+                    .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally) {
               Spacer(Modifier.height(96.dp))
 
@@ -139,7 +147,7 @@ fun SignInScreen(
                       Modifier.fillMaxWidth()
                           .height(56.dp)
                           .testTag(SignInScreenTestTags.LOGIN_BUTTON)) {
-                    Text("Log In", color = Color.Black)
+                    Text("Log In", color = MaterialTheme.colorScheme.onPrimary)
                   }
 
               Spacer(Modifier.height(16.dp))
@@ -163,12 +171,6 @@ fun SignInScreen(
                     context = context, credentialManager = credentialManager)
               }
             }
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier =
-                Modifier.align(Alignment.BottomCenter)
-                    .padding(bottom = 16.dp)
-                    .testTag(SignInScreenTestTags.SNACKBAR))
       }
 }
 
