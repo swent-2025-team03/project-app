@@ -16,7 +16,8 @@ class LocationViewModel() : ViewModel() {
 
   private val exceptionLogTag = "LocationServices"
 
-  private fun exceptionLogMsg(e: Exception) = "Missing permissions for location: ${e.message}"
+  private fun securityExceptionLogMsg(e: SecurityException) = "Missing permissions for location: ${e.message}"
+  private fun genericExceptionLogMsg(e: Exception) = "Something went wrong: ${e.message}"
 
   private fun throwIfNotAllowed() {
     check(hasLocationPermissions()) { "Location permissions not granted" }
@@ -33,7 +34,9 @@ class LocationViewModel() : ViewModel() {
       try {
         _locationState.value = locationRepository.getLastKnownLocation()
       } catch (e: SecurityException) {
-        Log.e(exceptionLogTag, exceptionLogMsg(e))
+        Log.e(exceptionLogTag, securityExceptionLogMsg(e))
+      } catch (e: Exception) {
+        Log.e(exceptionLogTag, genericExceptionLogMsg(e))
       }
     }
   }
@@ -49,7 +52,9 @@ class LocationViewModel() : ViewModel() {
       try {
         _locationState.value = locationRepository.getCurrentLocation()
       } catch (e: SecurityException) {
-        Log.e(exceptionLogTag, exceptionLogMsg(e))
+        Log.e(exceptionLogTag, securityExceptionLogMsg(e))
+      } catch (e: Exception) {
+        Log.e(exceptionLogTag, genericExceptionLogMsg(e))
       }
     }
   }
