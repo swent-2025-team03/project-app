@@ -21,14 +21,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Preview
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -46,6 +47,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
@@ -302,15 +304,29 @@ fun ShowReportInfo(report: Report?, onReportClick: (String) -> Unit = {}) {
                 Text(
                     text = report.title,
                     style = MaterialTheme.typography.titleLarge,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                     modifier =
-                        Modifier.testTag(MapScreenTestTags.getTestTagForReportTitle(report.id)))
+                        Modifier.weight(1f)
+                            .padding(end = 8.dp)
+                            .testTag(MapScreenTestTags.getTestTagForReportTitle(report.id)))
 
-                Button(
+                IconButton(
                     onClick = { onReportClick(report.id) },
                     modifier =
                         Modifier.align(Alignment.CenterVertically)
-                            .testTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)) {
-                      Text("See report")
+                            .size(32.dp)
+                            .testTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON),
+                    colors =
+                        IconButtonColors(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            MaterialTheme.colorScheme.onPrimaryContainer,
+                            disabledContainerColor = MaterialTheme.colorScheme.surface,
+                            disabledContentColor = MaterialTheme.colorScheme.onSurface)) {
+                      Icon(
+                          imageVector = Icons.Default.Preview,
+                          contentDescription = "View Report",
+                          modifier = Modifier.size(24.dp))
                     }
               }
 
@@ -351,8 +367,31 @@ fun createCircleMarker(color: Int, radius: Float = 40f, strokeWidth: Float = 8f)
   return BitmapDescriptorFactory.fromBitmap(bitmap)
 }
 
-@Preview
+// @Preview
 @Composable
 fun PreviewMapScreen() {
   AgriHealthAppTheme { MapScreen(startingPosition = Location(46.7990813, 6.6264253)) }
+}
+
+@Preview
+@Composable
+fun PreviewReportInfo() {
+  val report =
+      Report(
+          id = "Test",
+          title = "Veryyyyyyyyyyyyy long title",
+          description =
+              "very very very very very very very very very very very very very very very very very long description",
+          farmerId = "farmer id",
+          vetId = "vetId",
+          status = ReportStatus.IN_PROGRESS,
+          answer = "answer to the report",
+          location = null,
+          photoUri = null,
+      )
+  AgriHealthAppTheme {
+    ShowReportInfo(
+        report = report,
+    )
+  }
 }
