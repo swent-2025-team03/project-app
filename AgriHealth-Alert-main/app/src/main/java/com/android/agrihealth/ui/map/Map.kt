@@ -119,7 +119,7 @@ fun MapScreen(
             LatLng(mapInitialLocation.latitude, mapInitialLocation.longitude), mapInitialZoom)
   }
 
-  val selectedReport = remember { mutableStateOf(mapViewModel.selectedReport) }
+  val selectedReport = mapViewModel.selectedReport.collectAsState()
   mapViewModel.refreshReports(user.uid)
 
   val googleMapUiSettings = remember {
@@ -157,7 +157,7 @@ fun MapScreen(
                     }
                     .forEach { it ->
                       val report = it.report
-                      val markerSize = if (report == selectedReport.value) 60f else 40f
+                      val markerSize = if (report.id == selectedReport.value?.id) 60f else 40f
                       val markerIcon =
                           createCircleMarker(statusColor(report.status).toArgb(), markerSize)
                       Marker(
@@ -166,8 +166,8 @@ fun MapScreen(
                           snippet = report.description,
                           icon = markerIcon,
                           onClick = {
-                            selectedReport.value =
-                                if (selectedReport.value == report) null else report
+                            mapViewModel.setSelectedReport(
+                                if (selectedReport.value == report) null else report)
                             true
                           },
                       /*tag = testTag*/ )
@@ -190,8 +190,8 @@ fun MapScreen(
                     modifier =
                         Modifier.testTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
                             .clickable {
-                              selectedReport.value =
-                                  if (selectedReport.value == report) null else report
+                              mapViewModel.setSelectedReport(
+                                  if (selectedReport.value == report) null else report)
                             }
                             .alpha(0f)
                             .size(1.dp)) {

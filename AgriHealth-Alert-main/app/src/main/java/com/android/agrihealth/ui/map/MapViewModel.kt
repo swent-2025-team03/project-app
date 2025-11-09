@@ -35,11 +35,14 @@ class MapViewModel(
   val startingLocation = _startingLocation.asStateFlow()
   private val _zoom = MutableStateFlow(10f)
   val zoom = _zoom.asStateFlow()
-  var selectedReport: Report? = null
+  private val _selectedReport = MutableStateFlow<Report?>(null)
+  val selectedReport: StateFlow<Report?> = _selectedReport.asStateFlow()
 
   init {
     if (selectedReportId != null) {
-      viewModelScope.launch { selectedReport = reportRepository.getReportById(selectedReportId) }
+      viewModelScope.launch {
+        _selectedReport.value = reportRepository.getReportById(selectedReportId)
+      }
     }
   }
 
@@ -57,6 +60,10 @@ class MapViewModel(
         Log.w("MapScreen", "Failed to load todos: ${e.message}")
       }
     }
+  }
+
+  fun setSelectedReport(report: Report?) {
+    _selectedReport.value = report
   }
 
   fun setStartingLocation(location: Location?, useCurrentLocation: Boolean = false) {
