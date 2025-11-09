@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -12,7 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -62,7 +62,6 @@ fun ReportViewScreen(
   val report = uiState.report
   val answerText = uiState.answerText
   val selectedStatus = uiState.status
-  val context = LocalContext.current
 
   var isSpamDialogOpen by remember { mutableStateOf(false) }
 
@@ -119,24 +118,16 @@ fun ReportViewScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
               // ---- Farmer or Vet info line ----
+              val roleInfo =
+                  if (userRole == UserRole.VET)
+                      report.farmerId?.let { "Farmer ID: $it" } ?: "Unassigned"
+                  else report.vetId?.let { "Vet ID: $it" } ?: "Unassigned"
+
               Text(
-                  text =
-                      if (userRole == UserRole.VET) "Farmer ID: ${report.farmerId}"
-                      else "Vet ID: ${report.vetId}" ?: "Unassigned",
+                  text = roleInfo,
                   style = MaterialTheme.typography.bodyMedium,
                   color = MaterialTheme.colorScheme.onSurfaceVariant,
                   modifier = Modifier.testTag(ReportViewScreenTestTags.ROLE_INFO_LINE))
-
-              // ---- Photo ---- For now, I am skipping this part since I had trouble loading a
-              // placeholder image
-              /*Image(
-                  imageVector = Icons.Filled.Image,
-                  contentDescription = "Report photo",
-                  modifier = Modifier
-                      .fillMaxWidth()
-                      .height(200.dp)
-                      .background(MaterialTheme.colorScheme.surfaceVariant)
-              )*/
 
               // ---- Description ----
               Text(text = report.description, style = MaterialTheme.typography.bodyLarge)
@@ -206,66 +197,94 @@ fun ReportViewScreen(
                     }
               }
 
-              // ---- Report as Spam button (Vet only) ----
-              if (userRole == UserRole.VET && selectedStatus != ReportStatus.SPAM) {
-                Button(
-                    onClick = { isSpamDialogOpen = true },
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error),
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(ReportViewScreenTestTags.SPAM_BUTTON)) {
-                      Text("Report as SPAM")
-                    }
-              }
+              // ---- Bottom section: Map + Spam + Save ----
+              Column(
+                  modifier = Modifier.fillMaxWidth(),
+                  verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Row with View on Map (left) + Report Spam (right)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                          OutlinedButton(
+                              modifier =
+                                  Modifier.weight(1f).testTag(ReportViewScreenTestTags.VIEW_ON_MAP),
+                              onClick = {
+                                navigationActions.navigateTo(
+                                    Screen.Map(
+                                        report.location?.latitude,
+                                        report.location?.longitude,
+                                        reportId))
+                              }) {
+                                Text("View on Map")
+                              }
 
-              // ---- Report as Spam confirmation dialog ----
+                          if (userRole == UserRole.VET) {
+                            val isAlreadySpam = selectedStatus == ReportStatus.SPAM
+                            if (!isAlreadySpam) {
+                              OutlinedButton(
+                                  onClick = { isSpamDialogOpen = true },
+                                  colors =
+                                      ButtonDefaults.outlinedButtonColors(
+                                          contentColor = MaterialTheme.colorScheme.error),
+                                  border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                                  shape = MaterialTheme.shapes.medium,
+                                  modifier =
+                                      Modifier.weight(1f)
+                                          .testTag(ReportViewScreenTestTags.SPAM_BUTTON)) {
+                                    Text("Report as SPAM")
+                                  }
+                            } else {
+                              Button(
+                                  onClick = {},
+                                  enabled = false,
+                                  colors =
+                                      ButtonDefaults.buttonColors(
+                                          containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                          contentColor =
+                                              MaterialTheme.colorScheme.onSurfaceVariant),
+                                  modifier =
+                                      Modifier.weight(1f)
+                                          .testTag(ReportViewScreenTestTags.SPAM_BUTTON)) {
+                                    Text("Reported as SPAM")
+                                  }
+                            }
+                          }
+                        }
+
+                    // Save button (Vet only)
+                    if (userRole == UserRole.VET) {
+                      Button(onClick = { viewModel.onSave() }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Save")
+                      }
+                    }
+                  }
+
+              // ---- Spam confirmation dialog ----
               if (isSpamDialogOpen) {
                 AlertDialog(
                     onDismissRequest = { isSpamDialogOpen = false },
-                    title = { Text("Confirm it is Spam") },
-                    text = { Text("Are you sure you want to report this report as spam?") },
+                    title = { Text("Report as SPAM?") },
+                    text = {
+                      Text("This will mark the report as spam and hide it from regular view.")
+                    },
                     confirmButton = {
                       TextButton(
                           onClick = {
                             viewModel.onSpam()
                             isSpamDialogOpen = false
                           }) {
-                            Text("Yes")
+                            Text("Confirm", color = MaterialTheme.colorScheme.error)
                           }
                     },
                     dismissButton = {
                       TextButton(onClick = { isSpamDialogOpen = false }) { Text("Cancel") }
                     })
               }
-
-              // ---- Bottom row: Map + Save ----
-              Row(
-                  modifier = Modifier.fillMaxWidth(),
-                  horizontalArrangement = Arrangement.SpaceBetween) {
-                    OutlinedButton(
-                        modifier = Modifier.testTag(ReportViewScreenTestTags.VIEW_ON_MAP),
-                        onClick = {
-                          navigationActions.navigateTo(
-                              Screen.Map(
-                                  report.location?.latitude, report.location?.longitude, reportId))
-                        }) {
-                          Text("View on Map")
-                        }
-
-                    // ---- Save Button (Vet only) ----
-                    if (userRole == UserRole.VET) {
-                      Button(onClick = { viewModel.onSave() }) { Text("Save") }
-                    }
-                  }
             }
       }
 }
+
 /*  If you want to use the preview, just de-comment this block.
-/**
- * Preview of the ReportViewScreen for both farmer and vet roles. Allows testing of layout and
- * colors directly in Android Studio.
- */
 @Preview(showBackground = true, name = "Farmer View")
 @Composable
 fun PreviewReportViewFarmer() {
@@ -273,7 +292,7 @@ fun PreviewReportViewFarmer() {
     val navController = rememberNavController()
     val viewModel = ReportViewModel()
     ReportViewScreen(
-        navController = navController,
+        navigationActions = NavigationActions(navController),
         userRole = UserRole.FARMER,
         viewModel = viewModel,
         reportId = "RPT001")
@@ -287,7 +306,7 @@ fun PreviewReportViewVet() {
     val navController = rememberNavController()
     val viewModel = ReportViewModel()
     ReportViewScreen(
-        navController = navController,
+        navigationActions = NavigationActions(navController),
         userRole = UserRole.VET,
         viewModel = viewModel,
         reportId = "RPT001")

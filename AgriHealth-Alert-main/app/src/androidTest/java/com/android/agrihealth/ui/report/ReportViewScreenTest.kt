@@ -76,7 +76,8 @@ class ReportViewScreenTest {
   fun vet_canOpenSpamDialog() {
     setVetScreen()
     composeTestRule.onNodeWithTag("SpamButton").performClick()
-    composeTestRule.onNodeWithText("Confirm it is Spam").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Report as SPAM?").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Confirm").assertIsDisplayed()
   }
 
   // --- TEST 6: Vet can cancel spam dialog ---
@@ -84,8 +85,10 @@ class ReportViewScreenTest {
   fun vet_canCancelSpamDialog() {
     setVetScreen()
     composeTestRule.onNodeWithTag("SpamButton").performClick()
+    composeTestRule.onNodeWithText("Report as SPAM?").performClick()
     composeTestRule.onNodeWithText("Cancel").performClick()
-    composeTestRule.onNodeWithText("Confirm it is Spam").assertDoesNotExist()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Confirm").assertDoesNotExist()
   }
 
   // --- TEST 7: Vet can confirm spam ---
@@ -93,7 +96,8 @@ class ReportViewScreenTest {
   fun vet_canConfirmSpam() {
     setVetScreen()
     composeTestRule.onNodeWithTag("SpamButton").performClick()
-    composeTestRule.onNodeWithText("Yes").performClick()
+    composeTestRule.onNodeWithText("Confirm").performClick()
+    composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("SPAM")
   }
 
