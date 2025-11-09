@@ -40,7 +40,7 @@ class LocationViewModel() : ViewModel() {
     viewModelScope.launch {
       try {
         val location = locationRepository.getLastKnownLocation()
-        if (locationsEqual(location, _locationState.value))
+        if (!locationsEqual(location, _locationState.value))
             _locationState.value = locationRepository.getLastKnownLocation()
       } catch (e: SecurityException) {
         Log.e(exceptionLogTag, securityExceptionLogMsg(e))
@@ -60,7 +60,7 @@ class LocationViewModel() : ViewModel() {
     viewModelScope.launch {
       try {
         val location = locationRepository.getLastKnownLocation()
-        if (locationsEqual(location, _locationState.value))
+        if (!locationsEqual(location, _locationState.value))
             _locationState.value = locationRepository.getLastKnownLocation()
       } catch (e: SecurityException) {
         Log.e(exceptionLogTag, securityExceptionLogMsg(e))
