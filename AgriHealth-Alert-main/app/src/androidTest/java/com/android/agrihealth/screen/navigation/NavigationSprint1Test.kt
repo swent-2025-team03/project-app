@@ -11,6 +11,7 @@ import androidx.compose.ui.test.performClick
 import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
+import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -40,7 +41,7 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
     runTest { repository.signUpWithEmailAndPassword("navigation@test.ff", "123456", user1) }
     assert(Firebase.auth.currentUser != null)
     composeTestRule.setContent { AgriHealthApp() }
-    sleep(2000)
+    sleep(TestConstants.SHORT_TIMEOUT)
     composeTestRule
         .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
         .assertTextContains(Screen.Overview.name)
@@ -58,7 +59,7 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
   @Test
   fun overviewScreen_displaysBottomBar() {
     // Assert that the bottom navigation bar is displayed
-    composeTestRule.waitUntil(3000) {
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).isDisplayed()
     }
   }
@@ -68,7 +69,7 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
     // Click on the Map tab in the bottom navigation bar
     composeTestRule.onNodeWithTag(NavigationTestTags.MAP_TAB).performClick()
     // Assert that the Map screen is displayed
-    composeTestRule.waitUntil(3000) {
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).isDisplayed()
     }
   }
@@ -78,7 +79,7 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
     // Click on the "Add Report" button
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON).performClick()
     // Assert that the Add Report screen is displayed
-    composeTestRule.waitUntil(3000) {
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(Screen.AddReport.name).isDisplayed()
     }
   }
@@ -88,7 +89,7 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
     // Click on the "Sign Out" button
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.LOGOUT_BUTTON).performClick()
     // Assert that the Auth screen is displayed
-    composeTestRule.waitUntil(3000) {
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON).isDisplayed()
     }
   }
@@ -100,7 +101,7 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
     // Click on the "Go Back" button
     composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).performClick()
     // Assert that the Overview screen is displayed
-    sleep(2000)
+    sleep(TestConstants.SHORT_TIMEOUT)
     composeTestRule
         .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
         .assertTextContains(Screen.Overview.name)
@@ -110,13 +111,13 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
   fun addReportScreen_navigateToOverviewUsingSystemBack() {
     // Navigate to the Add Report screen
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON).performClick()
-    composeTestRule.waitUntil(3000) {
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(Screen.AddReport.name).isDisplayed()
     }
     // Simulate system back press
     pressBack(false)
     // Assert that the Overview screen is displayed
-    sleep(2000)
+    sleep(TestConstants.SHORT_TIMEOUT)
     composeTestRule
         .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
         .assertTextContains(Screen.Overview.name)
@@ -126,7 +127,7 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
     composeTestRule.activityRule.scenario.onActivity { activity ->
       activity.onBackPressedDispatcher.onBackPressed()
     }
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.activity.isFinishing == shouldFinish
     }
     TestCase.assertEquals(shouldFinish, composeTestRule.activity.isFinishing)

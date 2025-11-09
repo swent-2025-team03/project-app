@@ -1,0 +1,80 @@
+package com.android.agrihealth.data.model.device.location
+
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location as AndroidLocation
+import androidx.annotation.RequiresPermission
+import androidx.core.content.ContextCompat
+import com.android.agrihealth.data.model.location.Location as AgrihealthLocation
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
+import kotlinx.coroutines.tasks.await
+
+class LocationRepository(
+    private val context: Context,
+    private val fusedLocationClient: FusedLocationProviderClient =
+        LocationServices.getFusedLocationProviderClient(context)
+) {
+  /**
+   * Helper function to convert an Android device location to a location used in the rest of the
+   * Agrihealth app. Shouldn't be used outside of this class; if that is your case, you most likely
+   * imported the wrong "Location" package
+   */
+  fun AndroidLocation.toLocation(): AgrihealthLocation {
+    return AgrihealthLocation(latitude, longitude)
+  }
+
+  private fun hasPermission(permission: String): Boolean {
+    return ContextCompat.checkSelfPermission(context, permission) ==
+        PackageManager.PERMISSION_GRANTED
+  }
+
+  /**
+   * Checks if the user allowed access to the precise location of the device. Necessary for location
+   * services. Not meant to be used directly, use the ViewModel instead
+   */
+  fun hasFineLocationPermission(): Boolean {
+    return hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+  }
+
+  /**
+   * Checks if the user allowed access to the approximate location of the device. Necessary for
+   * location services, but not sufficient. Not meant to be used directly, use the ViewModel instead
+   */
+  fun hasCoarseLocationPermission(): Boolean {
+    return hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+  }
+
+  /**
+   * Gets the last known location, or, if unavailable, the current device location. Not meant to be
+   * used directly, use the ViewModel instead
+   */
+  @RequiresPermission(
+      allOf =
+          [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
+  suspend fun getLastKnownLocation(): AgrihealthLocation {
+    val lastLocation = fusedLocationClient.lastLocation.await()
+
+    if (lastLocation != null) return lastLocation.toLocation()
+    return getCurrentLocation()
+  }
+
+  /**
+   * Gets the current device location. More expensive on the battery than last known location. Not
+   * meant to be used directly, use the ViewModel instead
+   */
+  @RequiresPermission(
+      allOf =
+          [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
+  suspend fun getCurrentLocation(): AgrihealthLocation {
+    val currentLocation =
+        fusedLocationClient
+            .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token)
+            .await()
+
+    return currentLocation.toLocation()
+  }
+}
