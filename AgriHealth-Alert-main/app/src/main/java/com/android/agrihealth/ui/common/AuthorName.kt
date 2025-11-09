@@ -9,13 +9,14 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.user.UserDirectoryDataSource
 import com.android.agrihealth.data.model.user.UserDirectoryRepository
 import com.android.agrihealth.data.model.user.displayString
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class AuthorNameViewModel(private val repo: UserDirectoryRepository = UserDirectoryRepository()) :
+class AuthorNameViewModel(private val repo: UserDirectoryDataSource = UserDirectoryRepository()) :
     ViewModel() {
 
   private val _label = MutableStateFlow("…")

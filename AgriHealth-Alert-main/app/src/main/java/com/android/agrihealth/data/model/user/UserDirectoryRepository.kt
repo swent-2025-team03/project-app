@@ -4,6 +4,10 @@ import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
+interface UserDirectoryDataSource {
+  suspend fun getUserSummary(uid: String): UserDirectoryRepository.UserSummary?
+}
+
 /**
  * Repository to fetch and cache minimal user info (firstname/lastname/role) by uid. Uses an
  * in-memory cache to avoid repeated Firestore reads.
@@ -11,7 +15,7 @@ import kotlinx.coroutines.tasks.await
 class UserDirectoryRepository(
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance(),
     private val usersCollection: String = "users"
-) {
+) : UserDirectoryDataSource {
   data class UserSummary(
       val uid: String,
       val firstname: String,
@@ -26,7 +30,7 @@ class UserDirectoryRepository(
   // In-memory cache; stores null for negative lookups (deleted or missing users)
   private val cache = mutableMapOf<String, UserSummary?>()
 
-  suspend fun getUserSummary(uid: String): UserSummary? {
+  override suspend fun getUserSummary(uid: String): UserSummary? {
     // Check cache first, including null entries
     if (cache.containsKey(uid)) {
       return cache[uid]
