@@ -371,6 +371,12 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD).performTextClearance()
     completeSignIn(user1.email, "12345678")
     checkOverviewScreenIsDisplayed()
+    goToProfileFromOverview()
+    clickAddVetCode()
+    goBack()
+    clickEditProfile()
+    goBack()
+    checkOverviewScreenIsDisplayed()
     val vetId = "Best Vet Ever!"
     createReport("Report title", "Report description", vetId)
     clickFirstReportItem()
@@ -466,16 +472,5 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).isDisplayed()
     }
-  }
-
-  @Test
-  fun testFarmerSimpleProfileNavigation() {
-    composeTestRule.setContent { AgriHealthApp() }
-    completeSignIn(user1.email, "12345678")
-    checkOverviewScreenIsDisplayed()
-    goToProfileFromOverview()
-    clickAddVetCode()
-    goBack()
-    clickEditProfile()
   }
 }

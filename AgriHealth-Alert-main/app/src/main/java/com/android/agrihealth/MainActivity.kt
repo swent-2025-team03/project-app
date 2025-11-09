@@ -117,7 +117,7 @@ fun AgriHealthApp(
         SignUpScreen(
             userViewModel = userViewModel,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onSignedUp = { navigationActions.navigateTo(Screen.EditProfile) })
+            onSignedUp = { navigationActions.navigateTo(Screen.EditProfile(false)) })
       }
     }
     navigation(startDestination = Screen.RoleSelection.route, route = Screen.RoleSelection.name) {
@@ -125,7 +125,7 @@ fun AgriHealthApp(
         RoleSelectionScreen(
             credentialManager = credentialManager,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onButtonPressed = { navigationActions.navigateTo(Screen.EditProfile) })
+            onButtonPressed = { navigationActions.navigateTo(Screen.EditProfile(false)) })
       }
     }
 
@@ -194,8 +194,8 @@ fun AgriHealthApp(
               overviewViewModel.signOut(credentialManager)
               navigationActions.navigateToAuthAndClear()
             },
-            onEditProfile = { navController.navigate("edit_profile?showOnlyVetField=false") },
-            onCodeFarmer = { navController.navigate("edit_profile?showOnlyVetField=true") })
+            onEditProfile = { navigationActions.navigateTo(Screen.EditProfile(false)) },
+            onCodeFarmer = { navigationActions.navigateTo(Screen.EditProfile(true)) })
       }
     }
 
@@ -229,7 +229,7 @@ fun AgriHealthApp(
         val changePasswordViewModel: ChangePasswordViewModel = viewModel()
         ChangePasswordScreen(
             onBack = { navigationActions.goBack() },
-            onUpdatePassword = { navigationActions.navigateTo(Screen.EditProfile) },
+            onUpdatePassword = { navigationActions.navigateTo(Screen.EditProfile(false)) },
             userEmail = currentUserEmail,
             changePasswordViewModel = changePasswordViewModel)
       }
