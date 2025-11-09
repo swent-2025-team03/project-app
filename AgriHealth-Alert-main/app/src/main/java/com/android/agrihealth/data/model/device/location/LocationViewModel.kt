@@ -59,9 +59,9 @@ class LocationViewModel() : ViewModel() {
     throwIfNotAllowed()
     viewModelScope.launch {
       try {
-        val location = locationRepository.getLastKnownLocation()
+        val location = locationRepository.getCurrentLocation()
         if (!locationsEqual(location, _locationState.value))
-            _locationState.value = locationRepository.getLastKnownLocation()
+            _locationState.value = locationRepository.getCurrentLocation()
       } catch (e: SecurityException) {
         Log.e(exceptionLogTag, securityExceptionLogMsg(e))
       } catch (e: Exception) {
