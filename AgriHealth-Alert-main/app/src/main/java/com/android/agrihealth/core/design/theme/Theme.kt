@@ -1,6 +1,7 @@
 package com.android.agrihealth.core.design.theme
 
 import android.app.Activity
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
@@ -19,7 +20,28 @@ import androidx.core.view.WindowCompat
 import com.android.agrihealth.data.model.report.ReportStatus
 
 private val DarkColorScheme =
-    darkColorScheme(primary = Purple80, secondary = PurpleGrey80, tertiary = Pink80)
+    darkColorScheme(
+        background = DarkFieldBg,
+        onBackground = Color.White,
+        surface = DarkFieldBg,
+        onSurface = Color.White,
+        primary = DarkButtonBg,
+        onPrimary = Color.White,
+        secondary = DarkTest,
+        onSecondary = Color.White,
+        secondaryContainer = DarkSurfaceDim,
+        onSecondaryContainer = Color.White,
+        surfaceVariant = DarkSurfaceVariant,
+        onSurfaceVariant = Color.White,
+        surfaceTint = Color.Transparent,
+        primaryContainer = DarkButtonBg,
+        onPrimaryContainer = Color.White,
+        surfaceBright = DarkTest,
+        tertiaryContainer = Color.Gray,
+        onTertiaryContainer = Color.White,
+        outline = DarkButtonBg,
+        outlineVariant = Color.White,
+    )
 
 private val LightColorScheme =
     lightColorScheme(
@@ -65,18 +87,22 @@ private val LightColorScheme =
     )
 
 @Composable
-fun AgriHealthAppTheme(darkTheme: Boolean = false, content: @Composable () -> Unit) {
+fun AgriHealthAppTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
+) {
   val colorScheme =
       when {
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
       }
+  val titleColor = if (darkTheme) DarkTitleColor else TitleColor
   val view = LocalView.current
   if (!view.isInEditMode) {
     SideEffect {
       val window = (view.context as Activity).window
       window.statusBarColor = colorScheme.primary.toArgb()
-      WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+      WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
     }
   }
 
@@ -85,7 +111,7 @@ fun AgriHealthAppTheme(darkTheme: Boolean = false, content: @Composable () -> Un
           displaySmall =
               Typography()
                   .displaySmall
-                  .copy(fontSize = 40.sp, fontWeight = FontWeight.Medium, color = TitleColor),
+                  .copy(fontSize = 40.sp, fontWeight = FontWeight.Medium, color = titleColor),
           titleLarge = Typography.titleLarge.copy(fontWeight = FontWeight.Bold),
       )
 
