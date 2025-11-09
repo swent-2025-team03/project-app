@@ -20,10 +20,10 @@ class ConnectionViewModelTest {
   @Test
   fun generateCode_success_setsCodeGenerated() = runTest {
     val repo = mockk<ConnectionRepository>()
-    coEvery { repo.generateCode("vet") } returns Result.success("123456")
+    coEvery { repo.generateCode() } returns Result.success("123456")
 
     val vm = ConnectionViewModel(repo)
-    vm.generateCode("vet")
+    vm.generateCode()
     advanceUntilIdle()
 
     assertEquals(ConnectionUiState.CodeGenerated("123456"), vm.state.value)
@@ -35,7 +35,7 @@ class ConnectionViewModelTest {
     coEvery { repo.generateCode(any()) } returns Result.failure(IllegalStateException("boom"))
 
     val vm = ConnectionViewModel(repo)
-    vm.generateCode("vet")
+    vm.generateCode()
     advanceUntilIdle()
 
     val s = vm.state.value
@@ -46,10 +46,10 @@ class ConnectionViewModelTest {
   @Test
   fun claimCode_success_setsConnected() = runTest {
     val repo = mockk<ConnectionRepository>()
-    coEvery { repo.claimCode("111111", "farmer") } returns Result.success("vet123")
+    coEvery { repo.claimCode("111111") } returns Result.success("vet123")
 
     val vm = ConnectionViewModel(repo)
-    vm.claimCode("111111", "farmer")
+    vm.claimCode("111111")
     advanceUntilIdle()
 
     assertEquals(ConnectionUiState.Connected("vet123"), vm.state.value)
@@ -58,10 +58,10 @@ class ConnectionViewModelTest {
   @Test
   fun claimCode_failure_setsError() = runTest {
     val repo = mockk<ConnectionRepository>()
-    coEvery { repo.claimCode(any(), any()) } returns Result.failure(IllegalStateException("used"))
+    coEvery { repo.claimCode(any()) } returns Result.failure(IllegalStateException("used"))
 
     val vm = ConnectionViewModel(repo)
-    vm.claimCode("111111", "farmer")
+    vm.claimCode("111111")
     advanceUntilIdle()
 
     val s = vm.state.value
@@ -85,11 +85,11 @@ class ConnectionViewModelTest {
     val vm = ConnectionViewModel(repo)
 
     // Start the first coroutine
-    vm.generateCode("vet")
+    vm.generateCode()
     advanceTimeBy(50) // it starts but does not finish
 
     // Start the second (cancels the first)
-    vm.generateCode("vet")
+    vm.generateCode()
     advanceUntilIdle()
 
     assertEquals(ConnectionUiState.CodeGenerated("NEW"), vm.state.value)
@@ -101,7 +101,7 @@ class ConnectionViewModelTest {
     coEvery { repo.generateCode(any()) } returns Result.success("123456")
 
     val vm = ConnectionViewModel(repo)
-    vm.generateCode("vet")
+    vm.generateCode()
     advanceUntilIdle()
     assertTrue(vm.state.value is ConnectionUiState.CodeGenerated)
 
