@@ -17,12 +17,12 @@ class ConnectionViewModel(private val repository: ConnectionRepository = Connect
   private var genJob: Job? = null
   private var claimJob: Job? = null
 
-  fun generateCode(vetId: String) {
+  fun generateCode() {
     genJob?.cancel() // cancel previous ongoing call if any
     genJob =
         viewModelScope.launch {
           _state.value = ConnectionUiState.Loading
-          val result = repository.generateCode(vetId)
+          val result = repository.generateCode()
           _state.value =
               result.fold(
                   onSuccess = { ConnectionUiState.CodeGenerated(it) },
@@ -30,12 +30,12 @@ class ConnectionViewModel(private val repository: ConnectionRepository = Connect
         }
   }
 
-  fun claimCode(code: String, farmerId: String) {
+  fun claimCode(code: String) {
     claimJob?.cancel() // cancel previous ongoing call if any
     claimJob =
         viewModelScope.launch {
           _state.value = ConnectionUiState.Loading
-          val result = repository.claimCode(code, farmerId)
+          val result = repository.claimCode(code)
           _state.value =
               result.fold(
                   onSuccess = { ConnectionUiState.Connected(it) },
