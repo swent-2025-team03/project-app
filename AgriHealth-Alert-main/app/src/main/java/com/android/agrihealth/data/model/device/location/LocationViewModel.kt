@@ -23,6 +23,11 @@ class LocationViewModel() : ViewModel() {
     check(hasLocationPermissions()) { "Location permissions not granted" }
   }
 
+  private fun locationsEqual(l1: Location?, l2: Location?): Boolean {
+    if (l1 == null || l2 == null) return false
+    return (l1.latitude == l2.latitude) && (l1.longitude == l2.longitude)
+  }
+
   /**
    * Gets the last known location, or, if unavailable, the current device location. Make sure the
    * user has given permissions first, for example using the "LocationPermissionsRequester"
@@ -32,7 +37,8 @@ class LocationViewModel() : ViewModel() {
     throwIfNotAllowed()
     viewModelScope.launch {
       try {
-        _locationState.value = locationRepository.getLastKnownLocation()
+        val location = locationRepository.getLastKnownLocation()
+        if (locationsEqual(location, _locationState.value)) _locationState.value = locationRepository.getLastKnownLocation()
       } catch (e: SecurityException) {
         Log.e(exceptionLogTag, securityExceptionLogMsg(e))
       } catch (e: Exception) {
@@ -50,7 +56,8 @@ class LocationViewModel() : ViewModel() {
     throwIfNotAllowed()
     viewModelScope.launch {
       try {
-        _locationState.value = locationRepository.getCurrentLocation()
+        val location = locationRepository.getLastKnownLocation()
+        if (locationsEqual(location, _locationState.value)) _locationState.value = locationRepository.getLastKnownLocation()
       } catch (e: SecurityException) {
         Log.e(exceptionLogTag, securityExceptionLogMsg(e))
       } catch (e: Exception) {
