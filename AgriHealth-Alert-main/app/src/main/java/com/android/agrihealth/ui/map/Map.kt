@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,11 +44,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.R
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.location.Location
@@ -123,44 +126,12 @@ fun MapScreen(
         zoomControlsEnabled = false,
     )
   }
-  val googleMapMapProperties = remember {
-    MapProperties(
-        mapStyleOptions =
-            MapStyleOptions(
-                """
-                [
-                  {
-                    "featureType": "all",
-                    "elementType": "labels.text.fill",
-                    "stylers": [{"color": "#808080"}]
-                  },
-                  {
-                    "featureType": "all",
-                    "elementType": "labels.text.stroke",
-                    "stylers": [{"color": "#00000000"}]
-                  },
-                  {
-                    "featureType": "poi",
-                    "stylers": [{ "visibility": "off" }]
-                  },
-                  {
-                    "featureType": "landscape.natural",
-                    "elementType": "labels",
-                    "stylers": [{ "visibility": "off" }]
-                  },
-                  {
-                    "featureType": "road",
-                    "elementType": "labels.icon",
-                    "stylers": [{ "visibility": "off" }]
-                  },
-                  {
-                    "featureType": "transit",
-                    "stylers": [{ "visibility": "off" }]
-                  }
-                ]
-                """
-                    .trimIndent()))
-  }
+  val context = LocalContext.current
+  val darkTheme = isSystemInDarkTheme()
+  val styleRes = if (darkTheme) R.raw.map_style_dark else R.raw.map_style_light
+  val style = MapStyleOptions.loadRawResourceStyle(context, styleRes)
+
+  val googleMapMapProperties = remember(style) { MapProperties(mapStyleOptions = style) }
 
   Scaffold(
       topBar = { if (!isViewedFromOverview) MapTopBar(onBack = { navigationActions?.goBack() }) },
