@@ -11,6 +11,7 @@ import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.authentification.RoleSelectionScreenTestTags
 import com.android.agrihealth.ui.authentification.SignInErrorMsg
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
@@ -162,18 +163,21 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON)
         .assertIsDisplayed()
         .performClick()
-    composeTestRule.waitUntil(5000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithText(AddReportFeedbackTexts.SUCCESS).isDisplayed()
     }
     composeTestRule.onNodeWithText("OK").assertIsDisplayed().performClick()
   }
 
   private fun clickFirstReportItem() {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)[0].isDisplayed()
+    }
     composeTestRule.onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)[0].performClick()
   }
 
   private fun checkOverviewScreenIsDisplayed() {
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule
           .onAllNodesWithTag(OverviewScreenTestTags.SCREEN)
           .fetchSemanticsNodes()
@@ -183,7 +187,7 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun checkEditProfileScreenIsDisplayed() {
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule
           .onAllNodesWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD)
           .fetchSemanticsNodes()
@@ -239,6 +243,9 @@ class E2ETest : FirebaseEmulatorsTest() {
 
   // To fix E2E test clicking on random report marker on map (without needing to know its ID)
   fun ComposeTestRule.clickFirstReportMarker() {
+    waitUntil(TestConstants.LONG_TIMEOUT) {
+      onAllNodes(hasTestTagThatStartsWith("reportMarker_")).fetchSemanticsNodes().isNotEmpty()
+    }
     val allMarkers = onAllNodes(hasTestTagThatStartsWith("reportMarker_"))
     val markerNodes = allMarkers.fetchSemanticsNodes()
     if (markerNodes.isEmpty()) {
@@ -265,12 +272,13 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     val fakeCredentialManager = FakeCredentialManager.create(fakeGoogleIdToken)
     composeTestRule.setContent { AgriHealthApp(credentialManager = fakeCredentialManager) }
+    composeTestRule.waitForIdle()
     composeTestRule
         .onNodeWithTag(SignInScreenTestTags.GOOGLE_LOGIN_BUTTON)
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.waitUntil(5000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).isDisplayed()
     }
     composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).performClick()
@@ -304,6 +312,7 @@ class E2ETest : FirebaseEmulatorsTest() {
   @Test
   fun testFarmer_OverviewFilters_WorkCorrectly() {
     composeTestRule.setContent { AgriHealthApp() }
+    composeTestRule.waitForIdle()
     completeSignIn(user1.email, "12345678")
     checkOverviewScreenIsDisplayed()
     val vet1 = "Best Vet Ever!"
@@ -352,6 +361,7 @@ class E2ETest : FirebaseEmulatorsTest() {
   @Test
   fun testFarmer_SignIn_ClickReport_Back_Logout() {
     composeTestRule.setContent { AgriHealthApp() }
+    composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
     completeSignIn(user2.email, "12345678")
     composeTestRule.waitUntil(5_000) {
@@ -365,7 +375,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     createReport("Report title", "Report description", vetId)
     clickFirstReportItem()
     reportViewClickViewOnMap()
-    composeTestRule.waitUntil(5000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).isDisplayed()
     }
     composeTestRule.clickFirstReportMarker()
@@ -381,6 +391,7 @@ class E2ETest : FirebaseEmulatorsTest() {
   @Test
   fun testVetFarmerLinkAndPasswordChange() {
     composeTestRule.setContent { AgriHealthApp() }
+    composeTestRule.waitForIdle()
 
     val farmerEmail = "farmer.link@example.com"
     val password = "Password!123"
@@ -415,7 +426,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.waitUntil(5000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule
           .onAllNodesWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
           .fetchSemanticsNodes()
@@ -427,7 +438,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.waitUntil(timeoutMillis = 6000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule
           .onAllNodesWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
           .fetchSemanticsNodes()
@@ -452,7 +463,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithText(newPassword).assertIsDisplayed()
     composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
 
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).isDisplayed()
     }
   }

@@ -4,7 +4,9 @@ package com.android.agrihealth.ui.authentification
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -90,7 +92,8 @@ fun SignUpScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 24.dp)
-                .testTag(SignUpScreenTestTags.SCREEN),
+                .testTag(SignUpScreenTestTags.SCREEN)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally) {
               Spacer(Modifier.height(24.dp))
               Text(
