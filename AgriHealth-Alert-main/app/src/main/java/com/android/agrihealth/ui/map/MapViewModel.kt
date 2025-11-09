@@ -86,10 +86,12 @@ class MapViewModel(
     setStartingLocation(null, useCurrentLocation = true)
   }
 
-  fun spiderifiedReports(): List<Pair<Report, LatLng>> {
+  data class SpiderifiedReport(val report: Report, val position: LatLng, val center: LatLng)
+
+  fun spiderifiedReports(): List<SpiderifiedReport> {
     val groups =
         uiState.value.reports.groupBy { Pair(it.location!!.latitude, it.location.longitude) }
-    val result = mutableListOf<Pair<Report, LatLng>>()
+    val result = mutableListOf<SpiderifiedReport>()
 
     for ((latLong, group) in groups) {
       val baseLat = latLong.first
@@ -97,14 +99,14 @@ class MapViewModel(
       val center = LatLng(baseLat, baseLng)
 
       if (group.size == 1) {
-        result.add(group.first() to center)
+        result.add(SpiderifiedReport(group.first(), center, center))
       } else {
         val radiusMeters = 20.0 + group.size * 5.0
         val angleStep = 2 * Math.PI / group.size
         group.forEachIndexed { index, report ->
           val angle = index * angleStep
           val offset = offsetLatLng(baseLat, baseLng, radiusMeters, angle)
-          result.add(report to offset)
+          result.add(SpiderifiedReport(report, offset, center))
         }
       }
     }

@@ -74,6 +74,7 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 
 object MapScreenTestTags {
@@ -152,15 +153,15 @@ fun MapScreen(
                 mapViewModel
                     .spiderifiedReports()
                     .filter { it ->
-                      selectedFilter == "All" || it.first.status.displayString() == selectedFilter
+                      selectedFilter == "All" || it.report.status.displayString() == selectedFilter
                     }
                     .forEach { it ->
-                      val report = it.first
+                      val report = it.report
                       val markerSize = if (report == selectedReport.value) 60f else 40f
                       val markerIcon =
                           createCircleMarker(statusColor(report.status).toArgb(), markerSize)
                       Marker(
-                          state = MarkerState(position = it.second),
+                          state = MarkerState(position = it.position),
                           title = report.title,
                           snippet = report.description,
                           icon = markerIcon,
@@ -170,6 +171,7 @@ fun MapScreen(
                             true
                           },
                       /*tag = testTag*/ )
+                      Polyline(points = listOf(it.position, it.center), width = 5f)
                     }
               }
 
