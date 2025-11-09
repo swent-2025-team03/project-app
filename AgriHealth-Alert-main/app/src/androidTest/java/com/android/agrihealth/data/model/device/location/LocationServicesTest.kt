@@ -15,6 +15,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -27,6 +28,13 @@ class LocationServicesTest {
   val location1 = Location(7.27, 6.7)
   val location2 = Location(2.30, 54.71) // gegu adr + winrate
 
+  @Before
+  fun setUp() {
+    locationRepository = mockk(relaxed = true)
+    LocationRepositoryProvider.repository = locationRepository
+    locationViewModel = LocationViewModel()
+  }
+
   @After
   fun tearDown() {
     clearMocks(locationRepository)
@@ -38,16 +46,11 @@ class LocationServicesTest {
       lastKnownLocation: Location = location1,
       currentLocation: Location = location2
   ) = runBlocking {
-    locationRepository = mockk(relaxed = true)
-
     every { locationRepository.hasFineLocationPermission() } returns finePermission
     every { locationRepository.hasCoarseLocationPermission() } returns coarsePermission
 
     coEvery { locationRepository.getLastKnownLocation() } returns lastKnownLocation
     coEvery { locationRepository.getCurrentLocation() } returns currentLocation
-
-    LocationRepositoryProvider.repository = locationRepository
-    locationViewModel = LocationViewModel()
   }
 
   private fun locationsEqual(loc1: Location, loc2: Location): Boolean {
