@@ -40,14 +40,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -141,6 +145,14 @@ fun MapScreen(
 
   val googleMapMapProperties = remember(style) { MapProperties(mapStyleOptions = style) }
 
+  // Floating button Position
+  var reportBoxHeightPx by remember { mutableIntStateOf(0) }
+  val density = LocalDensity.current
+  Log.d("MapScreen", "reportBoxHeaightPx: ${reportBoxHeightPx}")
+
+  // Convert pixels to dp for layout use
+  val reportBoxHeightDp = with(density) { reportBoxHeightPx.toDp() }
+
   Scaffold(
       topBar = { if (!isViewedFromOverview) MapTopBar(onBack = { navigationActions?.goBack() }) },
       bottomBar = {
@@ -156,7 +168,8 @@ fun MapScreen(
               cameraPositionState = cameraPositionState,
               properties = googleMapMapProperties,
               uiSettings = googleMapUiSettings,
-              modifier = Modifier.testTag(MapScreenTestTags.GOOGLE_MAP_SCREEN)) {
+              modifier = Modifier.testTag(MapScreenTestTags.GOOGLE_MAP_SCREEN),
+              onMapClick = { mapViewModel.setSelectedReport(null) }) {
                 mapViewModel
                     .spiderifiedReports()
                     .filter { it ->
@@ -170,6 +183,7 @@ fun MapScreen(
                           createCircleMarker(statusColor(report.status).toArgb(), markerSize)
                       Marker(
                           state = MarkerState(position = it.position),
+                          anchor = Offset(0.5f, 0.5f),
                           title = report.title,
                           snippet = report.description,
                           icon = markerIcon,
@@ -215,7 +229,11 @@ fun MapScreen(
           FloatingActionButton(
               modifier =
                   Modifier.align(Alignment.BottomEnd)
-                      .padding(16.dp)
+                      .padding(
+                          end = 16.dp,
+                          bottom =
+                              if (selectedReport.value != null) reportBoxHeightDp + 16.dp
+                              else 16.dp)
                       .testTag(MapScreenTestTags.REFRESH_BUTTON),
               onClick = {
                 mapViewModel.refreshCameraPosition()
@@ -232,7 +250,11 @@ fun MapScreen(
               }
 
           ShowReportInfo(
-              selectedReport.value,
+              modifier =
+                  Modifier.onGloballyPositioned { coordinates ->
+                    reportBoxHeightPx = coordinates.size.height
+                  },
+              report = selectedReport.value,
               onReportClick = { navigationActions?.navigateTo(Screen.ViewReport(it)) })
         }
       })
@@ -318,17 +340,23 @@ fun FilterDropdown(
  * Contain a 2 line Report title, and the entire description. Also has an IconButton that executes
  * [onReportClick]
  *
+ * @param modifier Modifier on the visible Column.
  * @param report The report whose information will be displayed.
  * @param onReportClick run when IconButton is clicked.
  */
 @Composable
-fun ShowReportInfo(report: Report?, onReportClick: (String) -> Unit = {}) {
+fun ShowReportInfo(
+    modifier: Modifier = Modifier,
+    report: Report?,
+    onReportClick: (String) -> Unit = {}
+) {
   if (report == null) return
 
   Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.REPORT_INFO_BOX)) {
     Column(
         modifier =
-            Modifier.background(color = MaterialTheme.colorScheme.surface)
+            modifier
+                .background(color = MaterialTheme.colorScheme.surface)
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .padding(16.dp)) {
@@ -407,7 +435,7 @@ fun PreviewMapScreen() {
   AgriHealthAppTheme { MapScreen(startingPosition = Location(46.7990813, 6.6264253)) }
 }
 
-@Preview
+// @Preview
 @Composable
 fun PreviewDropdownMenu() {
   val options = listOf("All") + ReportStatus.entries.map { it.displayString() }
@@ -415,7 +443,7 @@ fun PreviewDropdownMenu() {
   AgriHealthAppTheme { FilterDropdown(options, selectedFilter) { selectedFilter = it } }
 }
 
-// @Preview
+@Preview
 @Composable
 fun PreviewReportInfo() {
   val report =
