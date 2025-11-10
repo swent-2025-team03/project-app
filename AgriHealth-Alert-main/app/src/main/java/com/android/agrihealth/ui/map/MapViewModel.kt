@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 
 data class MapUIState(
     val reports: List<Report> = emptyList(),
+    val locationPermission: Boolean = false
 )
 
 class MapViewModel(
@@ -46,10 +47,16 @@ class MapViewModel(
         _selectedReport.value = reportRepository.getReportById(selectedReportId)
       }
     }
+    refreshMapPermission()
   }
 
   fun refreshReports(uid: String) {
     fetchLocalizableReports(uid)
+  }
+
+  fun refreshMapPermission() {
+    _uiState.value =
+        _uiState.value.copy(locationPermission = locationViewModel.hasLocationPermissions())
   }
 
   private fun fetchLocalizableReports(uid: String) {

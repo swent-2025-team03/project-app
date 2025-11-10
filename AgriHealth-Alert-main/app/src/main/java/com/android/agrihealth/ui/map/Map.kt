@@ -63,6 +63,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.R
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.core.design.theme.statusColor
+import com.android.agrihealth.data.model.device.location.LocationViewModel
+import com.android.agrihealth.data.model.device.location.locationPermissionsRequester
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
@@ -109,6 +111,7 @@ object MapScreenTestTags {
 fun MapScreen(
     mapViewModel: MapViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel(),
+    locationViewModel: LocationViewModel = viewModel(),
     navigationActions: NavigationActions? = null,
     isViewedFromOverview: Boolean = true,
     startingPosition: Location? = null
@@ -164,6 +167,11 @@ fun MapScreen(
       },
       content = { pd ->
         Box(modifier = Modifier.fillMaxSize().padding(pd)) {
+          if (!uiState.locationPermission) {
+            if (locationPermissionsRequester(locationViewModel)) {
+              mapViewModel.refreshMapPermission()
+            }
+          }
           GoogleMap(
               cameraPositionState = cameraPositionState,
               properties = googleMapMapProperties,
