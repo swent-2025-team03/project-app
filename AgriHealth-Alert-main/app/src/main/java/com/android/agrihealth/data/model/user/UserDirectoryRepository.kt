@@ -51,9 +51,7 @@ class UserDirectoryRepository(
             // Accepts 'Farmer', 'farmer', 'FARMER', etc.
             runCatching { UserRole.valueOf(it.uppercase()) }.getOrNull()
           }
-
       val summary = UserSummary(uid, firstname, lastname, role)
-      Log.d(TAG, "Fetched user $uid: $firstname $lastname, role=$roleStr -> $role")
       cache[uid] = summary
       summary
     } catch (t: Exception) {
