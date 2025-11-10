@@ -5,7 +5,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Preview
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -38,7 +35,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -72,7 +68,6 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
-import com.android.agrihealth.ui.report.AddReportScreenTestTags
 import com.android.agrihealth.ui.user.UserViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -165,7 +160,8 @@ fun MapScreen(
                 mapViewModel
                     .spiderifiedReports()
                     .filter { it ->
-                      selectedFilter == defaultFilter || it.report.status.displayString() == selectedFilter
+                      selectedFilter == defaultFilter ||
+                          it.report.status.displayString() == selectedFilter
                     }
                     .forEach { it ->
                       val report = it.report
@@ -272,54 +268,48 @@ fun FilterDropdown(
     selectedOption: String,
     onOptionSelected: (String) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    val textFieldBackgroundColor = MaterialTheme.colorScheme.surface
+  var expanded by remember { mutableStateOf(false) }
+  val textFieldBackgroundColor = MaterialTheme.colorScheme.surface
 
-    val textMeasurer = rememberTextMeasurer()
-    val maxTextWidth = remember(options) {
-        options.maxOf {
-            textMeasurer.measure(
-                text = AnnotatedString(it)
-            ).size.width
-        }
-    }
-    val dropdownWidth = maxTextWidth - 32.dp.value
+  val textMeasurer = rememberTextMeasurer()
+  val maxTextWidth =
+      remember(options) {
+        options.maxOf { textMeasurer.measure(text = AnnotatedString(it)).size.width }
+      }
+  val dropdownWidth = maxTextWidth - 32.dp.value
 
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded },
-        modifier = Modifier
-            .padding(16.dp)
-            .width(dropdownWidth.dp)) {
+  ExposedDropdownMenuBox(
+      expanded = expanded,
+      onExpandedChange = { expanded = !expanded },
+      modifier = Modifier.padding(16.dp).width(dropdownWidth.dp)) {
         OutlinedTextField(
             value = selectedOption,
             onValueChange = {},
             readOnly = true,
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-            },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier.menuAnchor(),
-            colors = OutlinedTextFieldDefaults.colors(unfocusedContainerColor = textFieldBackgroundColor, focusedContainerColor = textFieldBackgroundColor)
-        )
+            colors =
+                OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = textFieldBackgroundColor,
+                    focusedContainerColor = textFieldBackgroundColor))
 
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-
-            modifier = Modifier
-                .background(color = MaterialTheme.colorScheme.surface)
-                .testTag(MapScreenTestTags.REPORT_FILTER_MENU)) {
-            options.forEach { option ->
+            modifier =
+                Modifier.background(color = MaterialTheme.colorScheme.surface)
+                    .testTag(MapScreenTestTags.REPORT_FILTER_MENU)) {
+              options.forEach { option ->
                 DropdownMenuItem(
                     onClick = {
-                        onOptionSelected(option)
-                        expanded = false
+                      onOptionSelected(option)
+                      expanded = false
                     },
                     text = { Text(option) },
                     modifier = Modifier.testTag(MapScreenTestTags.getTestTagForFilter(option)))
+              }
             }
-        }
-    }
+      }
 }
 
 /**
@@ -420,11 +410,9 @@ fun PreviewMapScreen() {
 @Preview
 @Composable
 fun PreviewDropdownMenu() {
-    val options = listOf("All") + ReportStatus.entries.map { it.displayString() }
-    var selectedFilter by remember { mutableStateOf("All") }
-    AgriHealthAppTheme {
-        FilterDropdown(options, selectedFilter) { selectedFilter = it }
-    }
+  val options = listOf("All") + ReportStatus.entries.map { it.displayString() }
+  var selectedFilter by remember { mutableStateOf("All") }
+  AgriHealthAppTheme { FilterDropdown(options, selectedFilter) { selectedFilter = it } }
 }
 
 // @Preview
