@@ -8,6 +8,7 @@ import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
@@ -20,6 +21,8 @@ import com.android.agrihealth.data.repository.ReportRepositoryLocal
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.user.UserViewModel
 import com.google.android.gms.maps.model.LatLng
+import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -81,6 +84,11 @@ object MapScreenTestReports {
 
 class MapScreenTest : FirebaseEmulatorsTest() {
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
+  @get:Rule
+  val permissionRule: GrantPermissionRule =
+      GrantPermissionRule.grant(
+          android.Manifest.permission.ACCESS_FINE_LOCATION,
+          android.Manifest.permission.ACCESS_COARSE_LOCATION)
 
   private lateinit var locationViewModel: LocationViewModel
   private lateinit var locationRepository: LocationRepository
@@ -91,6 +99,15 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   override fun setUp() {
     super.setUp()
     locationRepository = mockk(relaxed = true)
+
+    coEvery { locationRepository.getLastKnownLocation() } returns Location(46.9481, 7.4474, "Bern")
+
+    coEvery { locationRepository.getCurrentLocation() } returns
+        Location(46.9500, 7.4400, "Current Position")
+
+    every { locationRepository.hasFineLocationPermission() } returns true
+    every { locationRepository.hasCoarseLocationPermission() } returns true
+
     LocationRepositoryProvider.repository = locationRepository
     locationViewModel = LocationViewModel()
     runTest {
