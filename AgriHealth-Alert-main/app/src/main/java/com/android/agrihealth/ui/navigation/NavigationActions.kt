@@ -25,7 +25,17 @@ sealed class Screen(
 
   object ChangePassword : Screen(route = "changePassword", name = "Change Your Password")
 
-  object EditProfile : Screen(route = "edit_profile", name = "Edit Profile")
+  data class EditProfile(val showOnlyVetField: Boolean = false) :
+      Screen(route = "edit_profile?showOnlyVetField=$showOnlyVetField", name = "Edit Profile") {
+    companion object {
+      const val route = "edit_profile?showOnlyVetField={showOnlyVetField}"
+      const val name = "Edit Profile"
+
+      fun createRoute(showOnlyVetField: Boolean = false): String {
+        return "edit_profile?showOnlyVetField=$showOnlyVetField"
+      }
+    }
+  }
 
   object Overview : Screen(route = "overview", name = "Overview", isTopLevelDestination = true)
 
