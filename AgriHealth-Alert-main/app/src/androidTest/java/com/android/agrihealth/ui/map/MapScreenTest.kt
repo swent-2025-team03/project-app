@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.map
 
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
@@ -18,8 +19,14 @@ import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.repository.ReportRepositoryLocal
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.user.UserViewModel
+import com.google.android.gms.maps.model.LatLng
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -231,5 +238,57 @@ class MapScreenTest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
     // Check if report screen TODO: Actually show the report screen
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun spiderifyReportsTest() = runTest {
+    reportRepository.addReport(MapScreenTestReports.report1.copy(farmerId = userId))
+
+    val mapViewModel =
+        MapViewModel(
+            reportRepository = reportRepository,
+            locationViewModel = locationViewModel,
+            selectedReportId = MapScreenTestReports.report1.id)
+
+    val reports1 = List(10) { index -> MapScreenTestReports.report1.copy(id = "report1$index") }
+    val reports2 = List(5) { index -> MapScreenTestReports.report2.copy(id = "report2$index") }
+    val reports = reports1 + reports2
+    reports.forEach { it -> reportRepository.addReport(it.copy(farmerId = userId)) }
+    advanceUntilIdle()
+    mapViewModel.refreshReports(userId)
+    mapViewModel.uiState.map { it.reports }.first { it.isNotEmpty() }
+    advanceUntilIdle()
+    Log.d("MapTests", "Reports: ${mapViewModel.uiState.value.reports}")
+    val spiderifiedReport = mapViewModel.spiderifiedReports()
+    Log.d("MapTests", "SpidReports: $spiderifiedReport")
+    val groups = spiderifiedReport.groupBy { it.center }
+    Log.d("MapTests", "Groups: $groups")
+
+    val group1 =
+        groups[
+                LatLng(
+                    MapScreenTestReports.report1.location?.latitude ?: 0.0,
+                    MapScreenTestReports.report1.location?.longitude ?: 0.0)]
+            ?.toSet()
+    Log.d("MapTests", "Group1: $group1")
+    val group2 =
+        groups[
+                LatLng(
+                    MapScreenTestReports.report2.location?.latitude ?: 0.0,
+                    MapScreenTestReports.report2.location?.longitude ?: 0.0)]
+            ?.toSet()
+    Log.d("MapTests", "Group2: $group2")
+
+    assertEquals(11, group1?.size)
+    assertEquals(6, group2?.size)
+
+    val positions1 = group1?.map { it.position }?.toSet()
+    val positions2 = group2?.map { it.position }?.toSet()
+
+    assertEquals(11, positions1?.size)
+    assertEquals(6, positions2?.size)
+    Log.d("MapTests", "pos1: $positions1")
+    Log.d("MapTests", "pos2: $positions2")
   }
 }
