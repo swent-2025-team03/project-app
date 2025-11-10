@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.overview
 
+import android.R.attr.maxHeight
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -72,9 +74,6 @@ fun OverviewScreen(
 ) {
 
   val uiState by overviewViewModel.uiState.collectAsState()
-  val density = LocalDensity.current
-  var lazySpace = remember { 0.dp }
-  val minLazySpace = remember { 150.dp }
 
   LaunchedEffect(Unit) { overviewViewModel.loadReports(userRole, userId) }
 
@@ -117,23 +116,13 @@ fun OverviewScreen(
 
       // -- Main content area --
       content = { paddingValues ->
-        val topPadding = paddingValues.calculateTopPadding()
-        val bottomPadding = paddingValues.calculateBottomPadding()
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-          val screen = this.maxHeight
           Column(
-              modifier =
-                  Modifier.padding(paddingValues)
-                      .padding(horizontal = 16.dp)
-                      .onSizeChanged { size ->
-                        with(density) {
-                          lazySpace =
-                              screen - size.height.toDp() - topPadding - bottomPadding +
-                                  minLazySpace
-                        }
-                      }
+              modifier = Modifier.fillMaxSize()
+                      .padding(paddingValues)
+                      .padding(16.dp)
                       .testTag(OverviewScreenTestTags.SCREEN)
-                      .verticalScroll(rememberScrollState())) {
+                      .verticalScroll(rememberScrollState())
+          ) {
                 // -- Latest alert section --
                 Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
 
@@ -172,7 +161,8 @@ fun OverviewScreen(
                           },
                           modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN),
                           placeholder = "Filter by status",
-                          labelProvider = { status -> status?.displayString() ?: "-" })
+                          labelProvider = { status -> status?.displayString() ?: "-" }
+                      )
                       Spacer(modifier = Modifier.width(8.dp))
                       if (userRole == UserRole.FARMER) {
                         // -- VetId filter (only for farmer) --
@@ -199,23 +189,30 @@ fun OverviewScreen(
                                   farmerId = it)
                             },
                             modifier = Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN),
-                            placeholder = "Filter by farmers")
+                            placeholder = "Filter by farmers"
+                        )
                       }
                     }
 
-                LazyColumn(modifier = Modifier.height(maxOf(lazySpace, minLazySpace))) {
+              val configuration = LocalConfiguration.current
+              val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+              val reportListHeight = if (isLandscape) 400.dp else 340.dp
+                LazyColumn(
+                    modifier = Modifier
+                        .height(reportListHeight)
+                ) {
                   items(uiState.filteredReports) { report ->
                     ReportItem(
                         userRole = userRole,
                         report = report,
                         onClick = { onReportClick(report.id) },
                     )
-                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                      HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                   }
                 }
               }
-        }
-      })
+      }
+  )
 }
 
 /**
@@ -373,7 +370,8 @@ fun PreviewOverviewScreen() {
         overviewViewModel = dummyViewModel,
         onAddReport = {},
         onReportClick = {},
-        navigationActions = null)
+        navigationActions = null
+    )
   }
 }
 */
