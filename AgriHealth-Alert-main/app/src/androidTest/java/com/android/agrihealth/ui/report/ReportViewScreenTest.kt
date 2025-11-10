@@ -3,9 +3,17 @@ package com.android.agrihealth.ui.report
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.navigation.NavigationActions
+import com.android.agrihealth.data.repository.ReportRepository
+import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.overview.OverviewScreen
+import com.android.agrihealth.ui.overview.OverviewScreenTestTags
+import com.android.agrihealth.testutil.FakeOverviewViewModel
 import org.junit.Rule
 import org.junit.Test
 
@@ -15,7 +23,26 @@ import org.junit.Test
  */
 class ReportViewScreenTest {
 
+  // Ajout d’un timeout commun pour les attentes.
+  private companion object { const val WAIT_TIMEOUT = 2_000L }
+
   @get:Rule val composeTestRule = createComposeRule()
+
+  // Faux repository pour contrôler editReport et getReportById
+  private class FakeReportRepository : ReportRepository {
+    var editCalled = false
+    private val sample = ReportViewUIState().report
+    override fun getNewReportId(): String = "NEW_ID"
+    override suspend fun getAllReports(userId: String) = emptyList<Report>()
+    override suspend fun getReportsByFarmer(farmerId: String) = emptyList<Report>()
+    override suspend fun getReportsByVet(vetId: String) = emptyList<Report>()
+    override suspend fun getReportById(reportId: String): Report? = sample.copy(id = reportId)
+    override suspend fun addReport(report: Report) {}
+    override suspend fun editReport(reportId: String, newReport: Report) { editCalled = true }
+    override suspend fun deleteReport(reportId: String) {}
+  }
+
+
 
   // --- Helper functions to set up screens ---
   private fun setVetScreen() {
@@ -202,5 +229,65 @@ class ReportViewScreenTest {
 
     // Ensure badge text updated
     composeTestRule.onNodeWithTag("StatusBadgeText").assertTextContains("IN PROGRESS")
+  }
+
+  @Test
+  fun vet_saveButton_navigatesBackAfterSuccessfulSave() {
+    val fakeRepo = FakeReportRepository()
+    val viewModel = ReportViewModel(repository = fakeRepo)
+
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      val navigation = NavigationActions(navController)
+
+      NavHost(navController = navController, startDestination = Screen.Overview.route) {
+        composable(Screen.Overview.route) {
+          OverviewScreen(
+              userRole = UserRole.VET,
+              userId = "user_123",
+              overviewViewModel = FakeOverviewViewModel(),
+              onAddReport = {},
+              onReportClick = {},
+              navigationActions = navigation)
+        }
+        composable(Screen.ViewReport.route) { backStackEntry ->
+          val reportId = backStackEntry.arguments?.getString("reportId") ?: "RPT001"
+          ReportViewScreen(
+              navigationActions = navigation,
+              userRole = UserRole.VET,
+              viewModel = viewModel,
+              reportId = reportId)
+        }
+      }
+
+      // Navigate to the report detail when composition starts
+      androidx.compose.runtime.LaunchedEffect(Unit) {
+        navigation.navigateTo(Screen.ViewReport("RPT001"))
+      }
+    }
+
+    composeTestRule.waitForIdle()
+
+    // Edit answer to simulate changes
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.ANSWER_FIELD)
+        .assertIsDisplayed()
+        .performTextInput("Edited answer")
+
+    // Click Save via testTag (more robust than text)
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.SAVE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+
+    // Wait until Overview screen is displayed (after save triggers goBack())
+    composeTestRule.waitUntil(WAIT_TIMEOUT) {
+      composeTestRule
+          .onAllNodesWithTag(OverviewScreenTestTags.SCREEN)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).assertIsDisplayed()
   }
 }

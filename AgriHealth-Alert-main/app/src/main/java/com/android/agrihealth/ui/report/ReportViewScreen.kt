@@ -32,6 +32,7 @@ object ReportViewScreenTestTags {
   const val STATUS_DROPDOWN_MENU = "StatusDropdownMenu"
   const val SPAM_BUTTON = "SpamButton"
   const val VIEW_ON_MAP = "viewReportOnMap"
+  const val SAVE_BUTTON = "SaveButton"
 
   fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
 }
@@ -263,7 +264,9 @@ fun ReportViewScreen(
 
                     // Save button (Vet only)
                     if (userRole == UserRole.VET) {
-                      Button(onClick = { viewModel.onSave() }, modifier = Modifier.fillMaxWidth()) {
+                      Button(
+                          onClick = { viewModel.onSave() },
+                          modifier = Modifier.fillMaxWidth().testTag(ReportViewScreenTestTags.SAVE_BUTTON)) {
                         Text("Save")
                       }
                     }
