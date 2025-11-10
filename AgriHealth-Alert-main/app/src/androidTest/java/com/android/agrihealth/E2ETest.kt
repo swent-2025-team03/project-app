@@ -376,6 +376,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     goBack()
     clickEditProfile()
     goBack()
+    goBack()
     checkOverviewScreenIsDisplayed()
     val vetId = "Best Vet Ever!"
     createReport("Report title", "Report description", vetId)
