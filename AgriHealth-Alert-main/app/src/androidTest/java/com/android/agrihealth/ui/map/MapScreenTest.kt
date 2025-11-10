@@ -7,6 +7,9 @@ import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import com.android.agrihealth.data.model.device.location.LocationRepository
+import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
+import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
@@ -15,6 +18,7 @@ import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.repository.ReportRepositoryLocal
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.user.UserViewModel
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -71,12 +75,17 @@ object MapScreenTestReports {
 class MapScreenTest : FirebaseEmulatorsTest() {
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
+  private lateinit var locationViewModel: LocationViewModel
+  private lateinit var locationRepository: LocationRepository
   val reportRepository = ReportRepositoryLocal()
   val userId = UserViewModel().user.value.uid
 
   @Before
   override fun setUp() {
     super.setUp()
+    locationRepository = mockk(relaxed = true)
+    LocationRepositoryProvider.repository = locationRepository
+    locationViewModel = LocationViewModel()
     runTest {
       reportRepository.addReport(MapScreenTestReports.report1.copy(farmerId = userId))
       reportRepository.addReport(MapScreenTestReports.report2.copy(farmerId = userId))
@@ -93,7 +102,10 @@ class MapScreenTest : FirebaseEmulatorsTest() {
       startingPosition: Location? = null
   ) {
     val mapViewModel =
-        MapViewModel(reportRepository = reportRepository, selectedReportId = selectedReportId)
+        MapViewModel(
+            reportRepository = reportRepository,
+            locationViewModel = locationViewModel,
+            selectedReportId = selectedReportId)
     composeRule.setContent {
       MaterialTheme {
         MapScreen(
@@ -165,7 +177,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   fun filterReportsByStatus() = runTest {
     setContentToMapWithVM()
     val reports = reportRepository.getReportsByFarmer(userId)
-    val filters = listOf("All") + ReportStatus.entries.map { it.displayString() }
+    val filters = listOf("All reports") + ReportStatus.entries.map { it.displayString() }
 
     filters.forEach { filter ->
       composeRule
@@ -177,7 +189,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
           .assertIsDisplayed()
           .performClick()
       val (matches, nonMatches) =
-          reports.partition { it -> filter == "All" || it.status.displayString() == filter }
+          reports.partition { it -> filter == "All reports" || it.status.displayString() == filter }
       matches.forEach { report ->
         composeRule
             .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))

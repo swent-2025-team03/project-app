@@ -309,7 +309,7 @@ fun FilterDropdown(
             onValueChange = {},
             readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier.menuAnchor(),
+            modifier = Modifier.menuAnchor().testTag(MapScreenTestTags.REPORT_FILTER_MENU),
             colors =
                 OutlinedTextFieldDefaults.colors(
                     unfocusedContainerColor = textFieldBackgroundColor,
@@ -318,9 +318,7 @@ fun FilterDropdown(
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier =
-                Modifier.background(color = MaterialTheme.colorScheme.surface)
-                    .testTag(MapScreenTestTags.REPORT_FILTER_MENU)) {
+            modifier = Modifier.background(color = MaterialTheme.colorScheme.surface)) {
               options.forEach { option ->
                 DropdownMenuItem(
                     onClick = {
