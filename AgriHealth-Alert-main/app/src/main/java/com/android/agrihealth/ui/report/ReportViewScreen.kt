@@ -51,11 +51,21 @@ fun ReportViewScreen(
   LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
 
   val uiState by viewModel.uiState.collectAsState()
+  // Observe save completion to navigate back on success
+  val saveCompleted by viewModel.saveCompleted.collectAsState()
 
   // --- Auto-change PENDING -> IN_PROGRESS for vets ---
   LaunchedEffect(userRole, uiState.report.status) {
     if (userRole == UserRole.VET && uiState.report.status == ReportStatus.PENDING) {
       viewModel.onStatusChange(ReportStatus.IN_PROGRESS)
+    }
+  }
+
+  // Navigate back when save is completed, then consume the flag to avoid re-trigger
+  LaunchedEffect(saveCompleted) {
+    if (saveCompleted) {
+      navigationActions.goBack()
+      viewModel.consumeSaveCompleted()
     }
   }
 
