@@ -2,18 +2,18 @@ package com.android.agrihealth.ui.report
 
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.data.repository.ReportRepository
-import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.testutil.FakeOverviewViewModel
+import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
-import com.android.agrihealth.testutil.FakeOverviewViewModel
 import org.junit.Rule
 import org.junit.Test
 
@@ -24,7 +24,9 @@ import org.junit.Test
 class ReportViewScreenTest {
 
   // Ajout d’un timeout commun pour les attentes.
-  private companion object { const val WAIT_TIMEOUT = 2_000L }
+  private companion object {
+    const val WAIT_TIMEOUT = 2_000L
+  }
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -32,17 +34,25 @@ class ReportViewScreenTest {
   private class FakeReportRepository : ReportRepository {
     var editCalled = false
     private val sample = ReportViewUIState().report
+
     override fun getNewReportId(): String = "NEW_ID"
+
     override suspend fun getAllReports(userId: String) = emptyList<Report>()
+
     override suspend fun getReportsByFarmer(farmerId: String) = emptyList<Report>()
+
     override suspend fun getReportsByVet(vetId: String) = emptyList<Report>()
+
     override suspend fun getReportById(reportId: String): Report? = sample.copy(id = reportId)
+
     override suspend fun addReport(report: Report) {}
-    override suspend fun editReport(reportId: String, newReport: Report) { editCalled = true }
+
+    override suspend fun editReport(reportId: String, newReport: Report) {
+      editCalled = true
+    }
+
     override suspend fun deleteReport(reportId: String) {}
   }
-
-
 
   // --- Helper functions to set up screens ---
   private fun setVetScreen() {

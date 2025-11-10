@@ -266,9 +266,11 @@ fun ReportViewScreen(
                     if (userRole == UserRole.VET) {
                       Button(
                           onClick = { viewModel.onSave() },
-                          modifier = Modifier.fillMaxWidth().testTag(ReportViewScreenTestTags.SAVE_BUTTON)) {
-                        Text("Save")
-                      }
+                          modifier =
+                              Modifier.fillMaxWidth()
+                                  .testTag(ReportViewScreenTestTags.SAVE_BUTTON)) {
+                            Text("Save")
+                          }
                     }
                   }
 
