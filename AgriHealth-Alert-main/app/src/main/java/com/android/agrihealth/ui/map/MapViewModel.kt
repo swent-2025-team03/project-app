@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.repository.ReportRepository
@@ -26,6 +27,7 @@ data class MapUIState(
 class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
+    private val locationViewModel: LocationViewModel,
     val selectedReportId: String? = null
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(MapUIState())
@@ -74,11 +76,18 @@ class MapViewModel(
     }
     // Default starting position, so either location or workplace or default
     else {
-      // TODO: Something that fetches device location?
       viewModelScope.launch {
-        val location = getLocationFromUserAddress() ?: return@launch
-        _startingLocation.value = location
         _zoom.value = 12f
+        Log.d(
+            "MapScreenLocation",
+            "App has location permissions: ${locationViewModel.hasLocationPermissions()}")
+        if (locationViewModel.hasLocationPermissions()) {
+          if (useCurrentLocation) {
+            locationViewModel.getCurrentLocation()
+          } else locationViewModel.getLastKnownLocation()
+        }
+        _startingLocation.value =
+            locationViewModel.locationState.value ?: getLocationFromUserAddress() ?: return@launch
       }
     }
   }
