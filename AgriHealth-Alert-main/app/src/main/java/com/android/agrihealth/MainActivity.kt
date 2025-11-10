@@ -27,6 +27,9 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.device.location.LocationRepository
+import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
+import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.RoleSelectionScreen
@@ -79,6 +82,10 @@ fun AgriHealthApp(
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
 
+  // Location services: Use the ViewModel and not the repository
+  LocationRepositoryProvider.repository = LocationRepository(context)
+  val locationViewModel: LocationViewModel = viewModel()
+
   var reloadReports by remember { mutableStateOf(false) }
   val currentUser by userViewModel.user.collectAsState()
   val currentUserId = currentUser.uid
@@ -110,7 +117,7 @@ fun AgriHealthApp(
         SignUpScreen(
             userViewModel = userViewModel,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onSignedUp = { navigationActions.navigateTo(Screen.EditProfile) })
+            onSignedUp = { navigationActions.navigateTo(Screen.EditProfile(false)) })
       }
     }
     navigation(startDestination = Screen.RoleSelection.route, route = Screen.RoleSelection.name) {
@@ -118,7 +125,7 @@ fun AgriHealthApp(
         RoleSelectionScreen(
             credentialManager = credentialManager,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onButtonPressed = { navigationActions.navigateTo(Screen.EditProfile) })
+            onButtonPressed = { navigationActions.navigateTo(Screen.EditProfile(false)) })
       }
     }
 
@@ -187,29 +194,33 @@ fun AgriHealthApp(
               overviewViewModel.signOut(credentialManager)
               navigationActions.navigateToAuthAndClear()
             },
-            onEditProfile = {
-              // Navigate to EditProfile normally
-              navController.navigate(Screen.EditProfile.route)
-            },
-            onCodeFarmer = {
-              // If farmer clicked "Add new Vet with Code", open EditProfile too
-              navController.navigate(Screen.EditProfile.route)
-            })
+            onEditProfile = { navigationActions.navigateTo(Screen.EditProfile(false)) },
+            onCodeFarmer = { navigationActions.navigateTo(Screen.EditProfile(true)) })
       }
     }
 
     // --- Edit Profile Graph ---
     navigation(startDestination = Screen.EditProfile.route, route = Screen.EditProfile.name) {
-      composable(Screen.EditProfile.route) {
-        EditProfileScreen(
-            userViewModel = userViewModel,
-            onGoBack = { navigationActions.navigateTo(Screen.Profile) },
-            onSave = { updatedUser ->
-              userViewModel.updateUser(updatedUser)
-              navigationActions.navigateTo(Screen.Profile)
-            },
-            onPasswordChange = { navigationActions.navigateTo(Screen.ChangePassword) })
-      }
+      composable(
+          route = Screen.EditProfile.route,
+          arguments =
+              listOf(
+                  navArgument("showOnlyVetField") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                  })) { backStackEntry ->
+            val showOnlyVetField = backStackEntry.arguments?.getBoolean("showOnlyVetField") ?: false
+
+            EditProfileScreen(
+                userViewModel = userViewModel,
+                onGoBack = { navigationActions.navigateTo(Screen.Profile) },
+                onSave = { updatedUser ->
+                  userViewModel.updateUser(updatedUser)
+                  navigationActions.navigateTo(Screen.Profile)
+                },
+                onPasswordChange = { navigationActions.navigateTo(Screen.ChangePassword) },
+                showOnlyVetField = showOnlyVetField)
+          }
     }
 
     // --- Change Password Graph ---
@@ -218,7 +229,7 @@ fun AgriHealthApp(
         val changePasswordViewModel: ChangePasswordViewModel = viewModel()
         ChangePasswordScreen(
             onBack = { navigationActions.goBack() },
-            onUpdatePassword = { navigationActions.navigateTo(Screen.EditProfile) },
+            onUpdatePassword = { navigationActions.navigateTo(Screen.EditProfile(false)) },
             userEmail = currentUserEmail,
             changePasswordViewModel = changePasswordViewModel)
       }

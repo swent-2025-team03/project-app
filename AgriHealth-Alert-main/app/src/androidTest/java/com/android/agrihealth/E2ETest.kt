@@ -21,6 +21,7 @@ import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.android.agrihealth.ui.profile.ChangePasswordScreenTestTags
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags
 import com.android.agrihealth.ui.profile.ProfileViewModel
 import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
@@ -216,6 +217,30 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performClick()
   }
 
+  private fun goToProfileFromOverview() {
+    composeTestRule
+        .onNodeWithTag(OverviewScreenTestTags.PROFILE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+  }
+
+  private fun clickAddVetCode() {
+    composeTestRule
+        .onNodeWithTag(ProfileScreenTestTags.CODE_BUTTON_FARMER)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.CODE_FIELD).assertIsDisplayed()
+  }
+
+  private fun clickEditProfile() {
+    composeTestRule
+        .onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).assertIsDisplayed()
+  }
+
   // To fix E2E test clicking on random report marker on map (without needing to know its ID)
   fun ComposeTestRule.clickFirstReportMarker() {
     waitUntil(TestConstants.LONG_TIMEOUT) {
@@ -345,6 +370,13 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(SignInScreenTestTags.EMAIL_FIELD).performTextClearance()
     composeTestRule.onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD).performTextClearance()
     completeSignIn(user1.email, "12345678")
+    checkOverviewScreenIsDisplayed()
+    goToProfileFromOverview()
+    clickAddVetCode()
+    goBack()
+    clickEditProfile()
+    goBack()
+    goBack()
     checkOverviewScreenIsDisplayed()
     val vetId = "Best Vet Ever!"
     createReport("Report title", "Report description", vetId)
