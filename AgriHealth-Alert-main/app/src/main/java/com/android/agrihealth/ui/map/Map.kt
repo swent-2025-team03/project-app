@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,8 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
@@ -44,13 +43,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.graphics.createBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.R
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
@@ -124,44 +126,12 @@ fun MapScreen(
         zoomControlsEnabled = false,
     )
   }
-  val googleMapMapProperties = remember {
-    MapProperties(
-        mapStyleOptions =
-            MapStyleOptions(
-                """
-                [
-                  {
-                    "featureType": "all",
-                    "elementType": "labels.text.fill",
-                    "stylers": [{"color": "#808080"}]
-                  },
-                  {
-                    "featureType": "all",
-                    "elementType": "labels.text.stroke",
-                    "stylers": [{"color": "#00000000"}]
-                  },
-                  {
-                    "featureType": "poi",
-                    "stylers": [{ "visibility": "off" }]
-                  },
-                  {
-                    "featureType": "landscape.natural",
-                    "elementType": "labels",
-                    "stylers": [{ "visibility": "off" }]
-                  },
-                  {
-                    "featureType": "road",
-                    "elementType": "labels.icon",
-                    "stylers": [{ "visibility": "off" }]
-                  },
-                  {
-                    "featureType": "transit",
-                    "stylers": [{ "visibility": "off" }]
-                  }
-                ]
-                """
-                    .trimIndent()))
-  }
+  val context = LocalContext.current
+  val darkTheme = isSystemInDarkTheme()
+  val styleRes = if (darkTheme) R.raw.map_style_dark else R.raw.map_style_light
+  val style = MapStyleOptions.loadRawResourceStyle(context, styleRes)
+
+  val googleMapMapProperties = remember(style) { MapProperties(mapStyleOptions = style) }
 
   Scaffold(
       topBar = { if (!isViewedFromOverview) MapTopBar(onBack = { navigationActions?.goBack() }) },
@@ -186,15 +156,7 @@ fun MapScreen(
                     .forEach { report ->
                       val markerSize = if (report == selectedReport.value) 60f else 40f
                       val markerIcon =
-                          when (report.status) {
-                            ReportStatus.PENDING -> createCircleMarker(Color.GRAY, markerSize)
-                            ReportStatus.IN_PROGRESS ->
-                                createCircleMarker(Color.rgb(242, 199, 119), markerSize) // yellow
-                            ReportStatus.RESOLVED ->
-                                createCircleMarker(Color.rgb(108, 166, 209), markerSize) // blue
-                            ReportStatus.SPAM ->
-                                createCircleMarker(Color.rgb(184, 92, 92), markerSize) // red
-                          }
+                          createCircleMarker(statusColor(report.status).toArgb(), markerSize)
                       Marker(
                           state =
                               MarkerState(
@@ -247,7 +209,6 @@ fun MapScreen(
                   Modifier.align(Alignment.BottomEnd)
                       .padding(16.dp)
                       .testTag(MapScreenTestTags.REFRESH_BUTTON),
-              shape = CircleShape,
               onClick = {
                 mapViewModel.refreshCameraPosition()
 
@@ -281,7 +242,6 @@ fun MapTopBar(onBack: () -> Unit) {
               Text(
                   text = "Map",
                   style = MaterialTheme.typography.titleLarge,
-                  fontWeight = FontWeight.Bold,
                   modifier = Modifier.weight(1f).testTag(MapScreenTestTags.TOP_BAR_MAP_TITLE))
             }
       },
@@ -304,15 +264,13 @@ fun FilterDropdown(
   Box(
       modifier =
           Modifier.padding(16.dp)
-              .background(
-                  color = androidx.compose.ui.graphics.Color.White,
-                  shape = RoundedCornerShape(8.dp))
               .clickable { expanded = true }
               .defaultMinSize(minWidth = 100.dp, minHeight = 40.dp)
-              .border(2.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(8.dp))
+              .background(color = MaterialTheme.colorScheme.surface)
+              .border(2.dp, MaterialTheme.colorScheme.primary)
               .testTag(MapScreenTestTags.REPORT_FILTER_MENU),
       contentAlignment = Alignment.Center) {
-        Text(selectedOption, fontSize = 16.sp)
+        Text(selectedOption)
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
           options.forEach { option ->
             DropdownMenuItem(
@@ -334,10 +292,8 @@ fun ShowReportInfo(report: Report?, onReportClick: (String) -> Unit = {}) {
   Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.REPORT_INFO_BOX)) {
     Column(
         modifier =
-            Modifier.align(Alignment.BottomCenter)
-                .background(
-                    color = androidx.compose.ui.graphics.Color.White,
-                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+            Modifier.background(color = MaterialTheme.colorScheme.surface)
+                .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .padding(16.dp)) {
           Row(
@@ -345,8 +301,7 @@ fun ShowReportInfo(report: Report?, onReportClick: (String) -> Unit = {}) {
               horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
                     text = report.title,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
+                    style = MaterialTheme.typography.titleLarge,
                     modifier =
                         Modifier.testTag(MapScreenTestTags.getTestTagForReportTitle(report.id)))
 
@@ -399,5 +354,5 @@ fun createCircleMarker(color: Int, radius: Float = 40f, strokeWidth: Float = 8f)
 @Preview
 @Composable
 fun PreviewMapScreen() {
-  MapScreen(startingPosition = Location(46.7990813, 6.6264253))
+  AgriHealthAppTheme { MapScreen(startingPosition = Location(46.7990813, 6.6264253)) }
 }

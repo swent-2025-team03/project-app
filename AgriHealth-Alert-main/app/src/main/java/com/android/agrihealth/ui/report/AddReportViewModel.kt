@@ -2,16 +2,16 @@ package com.android.agrihealth.ui.report
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 
 data class AddReportUiState(
     val title: String = "",
@@ -66,7 +66,7 @@ class AddReportViewModel(
             location = Location(46.7990813, 6.6259961) // null // optional until implemented
             )
 
-    withContext(Dispatchers.IO) { reportRepository.addReport(newReport) }
+    viewModelScope.launch { reportRepository.addReport(newReport) }
 
     // Clears all the fields
     clearInputs() // TODO: Call only if addReport succeeds

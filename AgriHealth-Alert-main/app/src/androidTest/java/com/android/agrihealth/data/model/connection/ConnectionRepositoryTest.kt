@@ -3,7 +3,6 @@ package com.android.agrihealth.data.model.connection
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
-import java.time.Instant
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
@@ -48,7 +47,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   // fields.
   fun generateCode_createsOpenDoc() = runTest {
     val vetId = user3.uid
-    val code = repo.generateCode(vetId).getOrThrow()
+    val code = repo.generateCode().getOrThrow()
     assertTrue(code.matches(Regex("\\d{6}")))
 
     val snap = db.collection("connect_codes").document(code).get().await()
@@ -65,9 +64,12 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   fun claimCode_linksAndMarksUsed() = runTest {
     val vetId = user3.uid
     val farmerId = user1.uid
-    val code = repo.generateCode(vetId).getOrThrow()
+    val code = repo.generateCode().getOrThrow()
 
-    val returnedVet = repo.claimCode(code, farmerId).getOrThrow()
+    authRepository.signOut()
+    authRepository.signInWithEmailAndPassword(user1.email, password1)
+
+    val returnedVet = repo.claimCode(code).getOrThrow()
     assertEquals(vetId, returnedVet)
 
     val codeDoc = db.collection("connect_codes").document(code).get().await()
@@ -84,16 +86,12 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   // Verifies that claimCode fails when the code is expired by simulating a past createdAt
   // timestamp.
   fun claimCode_failsForExpired() = runTest {
-    val vetId = user3.uid
-    val farmerId = user2.uid
-    val code = repo.generateCode(vetId, ttlMinutes = 0).getOrThrow() // immediate expiry
+    val code = repo.generateCode(ttlMinutes = -1).getOrThrow() // immediate expiry
 
-    // Force the creation date in the past to simulate expiration
-    val pastInstant = Instant.now().minusSeconds(3600)
-    val pastTimestamp = Timestamp(pastInstant.epochSecond, pastInstant.nano)
-    db.collection("connect_codes").document(code).update("createdAt", pastTimestamp).await()
+    authRepository.signOut()
+    authRepository.signInWithEmailAndPassword(user2.email, password2)
 
-    val res = repo.claimCode(code, farmerId)
+    val res = repo.claimCode(code)
     assertTrue(res.isFailure)
     assertTrue(res.exceptionOrNull()!!.message!!.lowercase().contains("expired"))
   }
@@ -101,12 +99,13 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   @Test
   // Verifies that claimCode fails when the code has already been used.
   fun claimCode_failsWhenUsed() = runTest {
-    val vetId = user3.uid
-    val farmerId = user4.uid
-    val code = repo.generateCode(vetId).getOrThrow()
-    db.collection("connect_codes").document(code).update("status", "USED").await()
+    val code = repo.generateCode().getOrThrow()
 
-    val res = repo.claimCode(code, farmerId)
+    authRepository.signOut()
+    authRepository.signInWithEmailAndPassword(user1.email, password1)
+
+    repo.claimCode(code)
+    val res = repo.claimCode(code)
     assertTrue(res.isFailure)
     assertTrue(res.exceptionOrNull()!!.message!!.lowercase().contains("used"))
   }
@@ -114,27 +113,32 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   @Test
   // Verifies that claimCode fails when an unknown code is provided.
   fun claimCode_failsWhenUnknown() = runTest {
-    val res = repo.claimCode("999999", user1.uid)
+    val res = repo.claimCode("999999")
     assertTrue(res.isFailure)
   }
 
   @Test
   // Verifies that multiple generated codes are unique.
   fun generateCode_many_areUnique() = runTest {
-    val vet = user3.uid
-    val codes = (1..200).map { repo.generateCode(vet).getOrThrow() }
+    val codes = (1..200).map { repo.generateCode().getOrThrow() }
     assertEquals(codes.size, codes.toSet().size)
   }
 
   @Test
   // Verifies that only one farmer can successfully claim a code in a race condition scenario.
   fun claimCode_raceTwoFarmers_oneSucceeds() = runTest {
-    val vet = user3.uid
-    val f1 = user1.uid
-    val f2 = user2.uid
-    val code = repo.generateCode(vet).getOrThrow()
-    val r1 = async { repo.claimCode(code, f1) }
-    val r2 = async { repo.claimCode(code, f2) }
+    val code = repo.generateCode().getOrThrow()
+
+    val r1 = async {
+      authRepository.signOut()
+      authRepository.signInWithEmailAndPassword(user1.email, password1)
+      repo.claimCode(code)
+    }
+    val r2 = async {
+      authRepository.signOut()
+      authRepository.signInWithEmailAndPassword(user2.email, password2)
+      repo.claimCode(code)
+    }
     val results = awaitAll(r1, r2)
     assertEquals(1, results.count { it.isSuccess })
   }
@@ -142,10 +146,11 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   @Test
   // Verifies that claimCode succeeds if claimed just before expiry when ttlMinutes is small.
   fun claimCode_succeedsRightBeforeExpiry() = runTest {
-    val vet = user3.uid
-    val farmer = user1.uid
-    val code = repo.generateCode(vet, ttlMinutes = 1).getOrThrow()
-    // No need to delay: just check it succeeds before expiration
+    val code = repo.generateCode(ttlMinutes = 1).getOrThrow()
+    authRepository.signOut()
+    authRepository.signInWithEmailAndPassword(user1.email, password1)
+    val res = repo.claimCode(code)
+    assertTrue(res.isSuccess)
   }
 
   @Test
@@ -154,8 +159,12 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   fun connectionId_isSymmetric_singleDoc() = runTest {
     val vet = user3.uid
     val farmer = user1.uid
-    val code = repo.generateCode(vet).getOrThrow()
-    repo.claimCode(code, farmer).getOrThrow()
+    val code = repo.generateCode().getOrThrow()
+
+    authRepository.signOut()
+    authRepository.signInWithEmailAndPassword(user1.email, password1)
+
+    repo.claimCode(code).getOrThrow()
     val id = listOf(vet, farmer).sorted().joinToString("__")
     assertTrue(db.collection("connections").document(id).get().await().exists())
   }
@@ -170,7 +179,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
     io.mockk.every { kotlin.random.Random.nextInt(100_000, 1_000_000) } returnsMany
         listOf(123456, 234567)
 
-    val out = repo.generateCode(user3.uid).getOrThrow()
+    val out = repo.generateCode().getOrThrow()
     assertEquals("234567", out)
 
     io.mockk.unmockkObject(kotlin.random.Random)
@@ -189,7 +198,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
                 ))
         .await()
 
-    val res = repo.claimCode(code, user1.uid)
+    val res = repo.claimCode(code)
     assertTrue("Expected failure when createdAt is missing", res.isFailure)
 
     val ex = res.exceptionOrNull()
@@ -213,12 +222,12 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
                 "code" to code,
                 "vetId" to user3.uid,
                 "status" to "OPEN",
-                "createdAt" to com.google.firebase.Timestamp.now()
+                "createdAt" to Timestamp.now()
                 // ttlMinutes ABSENT
                 ))
         .await()
 
-    val res = repo.claimCode(code, user1.uid)
+    val res = repo.claimCode(code)
     assertTrue(res.isFailure)
     assertTrue(res.exceptionOrNull()!!.message!!.contains("Missing TTL"))
   }
@@ -233,13 +242,13 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
             mapOf(
                 "code" to code,
                 "status" to "OPEN",
-                "createdAt" to com.google.firebase.Timestamp.now(),
+                "createdAt" to Timestamp.now(),
                 "ttlMinutes" to 60L
                 // vetId ABSENT
                 ))
         .await()
 
-    val res = repo.claimCode(code, user1.uid)
+    val res = repo.claimCode(code)
     assertTrue(res.isFailure)
     assertTrue(res.exceptionOrNull()!!.message!!.contains("Invalid vet ID"))
   }
@@ -257,7 +266,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
             mapOf(
                 "vetId" to vet,
                 "farmerId" to farmer,
-                "createdAt" to com.google.firebase.Timestamp.now(),
+                "createdAt" to Timestamp.now(),
                 "active" to true))
         .await()
 
@@ -269,12 +278,15 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
                 "code" to code,
                 "vetId" to vet,
                 "status" to "OPEN",
-                "createdAt" to com.google.firebase.Timestamp.now(),
+                "createdAt" to Timestamp.now(),
                 "ttlMinutes" to 60L))
         .await()
 
     // Should succeed and take the branch existing.exists()==true
-    val res = repo.claimCode(code, farmer)
+    authRepository.signOut()
+    authRepository.signInWithEmailAndPassword(user1.email, password1)
+
+    val res = repo.claimCode(code)
     assertTrue(res.isSuccess)
 
     // The connection still exists

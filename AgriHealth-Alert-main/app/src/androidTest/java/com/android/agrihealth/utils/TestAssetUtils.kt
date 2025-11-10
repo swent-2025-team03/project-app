@@ -14,23 +14,19 @@ object TestAssetUtils {
     val cacheFile = File(instrumentation.targetContext.cacheDir, assetName)
 
     instrumentation.context.assets.open(assetName).use { input ->
-      cacheFile.outputStream().use { output ->
-        input.copyTo(output)
-      }
+      cacheFile.outputStream().use { output -> input.copyTo(output) }
     }
 
     return Uri.fromFile(cacheFile)
   }
 
   /**
-   *  Clears all files from cache.
+   * Clears all files from cache.
    *
-   *  Use this after all tests are run so that tests have no side effects on each others.
+   * Use this after all tests are run so that tests have no side effects on each others.
    */
   fun cleanupTestAssets() {
     val cacheDir = InstrumentationRegistry.getInstrumentation().targetContext.cacheDir
-    cacheDir.listFiles()?.forEach { file ->
-      file.delete()
-    }
+    cacheDir.listFiles()?.forEach { file -> file.delete() }
   }
 }

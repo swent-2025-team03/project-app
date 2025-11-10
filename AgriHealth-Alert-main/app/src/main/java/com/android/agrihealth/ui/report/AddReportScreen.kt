@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -28,12 +27,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
@@ -125,7 +123,6 @@ fun AddReportScreen(
                     Text(
                         text = Screen.AddReport.name,
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f).testTag(NavigationTestTags.TOP_BAR_TITLE))
                   }
             },
@@ -239,14 +236,8 @@ private fun Field(
       onValueChange = onValueChange,
       placeholder = { Text(placeholder) },
       singleLine = true,
-      shape = RoundedCornerShape(28.dp),
       modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
-      colors =
-          OutlinedTextFieldDefaults.colors(
-              unfocusedContainerColor = unfocusedFieldColor,
-              focusedContainerColor = focusedFieldColor,
-              unfocusedBorderColor = Color.Transparent,
-              focusedBorderColor = Color.Transparent))
+  )
 }
 
 @Composable
@@ -267,10 +258,9 @@ fun ImageUploadButton(
   Button(
       onClick = {
         if (imageAlreadyUploaded) {
-          // Remove existing image
           onImageRemoved()
         } else {
-          // Pick/upload new image
+          // Upload new image
           imagePickerLauncher.launch("image/*")
         }
       },
@@ -278,9 +268,10 @@ fun ImageUploadButton(
           Modifier.fillMaxWidth()
               .padding(vertical = 8.dp)
               .testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
-      shape = RoundedCornerShape(20.dp),
       colors = ButtonDefaults.buttonColors(containerColor = buttonColor)) {
-        Text(text = if (imageAlreadyUploaded) "Remove Image" else "Upload Image", fontSize = 18.sp)
+        Text(
+            text = if (imageAlreadyUploaded) "Remove Image" else "Upload Image",
+            style = MaterialTheme.typography.titleLarge)
       }
 }
 
@@ -307,6 +298,7 @@ fun CreateReportButton(
     onSuccess: () -> Unit
 ) {
   val scope = rememberCoroutineScope()
+
   Button(
       onClick = {
         scope.launch {
@@ -319,10 +311,8 @@ fun CreateReportButton(
         }
       },
       modifier =
-          Modifier.fillMaxWidth().height(56.dp).testTag(AddReportScreenTestTags.CREATE_BUTTON),
-      shape = RoundedCornerShape(20.dp),
-      colors = ButtonDefaults.buttonColors(containerColor = createReportButtonColor)) {
-        Text("Create Report", fontSize = 24.sp)
+          Modifier.fillMaxWidth().height(56.dp).testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
+        Text("Create Report", style = MaterialTheme.typography.titleLarge)
       }
 }
 
@@ -333,7 +323,7 @@ fun CreateReportButton(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 fun AddReportScreenPreview() {
-  MaterialTheme {
+  AgriHealthAppTheme {
     AddReportScreen(
         userRole = UserRole.FARMER,
         userId = "FARMER_001",
