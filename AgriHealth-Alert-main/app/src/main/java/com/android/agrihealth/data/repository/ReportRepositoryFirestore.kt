@@ -1,5 +1,6 @@
 package com.android.agrihealth.data.repository
 
+import android.net.Uri
 import android.util.Log
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
@@ -90,7 +91,7 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
         id = id,
         title = title,
         description = description,
-        photoUri = photoUri,
+        photoUri = photoUri as Uri?,
         farmerId = farmerId,
         vetId = vetId,
         status = status,

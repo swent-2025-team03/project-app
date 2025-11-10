@@ -3,6 +3,7 @@ package com.android.agrihealth.data.model.report
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.repository.ReportRepositoryFirestore
+import com.android.agrihealth.utils.TestAssetUtils
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
@@ -25,7 +26,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
           id = "0",
           title = "report1",
           description = "description1",
-          photoUri = null,
+          photoUri = TestAssetUtils.getUriFrom(TestAssetUtils.FAKE_PHOTO_FILE),
           farmerId = user1.uid,
           vetId = user3.uid,
           status = ReportStatus.PENDING,
@@ -38,7 +39,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
           id = "1",
           title = "report2",
           description = "description2",
-          photoUri = "url to the photo",
+          photoUri = TestAssetUtils.getUriFrom(TestAssetUtils.FAKE_PHOTO_FILE),
           farmerId = user2.uid,
           vetId = "Vet2",
           status = ReportStatus.RESOLVED,

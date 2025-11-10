@@ -33,8 +33,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.data.model.user.Farmer
 import coil.compose.AsyncImage
+import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags

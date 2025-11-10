@@ -5,6 +5,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
+import com.android.agrihealth.utils.TestAssetUtils
+import com.android.agrihealth.utils.TestAssetUtils.cleanupTestAssets
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -42,8 +44,6 @@ class FakeReportRepository : ReportRepository {
   override suspend fun deleteReport(reportId: String) {}
 }
 
-val FAKE_PICTURE_FILE = "report_image_cat.jpg"
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddReportViewModelTest {
 
@@ -55,6 +55,11 @@ class AddReportViewModelTest {
     Dispatchers.setMain(StandardTestDispatcher()) // Necessary for scheduling coroutines
     repository = FakeReportRepository()
     viewModel = AddReportViewModel(userId = "fake-user-id", reportRepository = repository)
+  }
+
+  @After
+  fun cleanup() {
+    cleanupTestAssets()
   }
 
   @After
@@ -95,7 +100,7 @@ class AddReportViewModelTest {
 
   @Test
   fun setPhoto_updatesPhotoOnly() {
-    val fakePicture = getPicture(FAKE_PICTURE_FILE)
+    val fakePicture = TestAssetUtils.getUriFrom(TestAssetUtils.FAKE_PHOTO_FILE)
     viewModel.setPhoto(fakePicture)
     assertEquals(fakePicture, viewModel.uiState.value.photoUri)
   }

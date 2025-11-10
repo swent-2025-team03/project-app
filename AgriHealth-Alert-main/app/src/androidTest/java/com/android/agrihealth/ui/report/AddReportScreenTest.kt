@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.report
 
-import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
@@ -10,13 +9,11 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
-import java.io.File
 import com.android.agrihealth.ui.user.UserViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +21,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
+import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
+import com.android.agrihealth.utils.TestAssetUtils.FAKE_PHOTO_FILE
+import com.android.agrihealth.utils.TestAssetUtils.cleanupTestAssets
+import org.junit.After
 
 private fun fakeFarmerViewModel(): UserViewModel {
   return object : UserViewModel() {
@@ -44,9 +45,12 @@ private fun fakeFarmerViewModel(): UserViewModel {
 
 class AddReportScreenTest {
 
-  val FAKE_PICTURE_FILE = "report_image_cat.jpg"
-
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+  @After
+  fun cleanup() {
+    cleanupTestAssets()
+  }
 
   @Test
   fun displayAllFieldsAndButtons() {
@@ -185,7 +189,7 @@ class AddReportScreenTest {
 
   @Test
   fun imagePreview_canRemoveImage() {
-    val imageUri = getPicture(FAKE_PICTURE_FILE)
+    val imageUri = getUriFrom(FAKE_PHOTO_FILE)
     val fakeViewModel = FakeAddReportViewModel()
     fakeViewModel.setPhoto(imageUri)
     composeRule.setContent {
@@ -214,7 +218,7 @@ class AddReportScreenTest {
 
   @Test
   fun imagePreview_isShownWhenUploaded() {
-    val imageUri = getPicture(FAKE_PICTURE_FILE)
+    val imageUri = getUriFrom(FAKE_PHOTO_FILE)
 
     val fakeViewModel = FakeAddReportViewModel()
     fakeViewModel.setPhoto(imageUri)
@@ -234,12 +238,4 @@ class AddReportScreenTest {
         .assertTextEquals(AddReport_UploadButtonTexts.REMOVE_IMAGE)
   }
 
-  private fun getPicture(pictureName: String): Uri {
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    val file = File(context.cacheDir, pictureName)
-    val assetManager = InstrumentationRegistry.getInstrumentation().context.assets
-    val inputStream = assetManager.open(pictureName)
-    inputStream.use { input -> file.outputStream().use { output -> input.copyTo(output) } }
-    return Uri.fromFile(file)
-  }
 }
