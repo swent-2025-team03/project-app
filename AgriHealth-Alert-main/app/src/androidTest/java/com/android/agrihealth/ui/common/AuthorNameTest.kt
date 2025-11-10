@@ -13,6 +13,10 @@ import org.junit.Test
 
 class AuthorNameTest {
 
+  companion object {
+    private const val WAIT_TIMEOUT = 2_000L
+  }
+
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
   private class FakeUserDirectoryDataSource : UserDirectoryDataSource {
@@ -33,7 +37,7 @@ class AuthorNameTest {
   fun showsUnassigned_whenUidIsNull() {
     val vm = AuthorNameViewModel(repo = FakeUserDirectoryDataSource())
     composeRule.setContent { AuthorName(uid = null, showRole = true, viewModel = vm) }
-    composeRule.waitUntil(2_000) {
+    composeRule.waitUntil(WAIT_TIMEOUT) {
       composeRule.onAllNodes(hasText("Unassigned")).fetchSemanticsNodes().isNotEmpty()
     }
     composeRule.onNodeWithText("Unassigned").assertIsDisplayed()
@@ -43,7 +47,7 @@ class AuthorNameTest {
   fun showsNameAndRole_whenUserExists_andShowRoleTrue() {
     val vm = AuthorNameViewModel(repo = FakeUserDirectoryDataSource())
     composeRule.setContent { AuthorName(uid = "vet_1", showRole = true, viewModel = vm) }
-    composeRule.waitUntil(2_000) {
+    composeRule.waitUntil(WAIT_TIMEOUT) {
       composeRule.onAllNodes(hasText("Nico Vet (Vet)")).fetchSemanticsNodes().isNotEmpty()
     }
     composeRule.onNodeWithText("Nico Vet (Vet)").assertIsDisplayed()
@@ -53,7 +57,7 @@ class AuthorNameTest {
   fun showsNameOnly_whenUserExists_andShowRoleFalse() {
     val vm = AuthorNameViewModel(repo = FakeUserDirectoryDataSource())
     composeRule.setContent { AuthorName(uid = "farmer_1", showRole = false, viewModel = vm) }
-    composeRule.waitUntil(2_000) {
+    composeRule.waitUntil(WAIT_TIMEOUT) {
       composeRule.onAllNodes(hasText("Fara Mer")).fetchSemanticsNodes().isNotEmpty()
     }
     composeRule.onNodeWithText("Fara Mer").assertIsDisplayed()
@@ -63,7 +67,7 @@ class AuthorNameTest {
   fun showsDeletedUser_whenUserMissing() {
     val vm = AuthorNameViewModel(repo = FakeUserDirectoryDataSource())
     composeRule.setContent { AuthorName(uid = "missing", showRole = true, viewModel = vm) }
-    composeRule.waitUntil(2_000) {
+    composeRule.waitUntil(WAIT_TIMEOUT) {
       composeRule.onAllNodes(hasText("Deleted user")).fetchSemanticsNodes().isNotEmpty()
     }
     composeRule.onNodeWithText("Deleted user").assertIsDisplayed()

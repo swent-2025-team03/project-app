@@ -4,7 +4,7 @@ import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
-interface UserDirectoryDataSource {
+fun interface UserDirectoryDataSource {
   suspend fun getUserSummary(uid: String): UserDirectoryRepository.UserSummary?
 }
 
