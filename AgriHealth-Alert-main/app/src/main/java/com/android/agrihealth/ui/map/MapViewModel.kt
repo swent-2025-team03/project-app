@@ -68,6 +68,18 @@ class MapViewModel(
     _selectedReport.value = report
   }
 
+  /**
+   * Sets the starting location for the map
+   *
+   * This function sets starting location based on the following priority:
+   * 1. [location] if provided
+   * 2. default location if the app does not have location permissions
+   * 3. current location if [useCurrentLocation]
+   * 4. else Last known location
+   *
+   * @param location the map screen will start at this location if not null.
+   * @param useCurrentLocation will fetch new location instead of using last known location if true.
+   */
   fun setStartingLocation(location: Location?, useCurrentLocation: Boolean = false) {
     // Specific starting point, takes priority because of report navigation for example
     if (location != null) {
@@ -104,6 +116,18 @@ class MapViewModel(
 
   data class SpiderifiedReport(val report: Report, val position: LatLng, val center: LatLng)
 
+  /**
+   * Generate a List of [SpiderifiedReport] with new positions centered around common report
+   * locations.
+   *
+   * This function spreads report with equal [Report.location] in a circle around the common
+   * location.
+   *
+   * If the [Report] is the only one in the location it keeps it does not impact it.
+   *
+   * @return A list of [SpiderifiedReport] objects containing their adjusted map positions.
+   * @see offsetLatLng for how the offset positions are calculated
+   */
   fun spiderifiedReports(): List<SpiderifiedReport> {
     val groups =
         uiState.value.reports.groupBy { Pair(it.location!!.latitude, it.location.longitude) }
@@ -129,6 +153,14 @@ class MapViewModel(
     return result
   }
 
+  /**
+   * Offset [lat] and [lng] by [distanceMeters] in the direction of [angleRadians].
+   *
+   * @param lat the latitude of the point to offset
+   * @param lng the longitude of the point to offset
+   * @param distanceMeters the distance in meters to offset by which the point is offset
+   * @param angleRadians angle to offset by. 0 offset to the right, PI offset to the left.
+   */
   fun offsetLatLng(lat: Double, lng: Double, distanceMeters: Double, angleRadians: Double): LatLng {
     val earthRadius = 6371000.0 // meters
     val dLat = (distanceMeters / earthRadius) * sin(angleRadians)

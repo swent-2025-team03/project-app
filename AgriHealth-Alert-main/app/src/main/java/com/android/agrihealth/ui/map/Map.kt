@@ -287,6 +287,15 @@ fun FilterDropdown(
       }
 }
 
+/**
+ * Bottom menu to show info on the selected [report].
+ *
+ * Contain a 2 line Report title, and the entire description. Also has an IconButton that executes
+ * [onReportClick]
+ *
+ * @param report The report whose information will be displayed.
+ * @param onReportClick run when IconButton is clicked.
+ */
 @Composable
 fun ShowReportInfo(report: Report?, onReportClick: (String) -> Unit = {}) {
   if (report == null) return
