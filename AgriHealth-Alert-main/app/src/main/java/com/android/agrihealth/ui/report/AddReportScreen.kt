@@ -68,10 +68,7 @@ object AddReport_UploadButtonTexts {
   const val REMOVE_IMAGE = "Remove Image"
 }
 
-// TODO: Replace these with the theme colors (in a global theme file or similar)
-private val unfocusedFieldColor = Color(0xFFF0F7F1)
-private val focusedFieldColor = Color(0xFFF0F7F1)
-private val createReportButtonColor = Color(0xFF96B7B1)
+
 private val imageUploadButton_UploadColor = Color(0xFF43b593)
 private val imageUploadButton_RemoveColor = Color(0xFFd45d5d)
 
