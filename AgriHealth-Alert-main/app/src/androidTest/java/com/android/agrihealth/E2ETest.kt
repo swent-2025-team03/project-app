@@ -164,6 +164,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.waitForIdle()
     val farmerEmail = "farmer.link@example.com"
     val password = "Password!123"
+    val newPassword = "NewPassword!456"
     val vet =
         Vet(
             uid = "vet_001",
@@ -176,62 +177,15 @@ class E2ETest : FirebaseEmulatorsTest() {
     val userViewModel = UserViewModel(initialUser = vet)
     val profileViewModel = ProfileViewModel(userViewModel)
     profileViewModel.generateVetCode()
-
     // Wait for the code to appear in StateFlow
     val vetCode = runBlocking { profileViewModel.generatedCode.first { it != null } }
 
     completeSignUp(farmerEmail, password, isVet = false)
     checkEditProfileScreenIsDisplayed()
-
-    composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.CODE_FIELD)
-        .assertIsDisplayed()
-        .performTextInput((vetCode)!!)
-    composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.ADD_CODE_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule
-          .onAllNodesWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
-
-    composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.PASSWORD_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule
-          .onAllNodesWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
-
-    composeTestRule
-        .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
-        .assertIsDisplayed()
-        .assertIsEnabled()
-
-    composeTestRule.waitForIdle()
-
-    val newPassword = "NewPassword!456"
-    composeTestRule
-        .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
-        .performTextInput(password)
-    composeTestRule.onNodeWithText(password).assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(ChangePasswordScreenTestTags.NEW_PASSWORD)
-        .performTextInput(newPassword)
-    composeTestRule.onNodeWithText(newPassword).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
-
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).isDisplayed()
-    }
+    useCode(vetCode)
+    checkLinkedVetIsNotEmpty()
+    clickChangePassword()
+    changePassword(password, newPassword)
   }
 
   // ----------- Helper functions -----------
@@ -274,6 +228,56 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON)
         .assertIsDisplayed()
         .performClick()
+  }
+
+  private fun useCode(vetCode: String?) {
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.CODE_FIELD)
+        .assertIsDisplayed()
+        .performTextInput((vetCode)!!)
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.ADD_CODE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+  }
+
+  private fun checkLinkedVetIsNotEmpty() {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule
+          .onAllNodesWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+  }
+
+  private fun clickChangePassword() {
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.PASSWORD_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+  }
+
+  private fun changePassword(oldPassword: String, newPassword: String) {
+    composeTestRule
+        .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
+        .assertIsDisplayed()
+        .assertIsEnabled()
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
+        .performTextInput(oldPassword)
+    composeTestRule.onNodeWithText(oldPassword).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(ChangePasswordScreenTestTags.NEW_PASSWORD)
+        .performTextInput(newPassword)
+    composeTestRule.onNodeWithText(newPassword).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).isDisplayed()
+    }
   }
 
   private fun completeSignIn(email: String, password: String) {
