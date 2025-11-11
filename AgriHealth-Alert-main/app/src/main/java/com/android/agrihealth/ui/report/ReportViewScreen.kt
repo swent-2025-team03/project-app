@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 
@@ -129,16 +130,26 @@ fun ReportViewScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
               // ---- Farmer or Vet info line ----
-              val roleInfo =
-                  if (userRole == UserRole.VET)
-                      report.farmerId?.let { "Farmer ID: $it" } ?: "Unassigned"
-                  else report.vetId?.let { "Vet ID: $it" } ?: "Unassigned"
+              Row(
+                  verticalAlignment = Alignment.CenterVertically,
+                  modifier = Modifier.testTag(ReportViewScreenTestTags.ROLE_INFO_LINE)) {
+                    if (userRole == UserRole.VET) {
+                      AuthorName(uid = report.farmerId, showRole = true)
+                    } else {
+                      AuthorName(uid = report.vetId, showRole = true)
+                    }
+                  }
 
-              Text(
-                  text = roleInfo,
-                  style = MaterialTheme.typography.bodyMedium,
-                  color = MaterialTheme.colorScheme.onSurfaceVariant,
-                  modifier = Modifier.testTag(ReportViewScreenTestTags.ROLE_INFO_LINE))
+              // ---- Photo ---- For now, I am skipping this part since I had trouble loading a
+              // placeholder image
+              /*Image(
+                  imageVector = Icons.Filled.Image,
+                  contentDescription = "Report photo",
+                  modifier = Modifier
+                      .fillMaxWidth()
+                      .height(200.dp)
+                      .background(MaterialTheme.colorScheme.surfaceVariant)
+              )*/
 
               // ---- Description ----
               Text(text = report.description, style = MaterialTheme.typography.bodyLarge)

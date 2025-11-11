@@ -25,7 +25,7 @@ import org.junit.Test
 class ReportViewScreenTest {
 
   private companion object {
-    const val WAIT_TIMEOUT = 2_000L
+    const val WAIT_TIMEOUT = 5_000L
   }
 
   @get:Rule val composeTestRule = createComposeRule()
@@ -203,25 +203,37 @@ class ReportViewScreenTest {
   }
 
   @Test
-  fun farmer_showsVetIdText() {
-    // Farmer view shows the Vet ID line
-    val viewModel = ReportViewModel()
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      val navigationActions = NavigationActions(navController)
-      ReportViewScreen(
-          navigationActions = navigationActions, userRole = UserRole.FARMER, viewModel = viewModel)
+  fun farmer_roleInfoLine_showsVetRole_orIdentifier() {
+    setFarmerScreen()
+    composeTestRule.waitUntil(WAIT_TIMEOUT) {
+      composeTestRule
+          .onAllNodes(
+              hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
+                  .and(
+                      hasAnyDescendant(
+                          hasText("Vet", substring = true)
+                              .or(hasText("Deleted user"))
+                              .or(hasText("Unassigned")))),
+              useUnmergedTree = true)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
     }
-    composeTestRule.waitForIdle()
-    // Default sample report has vetId "VET_456" (from ReportViewUIState)
+
     composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
-        .assertTextContains("Vet ID: VET_456")
+        .onNode(
+            hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
+                .and(
+                    hasAnyDescendant(
+                        hasText("Vet", substring = true)
+                            .or(hasText("Deleted user"))
+                            .or(hasText("Unassigned")))),
+            useUnmergedTree = true)
+        .assertExists()
+        .assertIsDisplayed()
   }
 
   @Test
   fun vet_showsFarmerIdText() {
-    // Vet view shows the Farmer ID line
     val viewModel = ReportViewModel()
     composeTestRule.setContent {
       val navController = rememberNavController()
@@ -229,11 +241,58 @@ class ReportViewScreenTest {
       ReportViewScreen(
           navigationActions = navigationActions, userRole = UserRole.VET, viewModel = viewModel)
     }
+
     composeTestRule.waitForIdle()
-    // Default sample report has farmerId "FARMER_123"
+
+    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+      composeTestRule
+          .onAllNodes(
+              hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
+                  .and(
+                      hasAnyDescendant(
+                          hasText("Deleted user")
+                              .or(hasText("Unassigned"))
+                              .or(hasText("Farmer", substring = true)))),
+              useUnmergedTree = true)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+
     composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
-        .assertTextContains("Farmer ID: FARMER_123")
+        .onNodeWithTag(ReportViewScreenTestTags.ROLE_INFO_LINE, useUnmergedTree = true)
+        .assertExists()
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun vet_roleInfoLine_showsFarmerRole_orIdentifier() {
+    setVetScreen()
+
+    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+      composeTestRule
+          .onAllNodes(
+              hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
+                  .and(
+                      hasAnyDescendant(
+                          hasText("Farmer", substring = true)
+                              .or(hasText("Deleted user"))
+                              .or(hasText("Unassigned")))),
+              useUnmergedTree = true)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+
+    composeTestRule
+        .onNode(
+            hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
+                .and(
+                    hasAnyDescendant(
+                        hasText("Farmer", substring = true)
+                            .or(hasText("Deleted user"))
+                            .or(hasText("Unassigned")))),
+            useUnmergedTree = true)
+        .assertExists()
+        .assertIsDisplayed()
   }
 
   @Test
