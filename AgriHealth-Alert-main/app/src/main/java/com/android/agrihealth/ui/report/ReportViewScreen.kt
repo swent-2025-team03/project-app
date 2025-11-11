@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 
@@ -119,13 +120,15 @@ fun ReportViewScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
               // ---- Farmer or Vet info line ----
-              Text(
-                  text =
-                      if (userRole == UserRole.VET) "Farmer ID: ${report.farmerId}"
-                      else "Vet ID: ${report.vetId}" ?: "Unassigned",
-                  style = MaterialTheme.typography.bodyMedium,
-                  color = MaterialTheme.colorScheme.onSurfaceVariant,
-                  modifier = Modifier.testTag(ReportViewScreenTestTags.ROLE_INFO_LINE))
+              Row(
+                  verticalAlignment = Alignment.CenterVertically,
+                  modifier = Modifier.testTag(ReportViewScreenTestTags.ROLE_INFO_LINE)) {
+                    if (userRole == UserRole.VET) {
+                      AuthorName(uid = report.farmerId, showRole = true)
+                    } else {
+                      AuthorName(uid = report.vetId, showRole = true)
+                    }
+                  }
 
               // ---- Photo ---- For now, I am skipping this part since I had trouble loading a
               // placeholder image
