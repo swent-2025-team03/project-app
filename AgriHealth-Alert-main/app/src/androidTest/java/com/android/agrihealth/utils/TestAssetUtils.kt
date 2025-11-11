@@ -5,7 +5,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 
 /**
- *    Utility class used during testing when dealing with test assets such as pictures, videos, etc...
+ * Utility class used during testing when dealing with test assets such as pictures, videos, etc...
  */
 object TestAssetUtils {
 
@@ -14,10 +14,10 @@ object TestAssetUtils {
   const val FAKE_PHOTO_FILE = "report_image_cat.jpg"
 
   /**
-   *   Returns the Uri of a given file. File must be located in "androidTest/assets"
+   * Returns the Uri of a given file. File must be located in "androidTest/assets"
    *
-   *   @property fileName Name of the file
-   *   @return The Uri of the given file
+   * @param fileName Name of the file
+   * @return The Uri of the given file
    */
   fun getUriFrom(fileName: String): Uri {
     val instrumentation = InstrumentationRegistry.getInstrumentation()

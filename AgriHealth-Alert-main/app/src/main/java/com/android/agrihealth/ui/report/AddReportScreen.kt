@@ -68,7 +68,6 @@ object AddReport_UploadButtonTexts {
   const val REMOVE_IMAGE = "Remove Image"
 }
 
-
 private val imageUploadButton_UploadColor = Color(0xFF43b593)
 private val imageUploadButton_RemoveColor = Color(0xFFd45d5d)
 
