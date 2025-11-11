@@ -75,7 +75,7 @@ fun OverviewScreen(
   var lazySpace = remember { 0.dp }
   val minLazySpace = remember { 150.dp }
 
-  LaunchedEffect(Unit) { overviewViewModel.loadReports(userRole, userId) }
+  LaunchedEffect(userId) { overviewViewModel.loadReports(userRole, userId) }
 
   Scaffold(
       // -- Top App Bar with logout icon --
@@ -128,7 +128,7 @@ fun OverviewScreen(
                         with(density) {
                           lazySpace =
                               screen - size.height.toDp() - topPadding - bottomPadding +
-                                  minLazySpace
+                                  maxOf(minLazySpace, lazySpace)
                         }
                       }
                       .testTag(OverviewScreenTestTags.SCREEN)

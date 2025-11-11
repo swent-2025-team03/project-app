@@ -51,9 +51,11 @@ class OverviewViewModel(
       try {
         val reports =
             when (userRole) {
-              UserRole.FARMER -> reportRepository.getReportsByFarmer(userId)
-              UserRole.VET -> reportRepository.getReportsByVet(userId)
-            }
+                  UserRole.FARMER -> reportRepository.getReportsByFarmer(userId)
+                  UserRole.VET -> reportRepository.getReportsByVet(userId)
+                }
+                .sortedBy { it.createdAt }
+                .reversed()
         val vetOptions = reports.map { it.vetId }.distinct()
         val farmerOptions = reports.map { it.farmerId }.distinct()
         val filtered =
