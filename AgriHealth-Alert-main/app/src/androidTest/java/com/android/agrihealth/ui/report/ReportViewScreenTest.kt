@@ -10,6 +10,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.testutil.FakeOverviewViewModel
+import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
@@ -23,10 +24,6 @@ import org.junit.Test
  * behave as expected in both Farmer and Vet modes.
  */
 class ReportViewScreenTest {
-
-  private companion object {
-    const val WAIT_TIMEOUT = 5_000L
-  }
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -53,26 +50,22 @@ class ReportViewScreenTest {
     override suspend fun deleteReport(reportId: String) {}
   }
 
-  // --- Helper functions to set up screens ---
-  private fun setVetScreen() {
+  /** Sets up the ReportViewScreen for a given role (Vet or Farmer). */
+  private fun setReportViewScreen(role: UserRole, viewModel: ReportViewModel = ReportViewModel()) {
     composeTestRule.setContent {
       val navController = rememberNavController()
       val navigationActions = NavigationActions(navController)
-      val viewModel = ReportViewModel()
       ReportViewScreen(
-          navigationActions = navigationActions, userRole = UserRole.VET, viewModel = viewModel)
+          navigationActions = navigationActions, userRole = role, viewModel = viewModel)
     }
   }
 
-  private fun setFarmerScreen() {
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      val navigationActions = NavigationActions(navController)
-      val viewModel = ReportViewModel()
-      ReportViewScreen(
-          navigationActions = navigationActions, userRole = UserRole.FARMER, viewModel = viewModel)
-    }
-  }
+  // --- Role-specific helpers (wrappers) ---
+  private fun setVetScreen(viewModel: ReportViewModel = ReportViewModel()) =
+      setReportViewScreen(UserRole.VET, viewModel)
+
+  private fun setFarmerScreen(viewModel: ReportViewModel = ReportViewModel()) =
+      setReportViewScreen(UserRole.FARMER, viewModel)
 
   // --- TEST 1: Vet typing in answer field ---
   @Test
@@ -169,11 +162,7 @@ class ReportViewScreenTest {
   @Test
   fun statusTextReflectsViewModelChange() {
     val viewModel = ReportViewModel()
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      val navigationActions = NavigationActions(navController)
-      ReportViewScreen(navigationActions = navigationActions, UserRole.VET, viewModel)
-    }
+    setVetScreen(viewModel)
     composeTestRule.runOnUiThread { viewModel.onStatusChange(ReportStatus.RESOLVED) }
     composeTestRule.waitForIdle()
     composeTestRule
@@ -188,12 +177,7 @@ class ReportViewScreenTest {
     // When a Vet screen is launched and the ViewModel's report status is PENDING (default),
     // the LaunchedEffect in the composable should auto-change it to IN_PROGRESS.
     val viewModel = ReportViewModel()
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      val navigationActions = NavigationActions(navController)
-      ReportViewScreen(
-          navigationActions = navigationActions, userRole = UserRole.VET, viewModel = viewModel)
-    }
+    setVetScreen(viewModel)
     // Wait for composition + LaunchedEffect to run
     composeTestRule.waitForIdle()
     // The status badge should show "IN PROGRESS" (name has underscore replaced by space)
@@ -205,7 +189,7 @@ class ReportViewScreenTest {
   @Test
   fun farmer_roleInfoLine_showsVetRole_orIdentifier() {
     setFarmerScreen()
-    composeTestRule.waitUntil(WAIT_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule
           .onAllNodes(
               hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
@@ -235,16 +219,11 @@ class ReportViewScreenTest {
   @Test
   fun vet_showsFarmerIdText() {
     val viewModel = ReportViewModel()
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      val navigationActions = NavigationActions(navController)
-      ReportViewScreen(
-          navigationActions = navigationActions, userRole = UserRole.VET, viewModel = viewModel)
-    }
+    setVetScreen(viewModel)
 
     composeTestRule.waitForIdle()
 
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule
           .onAllNodes(
               hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
@@ -268,7 +247,7 @@ class ReportViewScreenTest {
   fun vet_roleInfoLine_showsFarmerRole_orIdentifier() {
     setVetScreen()
 
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule
           .onAllNodes(
               hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
@@ -299,12 +278,7 @@ class ReportViewScreenTest {
   fun vet_canSelectInProgressStatus_viaDropdown() {
     // Test selecting IN_PROGRESS via dropdown (complements existing RESOLVED test)
     val viewModel = ReportViewModel()
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      val navigationActions = NavigationActions(navController)
-      ReportViewScreen(
-          navigationActions = navigationActions, userRole = UserRole.VET, viewModel = viewModel)
-    }
+    setVetScreen(viewModel)
     composeTestRule.waitForIdle()
 
     // Open dropdown and pick IN_PROGRESS
@@ -327,6 +301,7 @@ class ReportViewScreenTest {
     composeTestRule.setContent {
       val navController = rememberNavController()
       val navigation = NavigationActions(navController)
+      val TEST_REPORT_ID = "RPT001"
 
       NavHost(navController = navController, startDestination = Screen.Overview.route) {
         composable(Screen.Overview.route) {
@@ -339,22 +314,21 @@ class ReportViewScreenTest {
               navigationActions = navigation)
         }
         composable(Screen.ViewReport.route) { backStackEntry ->
-          val reportId = backStackEntry.arguments?.getString("reportId") ?: "RPT001"
           ReportViewScreen(
               navigationActions = navigation,
               userRole = UserRole.VET,
               viewModel = viewModel,
-              reportId = reportId)
+              reportId = TEST_REPORT_ID)
         }
       }
 
       // Navigate to the report detail when composition starts
       androidx.compose.runtime.LaunchedEffect(Unit) {
-        navigation.navigateTo(Screen.ViewReport("RPT001"))
+        navigation.navigateTo(Screen.ViewReport(TEST_REPORT_ID))
       }
     }
 
-    composeTestRule.waitUntil(WAIT_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule
           .onAllNodesWithTag(ReportViewScreenTestTags.ANSWER_FIELD)
           .fetchSemanticsNodes()
@@ -365,7 +339,7 @@ class ReportViewScreenTest {
     composeTestRule
         .onNodeWithTag(ReportViewScreenTestTags.ANSWER_FIELD)
         .assertIsDisplayed()
-        .performClick() // assure le focus
+        .performClick()
         .performTextInput("Edited answer")
 
     // Click Save via testTag (more robust than text)
@@ -375,7 +349,7 @@ class ReportViewScreenTest {
         .performClick()
 
     // Wait until Overview screen is displayed (after save triggers goBack())
-    composeTestRule.waitUntil(WAIT_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule
           .onAllNodesWithTag(OverviewScreenTestTags.SCREEN)
           .fetchSemanticsNodes()

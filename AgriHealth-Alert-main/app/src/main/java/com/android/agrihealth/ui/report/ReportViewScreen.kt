@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
@@ -247,13 +248,13 @@ fun ReportViewScreen(
                                   onClick = { isSpamDialogOpen = true },
                                   colors =
                                       ButtonDefaults.outlinedButtonColors(
-                                          contentColor = MaterialTheme.colorScheme.error),
+                                          contentColor = StatusColors().spam),
                                   border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
                                   shape = MaterialTheme.shapes.medium,
                                   modifier =
                                       Modifier.weight(1f)
                                           .testTag(ReportViewScreenTestTags.SPAM_BUTTON)) {
-                                    Text("Report as SPAM")
+                                    Text("Report as spam")
                                   }
                             } else {
                               Button(
