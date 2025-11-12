@@ -49,7 +49,152 @@ class E2ETest : FirebaseEmulatorsTest() {
     authRepository.signOut()
   }
 
+  // ----------- End to End Tests -----------
+
+  // ----------- Scenario: Vet -----------
+  // For this test to work, don't forget to go on the Firebase Emulator console and enable multiple
+  // accounts with the same email address
+  @Test
+  fun testVet_SignUp_Logout_SignIn() {
+    val email = "vet@example.com"
+    val pwd = "StrongPwd!123"
+    val fakeGoogleIdToken = FakeJwtGenerator.createFakeGoogleIdToken("12345", email = email)
+    val fakeCredentialManager = FakeCredentialManager.create(fakeGoogleIdToken)
+    composeTestRule.setContent { AgriHealthApp(credentialManager = fakeCredentialManager) }
+    composeTestRule.waitForIdle()
+
+    signInWithGoogle()
+    chooseRole()
+    checkEditProfileScreenIsDisplayed()
+    checkIsGoogleAccount()
+    completeEditProfile()
+    signOutFromScreen()
+    var uid = Firebase.auth.uid
+    completeSignUp(email, pwd, isVet = true)
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
+    checkOverviewScreenIsDisplayed()
+    assert(uid != Firebase.auth.uid)
+    uid = Firebase.auth.uid
+    signOutFromScreen()
+    completeSignIn(email, pwd)
+    checkOverviewScreenIsDisplayed()
+    assert(uid == Firebase.auth.uid)
+  }
+
+  // ----------- Scenario: Farmer -----------
+
+  @Test
+  fun testFarmer_SignIn_ClickReport_Back_Logout() {
+    composeTestRule.setContent { AgriHealthApp() }
+    composeTestRule.waitForIdle()
+
+    checkWrongSignIn()
+    completeSignIn(user1.email, "12345678")
+    checkOverviewScreenIsDisplayed()
+    goToProfileFromOverview()
+    clickAddVetCode()
+    goBack()
+    clickEditProfile()
+    goBack()
+    goBack()
+    checkOverviewScreenIsDisplayed()
+    createReport("Report title", "Report description", "Best Vet Ever!")
+    clickFirstReportItem()
+    reportViewClickViewOnMap()
+    mapClickViewReport()
+    goBack()
+    goBack()
+    goBack()
+    checkOverviewScreenIsDisplayed()
+    signOutFromScreen()
+  }
+
+  @Test
+  fun testFarmer_OverviewFilters_WorkCorrectly() {
+    val vet1 = "Best Vet Ever!"
+    composeTestRule.setContent { AgriHealthApp() }
+    composeTestRule.waitForIdle()
+    completeSignIn(user1.email, "12345678")
+    checkOverviewScreenIsDisplayed()
+    createReport("Report 1", "Description 1", "Best Vet Ever!")
+    createReport("Report 2", "Description 2", "Meh Vet")
+
+    // Report 1 appears when filtering for "Pending"
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN).performClick()
+    composeTestRule.onNodeWithTag("OPTION_PENDING").performClick()
+    composeTestRule
+        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
+        .assertAny(hasText("Report 1"))
+
+    // Report 1 does not appears when filtering for "Resolved"
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN).performClick()
+    composeTestRule.onNodeWithTag("OPTION_RESOLVED").performClick()
+    composeTestRule
+        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
+        .filter(hasText("Report 1"))
+        .assertCountEquals(0)
+
+    // Report 1 appears, report 2 does not appears when filtering for vet1
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN).performClick()
+    composeTestRule.onNodeWithTag("OPTION_All").performClick()
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.VET_ID_DROPDOWN).performClick()
+    composeTestRule.onNodeWithTag("OPTION_$vet1").performClick()
+    composeTestRule
+        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
+        .assertAny(hasText("Report 1"))
+
+    // Report 1 and 2 both appear when filtering for All
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.VET_ID_DROPDOWN).performClick()
+    composeTestRule.onNodeWithTag("OPTION_All").performClick()
+    composeTestRule
+        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
+        .assertAny(hasText("Report 1"))
+    composeTestRule
+        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
+        .assertAny(hasText("Report 2"))
+
+    signOutFromScreen()
+  }
+
+  @Test
+  fun testVetFarmerLinkAndPasswordChange() {
+    composeTestRule.setContent { AgriHealthApp() }
+    composeTestRule.waitForIdle()
+    val farmerEmail = "farmer.link@example.com"
+    val password = "Password!123"
+    val newPassword = "NewPassword!456"
+    val vet =
+        Vet(
+            uid = "vet_001",
+            firstname = "Dr",
+            lastname = "Vet",
+            email = "vet@test.com",
+            address = null,
+            linkedFarmers = emptyList(),
+            validCodes = emptyList())
+    val userViewModel = UserViewModel(initialUser = vet)
+    val profileViewModel = ProfileViewModel(userViewModel)
+    profileViewModel.generateVetCode()
+    // Wait for the code to appear in StateFlow
+    val vetCode = runBlocking { profileViewModel.generatedCode.first { it != null } }
+
+    completeSignUp(farmerEmail, password, isVet = false)
+    checkEditProfileScreenIsDisplayed()
+    useCode(vetCode)
+    checkLinkedVetIsNotEmpty()
+    clickChangePassword()
+    changePassword(password, newPassword)
+  }
+
+  // ----------- Helper functions -----------
+
   private fun completeSignUp(email: String, password: String, isVet: Boolean) {
+    composeTestRule
+        .onNodeWithTag(SignInScreenTestTags.SIGN_UP_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
     composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD)
         .assertIsDisplayed()
@@ -85,6 +230,56 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performClick()
   }
 
+  private fun useCode(vetCode: String?) {
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.CODE_FIELD)
+        .assertIsDisplayed()
+        .performTextInput((vetCode)!!)
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.ADD_CODE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+  }
+
+  private fun checkLinkedVetIsNotEmpty() {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule
+          .onAllNodesWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+  }
+
+  private fun clickChangePassword() {
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.PASSWORD_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+  }
+
+  private fun changePassword(oldPassword: String, newPassword: String) {
+    composeTestRule
+        .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
+        .assertIsDisplayed()
+        .assertIsEnabled()
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
+        .performTextInput(oldPassword)
+    composeTestRule.onNodeWithText(oldPassword).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(ChangePasswordScreenTestTags.NEW_PASSWORD)
+        .performTextInput(newPassword)
+    composeTestRule.onNodeWithText(newPassword).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).isDisplayed()
+    }
+  }
+
   private fun completeSignIn(email: String, password: String) {
     composeTestRule
         .onNodeWithTag(SignInScreenTestTags.EMAIL_FIELD)
@@ -102,7 +297,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performClick()
   }
 
-  private fun completeEditProfile(firstName: String, lastName: String) {
+  private fun completeEditProfile() {
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD)
         .assertIsDisplayed()
@@ -111,7 +306,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD)
         .assertIsDisplayed()
-        .performTextInput(firstName)
+        .performTextInput("userFirstName")
 
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.LASTNAME_FIELD)
@@ -121,7 +316,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.LASTNAME_FIELD)
         .assertIsDisplayed()
-        .performTextInput(lastName)
+        .performTextInput("userLastName")
 
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.SAVE_BUTTON)
@@ -139,6 +334,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(OverviewScreenTestTags.LOGOUT_BUTTON)
         .assertIsDisplayed()
         .performClick()
+    composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
   }
 
   private fun createReport(title: String, description: String, vetId: String) {
@@ -208,6 +404,10 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(ReportViewScreenTestTags.VIEW_ON_MAP)
         .assertIsDisplayed()
         .performClick()
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).isDisplayed()
+    }
+    composeTestRule.clickFirstReportMarker()
   }
 
   private fun mapClickViewReport() {
@@ -241,6 +441,29 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).assertIsDisplayed()
   }
 
+  private fun signInWithGoogle() {
+    composeTestRule
+        .onNodeWithTag(SignInScreenTestTags.GOOGLE_LOGIN_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+  }
+
+  private fun chooseRole() {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).isDisplayed()
+    }
+    composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).performClick()
+  }
+
+  private fun checkWrongSignIn() {
+    completeSignIn(user2.email, "12345678")
+    composeTestRule.waitUntil(5_000) {
+      composeTestRule.onNodeWithText(SignInErrorMsg.INVALID_CREDENTIALS).isDisplayed()
+    }
+    composeTestRule.onNodeWithTag(SignInScreenTestTags.EMAIL_FIELD).performTextClearance()
+    composeTestRule.onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD).performTextClearance()
+  }
+
   // To fix E2E test clicking on random report marker on map (without needing to know its ID)
   fun ComposeTestRule.clickFirstReportMarker() {
     waitUntil(TestConstants.LONG_TIMEOUT) {
@@ -258,220 +481,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     return SemanticsMatcher("${SemanticsProperties.TestTag.name} starts with $prefix") { node ->
       val tag = node.config.getOrNull(SemanticsProperties.TestTag)
       tag?.startsWith(prefix) == true
-    }
-  }
-
-  // ----------- Scenario: Vet -----------
-  // For this test to work, don't forget to go on the Firebase Emulator console and enable multiple
-  // accounts with the same email address
-  @Test
-  fun testVet_SignUp_Logout_SignIn() {
-    val email = "vet@example.com"
-    val pwd = "StrongPwd!123"
-    val fakeGoogleIdToken = FakeJwtGenerator.createFakeGoogleIdToken("12345", email = email)
-
-    val fakeCredentialManager = FakeCredentialManager.create(fakeGoogleIdToken)
-    composeTestRule.setContent { AgriHealthApp(credentialManager = fakeCredentialManager) }
-    composeTestRule.waitForIdle()
-    composeTestRule
-        .onNodeWithTag(SignInScreenTestTags.GOOGLE_LOGIN_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).isDisplayed()
-    }
-    composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).performClick()
-    checkEditProfileScreenIsDisplayed()
-    checkIsGoogleAccount()
-    completeEditProfile("VetFirstName", "VetLastName")
-    signOutFromScreen()
-
-    var uid = Firebase.auth.uid
-    composeTestRule
-        .onNodeWithTag(SignInScreenTestTags.SIGN_UP_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-
-    completeSignUp(email, pwd, isVet = true)
-    checkEditProfileScreenIsDisplayed()
-    goBack()
-    goBack()
-    checkOverviewScreenIsDisplayed()
-    assert(uid != Firebase.auth.uid)
-    uid = Firebase.auth.uid
-    signOutFromScreen()
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
-    completeSignIn(email, pwd)
-    checkOverviewScreenIsDisplayed()
-    assert(uid == Firebase.auth.uid)
-  }
-
-  // ----------- Scenario: Farmer -----------
-
-  @Test
-  fun testFarmer_OverviewFilters_WorkCorrectly() {
-    composeTestRule.setContent { AgriHealthApp() }
-    composeTestRule.waitForIdle()
-    completeSignIn(user1.email, "12345678")
-    checkOverviewScreenIsDisplayed()
-    val vet1 = "Best Vet Ever!"
-    val vet2 = "Meh Vet"
-    createReport("Report 1", "Description 1", vet1)
-    createReport("Report 2", "Description 2", vet2)
-
-    // Report 1 appears when filtering for "In progress"
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN).performClick()
-    composeTestRule.onNodeWithTag("OPTION_PENDING").performClick()
-    composeTestRule
-        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
-        .assertAny(hasText("Report 1"))
-
-    // Report 1 does not appears when filtering for "Resolved"
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN).performClick()
-    composeTestRule.onNodeWithTag("OPTION_RESOLVED").performClick()
-    composeTestRule
-        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
-        .filter(hasText("Report 1"))
-        .assertCountEquals(0)
-
-    // Report 1 appears, report 2 does not appears when filtering for vet1
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN).performClick()
-    composeTestRule.onNodeWithTag("OPTION_All").performClick()
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.VET_ID_DROPDOWN).performClick()
-    composeTestRule.onNodeWithTag("OPTION_$vet1").performClick()
-    composeTestRule
-        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
-        .assertAny(hasText("Report 1"))
-
-    // Report 1 and 2 both appear when filtering for All
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.VET_ID_DROPDOWN).performClick()
-    composeTestRule.onNodeWithTag("OPTION_All").performClick()
-    composeTestRule
-        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
-        .assertAny(hasText("Report 1"))
-    composeTestRule
-        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
-        .assertAny(hasText("Report 2"))
-
-    signOutFromScreen()
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
-  }
-
-  @Test
-  fun testFarmer_SignIn_ClickReport_Back_Logout() {
-    composeTestRule.setContent { AgriHealthApp() }
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
-    completeSignIn(user2.email, "12345678")
-    composeTestRule.waitUntil(5_000) {
-      composeTestRule.onNodeWithText(SignInErrorMsg.INVALID_CREDENTIALS).isDisplayed()
-    }
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.EMAIL_FIELD).performTextClearance()
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD).performTextClearance()
-    completeSignIn(user1.email, "12345678")
-    checkOverviewScreenIsDisplayed()
-    goToProfileFromOverview()
-    clickAddVetCode()
-    goBack()
-    clickEditProfile()
-    goBack()
-    goBack()
-    checkOverviewScreenIsDisplayed()
-    val vetId = "Best Vet Ever!"
-    createReport("Report title", "Report description", vetId)
-    clickFirstReportItem()
-    reportViewClickViewOnMap()
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).isDisplayed()
-    }
-    composeTestRule.clickFirstReportMarker()
-    mapClickViewReport()
-    goBack()
-    goBack()
-    goBack()
-    checkOverviewScreenIsDisplayed()
-    signOutFromScreen()
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.SCREEN).assertIsDisplayed()
-  }
-
-  @Test
-  fun testVetFarmerLinkAndPasswordChange() {
-    composeTestRule.setContent { AgriHealthApp() }
-    composeTestRule.waitForIdle()
-
-    val farmerEmail = "farmer.link@example.com"
-    val password = "Password!123"
-
-    val vet =
-        Vet(
-            uid = "vet_001",
-            firstname = "Dr",
-            lastname = "Vet",
-            email = "vet@test.com",
-            address = null,
-            linkedFarmers = emptyList(),
-            validCodes = emptyList())
-
-    val userViewModel = UserViewModel(initialUser = vet)
-    val profileViewModel = ProfileViewModel(userViewModel)
-    profileViewModel.generateVetCode()
-
-    // Wait for the code to appear in StateFlow
-    val vetCode = runBlocking { profileViewModel.generatedCode.first { it != null } }
-
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.SIGN_UP_BUTTON).performClick()
-    completeSignUp(farmerEmail, password, isVet = false)
-    checkEditProfileScreenIsDisplayed()
-
-    composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.CODE_FIELD)
-        .assertIsDisplayed()
-        .performTextInput((vetCode)!!)
-    composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.ADD_CODE_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule
-          .onAllNodesWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
-
-    composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.PASSWORD_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule
-          .onAllNodesWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
-
-    composeTestRule
-        .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
-        .assertIsDisplayed()
-        .assertIsEnabled()
-
-    composeTestRule.waitForIdle()
-
-    val newPassword = "NewPassword!456"
-    composeTestRule
-        .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
-        .performTextInput(password)
-    composeTestRule.onNodeWithText(password).assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(ChangePasswordScreenTestTags.NEW_PASSWORD)
-        .performTextInput(newPassword)
-    composeTestRule.onNodeWithText(newPassword).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
-
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).isDisplayed()
     }
   }
 }
