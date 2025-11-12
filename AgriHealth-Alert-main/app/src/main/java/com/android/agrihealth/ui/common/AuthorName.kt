@@ -8,7 +8,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.UserDirectoryDataSource
 import com.android.agrihealth.data.model.user.UserDirectoryRepository
 import com.android.agrihealth.data.model.user.displayString
