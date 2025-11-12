@@ -155,22 +155,33 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun displayAllFieldsAndButtonsFromOverview() {
     setContentToMapWithVM(isViewedFromOverview = true)
-    composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.REFRESH_BUTTON).assertIsDisplayed()
+    assertMapScreenElementsVisibility(isViewedFromOverview = true)
   }
 
   @Test
   fun displayAllFieldsAndButtonsFromReportView() {
     setContentToMapWithVM(isViewedFromOverview = false)
+    assertMapScreenElementsVisibility(isViewedFromOverview = false)
+  }
+
+  private fun assertMapScreenElementsVisibility(isViewedFromOverview: Boolean) {
     composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsNotDisplayed()
+
+    if (isViewedFromOverview) {
+      composeTestRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsNotDisplayed()
+      composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsNotDisplayed()
+      composeTestRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
+      composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsDisplayed()
+    } else {
+      composeTestRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsDisplayed()
+      composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsDisplayed()
+      composeTestRule
+          .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
+          .assertIsNotDisplayed()
+      composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsNotDisplayed()
+    }
+
+    composeTestRule.onNodeWithTag(MapScreenTestTags.REFRESH_BUTTON).assertIsDisplayed()
   }
 
   @Test

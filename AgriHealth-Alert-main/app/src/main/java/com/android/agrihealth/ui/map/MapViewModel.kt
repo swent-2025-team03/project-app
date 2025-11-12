@@ -18,7 +18,9 @@ import kotlin.math.sin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 data class MapUIState(
     val reports: List<Report> = emptyList(),
@@ -66,10 +68,9 @@ class MapViewModel(
     viewModelScope.launch {
       try {
         val reports = reportRepository.getAllReports(uid).filter { it.location != null }
-        _uiState.value = MapUIState(reports = reports)
-        Log.d("MapScreen", "Loaded ${reports.count()} reports for UID $uid")
+        _uiState.value = _uiState.value.copy(reports = reports)
       } catch (e: Exception) {
-        Log.w("MapScreen", "Failed to load todos: ${e.message}")
+        Log.e("MapScreen", "Failed to load todos: ${e.message}")
       }
     }
   }
@@ -103,10 +104,16 @@ class MapViewModel(
         if (locationViewModel.hasLocationPermissions()) {
           if (useCurrentLocation) {
             locationViewModel.getCurrentLocation()
-          } else locationViewModel.getLastKnownLocation()
+          } else {
+            locationViewModel.getLastKnownLocation()
+          }
+          val gpsLocation =
+              withTimeoutOrNull(3_000) {
+                locationViewModel.locationState.firstOrNull { it != null }
+              }
+
+          _startingLocation.value = gpsLocation ?: getLocationFromUserAddress() ?: return@launch
         }
-        _startingLocation.value =
-            locationViewModel.locationState.value ?: getLocationFromUserAddress() ?: return@launch
       }
     }
   }

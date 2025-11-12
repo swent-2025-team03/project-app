@@ -3,7 +3,6 @@ package com.android.agrihealth.ui.map
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -126,7 +125,7 @@ fun MapScreen(
   val mapInitialZoom by mapViewModel.zoom.collectAsState()
   val cameraPositionState = rememberCameraPositionState {}
 
-  mapViewModel.setStartingLocation(startingPosition)
+  LaunchedEffect(startingPosition) { mapViewModel.setStartingLocation(startingPosition) }
 
   LaunchedEffect(mapInitialLocation) {
     cameraPositionState.position =
@@ -134,7 +133,7 @@ fun MapScreen(
             LatLng(mapInitialLocation.latitude, mapInitialLocation.longitude), mapInitialZoom)
   }
 
-  LaunchedEffect(user) { mapViewModel.refreshReports(user.uid) }
+  LaunchedEffect(user.uid) { mapViewModel.refreshReports(user.uid) }
 
   val selectedReport = mapViewModel.selectedReport.collectAsState()
 
@@ -215,7 +214,6 @@ fun MapScreen(
                 selectedFilter == null || report.status.displayString() == selectedFilter
               }
               .forEach { report ->
-                Log.d("MapScreen", "Creating debug box ${report.id}")
                 Box(
                     modifier =
                         Modifier.testTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
