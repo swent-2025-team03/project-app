@@ -21,12 +21,16 @@ sealed class Screen(
 ) {
   object Auth : Screen(route = "auth", name = "Authentication")
 
-  object Profile : Screen(route = "profile", name = "Profile")
+  object Profile : Screen(route = "profile", name = "Profile", isTopLevelDestination = true)
 
-  object ChangePassword : Screen(route = "changePassword", name = "Change Your Password")
+  object ChangePassword :
+      Screen(route = "changePassword", name = "Change Your Password", isTopLevelDestination = true)
 
   data class EditProfile(val showOnlyVetField: Boolean = false) :
-      Screen(route = "edit_profile?showOnlyVetField=$showOnlyVetField", name = "Edit Profile") {
+      Screen(
+          route = "edit_profile?showOnlyVetField=$showOnlyVetField",
+          name = "Edit Profile",
+          isTopLevelDestination = true) {
     companion object {
       const val route = "edit_profile?showOnlyVetField={showOnlyVetField}"
       const val name = "Edit Profile"
@@ -93,7 +97,7 @@ open class NavigationActions(
 
   /** Navigate back to the previous screen. */
   open fun goBack() {
-    navController.popBackStack()
+    navController.navigateUp()
   }
 
   /**
