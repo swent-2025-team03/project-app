@@ -97,9 +97,6 @@ class MapViewModel(
     else {
       viewModelScope.launch {
         _zoom.value = 12f
-        Log.d(
-            "MapScreenLocation",
-            "App has location permissions: ${locationViewModel.hasLocationPermissions()}")
         if (locationViewModel.hasLocationPermissions()) {
           if (useCurrentLocation) {
             locationViewModel.getCurrentLocation()
@@ -137,7 +134,9 @@ class MapViewModel(
    */
   fun spiderifiedReports(): List<SpiderifiedReport> {
     val groups =
-        uiState.value.reports.groupBy { Pair(it.location!!.latitude, it.location.longitude) }
+        uiState.value.reports
+            .filter { it -> it.location != null }
+            .groupBy { Pair(it.location!!.latitude, it.location.longitude) }
     val result = mutableListOf<SpiderifiedReport>()
 
     for ((latLong, group) in groups) {

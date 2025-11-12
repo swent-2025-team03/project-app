@@ -133,8 +133,9 @@ fun MapScreen(
             LatLng(mapInitialLocation.latitude, mapInitialLocation.longitude), mapInitialZoom)
   }
 
+  LaunchedEffect(user.uid) { mapViewModel.refreshReports(user.uid) }
+
   val selectedReport = mapViewModel.selectedReport.collectAsState()
-  mapViewModel.refreshReports(user.uid)
 
   val googleMapUiSettings = remember {
     MapUiSettings(
@@ -151,7 +152,6 @@ fun MapScreen(
   // Floating button Position
   var reportBoxHeightPx by remember { mutableIntStateOf(0) }
   val density = LocalDensity.current
-  Log.d("MapScreen", "reportBoxHeaightPx: ${reportBoxHeightPx}")
 
   // Convert pixels to dp for layout use
   val reportBoxHeightDp = with(density) { reportBoxHeightPx.toDp() }
