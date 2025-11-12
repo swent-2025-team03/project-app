@@ -48,6 +48,9 @@ class MapViewModel(
       }
     }
     refreshMapPermission()
+    refreshReports(
+        Firebase.auth.currentUser?.uid
+            ?: throw IllegalArgumentException("Map refreshed Reports while current user was null"))
   }
 
   fun refreshReports(uid: String) {
