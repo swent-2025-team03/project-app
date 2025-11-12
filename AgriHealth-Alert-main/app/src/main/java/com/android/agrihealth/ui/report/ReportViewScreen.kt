@@ -248,8 +248,7 @@ fun ReportViewScreen(
                               OutlinedButton(
                                   onClick = { isSpamDialogOpen = true },
                                   colors =
-                                      ButtonDefaults.outlinedButtonColors(
-                                          contentColor = color),
+                                      ButtonDefaults.outlinedButtonColors(contentColor = color),
                                   border = BorderStroke(1.dp, color),
                                   shape = MaterialTheme.shapes.medium,
                                   modifier =
