@@ -208,7 +208,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   fun filterReportsByStatus() = runTest {
     setContentToMapWithVM()
     val reports = reportRepository.getReportsByFarmer(userId)
-    val filters = listOf("All reports") + ReportStatus.entries.map { it.displayString() }
+    val filters = listOf(null) + ReportStatus.entries.map { it.displayString() }
 
     filters.forEach { filter ->
       composeTestRule
@@ -220,7 +220,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
           .assertIsDisplayed()
           .performClick()
       val (matches, nonMatches) =
-          reports.partition { it -> filter == "All reports" || it.status.displayString() == filter }
+          reports.partition { it -> filter == null || it.status.displayString() == filter }
       matches.forEach { report ->
         composeTestRule
             .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))

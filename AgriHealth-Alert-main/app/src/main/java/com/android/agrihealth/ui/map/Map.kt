@@ -104,8 +104,10 @@ object MapScreenTestTags {
 
   fun getTestTagForReportDesc(reportId: String): String = "reportDescription_$reportId"
 
-  fun getTestTagForFilter(filter: String): String = "filter_$filter"
+  fun getTestTagForFilter(filter: String?): String = "filter_$filter"
 }
+
+const val AllFilterText = "All reports"
 
 @Composable
 fun MapScreen(
@@ -118,8 +120,7 @@ fun MapScreen(
 ) {
   val uiState by mapViewModel.uiState.collectAsState()
   val user by userViewModel.user.collectAsState()
-  val defaultFilter = "All reports"
-  var selectedFilter by remember { mutableStateOf(defaultFilter) }
+  var selectedFilter by remember { mutableStateOf<String?>(null) }
 
   val mapInitialLocation by mapViewModel.startingLocation.collectAsState()
   val mapInitialZoom by mapViewModel.zoom.collectAsState()
@@ -133,7 +134,7 @@ fun MapScreen(
             LatLng(mapInitialLocation.latitude, mapInitialLocation.longitude), mapInitialZoom)
   }
 
-  LaunchedEffect(user.uid) { mapViewModel.refreshReports(user.uid) }
+  LaunchedEffect(user) { mapViewModel.refreshReports(user.uid) }
 
   val selectedReport = mapViewModel.selectedReport.collectAsState()
 
@@ -181,8 +182,7 @@ fun MapScreen(
                 mapViewModel
                     .spiderifiedReports()
                     .filter { it ->
-                      selectedFilter == defaultFilter ||
-                          it.report.status.displayString() == selectedFilter
+                      selectedFilter == null || it.report.status.displayString() == selectedFilter
                     }
                     .forEach { it ->
                       val report = it.report
@@ -212,7 +212,7 @@ fun MapScreen(
           // Yes, this sucks
           uiState.reports
               .filter { report ->
-                selectedFilter == defaultFilter || report.status.displayString() == selectedFilter
+                selectedFilter == null || report.status.displayString() == selectedFilter
               }
               .forEach { report ->
                 Log.d("MapScreen", "Creating debug box ${report.id}")
@@ -230,7 +230,7 @@ fun MapScreen(
               }
 
           if (isViewedFromOverview) {
-            val options = listOf(defaultFilter) + ReportStatus.entries.map { it.displayString() }
+            val options = listOf(null) + ReportStatus.entries.map { it.displayString() }
             FilterDropdown(options, selectedFilter) { selectedFilter = it }
           }
 
@@ -294,9 +294,9 @@ fun MapTopBar(onBack: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterDropdown(
-    options: List<String>,
-    selectedOption: String,
-    onOptionSelected: (String) -> Unit
+    options: List<String?>,
+    selectedOption: String?,
+    onOptionSelected: (String?) -> Unit
 ) {
   var expanded by remember { mutableStateOf(false) }
   val textFieldBackgroundColor = MaterialTheme.colorScheme.surface
@@ -304,7 +304,9 @@ fun FilterDropdown(
   val textMeasurer = rememberTextMeasurer()
   val maxTextWidth =
       remember(options) {
-        options.maxOf { textMeasurer.measure(text = AnnotatedString(it)).size.width }
+        options.maxOf {
+          textMeasurer.measure(text = AnnotatedString(it ?: AllFilterText)).size.width
+        }
       }
   val dropdownWidth = maxTextWidth - 32.dp.value
 
@@ -313,7 +315,7 @@ fun FilterDropdown(
       onExpandedChange = { expanded = !expanded },
       modifier = Modifier.padding(16.dp).width(dropdownWidth.dp)) {
         OutlinedTextField(
-            value = selectedOption,
+            value = selectedOption ?: AllFilterText,
             onValueChange = {},
             readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
@@ -333,7 +335,7 @@ fun FilterDropdown(
                       onOptionSelected(option)
                       expanded = false
                     },
-                    text = { Text(option) },
+                    text = { Text(option ?: AllFilterText) },
                     modifier = Modifier.testTag(MapScreenTestTags.getTestTagForFilter(option)))
               }
             }
@@ -444,8 +446,8 @@ fun PreviewMapScreen() {
 // @Preview
 @Composable
 fun PreviewDropdownMenu() {
-  val options = listOf("All") + ReportStatus.entries.map { it.displayString() }
-  var selectedFilter by remember { mutableStateOf("All") }
+  val options = listOf(null) + ReportStatus.entries.map { it.displayString() }
+  var selectedFilter by remember { mutableStateOf<String?>(null) }
   AgriHealthAppTheme { FilterDropdown(options, selectedFilter) { selectedFilter = it } }
 }
 
