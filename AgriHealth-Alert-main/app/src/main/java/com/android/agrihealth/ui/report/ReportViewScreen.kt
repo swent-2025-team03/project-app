@@ -290,7 +290,7 @@ fun ReportViewScreen(
               if (isSpamDialogOpen) {
                 AlertDialog(
                     onDismissRequest = { isSpamDialogOpen = false },
-                    title = { Text("Report as SPAM?") },
+                    title = { Text("Report as spam?") },
                     text = {
                       Text("This will mark the report as spam and hide it from regular view.")
                     },

@@ -109,7 +109,7 @@ class ReportViewScreenTest {
   fun vet_canOpenSpamDialog() {
     setVetScreen()
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.SPAM_BUTTON).performClick()
-    composeTestRule.onNodeWithText("Report as SPAM?").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Report as spam?").assertIsDisplayed()
     composeTestRule.onNodeWithText("Confirm").assertIsDisplayed()
   }
 
@@ -118,7 +118,7 @@ class ReportViewScreenTest {
   fun vet_canCancelSpamDialog() {
     setVetScreen()
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.SPAM_BUTTON).performClick()
-    composeTestRule.onNodeWithText("Report as SPAM?").performClick()
+    composeTestRule.onNodeWithText("Report as spam?").performClick()
     composeTestRule.onNodeWithText("Cancel").performClick()
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithText("Confirm").assertDoesNotExist()
@@ -355,9 +355,7 @@ class ReportViewScreenTest {
           .fetchSemanticsNodes()
           .isNotEmpty()
     }
-
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).assertIsDisplayed()
-
     assertTrue(fakeRepo.editCalled)
   }
 }

@@ -92,7 +92,6 @@ class ReportViewModel(
             _uiState.value.report.copy(
                 answer = _uiState.value.answerText, status = _uiState.value.status)
         repository.editReport(updatedReport.id, updatedReport)
-        Log.d("ReportViewModel", "Report saved successfully.")
         _saveCompleted.value = true
       } catch (e: Exception) {
         Log.e("ReportViewModel", "Error saving report", e)
