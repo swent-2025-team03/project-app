@@ -244,12 +244,13 @@ fun ReportViewScreen(
                           if (userRole == UserRole.VET) {
                             val isAlreadySpam = selectedStatus == ReportStatus.SPAM
                             if (!isAlreadySpam) {
+                              val color = StatusColors().spam
                               OutlinedButton(
                                   onClick = { isSpamDialogOpen = true },
                                   colors =
                                       ButtonDefaults.outlinedButtonColors(
-                                          contentColor = StatusColors().spam),
-                                  border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                                          contentColor = color),
+                                  border = BorderStroke(1.dp, color),
                                   shape = MaterialTheme.shapes.medium,
                                   modifier =
                                       Modifier.weight(1f)
@@ -268,7 +269,7 @@ fun ReportViewScreen(
                                   modifier =
                                       Modifier.weight(1f)
                                           .testTag(ReportViewScreenTestTags.SPAM_BUTTON)) {
-                                    Text("Reported as SPAM")
+                                    Text("Reported as spam")
                                   }
                             }
                           }
