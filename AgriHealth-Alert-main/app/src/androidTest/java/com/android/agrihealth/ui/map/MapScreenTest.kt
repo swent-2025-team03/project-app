@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.map
 
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
@@ -287,11 +286,8 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     mapViewModel.refreshReports(userId)
     mapViewModel.uiState.map { it.reports }.first { it.isNotEmpty() }
     advanceUntilIdle()
-    Log.d("MapTests", "Reports: ${mapViewModel.uiState.value.reports}")
     val spiderifiedReport = mapViewModel.spiderifiedReports()
-    Log.d("MapTests", "SpidReports: $spiderifiedReport")
     val groups = spiderifiedReport.groupBy { it.center }
-    Log.d("MapTests", "Groups: $groups")
 
     val group1 =
         groups[
@@ -299,14 +295,12 @@ class MapScreenTest : FirebaseEmulatorsTest() {
                     MapScreenTestReports.report1.location?.latitude ?: 0.0,
                     MapScreenTestReports.report1.location?.longitude ?: 0.0)]
             ?.toSet()
-    Log.d("MapTests", "Group1: $group1")
     val group2 =
         groups[
                 LatLng(
                     MapScreenTestReports.report2.location?.latitude ?: 0.0,
                     MapScreenTestReports.report2.location?.longitude ?: 0.0)]
             ?.toSet()
-    Log.d("MapTests", "Group2: $group2")
 
     assertEquals(11, group1?.size)
     assertEquals(6, group2?.size)
@@ -316,7 +310,5 @@ class MapScreenTest : FirebaseEmulatorsTest() {
 
     assertEquals(11, positions1?.size)
     assertEquals(6, positions2?.size)
-    Log.d("MapTests", "pos1: $positions1")
-    Log.d("MapTests", "pos2: $positions2")
   }
 }
