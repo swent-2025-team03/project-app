@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -19,12 +17,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.android.agrihealth.testutil.FakeChangePasswordViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
@@ -41,10 +37,6 @@ object ChangePasswordFeedbackTexts {
   const val OLD_WRONG = "Password does not match."
   const val NEW_WEAK = "Password is too weak or common to use."
 }
-
-private val unfocusedFieldColor = Color(0xFFF0F7F1)
-private val focusedFieldColor = Color(0xFFF0F7F1)
-private val createReportButtonColor = Color(0xFF96B7B1)
 
 /** Change password screen for email and password users */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,29 +87,31 @@ fun ChangePasswordScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
+
+              // Old password field
               Field(
-                  uiState.oldPassword,
-                  { changePasswordViewModel.setOldPassword(it) },
-                  ChangePasswordScreenTestTags.OLD_PASSWORD,
+                  value = uiState.oldPassword,
+                  onValueChange = { changePasswordViewModel.setOldPassword(it) },
+                  testTag = ChangePasswordScreenTestTags.OLD_PASSWORD,
                   errorText = ChangePasswordFeedbackTexts.OLD_WRONG,
-                  placeholder = "Current Password",
+                  label = "Current Password",
                   error = uiState.oldWrong)
+
+              // New password field
               Field(
-                  uiState.newPassword,
-                  { changePasswordViewModel.setNewPassword(it) },
-                  ChangePasswordScreenTestTags.NEW_PASSWORD,
+                  value = uiState.newPassword,
+                  onValueChange = { changePasswordViewModel.setNewPassword(it) },
+                  testTag = ChangePasswordScreenTestTags.NEW_PASSWORD,
                   errorText = ChangePasswordFeedbackTexts.NEW_WEAK,
-                  placeholder = "New Password",
+                  label = "New Password",
                   error = uiState.newWeak)
+
+              // Save button
               Button(
                   onClick = { changePasswordViewModel.changePassword() },
                   modifier =
-                      Modifier.fillMaxWidth()
-                          .height(56.dp)
-                          .testTag(ChangePasswordScreenTestTags.SAVE_BUTTON),
-                  shape = RoundedCornerShape(20.dp),
-                  colors = ButtonDefaults.buttonColors(containerColor = createReportButtonColor)) {
-                    Text("Save Changes", fontSize = 24.sp)
+                      Modifier.fillMaxWidth().testTag(ChangePasswordScreenTestTags.SAVE_BUTTON)) {
+                    Text("Save Changes")
                   }
             }
       }
@@ -129,24 +123,17 @@ private fun Field(
     onValueChange: (String) -> Unit,
     testTag: String,
     errorText: String,
-    placeholder: String,
+    label: String,
     error: Boolean = false
 ) {
   OutlinedTextField(
       value = value,
-      placeholder = { Text(placeholder) },
       onValueChange = onValueChange,
-      singleLine = true,
-      shape = RoundedCornerShape(28.dp),
-      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
-      supportingText = { if (error) Text(errorText) },
+      label = { Text(label) },
       isError = error,
-      colors =
-          OutlinedTextFieldDefaults.colors(
-              unfocusedContainerColor = unfocusedFieldColor,
-              focusedContainerColor = focusedFieldColor,
-              unfocusedBorderColor = Color.Transparent,
-              focusedBorderColor = Color.Transparent))
+      supportingText = { if (error) Text(errorText) },
+      singleLine = true,
+      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag))
 }
 
 /**
