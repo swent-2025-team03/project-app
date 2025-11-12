@@ -7,6 +7,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
+import java.time.Instant
 import kotlinx.coroutines.tasks.await
 
 const val REPORTS_COLLECTION_PATH = "reports"
@@ -85,6 +86,10 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
               longitude = it["longitude"] as? Double ?: 0.0,
               name = it["name"] as? String ?: "")
         }
+    val createdAtData = doc.get("createdAt") as? Map<*, *>
+    val createdAt =
+        createdAtData?.let { Instant.ofEpochSecond(it["epochSecond"] as? Long ?: 0) }
+            ?: Instant.now()
 
     Report(
         id = id,
@@ -95,7 +100,8 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
         vetId = vetId,
         status = status,
         answer = answer,
-        location = location)
+        location = location,
+        createdAt = createdAt)
   } catch (e: Exception) {
     Log.e("ReportRepositoryFirestore", "Error converting document ${doc.id} to Report", e)
     null
