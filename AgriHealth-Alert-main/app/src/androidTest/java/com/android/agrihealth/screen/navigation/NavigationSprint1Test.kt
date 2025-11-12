@@ -26,19 +26,23 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
+import org.junit.rules.TestRule
 
 /**
  * First implementation of navigation tests. Doesn't cover all auth and assumes that the first
  * screen of AgrihealthApp is Overview.
  */
 class NavigationSprint1Test : FirebaseEmulatorsTest() {
-  @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+  private val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
   @get:Rule
-  val permissionRule: GrantPermissionRule =
-      GrantPermissionRule.grant(
-          android.Manifest.permission.ACCESS_FINE_LOCATION,
-          android.Manifest.permission.ACCESS_COARSE_LOCATION)
+  val ruleChain: TestRule =
+      RuleChain.outerRule(
+              GrantPermissionRule.grant(
+                  android.Manifest.permission.ACCESS_FINE_LOCATION,
+                  android.Manifest.permission.ACCESS_COARSE_LOCATION))
+          .around(composeTestRule)
 
   @Before
   override fun setUp() {

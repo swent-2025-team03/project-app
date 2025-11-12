@@ -36,18 +36,22 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
+import org.junit.rules.TestRule
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class E2ETest : FirebaseEmulatorsTest() {
 
-  @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+  private val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
   @get:Rule
-  val permissionRule: GrantPermissionRule =
-      GrantPermissionRule.grant(
-          android.Manifest.permission.ACCESS_FINE_LOCATION,
-          android.Manifest.permission.ACCESS_COARSE_LOCATION)
+  val ruleChain: TestRule =
+      RuleChain.outerRule(
+              GrantPermissionRule.grant(
+                  android.Manifest.permission.ACCESS_FINE_LOCATION,
+                  android.Manifest.permission.ACCESS_COARSE_LOCATION))
+          .around(composeTestRule)
 
   @Before
   override fun setUp() {
