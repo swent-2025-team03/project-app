@@ -20,6 +20,8 @@ import com.android.agrihealth.data.repository.ReportRepositoryLocal
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.user.UserViewModel
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -98,11 +100,16 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   private lateinit var locationViewModel: LocationViewModel
   private lateinit var locationRepository: LocationRepository
   val reportRepository = ReportRepositoryLocal()
-  val userId = UserViewModel().user.value.uid
+  private lateinit var userId: String
 
   @Before
   override fun setUp() {
     super.setUp()
+    runTest { authRepository.signUpWithEmailAndPassword(user1.email, "123456", user1) }
+    assert(Firebase.auth.currentUser != null)
+    UserViewModel().refreshCurrentUser()
+    userId = UserViewModel().user.value.uid
+
     locationRepository = mockk(relaxed = true)
 
     coEvery { locationRepository.getLastKnownLocation() } returns Location(46.9481, 7.4474, "Bern")
