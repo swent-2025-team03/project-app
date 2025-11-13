@@ -254,7 +254,7 @@ fun EditProfileScreen(
               if (user is Vet) {
                 Spacer(modifier = Modifier.height(16.dp))
                 val codes = (user as Vet).validCodes
-                ActiveCodeList(codes, snackbarHostState)
+                if (codes.isNotEmpty()) ActiveCodeList(codes, snackbarHostState)
               }
 
               Spacer(modifier = Modifier.weight(1f))
