@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - M1          # Run automatically on M1 branch
+      - M2
   workflow_dispatch:  # Allows manual run
 
 jobs:
