@@ -44,7 +44,8 @@ class EditProfileScreenTest {
                   lastname = "Smith",
                   email = "bob@vetcare.com",
                   address = Location(0.0, 0.0, "Clinic Address"),
-                  linkedFarmers = listOf("farmer123", "farmer456")))
+                  linkedFarmers = listOf("farmer123", "farmer456"),
+                  validCodes = listOf("112233", "445566")))
 
       override var user: StateFlow<User> = fakeUserFlow.asStateFlow()
     }
@@ -97,4 +98,26 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.SAVE_BUTTON).performClick()
     assert(saved)
   }
+
+    @Test
+    fun activeCodes_showsListIfExpanded() {
+        composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel()) }
+
+        val codeNode = composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.ACTIVE_CODE_ELEMENT).onFirst()
+        val codeNodeButton = composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.COPY_CODE_BUTTON).onFirst()
+        val listNode = composeTestRule.onNodeWithTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN)
+
+        codeNode.assertIsNotDisplayed()
+        codeNodeButton.assertIsNotDisplayed()
+
+        listNode.assertIsDisplayed().performClick()
+
+        codeNode.assertIsDisplayed()
+        codeNodeButton.assertIsDisplayed().performClick()
+
+        listNode.performClick()
+
+        codeNode.assertIsNotDisplayed()
+        codeNodeButton.assertIsNotDisplayed()
+    }
 }

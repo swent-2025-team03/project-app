@@ -47,9 +47,9 @@ object EditProfileScreenTestTags {
   const val DEFAULT_VET_DROPDOWN = "DefaultVetDropdown"
   const val CODE_FIELD = "VetCodeField"
   const val ADD_CODE_BUTTON = "AddVetButton"
-  const val ACTIVE_CODES_DROPDOWN = "ActiveCodesDropdown"
   const val SAVE_BUTTON = "SaveButton"
   const val PASSWORD_BUTTON = "PasswordButton"
+  const val ACTIVE_CODES_DROPDOWN = "ActiveCodesDropdown"
   const val ACTIVE_CODE_ELEMENT = "ActiveCodeListElement"
   const val COPY_CODE_BUTTON = "CopyActiveCodeListElementButton"
 }
@@ -402,11 +402,11 @@ fun CopyToClipboardButton(toCopy: String, snackbarHostState: SnackbarHostState) 
         clipboardManager.setText(AnnotatedString(toCopy))
         copied = true
       },
-      modifier = Modifier.size(32.dp)) {
+      modifier = Modifier.size(32.dp).testTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)) {
         Icon(
             imageVector = Icons.Default.ContentCopy,
             contentDescription = "Copy to clipboard",
-            modifier = Modifier.size(16.dp).testTag(EditProfileScreenTestTags.COPY_CODE_BUTTON))
+            modifier = Modifier.size(16.dp))
       }
 }
 
