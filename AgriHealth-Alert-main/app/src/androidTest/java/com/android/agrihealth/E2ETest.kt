@@ -418,7 +418,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).isDisplayed()
     }
-    composeTestRule.clickFirstReportMarker()
   }
 
   private fun mapClickViewReport() {
