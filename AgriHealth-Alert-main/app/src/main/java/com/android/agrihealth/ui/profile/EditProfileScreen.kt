@@ -19,10 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
@@ -75,7 +72,6 @@ fun EditProfileScreen(
   }
   val profileViewModel: ProfileViewModel = viewModel(factory = factory)
 
-  val context = LocalContext.current
   val scope = rememberCoroutineScope()
   val snackbarHostState = remember { SnackbarHostState() }
 
@@ -83,21 +79,14 @@ fun EditProfileScreen(
   LaunchedEffect(vetClaimMessage) { vetClaimMessage?.let { snackbarHostState.showSnackbar(it) } }
 
   // Local mutable states
-  var firstname by remember { mutableStateOf(user?.firstname ?: "") }
-  var lastname by remember { mutableStateOf(user?.lastname ?: "") }
-  var address by remember { mutableStateOf(user?.address?.toString() ?: "") }
+  var firstname by remember { mutableStateOf(user.firstname) }
+  var lastname by remember { mutableStateOf(user.lastname) }
+  var address by remember { mutableStateOf(user.address?.toString() ?: "") }
 
   // Farmer-specific states
   var selectedDefaultVet by remember { mutableStateOf((user as? Farmer)?.defaultVet ?: "") }
   var expandedVetDropdown by remember { mutableStateOf(false) }
   var vetCode by remember { mutableStateOf("") }
-
-  // Focus requester for vet code input
-  val codeFocusRequester = remember { FocusRequester() }
-  val focusManager = LocalFocusManager.current
-
-  // Vet-specific states
-  var expandedCodesDropdown by remember { mutableStateOf(false) }
 
   Scaffold(
       topBar = {

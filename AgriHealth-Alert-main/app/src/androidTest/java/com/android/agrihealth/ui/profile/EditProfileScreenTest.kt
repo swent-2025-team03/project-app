@@ -99,25 +99,27 @@ class EditProfileScreenTest {
     assert(saved)
   }
 
-    @Test
-    fun activeCodes_showsListIfExpanded() {
-        composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel()) }
+  @Test
+  fun activeCodes_showsListIfExpanded() {
+    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel()) }
 
-        val codeNode = composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.ACTIVE_CODE_ELEMENT).onFirst()
-        val codeNodeButton = composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.COPY_CODE_BUTTON).onFirst()
-        val listNode = composeTestRule.onNodeWithTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN)
+    val codeNode =
+        composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.ACTIVE_CODE_ELEMENT).onFirst()
+    val codeNodeButton =
+        composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.COPY_CODE_BUTTON).onFirst()
+    val listNode = composeTestRule.onNodeWithTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN)
 
-        codeNode.assertIsNotDisplayed()
-        codeNodeButton.assertIsNotDisplayed()
+    codeNode.assertIsNotDisplayed()
+    codeNodeButton.assertIsNotDisplayed()
 
-        listNode.assertIsDisplayed().performClick()
+    listNode.assertIsDisplayed().performClick()
 
-        codeNode.assertIsDisplayed()
-        codeNodeButton.assertIsDisplayed().performClick()
+    codeNode.assertIsDisplayed()
+    codeNodeButton.assertIsDisplayed().performClick()
 
-        listNode.performClick()
+    listNode.performClick()
 
-        codeNode.assertIsNotDisplayed()
-        codeNodeButton.assertIsNotDisplayed()
-    }
+    codeNode.assertIsNotDisplayed()
+    codeNodeButton.assertIsNotDisplayed()
+  }
 }
