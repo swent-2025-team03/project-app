@@ -1,27 +1,33 @@
 package com.android.agrihealth.ui.profile
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTTON
@@ -38,10 +44,11 @@ object EditProfileScreenTestTags {
   const val DEFAULT_VET_DROPDOWN = "DefaultVetDropdown"
   const val CODE_FIELD = "VetCodeField"
   const val ADD_CODE_BUTTON = "AddVetButton"
-  const val ACTIVE_CODES_DROPDOWN = "ActiveCodesDropdown"
   const val SAVE_BUTTON = "SaveButton"
-
   const val PASSWORD_BUTTON = "PasswordButton"
+  const val ACTIVE_CODES_DROPDOWN = "ActiveCodesDropdown"
+  const val ACTIVE_CODE_ELEMENT = "ActiveCodeListElement"
+  const val COPY_CODE_BUTTON = "CopyActiveCodeListElementButton"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,7 +72,6 @@ fun EditProfileScreen(
   }
   val profileViewModel: ProfileViewModel = viewModel(factory = factory)
 
-  val context = LocalContext.current
   val scope = rememberCoroutineScope()
   val snackbarHostState = remember { SnackbarHostState() }
 
@@ -73,21 +79,14 @@ fun EditProfileScreen(
   LaunchedEffect(vetClaimMessage) { vetClaimMessage?.let { snackbarHostState.showSnackbar(it) } }
 
   // Local mutable states
-  var firstname by remember { mutableStateOf(user?.firstname ?: "") }
-  var lastname by remember { mutableStateOf(user?.lastname ?: "") }
-  var address by remember { mutableStateOf(user?.address?.toString() ?: "") }
+  var firstname by remember { mutableStateOf(user.firstname) }
+  var lastname by remember { mutableStateOf(user.lastname) }
+  var address by remember { mutableStateOf(user.address?.toString() ?: "") }
 
   // Farmer-specific states
   var selectedDefaultVet by remember { mutableStateOf((user as? Farmer)?.defaultVet ?: "") }
   var expandedVetDropdown by remember { mutableStateOf(false) }
   var vetCode by remember { mutableStateOf("") }
-
-  // Focus requester for vet code input
-  val codeFocusRequester = remember { FocusRequester() }
-  val focusManager = LocalFocusManager.current
-
-  // Vet-specific states
-  var expandedCodesDropdown by remember { mutableStateOf(false) }
 
   Scaffold(
       topBar = {
@@ -253,34 +252,9 @@ fun EditProfileScreen(
 
               // Active Codes (Vets only)
               if (user is Vet) {
-                Spacer(modifier = Modifier.height(12.dp))
-
-                ExposedDropdownMenuBox(
-                    expanded = expandedCodesDropdown,
-                    onExpandedChange = { expandedCodesDropdown = !expandedCodesDropdown }) {
-                      OutlinedTextField(
-                          value = "",
-                          onValueChange = {},
-                          readOnly = true,
-                          label = { Text("Active Codes") },
-                          trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(
-                                expanded = expandedCodesDropdown)
-                          },
-                          modifier =
-                              Modifier.menuAnchor()
-                                  .fillMaxWidth()
-                                  .testTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN))
-                      ExposedDropdownMenu(
-                          expanded = expandedCodesDropdown,
-                          onDismissRequest = { expandedCodesDropdown = false }) {
-                            (user as Vet).validCodes.forEach { code ->
-                              DropdownMenuItem(
-                                  text = { Text(code) },
-                                  onClick = { expandedCodesDropdown = false })
-                            }
-                          }
-                    }
+                Spacer(modifier = Modifier.height(16.dp))
+                val codes = (user as Vet).validCodes
+                if (codes.isNotEmpty()) ActiveCodeList(codes, snackbarHostState)
               }
 
               Spacer(modifier = Modifier.weight(1f))
@@ -357,3 +331,78 @@ fun EditProfileScreenPreviewVet() {
   EditProfileScreen(userViewModel = fakeViewModel, onGoBack = {}, onSave = {}, onAddVetCode = {})
 }
 */
+
+@Composable
+/** Creates an expandable list of every given code, along a "copy to clipboard" button */
+fun ActiveCodeList(codes: List<String>, snackbarHostState: SnackbarHostState) {
+  var expanded by remember { mutableStateOf(false) }
+
+  Column(modifier = Modifier.fillMaxWidth()) {
+    // Title bar
+    Row(
+        modifier =
+            Modifier.fillMaxWidth()
+                .clickable { expanded = !expanded }
+                .padding(horizontal = 12.dp, vertical = 10.dp)
+                .testTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically) {
+          Text(text = "Active codes")
+          Icon(
+              imageVector =
+                  if (expanded) Icons.Default.KeyboardArrowDown
+                  else Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+              contentDescription = if (expanded) "Collapse" else "Expand")
+        }
+
+    // Codes
+    if (expanded) {
+      Column(modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth()) {
+        codes.forEach { code ->
+          Row(
+              modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+              verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = code,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.testTag(EditProfileScreenTestTags.ACTIVE_CODE_ELEMENT))
+                CopyToClipboardButton(code, snackbarHostState)
+              }
+        }
+      }
+    }
+  }
+}
+
+@Composable
+/** Creates a button that copies toCopy to the device clipboard */
+fun CopyToClipboardButton(toCopy: String, snackbarHostState: SnackbarHostState) {
+  val clipboardManager = LocalClipboardManager.current
+
+  var copied by remember { mutableStateOf(false) }
+
+  LaunchedEffect(copied) {
+    if (copied) {
+      snackbarHostState.showSnackbar("Copied to clipboard")
+      copied = false
+    }
+  }
+
+  IconButton(
+      onClick = {
+        clipboardManager.setText(AnnotatedString(toCopy))
+        copied = true
+      },
+      modifier = Modifier.size(32.dp).testTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)) {
+        Icon(
+            imageVector = Icons.Default.ContentCopy,
+            contentDescription = "Copy to clipboard",
+            modifier = Modifier.size(16.dp))
+      }
+}
+
+@Preview
+@Composable
+fun ActiveCodeListPreview() {
+  AgriHealthAppTheme { EditProfileScreen() }
+}
