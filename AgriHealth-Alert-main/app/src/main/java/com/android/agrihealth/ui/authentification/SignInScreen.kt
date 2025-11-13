@@ -129,7 +129,10 @@ fun SignInScreen(
                     textAlign = TextAlign.End,
                     modifier =
                         Modifier.padding(top = 4.dp)
-                            .clickable { onForgotPasswordClick() }
+                            .clickable {
+                              onForgotPasswordClick()
+                              signInViewModel.setErrorMsgToNotYetImplemented()
+                            }
                             .testTag(SignInScreenTestTags.FORGOT_PASSWORD))
               }
 
