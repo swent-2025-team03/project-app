@@ -16,6 +16,7 @@ class EditProfileScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   // Some Helpers
+  val vetCodes = listOf("112233", "445566")
 
   private fun fakeFarmerViewModel(): UserViewModel {
     return object : UserViewModel() {
@@ -34,7 +35,7 @@ class EditProfileScreenTest {
     }
   }
 
-  private fun fakeVetViewModel(): UserViewModel {
+  private fun fakeVetViewModel(vetCodes: List<String> = listOf()): UserViewModel {
     return object : UserViewModel() {
       private val fakeUserFlow =
           MutableStateFlow(
@@ -45,7 +46,7 @@ class EditProfileScreenTest {
                   email = "bob@vetcare.com",
                   address = Location(0.0, 0.0, "Clinic Address"),
                   linkedFarmers = listOf("farmer123", "farmer456"),
-                  validCodes = listOf("112233", "445566")))
+                  validCodes = vetCodes))
 
       override var user: StateFlow<User> = fakeUserFlow.asStateFlow()
     }
@@ -77,7 +78,7 @@ class EditProfileScreenTest {
 
   @Test
   fun editProfileScreen_showsVetSpecificFields() {
-    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel()) }
+    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel(vetCodes)) }
 
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN)
@@ -99,27 +100,57 @@ class EditProfileScreenTest {
     assert(saved)
   }
 
+  private fun SemanticsNodeInteractionCollection.assertAreDisplayed():
+      SemanticsNodeInteractionCollection {
+    fetchSemanticsNodes().forEachIndexed { index, _ -> get(index).assertIsDisplayed() }
+    return this
+  }
+
+  private fun SemanticsNodeInteractionCollection.assertAreNotDisplayed():
+      SemanticsNodeInteractionCollection {
+    fetchSemanticsNodes().forEachIndexed { index, _ -> get(index).assertIsNotDisplayed() }
+    return this
+  }
+
   @Test
   fun activeCodes_showsListIfExpanded() {
-    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel()) }
+    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel(vetCodes)) }
 
-    val codeNode =
-        composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.ACTIVE_CODE_ELEMENT).onFirst()
-    val codeNodeButton =
-        composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.COPY_CODE_BUTTON).onFirst()
+    val codeNodes = composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.ACTIVE_CODE_ELEMENT)
+    val codeButtonNodes =
+        composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)
     val listNode = composeTestRule.onNodeWithTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN)
 
-    codeNode.assertIsNotDisplayed()
-    codeNodeButton.assertIsNotDisplayed()
+    codeNodes.assertAreNotDisplayed()
+    codeButtonNodes.assertAreNotDisplayed()
 
     listNode.assertIsDisplayed().performClick()
 
-    codeNode.assertIsDisplayed()
-    codeNodeButton.assertIsDisplayed().performClick()
+    codeNodes.assertAreDisplayed()
+    codeButtonNodes.assertAreDisplayed().onFirst().performClick()
+
+    composeTestRule.waitUntil {
+      composeTestRule.onAllNodesWithText("Copied to clipboard").fetchSemanticsNodes().isNotEmpty()
+    }
 
     listNode.performClick()
 
-    codeNode.assertIsNotDisplayed()
-    codeNodeButton.assertIsNotDisplayed()
+    codeNodes.assertAreNotDisplayed()
+    codeButtonNodes.assertAreNotDisplayed()
+  }
+
+  @Test
+  fun activeCodes_doesNotShowIfEmptyList() {
+    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel(listOf())) }
+
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN)
+        .assertIsNotDisplayed()
+    composeTestRule
+        .onAllNodesWithTag(EditProfileScreenTestTags.ACTIVE_CODE_ELEMENT)
+        .assertAreNotDisplayed()
+    composeTestRule
+        .onAllNodesWithTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)
+        .assertAreNotDisplayed()
   }
 }

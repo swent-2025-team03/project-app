@@ -333,6 +333,7 @@ fun EditProfileScreenPreviewVet() {
 */
 
 @Composable
+/** Creates an expandable list of every given code, along a "copy to clipboard" button */
 fun ActiveCodeList(codes: List<String>, snackbarHostState: SnackbarHostState) {
   var expanded by remember { mutableStateOf(false) }
 
@@ -374,6 +375,7 @@ fun ActiveCodeList(codes: List<String>, snackbarHostState: SnackbarHostState) {
 }
 
 @Composable
+/** Creates a button that copies toCopy to the device clipboard */
 fun CopyToClipboardButton(toCopy: String, snackbarHostState: SnackbarHostState) {
   val clipboardManager = LocalClipboardManager.current
 
