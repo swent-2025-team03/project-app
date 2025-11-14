@@ -2,8 +2,13 @@ package com.android.agrihealth.data.repository
 
 import android.util.Log
 import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.report.MCQ
+import com.android.agrihealth.data.model.report.MCQO
+import com.android.agrihealth.data.model.report.OpenQuestion
+import com.android.agrihealth.data.model.report.QuestionType
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
@@ -70,8 +75,27 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
 private fun docToReport(doc: DocumentSnapshot): Report? {
   return try {
     val id = doc.id
-    val title = doc.getString("title") ?: return null
-    val description = doc.getString("description") ?: return null
+    val questionFormsData = doc.get("questionForms") as? List<Map<String, Any>> ?: emptyList()
+    val questionForms =
+        questionFormsData.map { questionForm ->
+          val questionType = questionForm["questionType"] as QuestionType
+          val question = questionForm["question"] as String
+          val answers = questionForm["answers"] as List<String>
+          val answerIndex = questionForm["answerIndex"] as Int
+          val userAnswer = questionForm["userAnswer"] as String
+          when (questionType) {
+            QuestionType.OPEN -> OpenQuestion(question = question, userAnswer = userAnswer)
+            QuestionType.YESORNO -> YesOrNoQuestion(question = question, answerIndex = answerIndex)
+            QuestionType.MCQ ->
+                MCQ(question = question, answers = answers, answerIndex = answerIndex)
+            QuestionType.MCQO ->
+                MCQO(
+                    question = question,
+                    answers = answers,
+                    answerIndex = answerIndex,
+                    userAnswer = userAnswer)
+          }
+        }
     val photoUri = doc.getString("photoUri")
     val farmerId = doc.getString("farmerId") ?: return null
     val vetId = doc.getString("vetId") ?: return null
@@ -93,8 +117,7 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
 
     Report(
         id = id,
-        title = title,
-        description = description,
+        questionForms = questionForms,
         photoUri = photoUri,
         farmerId = farmerId,
         vetId = vetId,
