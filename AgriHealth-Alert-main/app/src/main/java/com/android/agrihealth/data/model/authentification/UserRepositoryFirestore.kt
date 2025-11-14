@@ -62,7 +62,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
                   is Farmer -> "Farmer"
                   is Vet -> "Vet"
                 },
-            "isGoogleAccount" to user.isGoogleAccount)
+            "isGoogleAccount" to user.isGoogleAccount,
+            "description" to user.description)
 
     // Add type-specific fields
     when (user) {
@@ -73,7 +74,6 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
       }
       is Vet -> {
         base["address"] = user.address
-        base["linkedFarmers"] = user.linkedFarmers
         base["validCodes"] = user.validCodes
       }
     }
@@ -87,6 +87,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     val email = data["email"] as? String ?: throw Exception("Missing email")
     val roleStr = data["role"] as? String ?: throw Exception("Missing role")
     val isGoogleAccount = data["isGoogleAccount"] as? Boolean ?: false
+    val description = data["description"] as? String?
 
     return when (roleStr) {
       "Farmer" ->
@@ -98,7 +99,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               address = data["address"] as? Location?,
               linkedVets = data["linkedVets"] as? List<String> ?: emptyList(),
               defaultVet = data["defaultVet"] as? String,
-              isGoogleAccount = isGoogleAccount)
+              isGoogleAccount = isGoogleAccount,
+              description = description)
       "Vet" ->
           Vet(
               uid = uid,
@@ -106,9 +108,9 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               lastname = lastname,
               email = email,
               address = data["address"] as? Location?,
-              linkedFarmers = data["linkedFarmers"] as? List<String> ?: emptyList(),
               validCodes = data["validCodes"] as? List<String> ?: emptyList(),
-              isGoogleAccount = isGoogleAccount)
+              isGoogleAccount = isGoogleAccount,
+              description = description)
       else -> throw Exception("Unknown user type: $roleStr")
     }
   }
@@ -121,6 +123,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     if (old.lastname != new.lastname) changes["lastname"] = new.lastname
     if (old.email != new.email) changes["email"] = new.email
     if (old.isGoogleAccount != new.isGoogleAccount) changes["isGoogleAccount"] = new.isGoogleAccount
+    if (old.description != new.description) changes["description"] = new.description
 
     when {
       old is Farmer && new is Farmer -> {
@@ -130,7 +133,6 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
       }
       old is Vet && new is Vet -> {
         if (old.address != new.address) changes["address"] = new.address
-        if (old.linkedFarmers != new.linkedFarmers) changes["linkedFarmers"] = new.linkedFarmers
         if (old.validCodes != new.validCodes) changes["validCodes"] = new.validCodes
       }
       else -> throw IllegalArgumentException("Permission denied")
