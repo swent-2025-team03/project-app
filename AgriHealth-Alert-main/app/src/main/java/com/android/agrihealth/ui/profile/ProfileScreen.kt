@@ -40,6 +40,7 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_VET_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DESCRIPTION_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.GENERATED_CODE_TEXT
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.MANAGE_OFFICE_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
@@ -58,6 +59,7 @@ object ProfileScreenTestTags {
   const val CODE_BUTTON_FARMER = "CodeButtonFarmer"
   const val CODE_BUTTON_VET = "CodeButtonVet"
   const val GENERATED_CODE_TEXT = "GeneratedCodeText"
+  const val MANAGE_OFFICE_BUTTON = "ManageOfficeButton"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,7 +69,8 @@ fun ProfileScreen(
     onGoBack: () -> Unit = {},
     onLogout: () -> Unit = {},
     onEditProfile: () -> Unit = {},
-    onCodeFarmer: () -> Unit = {}
+    onCodeFarmer: () -> Unit = {},
+    onManageOffice: () -> Unit = {},
 ) {
 
   val user by userViewModel.user.collectAsState()
@@ -242,6 +245,16 @@ fun ProfileScreen(
                             }
                       }
                 }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = onManageOffice,
+                    modifier =
+                        Modifier.align(Alignment.CenterHorizontally)
+                            .testTag(MANAGE_OFFICE_BUTTON)) {
+                      Text("Manage My Office")
+                    }
               }
             }
       }
