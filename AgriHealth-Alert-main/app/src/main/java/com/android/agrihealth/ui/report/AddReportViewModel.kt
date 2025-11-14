@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.location.Location
@@ -15,7 +16,8 @@ import kotlinx.coroutines.launch
 data class AddReportUiState(
     val title: String = "",
     val description: String = "",
-    val chosenVet: String = "",
+    val chosenVet: String = "", // TODO: Shouldn't be a string! Temporary measure
+    val photoUri: Uri? = null
 )
 
 class AddReportViewModel(
@@ -37,6 +39,14 @@ class AddReportViewModel(
     _uiState.value = _uiState.value.copy(chosenVet = option)
   }
 
+  override fun setPhoto(uri: Uri?) {
+    _uiState.value = _uiState.value.copy(photoUri = uri)
+  }
+
+  override fun removePhoto() {
+    _uiState.value = _uiState.value.copy(photoUri = null)
+  }
+
   override suspend fun createReport(): Boolean {
     val uiState = _uiState.value
     if (uiState.title.isBlank() || uiState.description.isBlank()) {
@@ -48,7 +58,7 @@ class AddReportViewModel(
             id = reportRepository.getNewReportId(),
             title = uiState.title,
             description = uiState.description,
-            photoUri = null, // currently unused
+            photoUri = uiState.photoUri,
             farmerId = userId,
             vetId = uiState.chosenVet,
             status = ReportStatus.PENDING,

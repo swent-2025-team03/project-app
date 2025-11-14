@@ -1,5 +1,8 @@
 package com.android.agrihealth.ui.report
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,10 +24,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
@@ -40,6 +46,8 @@ object AddReportScreenTestTags {
   const val DESCRIPTION_FIELD = "descriptionField"
   const val VET_DROPDOWN = "vetDropDown"
   const val CREATE_BUTTON = "createButton"
+  const val UPLOAD_IMAGE_BUTTON = "uploadImageButton"
+  const val IMAGE_PREVIEW = "imageDisplay"
 
   fun getTestTagForVet(vetId: String): String = "vetOption_$vetId"
 }
@@ -54,6 +62,14 @@ object AddReportFeedbackTexts {
 object AddReportConstants {
   val vetOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")
 }
+
+object AddReport_UploadButtonTexts {
+  const val UPLOAD_IMAGE = "Upload Image"
+  const val REMOVE_IMAGE = "Remove Image"
+}
+
+private val imageUploadButton_UploadColor = Color(0xFF43b593)
+private val imageUploadButton_RemoveColor = Color(0xFFd45d5d)
 
 /**
  * Displays the report creation screen for farmers
@@ -168,23 +184,17 @@ fun AddReportScreen(
                         }
                   }
 
-              Button(
-                  onClick = {
-                    scope.launch {
-                      val created = addReportViewModel.createReport()
-                      if (created) {
-                        showSuccessDialog = true
-                      } else {
-                        snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
-                      }
-                    }
-                  },
-                  modifier =
-                      Modifier.fillMaxWidth()
-                          .height(56.dp)
-                          .testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
-                    Text("Create Report", style = MaterialTheme.typography.titleLarge)
-                  }
+              UploadedImagePreview(photoUri = uiState.photoUri)
+
+              ImageUploadButton(
+                  photoUri = uiState.photoUri,
+                  onImagePicked = { addReportViewModel.setPhoto(it) },
+                  onImageRemoved = { addReportViewModel.removePhoto() })
+
+              CreateReportButton(
+                  addReportViewModel = addReportViewModel,
+                  snackbarHostState = snackbarHostState,
+                  onSuccess = { showSuccessDialog = true })
             }
 
         // If adding the report was successful
@@ -224,6 +234,82 @@ private fun Field(
       singleLine = true,
       modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
   )
+}
+
+@Composable
+fun ImageUploadButton(
+    photoUri: Uri?,
+    onImagePicked: (Uri?) -> Unit,
+    onImageRemoved: () -> Unit,
+) {
+  val imagePickerLauncher =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri?
+        ->
+        onImagePicked(uri)
+      }
+  val imageAlreadyUploaded = photoUri != null
+  val buttonColor =
+      if (imageAlreadyUploaded) imageUploadButton_RemoveColor else imageUploadButton_UploadColor
+
+  Button(
+      onClick = {
+        if (imageAlreadyUploaded) {
+          onImageRemoved()
+        } else {
+          // Upload new image
+          imagePickerLauncher.launch("image/*")
+        }
+      },
+      modifier =
+          Modifier.fillMaxWidth()
+              .padding(vertical = 8.dp)
+              .testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
+      colors = ButtonDefaults.buttonColors(containerColor = buttonColor)) {
+        Text(
+            text = if (imageAlreadyUploaded) "Remove Image" else "Upload Image",
+            style = MaterialTheme.typography.titleLarge)
+      }
+}
+
+@Composable
+fun UploadedImagePreview(photoUri: Uri?, modifier: Modifier = Modifier) {
+  if (photoUri != null) {
+    AsyncImage(
+        model = photoUri,
+        contentDescription = "Uploaded image",
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .padding(bottom = 8.dp)
+                .testTag(AddReportScreenTestTags.IMAGE_PREVIEW),
+        contentScale = ContentScale.Fit)
+  }
+}
+
+@Composable
+fun CreateReportButton(
+    addReportViewModel: AddReportViewModelContract,
+    snackbarHostState: SnackbarHostState,
+    onSuccess: () -> Unit
+) {
+  val scope = rememberCoroutineScope()
+
+  Button(
+      onClick = {
+        scope.launch {
+          val created = addReportViewModel.createReport()
+          if (created) {
+            onSuccess()
+          } else {
+            snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
+          }
+        }
+      },
+      modifier =
+          Modifier.fillMaxWidth().height(56.dp).testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
+        Text("Create Report", style = MaterialTheme.typography.titleLarge)
+      }
 }
 
 /**

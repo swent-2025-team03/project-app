@@ -3,6 +3,7 @@ package com.android.agrihealth.ui.report
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -14,9 +15,13 @@ import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.utils.TestAssetUtils.FAKE_PHOTO_FILE
+import com.android.agrihealth.utils.TestAssetUtils.cleanupTestAssets
+import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.junit.After
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -41,6 +46,11 @@ private fun fakeFarmerViewModel(): UserViewModel {
 class AddReportScreenTest {
 
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+  @After
+  fun cleanup() {
+    cleanupTestAssets()
+  }
 
   @Test
   fun displayAllFieldsAndButtons() {
@@ -157,5 +167,74 @@ class AddReportScreenTest {
     composeRule.onNodeWithText("OK").performClick()
 
     Assert.assertTrue(called)
+  }
+
+  @Test
+  fun imagePreview_isNotShownWhenEmpty() {
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = FakeAddReportViewModel())
+      }
+    }
+    composeRule.waitForIdle()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertDoesNotExist()
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(AddReport_UploadButtonTexts.UPLOAD_IMAGE)
+  }
+
+  @Test
+  fun imagePreview_canRemoveImage() {
+    val imageUri = getUriFrom(FAKE_PHOTO_FILE)
+    val fakeViewModel = FakeAddReportViewModel()
+    fakeViewModel.setPhoto(imageUri)
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = fakeViewModel)
+      }
+    }
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertIsDisplayed()
+        .assertTextEquals(AddReport_UploadButtonTexts.REMOVE_IMAGE)
+        .performClick()
+    composeRule.waitForIdle()
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertIsDisplayed()
+        .assertTextEquals(AddReport_UploadButtonTexts.UPLOAD_IMAGE)
+        .performClick()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertDoesNotExist()
+  }
+
+  @Test
+  fun imagePreview_isShownWhenUploaded() {
+    val imageUri = getUriFrom(FAKE_PHOTO_FILE)
+
+    val fakeViewModel = FakeAddReportViewModel()
+    fakeViewModel.setPhoto(imageUri)
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = fakeViewModel)
+      }
+    }
+    composeRule.waitForIdle()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(AddReport_UploadButtonTexts.REMOVE_IMAGE)
   }
 }
