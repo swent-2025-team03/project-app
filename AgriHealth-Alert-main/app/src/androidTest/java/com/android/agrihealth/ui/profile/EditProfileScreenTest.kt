@@ -61,7 +61,7 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.LASTNAME_FIELD).assertIsDisplayed()
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.ADDRESS_FIELD).assertIsDisplayed()
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.PASSWORD_FIELD).assertIsDisplayed()
-      composeTestRule.onNodeWithTag(EditProfileScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.SAVE_BUTTON).assertIsDisplayed()
   }
 

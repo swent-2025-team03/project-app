@@ -109,27 +109,24 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(ADDRESS_FIELD).assertExists()
   }
 
-    @Test
-    fun descriptionField_isDisplayed() {
-        val vm =
-            makeFakeViewModel(
-                Farmer(
-                    uid = "1",
-                    firstname = "Alice",
-                    lastname = "Johnson",
-                    email = "alice@farmmail.com",
-                    address = null,
-                    defaultVet = null,
-                    description = "Test description"
-                )
-            )
-        setScreen(vm)
+  @Test
+  fun descriptionField_isDisplayed() {
+    val vm =
+        makeFakeViewModel(
+            Farmer(
+                uid = "1",
+                firstname = "Alice",
+                lastname = "Johnson",
+                email = "alice@farmmail.com",
+                address = null,
+                defaultVet = null,
+                description = "Test description"))
+    setScreen(vm)
 
-        composeTestRule.onNodeWithTag(ProfileScreenTestTags.DESCRIPTION_FIELD).assertExists()
-    }
+    composeTestRule.onNodeWithTag(ProfileScreenTestTags.DESCRIPTION_FIELD).assertExists()
+  }
 
-
-    @Test
+  @Test
   fun emailAndPasswordFields_areDisplayed() {
     val vm =
         makeFakeViewModel(
