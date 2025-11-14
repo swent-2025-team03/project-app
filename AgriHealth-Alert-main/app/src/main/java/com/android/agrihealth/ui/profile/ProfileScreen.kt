@@ -139,20 +139,18 @@ fun ProfileScreen(
                 }
               }
 
-              // Description (nullable)
-              user.description?.let { desc ->
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = desc,
-                    onValueChange = {},
-                    label = { Text("Description") },
-                    enabled = false,
-                    singleLine = false,
-                    modifier = Modifier.fillMaxWidth().testTag(DESCRIPTION_FIELD))
-              }
+              // Description
+              Spacer(modifier = Modifier.height(12.dp))
+              OutlinedTextField(
+                  value = user.description?.toString() ?: "",
+                  onValueChange = {},
+                  label = { Text("Description") },
+                  enabled = false,
+                  singleLine = false,
+                  modifier = Modifier.fillMaxWidth().testTag(DESCRIPTION_FIELD))
 
               if (!user.isGoogleAccount) {
-                Spacer(modifier = Modifier.height(15.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Email
                 OutlinedTextField(
