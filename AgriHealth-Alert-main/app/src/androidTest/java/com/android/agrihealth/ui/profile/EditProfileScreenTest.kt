@@ -45,7 +45,6 @@ class EditProfileScreenTest {
                   lastname = "Smith",
                   email = "bob@vetcare.com",
                   address = Location(0.0, 0.0, "Clinic Address"),
-                  linkedFarmers = listOf("farmer123", "farmer456"),
                   validCodes = vetCodes))
 
       override var user: StateFlow<User> = fakeUserFlow.asStateFlow()
@@ -62,6 +61,7 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.LASTNAME_FIELD).assertIsDisplayed()
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.ADDRESS_FIELD).assertIsDisplayed()
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.PASSWORD_FIELD).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.SAVE_BUTTON).assertIsDisplayed()
   }
 
