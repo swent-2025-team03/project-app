@@ -39,6 +39,7 @@ import com.android.agrihealth.ui.map.MapScreen
 import com.android.agrihealth.ui.map.MapViewModel
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.office.ManageOfficeScreen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
 import com.android.agrihealth.ui.profile.ChangePasswordScreen
@@ -195,7 +196,15 @@ fun AgriHealthApp(
               navigationActions.navigateToAuthAndClear()
             },
             onEditProfile = { navigationActions.navigateTo(Screen.EditProfile(false)) },
-            onCodeFarmer = { navigationActions.navigateTo(Screen.EditProfile(true)) })
+            onCodeFarmer = { navigationActions.navigateTo(Screen.EditProfile(true)) },
+            onManageOffice = { navigationActions.navigateTo(Screen.ManageOffice) })
+      }
+      composable(Screen.ManageOffice.route) {
+        ManageOfficeScreen(
+            userViewModel = userViewModel,
+            onGoBack = { navigationActions.goBack() },
+            onCreateOffice = { /*TODO : implement */},
+            onJoinOffice = { /*TODO : implement */})
       }
     }
 
