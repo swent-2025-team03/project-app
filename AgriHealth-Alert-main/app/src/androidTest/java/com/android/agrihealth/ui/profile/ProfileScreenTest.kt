@@ -61,8 +61,7 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
                 firstname = "Bob",
                 lastname = "Smith",
                 email = "bob@vetcare.com",
-                address = null,
-                linkedFarmers = listOf("farmer1")))
+                address = null))
     setScreen(vm)
 
     composeTestRule.onNodeWithTag(PROFILE_IMAGE).assertIsDisplayed()
@@ -93,8 +92,7 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
                 firstname = "Bob",
                 lastname = "Smith",
                 email = "bob@vetcare.com",
-                address = null,
-                linkedFarmers = listOf("farmer1")))
+                address = null))
     setScreen(vm)
 
     composeTestRule.onAllNodesWithTag(DEFAULT_VET_FIELD).assertCountEquals(0)
@@ -111,7 +109,27 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(ADDRESS_FIELD).assertExists()
   }
 
-  @Test
+    @Test
+    fun descriptionField_isDisplayed() {
+        val vm =
+            makeFakeViewModel(
+                Farmer(
+                    uid = "1",
+                    firstname = "Alice",
+                    lastname = "Johnson",
+                    email = "alice@farmmail.com",
+                    address = null,
+                    defaultVet = null,
+                    description = "Test description"
+                )
+            )
+        setScreen(vm)
+
+        composeTestRule.onNodeWithTag(ProfileScreenTestTags.DESCRIPTION_FIELD).assertExists()
+    }
+
+
+    @Test
   fun emailAndPasswordFields_areDisplayed() {
     val vm =
         makeFakeViewModel(

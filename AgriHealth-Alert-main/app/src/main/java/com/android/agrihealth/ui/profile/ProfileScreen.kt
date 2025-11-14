@@ -37,6 +37,7 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_FARMER
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_VET
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_VET_FIELD
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DESCRIPTION_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.GENERATED_CODE_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
@@ -51,11 +52,11 @@ object ProfileScreenTestTags {
   const val PROFILE_IMAGE = "ProfileImage"
   const val NAME_TEXT = "NameText"
   const val EDIT_BUTTON = "EditButton"
+  const val DESCRIPTION_FIELD = "DescriptionField"
   const val ADDRESS_FIELD = "AddressField"
   const val DEFAULT_VET_FIELD = "DefaultVetField"
   const val CODE_BUTTON_FARMER = "CodeButtonFarmer"
   const val CODE_BUTTON_VET = "CodeButtonVet"
-
   const val GENERATED_CODE_TEXT = "GeneratedCodeText"
 }
 
@@ -138,8 +139,20 @@ fun ProfileScreen(
                 }
               }
 
+              // Description (nullable)
+              user.description?.let { desc ->
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = desc,
+                    onValueChange = {},
+                    label = { Text("Description") },
+                    enabled = false,
+                    singleLine = false,
+                    modifier = Modifier.fillMaxWidth().testTag(DESCRIPTION_FIELD))
+              }
+
               if (!user.isGoogleAccount) {
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(15.dp))
 
                 // Email
                 OutlinedTextField(

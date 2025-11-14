@@ -9,7 +9,8 @@ sealed class User(
     open val role: UserRole,
     open val email: String,
     open val address: Location?,
-    open val isGoogleAccount: Boolean = false
+    open val isGoogleAccount: Boolean = false,
+    open val description: String? = null
 )
 
 enum class UserRole {
