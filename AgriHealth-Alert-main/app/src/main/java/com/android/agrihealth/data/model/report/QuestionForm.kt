@@ -17,7 +17,16 @@ sealed class QuestionForm(
     val answerIndex: Int,
     val userAnswer: String,
     val questionType: QuestionType
-)
+) {
+  override fun equals(other: Any?): Boolean {
+    val otherForm = other as? QuestionForm ?: return false
+    return (otherForm.question == question &&
+        otherForm.questionType == questionType &&
+        otherForm.userAnswer == userAnswer &&
+        otherForm.answers == answers &&
+        otherForm.answerIndex == answerIndex)
+  }
+}
 
 /** Question with a simple text field can type in to answer. */
 class OpenQuestion(question: String, userAnswer: String) :

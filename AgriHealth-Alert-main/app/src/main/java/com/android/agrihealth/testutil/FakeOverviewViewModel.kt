@@ -31,6 +31,7 @@ class FakeOverviewViewModel(initialState: OverviewUIState = OverviewUIState()) :
                 id = "1",
                 title = "Test Report",
                 description = "This is a test report",
+                questionForms = emptyList(),
                 photoUri = null,
                 farmerId = userId,
                 vetId = "vet_001",

@@ -12,6 +12,8 @@ enum class ReportStatus {
 
 data class Report(
     val id: String,
+    val title: String,
+    val description: String,
     val questionForms: List<QuestionForm>,
     val photoUri: String?, // For now, unused (will show placeholder)
     val farmerId: String,

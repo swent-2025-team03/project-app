@@ -5,7 +5,6 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
-import com.android.agrihealth.data.model.report.QuestionType
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
@@ -75,25 +74,27 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
 private fun docToReport(doc: DocumentSnapshot): Report? {
   return try {
     val id = doc.id
-    val questionFormsData = doc.get("questionForms") as? List<Map<String, Any>> ?: emptyList()
+    val title = doc.getString("title") ?: ""
+    val description = doc.getString("description") ?: ""
+    val questionFormsData = doc.get("questionForms") as? List<Map<*, *>> ?: emptyList()
     val questionForms =
-        questionFormsData.map { questionForm ->
-          val questionType = questionForm["questionType"] as QuestionType
+        questionFormsData.mapNotNull { questionForm ->
+          val questionType = questionForm["questionType"] as String
           val question = questionForm["question"] as String
           val answers = questionForm["answers"] as List<String>
-          val answerIndex = questionForm["answerIndex"] as Int
+          val answerIndex = (questionForm["answerIndex"] as Long).toInt()
           val userAnswer = questionForm["userAnswer"] as String
           when (questionType) {
-            QuestionType.OPEN -> OpenQuestion(question = question, userAnswer = userAnswer)
-            QuestionType.YESORNO -> YesOrNoQuestion(question = question, answerIndex = answerIndex)
-            QuestionType.MCQ ->
-                MCQ(question = question, answers = answers, answerIndex = answerIndex)
-            QuestionType.MCQO ->
+            "OPEN" -> OpenQuestion(question = question, userAnswer = userAnswer)
+            "YESORNO" -> YesOrNoQuestion(question = question, answerIndex = answerIndex)
+            "MCQ" -> MCQ(question = question, answers = answers, answerIndex = answerIndex)
+            "MCQO" ->
                 MCQO(
                     question = question,
                     answers = answers,
                     answerIndex = answerIndex,
                     userAnswer = userAnswer)
+            else -> null
           }
         }
     val photoUri = doc.getString("photoUri")
@@ -117,6 +118,8 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
 
     Report(
         id = id,
+        title = title,
+        description = description,
         questionForms = questionForms,
         photoUri = photoUri,
         farmerId = farmerId,
