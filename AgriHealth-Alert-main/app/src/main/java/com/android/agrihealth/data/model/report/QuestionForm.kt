@@ -26,6 +26,18 @@ sealed class QuestionForm(
         otherForm.answers == answers &&
         otherForm.answerIndex == answerIndex)
   }
+
+  override fun hashCode(): Int {
+    var result = answerIndex
+    result = 31 * result + question.hashCode()
+    result = 31 * result + answers.hashCode()
+    result = 31 * result + userAnswer.hashCode()
+    result = 31 * result + questionType.hashCode()
+    return result
+  }
+
+  /** checks if a form has valid values. */
+  abstract fun isValid(): Boolean
 }
 
 /** Question with a simple text field can type in to answer. */
@@ -35,7 +47,11 @@ class OpenQuestion(question: String, userAnswer: String) :
         answers = emptyList(),
         answerIndex = -1,
         userAnswer = userAnswer,
-        questionType = QuestionType.OPEN)
+        questionType = QuestionType.OPEN) {
+  override fun isValid(): Boolean {
+    return true
+  }
+}
 
 /** Multiple choice question. */
 class MCQ(question: String, answers: List<String>, answerIndex: Int) :
@@ -44,7 +60,11 @@ class MCQ(question: String, answers: List<String>, answerIndex: Int) :
         answers = answers,
         answerIndex = answerIndex,
         userAnswer = "",
-        questionType = QuestionType.MCQ)
+        questionType = QuestionType.MCQ) {
+  override fun isValid(): Boolean {
+    return answerIndex >= 0 && answerIndex < answers.size
+  }
+}
 
 /** Special case of an MCQ where the answer is only yes or no. */
 class YesOrNoQuestion(question: String, answerIndex: Int) :
@@ -53,7 +73,11 @@ class YesOrNoQuestion(question: String, answerIndex: Int) :
         answers = listOf("Yes", "No"),
         answerIndex = answerIndex,
         userAnswer = "",
-        questionType = QuestionType.YESORNO)
+        questionType = QuestionType.YESORNO) {
+  override fun isValid(): Boolean {
+    return answerIndex >= 0 && answerIndex < 2
+  }
+}
 
 /** MCQ with an added "other" option where the user can type his answer. */
 class MCQO(question: String, answers: List<String>, answerIndex: Int, userAnswer: String) :
@@ -62,7 +86,11 @@ class MCQO(question: String, answers: List<String>, answerIndex: Int, userAnswer
         answers = answers,
         answerIndex = answerIndex,
         userAnswer = userAnswer,
-        questionType = QuestionType.MCQO)
+        questionType = QuestionType.MCQO) {
+  override fun isValid(): Boolean {
+    return answerIndex >= 0 && answerIndex <= answers.size
+  }
+}
 
 enum class QuestionType {
   OPEN,
