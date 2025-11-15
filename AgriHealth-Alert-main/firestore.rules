@@ -91,5 +91,24 @@ service cloud.firestore {
       allow create: if isSignedIn() &&
         request.auth.uid == request.resource.data.farmerId;
     }
+
+    // ---- Offices ----
+    match /offices/{officeId} {
+
+      // Anyone signed in can read office information
+      allow get, list: if isSignedIn();
+
+      // Only vets can create an office, and only if they set themselves as owner
+      allow create: if hasRole("Vet")
+                    && request.resource.data.ownerId == request.auth.uid;
+
+      // Owner may update their office (but cannot change the ownerId)
+      allow update: if hasRole("Vet")
+                    && resource.data.ownerId == request.auth.uid
+                    && !(request.resource.data.diff(resource.data).changedKeys().hasAny(['ownerId']));
+
+      // No deletes for now
+      allow delete: if false;
+    }
   }
 }
