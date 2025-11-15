@@ -103,6 +103,7 @@ class FakeReportRepository : ReportRepository {
           id = "RPT001",
           title = "Test report",
           description = "desc",
+          questionForms = emptyList(),
           photoUri = null,
           farmerId = "F1",
           vetId = "V1",
