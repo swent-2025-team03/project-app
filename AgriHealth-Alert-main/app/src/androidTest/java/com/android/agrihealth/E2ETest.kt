@@ -183,7 +183,6 @@ class E2ETest : FirebaseEmulatorsTest() {
             lastname = "Vet",
             email = "vet@test.com",
             address = null,
-            linkedFarmers = emptyList(),
             validCodes = emptyList())
     val userViewModel = UserViewModel(initialUser = vet)
     val profileViewModel = ProfileViewModel(userViewModel)

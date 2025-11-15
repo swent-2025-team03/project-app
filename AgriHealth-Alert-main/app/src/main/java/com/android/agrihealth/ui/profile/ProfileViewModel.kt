@@ -58,8 +58,6 @@ class ProfileViewModel(
                 farmer.copy(linkedVets = updatedLinkedVets, defaultVet = newDefaultVet)
             userViewModel.updateUser(updatedFarmer)
 
-            // TODO: find a way to also update the Vet's linkedFarmers list
-
             _vetClaimMessage.value = "Vet successfully added!"
           },
           onFailure = { e ->

@@ -39,6 +39,7 @@ import kotlinx.coroutines.launch
 object EditProfileScreenTestTags {
   const val FIRSTNAME_FIELD = "FirstNameField"
   const val LASTNAME_FIELD = "LastNameField"
+  const val DESCRIPTION_FIELD = "Description"
   const val PASSWORD_FIELD = "PasswordField"
   const val ADDRESS_FIELD = "EditAddressField"
   const val DEFAULT_VET_DROPDOWN = "DefaultVetDropdown"
@@ -81,6 +82,7 @@ fun EditProfileScreen(
   // Local mutable states
   var firstname by remember { mutableStateOf(user.firstname) }
   var lastname by remember { mutableStateOf(user.lastname) }
+  var description by remember { mutableStateOf(user.description ?: "") }
   var address by remember { mutableStateOf(user.address?.toString() ?: "") }
 
   // Farmer-specific states
@@ -138,6 +140,17 @@ fun EditProfileScreen(
                     label = { Text("Last Name") },
                     modifier =
                         Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LASTNAME_FIELD))
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Description
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Description") },
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .testTag(EditProfileScreenTestTags.DESCRIPTION_FIELD))
 
                 if (!user.isGoogleAccount) {
                   Spacer(modifier = Modifier.height(12.dp))
@@ -262,6 +275,7 @@ fun EditProfileScreen(
               // Save Changes Button
               Button(
                   onClick = {
+                    val updatedDescription = description.ifBlank { null }
                     // Construct updated user object
                     val updatedUser =
                         when (userRole) {
@@ -270,12 +284,14 @@ fun EditProfileScreen(
                                   firstname = firstname,
                                   lastname = lastname,
                                   address = user.address?.copy(name = address),
-                                  defaultVet = selectedDefaultVet)
+                                  defaultVet = selectedDefaultVet,
+                                  description = updatedDescription)
                           UserRole.VET ->
                               (user as? Vet)?.copy(
                                   firstname = firstname,
                                   lastname = lastname,
-                                  address = user.address?.copy(name = address))
+                                  address = user.address?.copy(name = address),
+                                  description = updatedDescription)
                         }
                     updatedUser?.let { onSave(it) }
                   },
@@ -323,8 +339,7 @@ fun EditProfileScreenPreviewVet() {
                   firstname = "Bob",
                   lastname = "Smith",
                   email = "bob@vetcare.com",
-                  address = Location(0.0, 0.0, "Clinic"),
-                  linkedFarmers = listOf("farmer123", "farmer456"))
+                  address = Location(0.0, 0.0, "Clinic")
         }
       }
 
