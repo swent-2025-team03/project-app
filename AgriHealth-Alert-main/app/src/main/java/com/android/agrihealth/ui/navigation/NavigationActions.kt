@@ -48,6 +48,8 @@ sealed class Screen(
   object ManageOffice :
       Screen(route = "manage_office", name = "Manage My Office", isTopLevelDestination = false)
 
+  object CreateOffice : Screen("create_office", "Create Office", isTopLevelDestination = false)
+
   object SignUp : Screen(route = "sign_up", name = "Sign Up")
 
   object RoleSelection : Screen(route = "role", name = "Role")

@@ -87,8 +87,28 @@ open class UserViewModel(
       }
     }
   }
+
   /** Sets the current user. */
   fun setUser(user: User) {
     _user.value = user
+  }
+
+  /** Updating the officeId when creating or joining an office */
+  fun updateVetOfficeId(officeId: String) {
+    viewModelScope.launch {
+      val current = _user.value
+
+      // Only vets should get an officeId
+      if (current is com.android.agrihealth.data.model.user.Vet) {
+        val updated = current.copy(officeId = officeId)
+
+        try {
+          userRepository.updateUser(updated)
+          _user.value = updated
+        } catch (e: Exception) {
+          Log.e("UserViewModel", "Failed to update vet officeId", e)
+        }
+      }
+    }
   }
 }

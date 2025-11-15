@@ -39,6 +39,7 @@ import com.android.agrihealth.ui.map.MapScreen
 import com.android.agrihealth.ui.map.MapViewModel
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.office.CreateOfficeScreen
 import com.android.agrihealth.ui.office.ManageOfficeScreen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
@@ -203,8 +204,14 @@ fun AgriHealthApp(
         ManageOfficeScreen(
             userViewModel = userViewModel,
             onGoBack = { navigationActions.goBack() },
-            onCreateOffice = { /*TODO : implement */},
+            onCreateOffice = { navigationActions.navigateTo(Screen.CreateOffice) },
             onJoinOffice = { /*TODO : implement */})
+      }
+      composable(Screen.CreateOffice.route) {
+        CreateOfficeScreen(
+            userViewModel = userViewModel,
+            onGoBack = { navigationActions.goBack() },
+            onCreated = { navigationActions.goBack() })
       }
     }
 
