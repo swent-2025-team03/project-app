@@ -201,6 +201,10 @@ dependencies {
     // ------- Using Coil for image handling --------------
     implementation("io.coil-kt:coil-compose:2.4.0")
 
+    // ---- Using compose_image_picker for photo picker --------
+    // See: https://github.com/huhx/compose_image_picker
+    implementation("io.github.huhx:compose-image-picker:1.0.8")
+
 }
 
 tasks.withType<Test> {
