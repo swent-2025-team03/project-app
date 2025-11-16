@@ -35,4 +35,23 @@ class ManageOfficeViewModel(
       _isLoading.value = false
     }
   }
+
+  fun leaveOffice() =
+      viewModelScope.launch {
+        val userId = userViewModel.user.value.uid
+        val office = office.value ?: return@launch
+
+        // 1. Remove officeId from vet
+        userViewModel.updateVetOfficeId(null)
+
+        // 2. Remove vet from office list
+        val updatedOffice = office.copy(vets = office.vets.filterNot { it == userId })
+        officeRepository.updateOffice(updatedOffice)
+      }
+
+  fun updateOffice(office: Office) =
+      viewModelScope.launch {
+        officeRepository.updateOffice(office)
+        _office.value = office
+      }
 }

@@ -94,7 +94,7 @@ open class UserViewModel(
   }
 
   /** Updating the officeId when creating or joining an office */
-  fun updateVetOfficeId(officeId: String) {
+  fun updateVetOfficeId(officeId: String?) {
     viewModelScope.launch {
       val current = _user.value
 
