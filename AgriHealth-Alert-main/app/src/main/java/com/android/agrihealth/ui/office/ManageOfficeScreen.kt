@@ -18,6 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.ui.common.AuthorName
+import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.JOIN_OFFICE_BUTTON
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.LEAVE_OFFICE_BUTTON
@@ -25,6 +26,7 @@ import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_ADDRES
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_DESCRIPTION
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_NAME
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_VET_LIST
+import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
 
@@ -35,6 +37,7 @@ object ManageOfficeScreenTestTags {
   const val OFFICE_ADDRESS = "OfficeAddress"
   const val OFFICE_DESCRIPTION = "OfficeDescription"
   const val OFFICE_VET_LIST = "OfficeVetList"
+  const val SAVE_BUTTON = "SaveButton"
   const val LEAVE_OFFICE_BUTTON = "LeaveOfficeButton"
 }
 
@@ -84,7 +87,7 @@ fun ManageOfficeScreen(
         TopAppBar(
             title = { Text("My Office") },
             navigationIcon = {
-              IconButton(onClick = onGoBack) {
+              IconButton(onClick = onGoBack, modifier = Modifier.testTag(GO_BACK_BUTTON)) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
               }
             },
@@ -151,7 +154,7 @@ fun ManageOfficeScreen(
                             // TODO: convert editableAddress back to Location when ready
                         ))
                   },
-                  modifier = Modifier.fillMaxWidth()) {
+                  modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON)) {
                     Text("Save Changes")
                   }
             }

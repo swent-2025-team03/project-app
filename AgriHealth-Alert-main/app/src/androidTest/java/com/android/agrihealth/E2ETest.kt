@@ -19,6 +19,8 @@ import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
 import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags
+import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.android.agrihealth.ui.profile.ChangePasswordScreenTestTags
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
@@ -92,6 +94,23 @@ class E2ETest : FirebaseEmulatorsTest() {
     completeSignIn(email, pwd)
     checkOverviewScreenIsDisplayed()
     assert(uid == Firebase.auth.uid)
+  }
+
+  @Test
+  fun testVet_SignIn_CreateOffice() {
+    composeTestRule.setContent { AgriHealthApp() }
+    composeTestRule.waitForIdle()
+    val email = "vet@example.com"
+    val pwd = "StrongPwd!123"
+
+    completeSignUp(email, pwd, isVet = true)
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
+    checkOverviewScreenIsDisplayed()
+    goToProfileFromOverview()
+    manageWithNoOffice()
+    createOffice()
   }
 
   // ----------- Scenario: Farmer -----------
@@ -249,6 +268,38 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(EditProfileScreenTestTags.ADD_CODE_BUTTON)
         .assertIsDisplayed()
         .performClick()
+  }
+
+  private fun manageWithNoOffice() {
+    openManageOfficeFromProfile()
+    composeTestRule
+        .onNodeWithTag(ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON)
+        .assertIsDisplayed()
+  }
+
+  private fun openManageOfficeFromProfile() {
+    composeTestRule
+        .onNodeWithTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+  }
+
+  private fun createOffice() {
+    composeTestRule
+        .onNodeWithTag(ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule
+        .onNodeWithTag(CreateOfficeScreenTestTags.NAME_FIELD)
+        .assertIsDisplayed()
+        .performTextInput("Vet Office")
+    composeTestRule
+        .onNodeWithTag(CreateOfficeScreenTestTags.CREATE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    goBack()
+    openManageOfficeFromProfile()
+    composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.OFFICE_NAME).assertIsDisplayed()
   }
 
   private fun checkLinkedVetIsNotEmpty() {
