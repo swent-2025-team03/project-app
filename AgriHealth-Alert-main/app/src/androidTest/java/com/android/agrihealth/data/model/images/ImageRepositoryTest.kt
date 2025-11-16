@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream
 import kotlin.random.Random
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import kotlin.math.sqrt
 
 class ImageRepositoryTest : FirebaseEmulatorsTest() {
   val repository = ImageRepositoryProvider.repository
@@ -103,10 +104,39 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
   fun isFileTooLarge_worksAsExpected() {
     val smallImage = bitmapToByteArray(generateTestImage(1, 1, randomColor = true))
 
+    // Probably big enough
+    val width = (sqrt(repository.MAX_FILE_SIZE.toFloat() / 4) * 1.35).toInt()
     // PNG compression is good at reducing size for patterns
-    val bigImage = bitmapToByteArray(generateTestImage(1500, 1500, randomColor = true))
+    val bigImage = bitmapToByteArray(generateTestImage(width, width, randomColor = true))
+
+    Log.d("ImageTest", "width $width size ${bigImage.size}")
 
     assert(!repository.isFileTooLarge(smallImage))
     assert(repository.isFileTooLarge(bigImage))
+  }
+
+  @Test
+  fun resizeImage_reduceByHalf() {
+    val factor: Int = 2
+    val bigWidth = repository.IMAGE_MAX_WIDTH * factor
+    val bigHeight = repository.IMAGE_MAX_HEIGHT * factor
+    val largeImage = generateTestImage(bigWidth, bigHeight)
+
+    val resizedImage = repository.resizeImage(largeImage)
+    val newWidth = resizedImage.width
+    val newHeight = resizedImage.height
+
+    assert(bigWidth == newWidth * factor)
+    assert(bigHeight == newHeight * factor)
+  }
+
+  @Test
+  fun resizeImage_untouchedIfSmall() {
+    val smallImage = generateTestImage(10, 10)
+
+    val resizedImage = repository.resizeImage(smallImage)
+
+    assert(smallImage.width == resizedImage.width)
+    assert(smallImage.height == resizedImage.height)
   }
 }

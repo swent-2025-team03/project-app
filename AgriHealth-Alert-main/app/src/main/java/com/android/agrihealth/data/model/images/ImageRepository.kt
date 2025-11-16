@@ -5,6 +5,11 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 
 interface ImageRepository {
+    val MAX_FILE_SIZE: Long
+    val IMAGE_MAX_WIDTH: Int
+    val IMAGE_MAX_HEIGHT: Int
+    val IMAGE_FORMAT: Bitmap.CompressFormat
+
   /**
    * Uploads the provided byte array as an image to the backend storage to be downloaded later.
    * Returns the storage path

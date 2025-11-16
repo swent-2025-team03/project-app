@@ -11,10 +11,10 @@ import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.tasks.await
 
 class ImageRepositoryFirebase : ImageRepository {
-  val MAX_FILE_SIZE: Long = 3 * 1024 * 1024
-  val IMAGE_MAX_WIDTH: Int = 2048
-  val IMAGE_MAX_HEIGHT: Int = 2048
-  val IMAGE_FORMAT = Bitmap.CompressFormat.JPEG
+  override val MAX_FILE_SIZE: Long = 3 * 1024 * 1024
+  override val IMAGE_MAX_WIDTH: Int = 2048
+  override val IMAGE_MAX_HEIGHT: Int = 2048
+  override val IMAGE_FORMAT = Bitmap.CompressFormat.JPEG
   val storage = FirebaseStorage.getInstance()
 
   /*override suspend fun uploadImage(imageUri: Uri): Result<String> {
@@ -69,11 +69,15 @@ class ImageRepositoryFirebase : ImageRepository {
   }
 
   override fun resizeImage(bitmap: Bitmap): Bitmap {
-    val ratio =
-        minOf(IMAGE_MAX_WIDTH.toFloat() / bitmap.width, IMAGE_MAX_HEIGHT.toFloat() / bitmap.height)
+    val width = bitmap.width
+    val height = bitmap.height
+    if (width <= IMAGE_MAX_WIDTH && height <= IMAGE_MAX_HEIGHT) return bitmap
 
-    val newWidth = (bitmap.width * ratio).toInt()
-    val newHeight = (bitmap.height * ratio).toInt()
+    val ratio =
+        minOf(IMAGE_MAX_WIDTH.toFloat() / width, IMAGE_MAX_HEIGHT.toFloat() / height)
+
+    val newWidth = (width * ratio).toInt()
+    val newHeight = (height * ratio).toInt()
 
     return bitmap.scale(newWidth, newHeight)
   }
