@@ -1,17 +1,23 @@
 package com.android.agrihealth.data.model.images
 
 import android.content.ContentResolver
+import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
+import androidx.core.graphics.scale
+import com.android.agrihealth.data.model.images.ImageRepository.Companion.toBitmap
 import com.google.firebase.storage.FirebaseStorage
+import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.tasks.await
 
 class ImageRepositoryFirebase : ImageRepository {
   val MAX_FILE_SIZE: Long = 3 * 1024 * 1024
+  val IMAGE_MAX_WIDTH: Int = 2048
+  val IMAGE_MAX_HEIGHT: Int = 2048
+  val IMAGE_FORMAT = Bitmap.CompressFormat.JPEG
   val storage = FirebaseStorage.getInstance()
-  val resolver: ContentResolver = storage.app.applicationContext.contentResolver
 
-  override suspend fun uploadImage(imageUri: Uri): Result<String> {
+  /*override suspend fun uploadImage(imageUri: Uri): Result<String> {
     return try {
       val inputStream =
           resolver.openInputStream(imageUri)
@@ -21,7 +27,7 @@ class ImageRepositoryFirebase : ImageRepository {
     } catch (e: Exception) {
       Result.failure(e)
     }
-  }
+  }*/
 
   override suspend fun uploadImage(byteArray: ByteArray): Result<String> {
     return try {
@@ -52,19 +58,43 @@ class ImageRepositoryFirebase : ImageRepository {
     }
   }
 
-  override fun isFileTooLarge() {
-    TODO("Not yet implemented")
+  override fun isFileTooLarge(bytes: ByteArray): Boolean {
+    return bytes.size >= MAX_FILE_SIZE
   }
 
-  override fun lowerFileSize() {
-    TODO("Not yet implemented")
+  override fun reduceFileSize(bytes: ByteArray): ByteArray {
+    val initBitmap = bytes.toBitmap()
+    val resizedBitmap = resizeImage(initBitmap)
+    return compressImage(resizedBitmap)
   }
 
-  override fun resizeImage() {
-    TODO("Not yet implemented")
+  override fun resizeImage(bitmap: Bitmap): Bitmap {
+    val ratio =
+        minOf(IMAGE_MAX_WIDTH.toFloat() / bitmap.width, IMAGE_MAX_HEIGHT.toFloat() / bitmap.height)
+
+    val newWidth = (bitmap.width * ratio).toInt()
+    val newHeight = (bitmap.height * ratio).toInt()
+
+    return bitmap.scale(newWidth, newHeight)
   }
 
-  override fun compressImage() {
-    TODO("Not yet implemented")
+  override fun compressImage(bitmap: Bitmap): ByteArray {
+    val stream = ByteArrayOutputStream()
+    var quality = 100
+    do {
+      stream.reset()
+      bitmap.compress(IMAGE_FORMAT, quality, stream)
+      quality -= 10
+    } while (isFileTooLarge(stream.toByteArray()) && quality > 10)
+
+    return stream.toByteArray()
+  }
+
+  override fun resolveUri(uri: Uri): ByteArray {
+    val resolver: ContentResolver = storage.app.applicationContext.contentResolver
+    val inputStream =
+        resolver.openInputStream(uri)
+            ?: throw IllegalArgumentException("Could not read file with URI $uri")
+    return inputStream.readBytes()
   }
 }
