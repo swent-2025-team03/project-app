@@ -7,6 +7,7 @@ import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -99,7 +100,7 @@ open class UserViewModel(
       val current = _user.value
 
       // Only vets should get an officeId
-      if (current is com.android.agrihealth.data.model.user.Vet) {
+      if (current is Vet) {
         val updated = current.copy(officeId = officeId)
 
         try {

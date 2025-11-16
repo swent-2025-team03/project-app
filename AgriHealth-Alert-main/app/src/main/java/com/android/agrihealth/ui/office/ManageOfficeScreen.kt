@@ -5,6 +5,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -19,27 +21,8 @@ import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
-import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON
-import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.JOIN_OFFICE_BUTTON
-import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.LEAVE_OFFICE_BUTTON
-import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_ADDRESS
-import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_DESCRIPTION
-import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_NAME
-import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_VET_LIST
-import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
-
-object ManageOfficeScreenTestTags {
-  const val CREATE_OFFICE_BUTTON = "CreateOfficeButton"
-  const val JOIN_OFFICE_BUTTON = "JoinOfficeButton"
-  const val OFFICE_NAME = "OfficeName"
-  const val OFFICE_ADDRESS = "OfficeAddress"
-  const val OFFICE_DESCRIPTION = "OfficeDescription"
-  const val OFFICE_VET_LIST = "OfficeVetList"
-  const val SAVE_BUTTON = "SaveButton"
-  const val LEAVE_OFFICE_BUTTON = "LeaveOfficeButton"
-}
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,27 +43,14 @@ fun ManageOfficeScreen(
         }
   }
 
-  // TODO: reload office data when returning to this screen
-
   val vm: ManageOfficeViewModel = viewModel(factory = factory)
-  val office by vm.office.collectAsState()
-  val isLoading by vm.isLoading.collectAsState()
+  val uiState by vm.uiState.collectAsState()
 
   var showLeaveDialog by remember { mutableStateOf(false) }
 
-  val isOwner = office?.ownerId == userViewModel.user.value.uid
+  val isOwner = uiState.office?.ownerId == userViewModel.user.value.uid
 
-  var editableName by remember { mutableStateOf(office?.name ?: "") }
-  var editableDescription by remember { mutableStateOf(office?.description ?: "") }
-  var editableAddress by remember { mutableStateOf(office?.address?.toString() ?: "") }
-
-  LaunchedEffect(office) {
-    if (office != null) {
-      editableName = office!!.name
-      editableDescription = office!!.description ?: ""
-      editableAddress = office!!.address?.toString() ?: ""
-    }
-  }
+  LaunchedEffect(Unit) { vm.loadOffice() }
 
   Scaffold(
       topBar = {
@@ -93,103 +63,95 @@ fun ManageOfficeScreen(
             },
             modifier = Modifier.testTag(TOP_BAR))
       }) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding).padding(16.dp)) {
-          if (office == null) {
-            Button(
-                onClick = onCreateOffice,
-                modifier = Modifier.fillMaxWidth().testTag(CREATE_OFFICE_BUTTON)) {
-                  Text("Create My Office")
+        Column(
+            modifier =
+                Modifier.padding(innerPadding).padding(16.dp).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)) {
+              if (uiState.office == null) {
+                Button(
+                    onClick = onCreateOffice,
+                    modifier = Modifier.fillMaxWidth().testTag("CreateOfficeButton")) {
+                      Text("Create My Office")
+                    }
+
+                Button(
+                    onClick = onJoinOffice,
+                    modifier = Modifier.fillMaxWidth().testTag("JoinOfficeButton")) {
+                      Text("Join an Office")
+                    }
+              } else {
+                OutlinedTextField(
+                    value = if (isOwner) uiState.editableName else uiState.office!!.name,
+                    onValueChange = { if (isOwner) vm.onNameChange(it) },
+                    label = { Text("Office Name") },
+                    enabled = isOwner,
+                    modifier = Modifier.fillMaxWidth().testTag("OfficeName"))
+
+                OutlinedTextField(
+                    value =
+                        if (isOwner) uiState.editableDescription
+                        else (uiState.office!!.description ?: ""),
+                    onValueChange = { if (isOwner) vm.onDescriptionChange(it) },
+                    label = { Text("Description") },
+                    enabled = isOwner,
+                    modifier = Modifier.fillMaxWidth().testTag("OfficeDescription"))
+
+                OutlinedTextField(
+                    value =
+                        if (isOwner) uiState.editableAddress
+                        else uiState.office!!.address?.toString() ?: "",
+                    onValueChange = { if (isOwner) vm.onAddressChange(it) },
+                    label = { Text("Address") },
+                    enabled = isOwner,
+                    modifier = Modifier.fillMaxWidth().testTag("OfficeAddress"))
+
+                Text("Vets in this office:", style = MaterialTheme.typography.titleMedium)
+
+                LazyColumn(
+                    modifier =
+                        Modifier.fillMaxWidth().heightIn(max = 300.dp).testTag("OfficeVetList")) {
+                      items(uiState.office!!.vets) { vetId -> AuthorName(vetId) }
+                    }
+
+                if (isOwner) {
+                  Button(
+                      onClick = { vm.updateOffice() },
+                      modifier = Modifier.fillMaxWidth().testTag("SaveButton")) {
+                        Text("Save Changes")
+                      }
                 }
 
-            Spacer(Modifier.height(16.dp))
+                val leaveButtonEnabled = isOwner
+                OutlinedButton(
+                    onClick = { if (leaveButtonEnabled) showLeaveDialog = true },
+                    enabled = leaveButtonEnabled,
+                    colors =
+                        ButtonDefaults.outlinedButtonColors(contentColor = StatusColors().spam),
+                    border = BorderStroke(1.dp, StatusColors().spam),
+                    modifier = Modifier.fillMaxWidth().testTag("LeaveOfficeButton")) {
+                      Text("Leave My Office")
+                    }
+                // TODO: improve leave button permissions; currently only owners can trigger dialog
 
-            Button(
-                onClick = onJoinOffice,
-                modifier = Modifier.fillMaxWidth().testTag(JOIN_OFFICE_BUTTON)) {
-                  Text("Join an Office")
+                if (showLeaveDialog) {
+                  AlertDialog(
+                      onDismissRequest = { showLeaveDialog = false },
+                      title = { Text("Leave Office?") },
+                      text = { Text("Are you sure you want to leave this office?") },
+                      confirmButton = {
+                        TextButton(
+                            onClick = {
+                              showLeaveDialog = false
+                              vm.leaveOffice(onSuccess = onGoBack)
+                            }) {
+                              Text("Leave")
+                            }
+                      },
+                      dismissButton = {
+                        TextButton(onClick = { showLeaveDialog = false }) { Text("Cancel") }
+                      })
                 }
-          } else {
-            OutlinedTextField(
-                value = if (isOwner) editableName else office!!.name,
-                onValueChange = { if (isOwner) editableName = it },
-                label = { Text("Office Name") },
-                enabled = isOwner,
-                modifier = Modifier.fillMaxWidth().testTag(OFFICE_NAME))
-
-            Spacer(Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = if (isOwner) editableDescription else (office!!.description ?: ""),
-                onValueChange = { if (isOwner) editableDescription = it },
-                label = { Text("Description") },
-                enabled = isOwner,
-                modifier = Modifier.fillMaxWidth().testTag(OFFICE_DESCRIPTION))
-
-            Spacer(Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = if (isOwner) editableAddress else office!!.address.toString(),
-                onValueChange = { if (isOwner) editableAddress = it },
-                label = { Text("Address") },
-                enabled = isOwner,
-                modifier = Modifier.fillMaxWidth().testTag(OFFICE_ADDRESS))
-
-            Spacer(Modifier.height(24.dp))
-
-            Text("Vets in this office:", style = MaterialTheme.typography.titleMedium)
-
-            LazyColumn(modifier = Modifier.fillMaxWidth().testTag(OFFICE_VET_LIST)) {
-              items(office!!.vets) { vetId -> AuthorName(vetId) }
+              }
             }
-
-            if (isOwner) {
-              Spacer(Modifier.height(24.dp))
-
-              Button(
-                  onClick = {
-                    vm.updateOffice(
-                        office!!.copy(
-                            name = editableName,
-                            description = editableDescription,
-                            // TODO: convert editableAddress back to Location when ready
-                        ))
-                  },
-                  modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON)) {
-                    Text("Save Changes")
-                  }
-            }
-
-            Spacer(Modifier.height(32.dp))
-
-            val color = StatusColors().spam
-            OutlinedButton(
-                onClick = { showLeaveDialog = true },
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = color),
-                border = BorderStroke(1.dp, color),
-                modifier = Modifier.fillMaxWidth().testTag(LEAVE_OFFICE_BUTTON)) {
-                  Text("Leave My Office")
-                }
-
-            if (showLeaveDialog) {
-              AlertDialog(
-                  onDismissRequest = { showLeaveDialog = false },
-                  title = { Text("Leave Office?") },
-                  text = { Text("Are you sure you want to leave this office?") },
-                  confirmButton = {
-                    TextButton(
-                        onClick = {
-                          showLeaveDialog = false
-                          vm.leaveOffice()
-                          onGoBack()
-                        }) {
-                          Text("Leave")
-                        }
-                  },
-                  dismissButton = {
-                    TextButton(onClick = { showLeaveDialog = false }) { Text("Cancel") }
-                  })
-            }
-          }
-        }
       }
 }
