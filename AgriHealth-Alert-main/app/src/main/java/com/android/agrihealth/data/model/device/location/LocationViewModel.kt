@@ -8,11 +8,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class LocationViewModel() : ViewModel() {
+class LocationViewModel() : ViewModel(), LocationProvider {
   private val locationRepository = LocationRepositoryProvider.repository
 
   private val _locationState = MutableStateFlow<Location?>(null)
-  val locationState = _locationState.asStateFlow()
+  override val locationState = _locationState.asStateFlow()
 
   private val exceptionLogTag = "LocationServices"
 
@@ -35,7 +35,7 @@ class LocationViewModel() : ViewModel() {
    * user has given permissions first, for example using the "LocationPermissionsRequester"
    * composable
    */
-  fun getLastKnownLocation() {
+  override fun getLastKnownLocation() {
     throwIfNotAllowed()
     viewModelScope.launch {
       try {
@@ -55,7 +55,7 @@ class LocationViewModel() : ViewModel() {
    * sure the user has given permissions first, for example using the "LocationPermissionsRequester"
    * composable
    */
-  fun getCurrentLocation() {
+  override fun getCurrentLocation() {
     throwIfNotAllowed()
     viewModelScope.launch {
       try {
@@ -71,7 +71,7 @@ class LocationViewModel() : ViewModel() {
   }
 
   /** Checks if the user allowed all device location permissions on the app */
-  fun hasLocationPermissions(): Boolean {
+  override fun hasLocationPermissions(): Boolean {
     return locationRepository.hasFineLocationPermission() &&
         locationRepository.hasCoarseLocationPermission()
   }

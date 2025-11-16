@@ -3,16 +3,16 @@ package com.android.agrihealth.ui.map
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.agrihealth.data.model.auth.AuthProvider
+import com.android.agrihealth.data.model.auth.FirebaseAuthProvider
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
-import com.android.agrihealth.data.model.device.location.LocationViewModel
+import com.android.agrihealth.data.model.device.location.LocationProvider
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.google.android.gms.maps.model.LatLng
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,13 +24,16 @@ import kotlinx.coroutines.withTimeoutOrNull
 
 data class MapUIState(
     val reports: List<Report> = emptyList(),
-    val locationPermission: Boolean = false
+    val locationPermission: Boolean = false,
+    val isLoading: Boolean = false
+
 )
 
 class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
-    private val locationViewModel: LocationViewModel,
+    private val locationViewModel: LocationProvider,
+    private val authProvider: AuthProvider = FirebaseAuthProvider,
     val selectedReportId: String? = null
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(MapUIState())
@@ -50,9 +53,10 @@ class MapViewModel(
       }
     }
     refreshMapPermission()
-    refreshReports(
-        Firebase.auth.currentUser?.uid
-            ?: throw IllegalArgumentException("Map refreshed Reports while current user was null"))
+
+    val uid = authProvider.currentUserId()
+        ?: throw IllegalArgumentException("Map refreshed Reports while current user was null")
+    refreshReports(uid)
   }
 
   fun refreshReports(uid: String) {
@@ -93,9 +97,13 @@ class MapViewModel(
    */
   fun setStartingLocation(location: Location?, useCurrentLocation: Boolean = false) {
     // Specific starting point, takes priority because of report navigation for example
+    _uiState.value = _uiState.value.copy(isLoading = true)
+
     if (location != null) {
       _startingLocation.value = location
       _zoom.value = 15f
+      _uiState.value = _uiState.value.copy(isLoading = false)
+
     }
     // Default starting position, so either location or workplace or default
     else {
@@ -114,12 +122,14 @@ class MapViewModel(
 
           _startingLocation.value = gpsLocation ?: getLocationFromUserAddress() ?: return@launch
         }
+        _uiState.value = _uiState.value.copy(isLoading = false)
+
       }
     }
   }
 
   private suspend fun getLocationFromUserAddress(): Location? {
-    val uid = Firebase.auth.currentUser?.uid ?: return null
+    val uid = authProvider.currentUserId() ?: return null
     val user = userRepository.getUserFromId(uid)
     return user.getOrNull()?.address
   }

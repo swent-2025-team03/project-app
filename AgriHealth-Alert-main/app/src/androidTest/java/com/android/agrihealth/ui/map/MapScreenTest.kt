@@ -17,6 +17,7 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.repository.ReportRepositoryLocal
+import com.android.agrihealth.fakes.FakeAuthProvider
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.user.UserViewModel
 import com.google.android.gms.maps.model.LatLng
@@ -26,6 +27,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -141,6 +143,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
         MapViewModel(
             reportRepository = reportRepository,
             locationViewModel = locationViewModel,
+            authProvider = FakeAuthProvider(),
             selectedReportId = selectedReportId)
     composeTestRule.setContent {
       MaterialTheme {
@@ -329,4 +332,39 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     assertEquals(11, positions1?.size)
     assertEquals(6, positions2?.size)
   }
+
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun loadingOverlay_showsWhileFetchingLocation() = runTest {
+
+        // Simulate slow GPS on purpose
+        val slowRepository = mockk<LocationRepository>(relaxed = true)
+
+        every { slowRepository.hasFineLocationPermission() } returns true
+        every { slowRepository.hasCoarseLocationPermission() } returns true
+
+        coEvery { slowRepository.getLastKnownLocation() } coAnswers {
+            delay(1500)   // simulate slow GPS
+            Location(46.95, 7.44, "Loaded Position")
+        }
+
+        coEvery { slowRepository.getCurrentLocation() } returns
+                Location(46.95, 7.44, "Loaded Position")
+
+        LocationRepositoryProvider.repository = slowRepository
+        locationViewModel = LocationViewModel()
+
+        setContentToMapWithVM()
+
+        composeTestRule.onNodeWithTag("loading_overlay_scrim").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("loading_overlay_spinner").assertIsDisplayed()
+
+        advanceUntilIdle()
+
+        composeTestRule.onNodeWithTag("loading_overlay_scrim").assertDoesNotExist()
+        composeTestRule.onNodeWithTag("loading_overlay_spinner").assertDoesNotExist()
+
+        composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
+    }
 }

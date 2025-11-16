@@ -16,6 +16,7 @@ data class AddReportUiState(
     val title: String = "",
     val description: String = "",
     val chosenVet: String = "",
+    val isLoading: Boolean = false,
 )
 
 class AddReportViewModel(
@@ -38,28 +39,35 @@ class AddReportViewModel(
   }
 
   override suspend fun createReport(): Boolean {
-    val uiState = _uiState.value
-    if (uiState.title.isBlank() || uiState.description.isBlank()) {
+    val current = _uiState.value
+    if (current.title.isBlank() || current.description.isBlank()) {
       return false
     }
+    // Set loading true
+    _uiState.value = _uiState.value.copy(isLoading = true)
 
-    val newReport =
-        Report(
-            id = reportRepository.getNewReportId(),
-            title = uiState.title,
-            description = uiState.description,
-            photoUri = null, // currently unused
-            farmerId = userId,
-            vetId = uiState.chosenVet,
-            status = ReportStatus.PENDING,
-            answer = null,
-            location = Location(46.7990813, 6.6259961) // null // optional until implemented
-            )
+    val newReport = Report(
+        id = reportRepository.getNewReportId(),
+        title = current.title,
+        description = current.description,
+        photoUri = null,
+        farmerId = userId,
+        vetId = current.chosenVet,
+        status = ReportStatus.PENDING,
+        answer = null,
+        location = Location(46.7990813, 6.6259961)
+    )
 
-    viewModelScope.launch { reportRepository.addReport(newReport) }
-
-    // Clears all the fields
-    clearInputs() // TODO: Call only if addReport succeeds
+    viewModelScope.launch {
+      try {
+        reportRepository.addReport(newReport)
+        // Success: stop loading
+        _uiState.value = _uiState.value.copy(isLoading = false)
+        clearInputs() // TODO conditionner au succès réel si nécessaire
+      } catch (e: Exception) {
+        _uiState.value = _uiState.value.copy(isLoading = false)
+      }
+    }
 
     return true
   }

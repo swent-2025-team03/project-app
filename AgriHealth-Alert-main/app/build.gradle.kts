@@ -196,6 +196,7 @@ dependencies {
     implementation(libs.maps.compose.utils)
     implementation(libs.play.services.auth)
     implementation(libs.play.services.location)
+    testImplementation(kotlin("test"))
 }
 
 tasks.withType<Test> {

@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import com.android.agrihealth.ui.loading.LoadingOverlay
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -58,10 +59,8 @@ object AddReportConstants {
 /**
  * Displays the report creation screen for farmers
  *
- * @param onBack A callback invoked when the back button in the top bar is pressed.
- * @param createReportViewModel The [AddReportViewModel] instance responsible for managing report
- *   creation logic and UI state.
- * @see AddReportViewModel
+ * @param onBack Callback when back pressed.
+ * @param addReportViewModel ViewModel contract for report creation.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -68,6 +68,7 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
+import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -155,7 +156,7 @@ fun MapScreen(
 
   // Convert pixels to dp for layout use
   val reportBoxHeightDp = with(density) { reportBoxHeightPx.toDp() }
-
+    LoadingOverlay(isLoading = uiState.isLoading) {
   Scaffold(
       topBar = { if (!isViewedFromOverview) MapTopBar(onBack = { navigationActions?.goBack() }) },
       bottomBar = {
@@ -264,7 +265,7 @@ fun MapScreen(
               onReportClick = { navigationActions?.navigateTo(Screen.ViewReport(it)) })
         }
       })
-}
+}}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
