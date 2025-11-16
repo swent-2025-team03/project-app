@@ -50,6 +50,13 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
     return bitmap
   }
 
+  fun generateBigImage(): Bitmap {
+    // Probably big enough
+    val width = (sqrt(repository.MAX_FILE_SIZE.toFloat() / 4) * 1.35).toInt()
+    // PNG compression is good at reducing size for patterns
+    return generateTestImage(width, width, randomColor = true)
+  }
+
   @Test
   fun uploadImage_canSucceed() = runTest {
     val result = repository.uploadImage(testImageBA)
@@ -104,12 +111,7 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
   fun isFileTooLarge_worksAsExpected() {
     val smallImage = bitmapToByteArray(generateTestImage(1, 1, randomColor = true))
 
-    // Probably big enough
-    val width = (sqrt(repository.MAX_FILE_SIZE.toFloat() / 4) * 1.35).toInt()
-    // PNG compression is good at reducing size for patterns
-    val bigImage = bitmapToByteArray(generateTestImage(width, width, randomColor = true))
-
-    Log.d("ImageTest", "width $width size ${bigImage.size}")
+    val bigImage = bitmapToByteArray(generateBigImage())
 
     assert(!repository.isFileTooLarge(smallImage))
     assert(repository.isFileTooLarge(bigImage))
@@ -138,5 +140,16 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
 
     assert(smallImage.width == resizedImage.width)
     assert(smallImage.height == resizedImage.height)
+  }
+
+  @Test
+  fun compressImage_loopsUntilSmall() {
+    val bigImage = generateBigImage()
+
+    assert(repository.isFileTooLarge(bitmapToByteArray(bigImage)))
+
+    val compressedImage = repository.compressImage(bigImage)
+
+    assert(!repository.isFileTooLarge(compressedImage))
   }
 }
