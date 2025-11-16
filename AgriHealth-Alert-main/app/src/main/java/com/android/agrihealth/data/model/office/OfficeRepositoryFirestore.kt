@@ -10,18 +10,17 @@ private const val OFFICES_COLLECTION_PATH = "offices"
 
 class OfficeRepositoryFirestore(private val db: FirebaseFirestore = Firebase.firestore) :
     OfficeRepository {
+
+  override fun getNewUid(): String {
+    return db.collection(OFFICES_COLLECTION_PATH).document().id
+  }
+
   override suspend fun addOffice(office: Office) {
-    val map = mapFromOffice(office)
-    db.collection(OFFICES_COLLECTION_PATH).document(office.id).set(map).await()
+    db.collection(OFFICES_COLLECTION_PATH).document(office.id).set(mapFromOffice(office)).await()
   }
 
   override suspend fun updateOffice(office: Office) {
-    val snapshot = db.collection(OFFICES_COLLECTION_PATH).document(office.id).get().await()
-    if (!snapshot.exists()) throw Exception("Office does not exist")
-    val map = mapFromOffice(office)
-    // Prevent changing id via updates
-    val updateMap = map.toMutableMap().apply { remove("id") }
-    db.collection(OFFICES_COLLECTION_PATH).document(office.id).update(updateMap).await()
+    db.collection(OFFICES_COLLECTION_PATH).document(office.id).update(mapFromOffice(office)).await()
   }
 
   override suspend fun deleteOffice(id: String) {
@@ -31,20 +30,13 @@ class OfficeRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fir
   override suspend fun getOffice(id: String): Result<Office> {
     return try {
       val snapshot = db.collection(OFFICES_COLLECTION_PATH).document(id).get().await()
-      if (!snapshot.exists()) return Result.failure(NullPointerException("No such office"))
-      val data = snapshot.data ?: return Result.failure(Exception("Office has no data"))
-      val office = officeFromData(id, data)
-      Result.success(office)
-    } catch (e: Exception) {
-      Result.failure(e)
-    }
-  }
 
-  override suspend fun listOffices(): Result<List<Office>> {
-    return try {
-      val snapshot = db.collection(OFFICES_COLLECTION_PATH).get().await()
-      val offices = snapshot.documents.map { doc -> officeFromData(doc.id, doc.data ?: emptyMap()) }
-      Result.success(offices)
+      if (!snapshot.exists()) {
+        return Result.failure(NullPointerException("Office not found"))
+      }
+
+      val data = snapshot.data ?: return Result.failure(Exception("Office missing data"))
+      Result.success(officeFromData(data))
     } catch (e: Exception) {
       Result.failure(e)
     }
@@ -52,6 +44,7 @@ class OfficeRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fir
 
   private fun mapFromOffice(office: Office): Map<String, Any?> {
     return mapOf(
+        "id" to office.id,
         "name" to office.name,
         "address" to office.address,
         "description" to office.description,
@@ -59,18 +52,13 @@ class OfficeRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fir
         "ownerId" to office.ownerId)
   }
 
-  private fun officeFromData(id: String, data: Map<String, Any>): Office {
-    val name = data["name"] as? String ?: throw Exception("Missing name")
-    val address = data["address"] as? Location?
-    val description = data["description"] as? String?
-    val vets = data["vets"] as? List<String> ?: emptyList()
-    val ownerId = data["ownerId"] as? String ?: throw Exception("Missing ownerId")
+  private fun officeFromData(data: Map<String, Any>): Office {
     return Office(
-        id = id,
-        name = name,
-        address = address,
-        description = description,
-        vets = vets,
-        ownerId = ownerId)
+        id = data["id"] as String,
+        name = data["name"] as String,
+        address = data["address"] as? Location,
+        description = data["description"] as? String,
+        vets = data["vets"] as? List<String> ?: emptyList(),
+        ownerId = data["ownerId"] as String)
   }
 }

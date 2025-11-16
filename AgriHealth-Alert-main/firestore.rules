@@ -95,20 +95,25 @@ service cloud.firestore {
     // ---- Offices ----
     match /offices/{officeId} {
 
-      // Anyone signed in can read office information
-      allow get, list: if isSignedIn();
+      // Only vets may read office information
+      allow get: if hasRole("Vet");
 
-      // Only vets can create an office, and only if they set themselves as owner
+      // Only vets can create, and the creator must set themselves as owner.
+      // Also, the stored `id` must match the document ID.
       allow create: if hasRole("Vet")
-                    && request.resource.data.ownerId == request.auth.uid;
+                    && request.resource.data.ownerId == request.auth.uid
+                    && request.resource.data.id == officeId;
 
-      // Owner may update their office (but cannot change the ownerId)
+      // Owner may update their office.
+      // They cannot change ownerId or id.
       allow update: if hasRole("Vet")
                     && resource.data.ownerId == request.auth.uid
-                    && !(request.resource.data.diff(resource.data).changedKeys().hasAny(['ownerId']));
+                    && request.resource.data.id == resource.data.id
+                    && request.resource.data.ownerId == resource.data.ownerId;
 
-      // No deletes for now
-      allow delete: if false;
+      // Owners may delete their office.
+      allow delete: if hasRole("Vet")
+                    && resource.data.ownerId == request.auth.uid;
     }
   }
 }
