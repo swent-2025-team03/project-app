@@ -259,7 +259,8 @@ fun AgriHealthApp(
           val sourceReport = backStackEntry.arguments?.getString("reportId")
 
           val location = if (lat != null && lng != null) Location(lat, lng) else null
-          val mapViewModel = MapViewModel(selectedReportId = sourceReport)
+          val mapViewModel =
+              MapViewModel(locationViewModel = locationViewModel, selectedReportId = sourceReport)
           MapScreen(
               mapViewModel = mapViewModel,
               navigationActions = navigationActions,

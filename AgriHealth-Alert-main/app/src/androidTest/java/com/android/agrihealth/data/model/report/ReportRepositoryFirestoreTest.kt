@@ -21,12 +21,16 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
 
   val now: Instant = Instant.ofEpochSecond(1000000)
 
+  val openQuestion = OpenQuestion("hello", "hi")
+
   val baseReport1 =
       Report(
           id = "0",
           title = "report1",
           description = "description1",
           photoUri = TestAssetUtils.getUriFrom(TestAssetUtils.FAKE_PHOTO_FILE),
+          questionForms = listOf(openQuestion),
+          photoUri = null,
           farmerId = user1.uid,
           vetId = user3.uid,
           status = ReportStatus.PENDING,
@@ -40,6 +44,8 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
           title = "report2",
           description = "description2",
           photoUri = TestAssetUtils.getUriFrom(TestAssetUtils.FAKE_PHOTO_FILE),
+          questionForms = listOf(openQuestion),
+          photoUri = "url to the photo",
           farmerId = user2.uid,
           vetId = "Vet2",
           status = ReportStatus.RESOLVED,
@@ -116,10 +122,19 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     var reports = repository.getReportsByVet(user3.uid)
     assertEquals(2, reports.size)
 
-    reports.forEach { assertEquals(user3.uid, it.vetId) }
+    reports.forEach {
+      assertEquals(user3.uid, it.vetId)
+      assertEquals(listOf(openQuestion), it.questionForms)
+    }
 
     reports =
-        reports.map { it.copy(farmerId = report1.farmerId, vetId = report1.vetId, createdAt = now) }
+        reports.map {
+          it.copy(
+              farmerId = report1.farmerId,
+              vetId = report1.vetId,
+              createdAt = now,
+              questionForms = listOf(openQuestion))
+        }
     val expectedReports = setOf(report1, report3)
     assertEquals(expectedReports, reports.toSet())
 
@@ -173,7 +188,8 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
         reports.map {
           it.copy(
               farmerId = if (it.id == report2.id) report2.farmerId else report3.farmerId,
-              createdAt = now)
+              createdAt = now,
+              questionForms = listOf(openQuestion))
         }
     val expectedReports = setOf(report2, report3)
     assertEquals(expectedReports, reports.toSet())

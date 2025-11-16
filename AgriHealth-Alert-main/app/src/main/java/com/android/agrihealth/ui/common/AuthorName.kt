@@ -50,7 +50,7 @@ fun AuthorName(
     showRole: Boolean = false,
     deletedText: String = "Deleted user",
     unassignedText: String = "Unassigned",
-    viewModel: AuthorNameViewModel = viewModel()
+    viewModel: AuthorNameViewModel = viewModel(key = uid)
 ) {
   val label by viewModel.label.collectAsState()
 

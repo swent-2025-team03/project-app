@@ -3,9 +3,7 @@ package com.android.agrihealth.ui.map
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -13,23 +11,27 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Preview
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -37,15 +39,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
@@ -53,6 +62,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.R
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.core.design.theme.statusColor
+import com.android.agrihealth.data.model.device.location.LocationViewModel
+import com.android.agrihealth.data.model.device.location.locationPermissionsRequester
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
@@ -74,6 +85,7 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 
 object MapScreenTestTags {
@@ -91,26 +103,29 @@ object MapScreenTestTags {
 
   fun getTestTagForReportDesc(reportId: String): String = "reportDescription_$reportId"
 
-  fun getTestTagForFilter(filter: String): String = "filter_$filter"
+  fun getTestTagForFilter(filter: String?): String = "filter_$filter"
 }
+
+const val AllFilterText = "All reports"
 
 @Composable
 fun MapScreen(
     mapViewModel: MapViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel(),
+    locationViewModel: LocationViewModel = viewModel(),
     navigationActions: NavigationActions? = null,
     isViewedFromOverview: Boolean = true,
     startingPosition: Location? = null
 ) {
   val uiState by mapViewModel.uiState.collectAsState()
   val user by userViewModel.user.collectAsState()
-  var selectedFilter by remember { mutableStateOf("All") }
+  var selectedFilter by remember { mutableStateOf<String?>(null) }
 
   val mapInitialLocation by mapViewModel.startingLocation.collectAsState()
   val mapInitialZoom by mapViewModel.zoom.collectAsState()
   val cameraPositionState = rememberCameraPositionState {}
 
-  mapViewModel.setStartingLocation(startingPosition)
+  LaunchedEffect(startingPosition) { mapViewModel.setStartingLocation(startingPosition) }
 
   LaunchedEffect(mapInitialLocation) {
     cameraPositionState.position =
@@ -118,8 +133,9 @@ fun MapScreen(
             LatLng(mapInitialLocation.latitude, mapInitialLocation.longitude), mapInitialZoom)
   }
 
-  val selectedReport = remember { mutableStateOf(mapViewModel.selectedReport) }
-  mapViewModel.refreshReports(user.uid)
+  LaunchedEffect(user.uid) { mapViewModel.refreshReports(user.uid) }
+
+  val selectedReport = mapViewModel.selectedReport.collectAsState()
 
   val googleMapUiSettings = remember {
     MapUiSettings(
@@ -133,6 +149,13 @@ fun MapScreen(
 
   val googleMapMapProperties = remember(style) { MapProperties(mapStyleOptions = style) }
 
+  // Floating button Position
+  var reportBoxHeightPx by remember { mutableIntStateOf(0) }
+  val density = LocalDensity.current
+
+  // Convert pixels to dp for layout use
+  val reportBoxHeightDp = with(density) { reportBoxHeightPx.toDp() }
+
   Scaffold(
       topBar = { if (!isViewedFromOverview) MapTopBar(onBack = { navigationActions?.goBack() }) },
       bottomBar = {
@@ -144,34 +167,40 @@ fun MapScreen(
       },
       content = { pd ->
         Box(modifier = Modifier.fillMaxSize().padding(pd)) {
+          if (!uiState.locationPermission) {
+            if (locationPermissionsRequester(locationViewModel)) {
+              mapViewModel.refreshMapPermission()
+            }
+          }
           GoogleMap(
               cameraPositionState = cameraPositionState,
               properties = googleMapMapProperties,
               uiSettings = googleMapUiSettings,
-              modifier = Modifier.testTag(MapScreenTestTags.GOOGLE_MAP_SCREEN)) {
-                uiState.reports
+              modifier = Modifier.testTag(MapScreenTestTags.GOOGLE_MAP_SCREEN),
+              onMapClick = { mapViewModel.setSelectedReport(null) }) {
+                mapViewModel
+                    .spiderifiedReports()
                     .filter { it ->
-                      selectedFilter == "All" || it.status.displayString() == selectedFilter
+                      selectedFilter == null || it.report.status.displayString() == selectedFilter
                     }
-                    .forEach { report ->
-                      val markerSize = if (report == selectedReport.value) 60f else 40f
+                    .forEach { it ->
+                      val report = it.report
+                      val markerSize = if (report.id == selectedReport.value?.id) 60f else 40f
                       val markerIcon =
                           createCircleMarker(statusColor(report.status).toArgb(), markerSize)
                       Marker(
-                          state =
-                              MarkerState(
-                                  position =
-                                      LatLng(
-                                          report.location!!.latitude, report.location.longitude)),
+                          state = MarkerState(position = it.position),
+                          anchor = Offset(0.5f, 0.5f),
                           title = report.title,
                           snippet = report.description,
                           icon = markerIcon,
                           onClick = {
-                            selectedReport.value =
-                                if (selectedReport.value == report) null else report
+                            mapViewModel.setSelectedReport(
+                                if (selectedReport.value == report) null else report)
                             true
                           },
                       /*tag = testTag*/ )
+                      Polyline(points = listOf(it.position, it.center), width = 5f)
                     }
               }
 
@@ -182,16 +211,15 @@ fun MapScreen(
           // Yes, this sucks
           uiState.reports
               .filter { report ->
-                selectedFilter == "All" || report.status.displayString() == selectedFilter
+                selectedFilter == null || report.status.displayString() == selectedFilter
               }
               .forEach { report ->
-                Log.d("MapScreen", "Creating debug box ${report.id}")
                 Box(
                     modifier =
                         Modifier.testTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
                             .clickable {
-                              selectedReport.value =
-                                  if (selectedReport.value == report) null else report
+                              mapViewModel.setSelectedReport(
+                                  if (selectedReport.value == report) null else report)
                             }
                             .alpha(0f)
                             .size(1.dp)) {
@@ -200,14 +228,18 @@ fun MapScreen(
               }
 
           if (isViewedFromOverview) {
-            val options = listOf("All") + ReportStatus.entries.map { it.displayString() }
+            val options = listOf(null) + ReportStatus.entries.map { it.displayString() }
             FilterDropdown(options, selectedFilter) { selectedFilter = it }
           }
 
           FloatingActionButton(
               modifier =
                   Modifier.align(Alignment.BottomEnd)
-                      .padding(16.dp)
+                      .padding(
+                          end = 16.dp,
+                          bottom =
+                              if (selectedReport.value != null) reportBoxHeightDp + 16.dp
+                              else 16.dp)
                       .testTag(MapScreenTestTags.REFRESH_BUTTON),
               onClick = {
                 mapViewModel.refreshCameraPosition()
@@ -224,7 +256,11 @@ fun MapScreen(
               }
 
           ShowReportInfo(
-              selectedReport.value,
+              modifier =
+                  Modifier.onGloballyPositioned { coordinates ->
+                    reportBoxHeightPx = coordinates.size.height
+                  },
+              report = selectedReport.value,
               onReportClick = { navigationActions?.navigateTo(Screen.ViewReport(it)) })
         }
       })
@@ -253,46 +289,80 @@ fun MapTopBar(onBack: () -> Unit) {
       })
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterDropdown(
-    options: List<String>,
-    selectedOption: String,
-    onOptionSelected: (String) -> Unit
+    options: List<String?>,
+    selectedOption: String?,
+    onOptionSelected: (String?) -> Unit
 ) {
   var expanded by remember { mutableStateOf(false) }
+  val textFieldBackgroundColor = MaterialTheme.colorScheme.surface
 
-  Box(
-      modifier =
-          Modifier.padding(16.dp)
-              .clickable { expanded = true }
-              .defaultMinSize(minWidth = 100.dp, minHeight = 40.dp)
-              .background(color = MaterialTheme.colorScheme.surface)
-              .border(2.dp, MaterialTheme.colorScheme.primary)
-              .testTag(MapScreenTestTags.REPORT_FILTER_MENU),
-      contentAlignment = Alignment.Center) {
-        Text(selectedOption)
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-          options.forEach { option ->
-            DropdownMenuItem(
-                onClick = {
-                  onOptionSelected(option)
-                  expanded = false
-                },
-                text = { Text(option) },
-                modifier = Modifier.testTag(MapScreenTestTags.getTestTagForFilter(option)))
-          }
+  val textMeasurer = rememberTextMeasurer()
+  val maxTextWidth =
+      remember(options) {
+        options.maxOf {
+          textMeasurer.measure(text = AnnotatedString(it ?: AllFilterText)).size.width
         }
+      }
+  val dropdownWidth = maxTextWidth - 32.dp.value
+
+  ExposedDropdownMenuBox(
+      expanded = expanded,
+      onExpandedChange = { expanded = !expanded },
+      modifier = Modifier.padding(16.dp).width(dropdownWidth.dp)) {
+        OutlinedTextField(
+            value = selectedOption ?: AllFilterText,
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.menuAnchor().testTag(MapScreenTestTags.REPORT_FILTER_MENU),
+            colors =
+                OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = textFieldBackgroundColor,
+                    focusedContainerColor = textFieldBackgroundColor))
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(color = MaterialTheme.colorScheme.surface)) {
+              options.forEach { option ->
+                DropdownMenuItem(
+                    onClick = {
+                      onOptionSelected(option)
+                      expanded = false
+                    },
+                    text = { Text(option ?: AllFilterText) },
+                    modifier = Modifier.testTag(MapScreenTestTags.getTestTagForFilter(option)))
+              }
+            }
       }
 }
 
+/**
+ * Bottom menu to show info on the selected [report].
+ *
+ * Contain a 2 line Report title, and the entire description. Also has an IconButton that executes
+ * [onReportClick]
+ *
+ * @param modifier Modifier on the visible Column.
+ * @param report The report whose information will be displayed.
+ * @param onReportClick run when IconButton is clicked.
+ */
 @Composable
-fun ShowReportInfo(report: Report?, onReportClick: (String) -> Unit = {}) {
+fun ShowReportInfo(
+    modifier: Modifier = Modifier,
+    report: Report?,
+    onReportClick: (String) -> Unit = {}
+) {
   if (report == null) return
 
   Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.REPORT_INFO_BOX)) {
     Column(
         modifier =
-            Modifier.background(color = MaterialTheme.colorScheme.surface)
+            modifier
+                .background(color = MaterialTheme.colorScheme.surface)
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .padding(16.dp)) {
@@ -302,15 +372,29 @@ fun ShowReportInfo(report: Report?, onReportClick: (String) -> Unit = {}) {
                 Text(
                     text = report.title,
                     style = MaterialTheme.typography.titleLarge,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                     modifier =
-                        Modifier.testTag(MapScreenTestTags.getTestTagForReportTitle(report.id)))
+                        Modifier.weight(1f)
+                            .padding(end = 8.dp)
+                            .testTag(MapScreenTestTags.getTestTagForReportTitle(report.id)))
 
-                Button(
+                IconButton(
                     onClick = { onReportClick(report.id) },
                     modifier =
                         Modifier.align(Alignment.CenterVertically)
-                            .testTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)) {
-                      Text("See report")
+                            .size(32.dp)
+                            .testTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON),
+                    colors =
+                        IconButtonColors(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            MaterialTheme.colorScheme.onPrimaryContainer,
+                            disabledContainerColor = MaterialTheme.colorScheme.surface,
+                            disabledContentColor = MaterialTheme.colorScheme.onSurface)) {
+                      Icon(
+                          imageVector = Icons.Default.Preview,
+                          contentDescription = "View Report",
+                          modifier = Modifier.size(24.dp))
                     }
               }
 
@@ -351,8 +435,40 @@ fun createCircleMarker(color: Int, radius: Float = 40f, strokeWidth: Float = 8f)
   return BitmapDescriptorFactory.fromBitmap(bitmap)
 }
 
-@Preview
+// @Preview
 @Composable
 fun PreviewMapScreen() {
   AgriHealthAppTheme { MapScreen(startingPosition = Location(46.7990813, 6.6264253)) }
+}
+
+// @Preview
+@Composable
+fun PreviewDropdownMenu() {
+  val options = listOf(null) + ReportStatus.entries.map { it.displayString() }
+  var selectedFilter by remember { mutableStateOf<String?>(null) }
+  AgriHealthAppTheme { FilterDropdown(options, selectedFilter) { selectedFilter = it } }
+}
+
+@Preview
+@Composable
+fun PreviewReportInfo() {
+  val report =
+      Report(
+          id = "Test",
+          title = "Veryyyyyyyyyyyyy long title",
+          description =
+              "very very very very very very very very very very very very very very very very very long description",
+          questionForms = emptyList(),
+          farmerId = "farmer id",
+          vetId = "vetId",
+          status = ReportStatus.IN_PROGRESS,
+          answer = "answer to the report",
+          location = null,
+          photoUri = null,
+      )
+  AgriHealthAppTheme {
+    ShowReportInfo(
+        report = report,
+    )
+  }
 }

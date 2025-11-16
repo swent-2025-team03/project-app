@@ -3,11 +3,16 @@ package com.android.agrihealth.data.repository
 import android.net.Uri
 import android.util.Log
 import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.report.MCQ
+import com.android.agrihealth.data.model.report.MCQO
+import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
+import java.time.Instant
 import kotlinx.coroutines.tasks.await
 
 const val REPORTS_COLLECTION_PATH = "reports"
@@ -70,8 +75,29 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
 private fun docToReport(doc: DocumentSnapshot): Report? {
   return try {
     val id = doc.id
-    val title = doc.getString("title") ?: return null
-    val description = doc.getString("description") ?: return null
+    val title = doc.getString("title") ?: ""
+    val description = doc.getString("description") ?: ""
+    val questionFormsData = doc.get("questionForms") as? List<Map<*, *>> ?: emptyList()
+    val questionForms =
+        questionFormsData.mapNotNull { questionForm ->
+          val questionType = questionForm["questionType"] as String
+          val question = questionForm["question"] as String
+          val answers = questionForm["answers"] as List<String>
+          val answerIndex = (questionForm["answerIndex"] as Long).toInt()
+          val userAnswer = questionForm["userAnswer"] as String
+          when (questionType) {
+            "OPEN" -> OpenQuestion(question = question, userAnswer = userAnswer)
+            "YESORNO" -> YesOrNoQuestion(question = question, answerIndex = answerIndex)
+            "MCQ" -> MCQ(question = question, answers = answers, answerIndex = answerIndex)
+            "MCQO" ->
+                MCQO(
+                    question = question,
+                    answers = answers,
+                    answerIndex = answerIndex,
+                    userAnswer = userAnswer)
+            else -> null
+          }
+        }
     val photoUri = doc.getString("photoUri")
     val farmerId = doc.getString("farmerId") ?: return null
     val vetId = doc.getString("vetId") ?: return null
@@ -86,17 +112,24 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
               longitude = it["longitude"] as? Double ?: 0.0,
               name = it["name"] as? String ?: "")
         }
+    val createdAtData = doc.get("createdAt") as? Map<*, *>
+    val createdAt =
+        createdAtData?.let { Instant.ofEpochSecond(it["epochSecond"] as? Long ?: 0) }
+            ?: Instant.now()
 
     Report(
         id = id,
         title = title,
         description = description,
         photoUri = photoUri as Uri?,
+        questionForms = questionForms,
+        photoUri = photoUri,
         farmerId = farmerId,
         vetId = vetId,
         status = status,
         answer = answer,
-        location = location)
+        location = location,
+        createdAt = createdAt)
   } catch (e: Exception) {
     Log.e("ReportRepositoryFirestore", "Error converting document ${doc.id} to Report", e)
     null

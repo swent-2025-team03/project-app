@@ -27,6 +27,7 @@ data class ReportViewUIState(
             id = "RPT001",
             title = "My sheep is acting strange",
             description = "Since this morning, my sheep keeps getting on its front knees.",
+            questionForms = emptyList(),
             photoUri = null, // Placeholder for now
             farmerId = "FARMER_123",
             vetId = "VET_456",
@@ -48,11 +49,11 @@ class ReportViewModel(
   private val _uiState = MutableStateFlow(ReportViewUIState())
   val uiState: StateFlow<ReportViewUIState> = _uiState.asStateFlow()
 
-  /**
-   * Loads a Report by its ID and updates the _report.
-   *
-   * @param reportID The ID of the Report to be loaded.
-   */
+  // Flag to indicate that saving is completed (success). Observed by the UI for navigation.
+  private val _saveCompleted = MutableStateFlow(false)
+  val saveCompleted: StateFlow<Boolean> = _saveCompleted.asStateFlow()
+
+  /** Loads a report by its ID and updates the state. */
   fun loadReport(reportID: String) {
     viewModelScope.launch {
       try {
@@ -72,7 +73,6 @@ class ReportViewModel(
     }
   }
 
-  // ---- Update functions ----
   fun onAnswerChange(newText: String) {
     _uiState.value = _uiState.value.copy(answerText = newText)
   }
@@ -85,6 +85,7 @@ class ReportViewModel(
     _uiState.value = _uiState.value.copy(status = ReportStatus.SPAM)
   }
 
+  /** Saves the modified report, then triggers the saveCompleted flag on success. */
   fun onSave() {
     viewModelScope.launch {
       try {
@@ -92,10 +93,15 @@ class ReportViewModel(
             _uiState.value.report.copy(
                 answer = _uiState.value.answerText, status = _uiState.value.status)
         repository.editReport(updatedReport.id, updatedReport)
-        Log.d("ReportViewModel", "Report saved successfully.")
+        _saveCompleted.value = true
       } catch (e: Exception) {
         Log.e("ReportViewModel", "Error saving report", e)
       }
     }
+  }
+
+  /** Resets the flag after the UI has consumed the navigation event. */
+  fun consumeSaveCompleted() {
+    _saveCompleted.value = false
   }
 }
