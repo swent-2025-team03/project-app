@@ -17,7 +17,6 @@ data class Report(
     val description: String,
     val photoUri: Uri?,
     val questionForms: List<QuestionForm>,
-    val photoUri: String?, // For now, unused (will show placeholder)
     val farmerId: String,
     val vetId: String,
     val status: ReportStatus,
