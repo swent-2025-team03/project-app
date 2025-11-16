@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.compose.foundation.layout.size
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import java.io.ByteArrayOutputStream
+import kotlin.random.Random
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
@@ -15,23 +16,32 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
   // For image viewing debugging
   // @get:Rule val composeTestRule = createComposeRule()
 
+  // val pattern = (x < width/2 && y < height/2) || (x >= width/2 && y >= height/2)
   val testImageBM = generateTestImage()
   val testImageBA = bitmapToByteArray(testImageBM)
 
   private fun bitmapToByteArray(bitmap: Bitmap): ByteArray {
     val byteStream = ByteArrayOutputStream()
-    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteStream)
+    bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream)
     return byteStream.toByteArray()
   }
 
-  private fun generateTestImage(width: Int = 50, height: Int = 50): Bitmap {
+  private fun randomColor(): Int {
+    return Random.nextInt() or 0xFF000000.toInt()
+  }
+
+  private fun generateTestImage(
+      width: Int = 50,
+      height: Int = 50,
+      pattern: (Int, Int) -> Boolean = { x, y -> (x + y) % 2 == 0 },
+      randomColor: Boolean = false
+  ): Bitmap {
     val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
 
     for (x in 0 until width) {
       for (y in 0 until height) {
-        // val color = if ((x < width/2 && y < height/2) || (x >= width/2 && y >= height/2))
-        // Color.MAGENTA else Color.BLACK
-        val color = if ((x + y) % 2 == 0) Color.MAGENTA else Color.BLACK
+        val color =
+            if (randomColor) randomColor() else if (pattern(x, y)) Color.MAGENTA else Color.BLACK
         bitmap.setPixel(x, y, color)
       }
     }
@@ -40,7 +50,7 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun canUploadImage() = runTest {
+  fun uploadImage_canSucceed() = runTest {
     val result = repository.uploadImage(testImageBA)
 
     if (result.isFailure) Log.e("ImagesTest", "Error: ${result.exceptionOrNull()?.message}")
@@ -49,7 +59,7 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun canDownloadIdenticalImage() = runTest {
+  fun downloadImage_getsIdenticalAsUpload() = runTest {
     val uploadResult = repository.uploadImage(testImageBA)
     assert(uploadResult.isSuccess)
     val imageUrl = uploadResult.getOrNull()
@@ -87,5 +97,16 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
 
     assert(testImageBA.size == downloadedByteArray.size)
     assert(testImageBA.contentEquals(downloadedByteArray))
+  }
+
+  @Test
+  fun isFileTooLarge_worksAsExpected() {
+    val smallImage = bitmapToByteArray(generateTestImage(1, 1, randomColor = true))
+
+    // PNG compression is good at reducing size for patterns
+    val bigImage = bitmapToByteArray(generateTestImage(1500, 1500, randomColor = true))
+
+    assert(!repository.isFileTooLarge(smallImage))
+    assert(repository.isFileTooLarge(bigImage))
   }
 }
