@@ -152,4 +152,15 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
 
     assert(!repository.isFileTooLarge(compressedImage))
   }
+
+  @Test
+  fun reduceFileSize_reducesBigImageUntilSmall() {
+    val bigImage = bitmapToByteArray(generateBigImage())
+
+    assert(repository.isFileTooLarge(bigImage))
+
+    val reducedImage = repository.reduceFileSize(bigImage)
+
+    assert(!repository.isFileTooLarge(reducedImage))
+  }
 }
