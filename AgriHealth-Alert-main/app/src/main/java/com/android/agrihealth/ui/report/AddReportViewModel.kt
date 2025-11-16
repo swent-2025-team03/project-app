@@ -46,17 +46,17 @@ class AddReportViewModel(
     // Set loading true
     _uiState.value = _uiState.value.copy(isLoading = true)
 
-    val newReport = Report(
-        id = reportRepository.getNewReportId(),
-        title = current.title,
-        description = current.description,
-        photoUri = null,
-        farmerId = userId,
-        vetId = current.chosenVet,
-        status = ReportStatus.PENDING,
-        answer = null,
-        location = Location(46.7990813, 6.6259961)
-    )
+    val newReport =
+        Report(
+            id = reportRepository.getNewReportId(),
+            title = current.title,
+            description = current.description,
+            photoUri = null,
+            farmerId = userId,
+            vetId = current.chosenVet,
+            status = ReportStatus.PENDING,
+            answer = null,
+            location = Location(46.7990813, 6.6259961))
 
     viewModelScope.launch {
       try {

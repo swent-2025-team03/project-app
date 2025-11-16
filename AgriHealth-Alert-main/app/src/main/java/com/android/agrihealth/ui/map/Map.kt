@@ -156,116 +156,117 @@ fun MapScreen(
 
   // Convert pixels to dp for layout use
   val reportBoxHeightDp = with(density) { reportBoxHeightPx.toDp() }
-    LoadingOverlay(isLoading = uiState.isLoading) {
-  Scaffold(
-      topBar = { if (!isViewedFromOverview) MapTopBar(onBack = { navigationActions?.goBack() }) },
-      bottomBar = {
-        if (isViewedFromOverview)
-            BottomNavigationMenu(
-                selectedTab = Tab.Map,
-                onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
-                modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
-      },
-      content = { pd ->
-        Box(modifier = Modifier.fillMaxSize().padding(pd)) {
-          if (!uiState.locationPermission) {
-            if (locationPermissionsRequester(locationViewModel)) {
-              mapViewModel.refreshMapPermission()
+  LoadingOverlay(isLoading = uiState.isLoading) {
+    Scaffold(
+        topBar = { if (!isViewedFromOverview) MapTopBar(onBack = { navigationActions?.goBack() }) },
+        bottomBar = {
+          if (isViewedFromOverview)
+              BottomNavigationMenu(
+                  selectedTab = Tab.Map,
+                  onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
+                  modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
+        },
+        content = { pd ->
+          Box(modifier = Modifier.fillMaxSize().padding(pd)) {
+            if (!uiState.locationPermission) {
+              if (locationPermissionsRequester(locationViewModel)) {
+                mapViewModel.refreshMapPermission()
+              }
             }
-          }
-          GoogleMap(
-              cameraPositionState = cameraPositionState,
-              properties = googleMapMapProperties,
-              uiSettings = googleMapUiSettings,
-              modifier = Modifier.testTag(MapScreenTestTags.GOOGLE_MAP_SCREEN),
-              onMapClick = { mapViewModel.setSelectedReport(null) }) {
-                mapViewModel
-                    .spiderifiedReports()
-                    .filter { it ->
-                      selectedFilter == null || it.report.status.displayString() == selectedFilter
-                    }
-                    .forEach { it ->
-                      val report = it.report
-                      val markerSize = if (report.id == selectedReport.value?.id) 60f else 40f
-                      val markerIcon =
-                          createCircleMarker(statusColor(report.status).toArgb(), markerSize)
-                      Marker(
-                          state = MarkerState(position = it.position),
-                          anchor = Offset(0.5f, 0.5f),
-                          title = report.title,
-                          snippet = report.description,
-                          icon = markerIcon,
-                          onClick = {
-                            mapViewModel.setSelectedReport(
-                                if (selectedReport.value == report) null else report)
-                            true
-                          },
-                      /*tag = testTag*/ )
-                      Polyline(points = listOf(it.position, it.center), width = 5f)
-                    }
-              }
-
-          // Debug box to make tests work
-          // Because Google map markers aren't accessible in compose tests, so I have to make this
-          // item
-          // If the box is empty or has size 0, the composable doesn't exist and tests fail
-          // Yes, this sucks
-          uiState.reports
-              .filter { report ->
-                selectedFilter == null || report.status.displayString() == selectedFilter
-              }
-              .forEach { report ->
-                Box(
-                    modifier =
-                        Modifier.testTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
-                            .clickable {
+            GoogleMap(
+                cameraPositionState = cameraPositionState,
+                properties = googleMapMapProperties,
+                uiSettings = googleMapUiSettings,
+                modifier = Modifier.testTag(MapScreenTestTags.GOOGLE_MAP_SCREEN),
+                onMapClick = { mapViewModel.setSelectedReport(null) }) {
+                  mapViewModel
+                      .spiderifiedReports()
+                      .filter { it ->
+                        selectedFilter == null || it.report.status.displayString() == selectedFilter
+                      }
+                      .forEach { it ->
+                        val report = it.report
+                        val markerSize = if (report.id == selectedReport.value?.id) 60f else 40f
+                        val markerIcon =
+                            createCircleMarker(statusColor(report.status).toArgb(), markerSize)
+                        Marker(
+                            state = MarkerState(position = it.position),
+                            anchor = Offset(0.5f, 0.5f),
+                            title = report.title,
+                            snippet = report.description,
+                            icon = markerIcon,
+                            onClick = {
                               mapViewModel.setSelectedReport(
                                   if (selectedReport.value == report) null else report)
-                            }
-                            .alpha(0f)
-                            .size(1.dp)) {
-                      Text(":)")
-                    }
-              }
+                              true
+                            },
+                        /*tag = testTag*/ )
+                        Polyline(points = listOf(it.position, it.center), width = 5f)
+                      }
+                }
 
-          if (isViewedFromOverview) {
-            val options = listOf(null) + ReportStatus.entries.map { it.displayString() }
-            FilterDropdown(options, selectedFilter) { selectedFilter = it }
+            // Debug box to make tests work
+            // Because Google map markers aren't accessible in compose tests, so I have to make this
+            // item
+            // If the box is empty or has size 0, the composable doesn't exist and tests fail
+            // Yes, this sucks
+            uiState.reports
+                .filter { report ->
+                  selectedFilter == null || report.status.displayString() == selectedFilter
+                }
+                .forEach { report ->
+                  Box(
+                      modifier =
+                          Modifier.testTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+                              .clickable {
+                                mapViewModel.setSelectedReport(
+                                    if (selectedReport.value == report) null else report)
+                              }
+                              .alpha(0f)
+                              .size(1.dp)) {
+                        Text(":)")
+                      }
+                }
+
+            if (isViewedFromOverview) {
+              val options = listOf(null) + ReportStatus.entries.map { it.displayString() }
+              FilterDropdown(options, selectedFilter) { selectedFilter = it }
+            }
+
+            FloatingActionButton(
+                modifier =
+                    Modifier.align(Alignment.BottomEnd)
+                        .padding(
+                            end = 16.dp,
+                            bottom =
+                                if (selectedReport.value != null) reportBoxHeightDp + 16.dp
+                                else 16.dp)
+                        .testTag(MapScreenTestTags.REFRESH_BUTTON),
+                onClick = {
+                  mapViewModel.refreshCameraPosition()
+
+                  val newPos = mapViewModel.startingLocation.value
+                  val newLat = newPos.latitude
+                  val newLng = newPos.longitude
+                  val newZoom = mapViewModel.zoom.value
+
+                  cameraPositionState.move(
+                      CameraUpdateFactory.newLatLngZoom(LatLng(newLat, newLng), newZoom))
+                }) {
+                  Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh Location")
+                }
+
+            ShowReportInfo(
+                modifier =
+                    Modifier.onGloballyPositioned { coordinates ->
+                      reportBoxHeightPx = coordinates.size.height
+                    },
+                report = selectedReport.value,
+                onReportClick = { navigationActions?.navigateTo(Screen.ViewReport(it)) })
           }
-
-          FloatingActionButton(
-              modifier =
-                  Modifier.align(Alignment.BottomEnd)
-                      .padding(
-                          end = 16.dp,
-                          bottom =
-                              if (selectedReport.value != null) reportBoxHeightDp + 16.dp
-                              else 16.dp)
-                      .testTag(MapScreenTestTags.REFRESH_BUTTON),
-              onClick = {
-                mapViewModel.refreshCameraPosition()
-
-                val newPos = mapViewModel.startingLocation.value
-                val newLat = newPos.latitude
-                val newLng = newPos.longitude
-                val newZoom = mapViewModel.zoom.value
-
-                cameraPositionState.move(
-                    CameraUpdateFactory.newLatLngZoom(LatLng(newLat, newLng), newZoom))
-              }) {
-                Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh Location")
-              }
-
-          ShowReportInfo(
-              modifier =
-                  Modifier.onGloballyPositioned { coordinates ->
-                    reportBoxHeightPx = coordinates.size.height
-                  },
-              report = selectedReport.value,
-              onReportClick = { navigationActions?.navigateTo(Screen.ViewReport(it)) })
-        }
-      })
-}}
+        })
+  }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

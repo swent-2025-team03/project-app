@@ -333,38 +333,37 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     assertEquals(6, positions2?.size)
   }
 
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun loadingOverlay_showsWhileFetchingLocation() = runTest {
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun loadingOverlay_showsWhileFetchingLocation() = runTest {
+    // Simulate slow GPS on purpose
+    val slowRepository = mockk<LocationRepository>(relaxed = true)
 
-        // Simulate slow GPS on purpose
-        val slowRepository = mockk<LocationRepository>(relaxed = true)
+    every { slowRepository.hasFineLocationPermission() } returns true
+    every { slowRepository.hasCoarseLocationPermission() } returns true
 
-        every { slowRepository.hasFineLocationPermission() } returns true
-        every { slowRepository.hasCoarseLocationPermission() } returns true
-
-        coEvery { slowRepository.getLastKnownLocation() } coAnswers {
-            delay(1500)   // simulate slow GPS
-            Location(46.95, 7.44, "Loaded Position")
+    coEvery { slowRepository.getLastKnownLocation() } coAnswers
+        {
+          delay(1500) // simulate slow GPS
+          Location(46.95, 7.44, "Loaded Position")
         }
 
-        coEvery { slowRepository.getCurrentLocation() } returns
-                Location(46.95, 7.44, "Loaded Position")
+    coEvery { slowRepository.getCurrentLocation() } returns Location(46.95, 7.44, "Loaded Position")
 
-        LocationRepositoryProvider.repository = slowRepository
-        locationViewModel = LocationViewModel()
+    LocationRepositoryProvider.repository = slowRepository
+    locationViewModel = LocationViewModel()
 
-        setContentToMapWithVM()
+    setContentToMapWithVM()
 
-        composeTestRule.onNodeWithTag("loading_overlay_scrim").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("loading_overlay_spinner").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("loading_overlay_scrim").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("loading_overlay_spinner").assertIsDisplayed()
 
-        advanceUntilIdle()
+    advanceUntilIdle()
 
-        composeTestRule.onNodeWithTag("loading_overlay_scrim").assertDoesNotExist()
-        composeTestRule.onNodeWithTag("loading_overlay_spinner").assertDoesNotExist()
+    composeTestRule.onNodeWithTag("loading_overlay_scrim").assertDoesNotExist()
+    composeTestRule.onNodeWithTag("loading_overlay_spinner").assertDoesNotExist()
 
-        composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
-    }
+    composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
+  }
 }

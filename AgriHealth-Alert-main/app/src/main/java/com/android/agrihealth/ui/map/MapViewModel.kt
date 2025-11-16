@@ -26,7 +26,6 @@ data class MapUIState(
     val reports: List<Report> = emptyList(),
     val locationPermission: Boolean = false,
     val isLoading: Boolean = false
-
 )
 
 class MapViewModel(
@@ -54,8 +53,9 @@ class MapViewModel(
     }
     refreshMapPermission()
 
-    val uid = authProvider.currentUserId()
-        ?: throw IllegalArgumentException("Map refreshed Reports while current user was null")
+    val uid =
+        authProvider.currentUserId()
+            ?: throw IllegalArgumentException("Map refreshed Reports while current user was null")
     refreshReports(uid)
   }
 
@@ -103,7 +103,6 @@ class MapViewModel(
       _startingLocation.value = location
       _zoom.value = 15f
       _uiState.value = _uiState.value.copy(isLoading = false)
-
     }
     // Default starting position, so either location or workplace or default
     else {
@@ -123,7 +122,6 @@ class MapViewModel(
           _startingLocation.value = gpsLocation ?: getLocationFromUserAddress() ?: return@launch
         }
         _uiState.value = _uiState.value.copy(isLoading = false)
-
       }
     }
   }

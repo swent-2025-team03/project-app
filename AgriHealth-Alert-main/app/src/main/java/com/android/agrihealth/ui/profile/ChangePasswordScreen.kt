@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.profile
 
-import com.android.agrihealth.ui.loading.LoadingOverlay
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
