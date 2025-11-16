@@ -73,8 +73,7 @@ class ImageRepositoryFirebase : ImageRepository {
     val height = bitmap.height
     if (width <= IMAGE_MAX_WIDTH && height <= IMAGE_MAX_HEIGHT) return bitmap
 
-    val ratio =
-        minOf(IMAGE_MAX_WIDTH.toFloat() / width, IMAGE_MAX_HEIGHT.toFloat() / height)
+    val ratio = minOf(IMAGE_MAX_WIDTH.toFloat() / width, IMAGE_MAX_HEIGHT.toFloat() / height)
 
     val newWidth = (width * ratio).toInt()
     val newHeight = (height * ratio).toInt()
