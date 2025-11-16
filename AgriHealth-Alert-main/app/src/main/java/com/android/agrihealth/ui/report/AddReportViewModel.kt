@@ -59,7 +59,6 @@ class AddReportViewModel(
             title = uiState.title,
             description = uiState.description,
             questionForms = emptyList(),
-            photoUri = null, // currently unused
             photoUri = uiState.photoUri,
             farmerId = userId,
             vetId = uiState.chosenVet,

@@ -123,7 +123,6 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
         description = description,
         photoUri = photoUri as Uri?,
         questionForms = questionForms,
-        photoUri = photoUri,
         farmerId = farmerId,
         vetId = vetId,
         status = status,
