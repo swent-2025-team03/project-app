@@ -62,19 +62,26 @@ class ManageOfficeViewModel(
     _uiState.value = _uiState.value.copy(editableAddress = value)
   }
 
-  fun leaveOffice(onSuccess: () -> Unit) =
+  fun leaveOffice(onSuccess: () -> Unit = {}, onError: (Throwable) -> Unit = {}) =
       viewModelScope.launch {
-        val userId = userViewModel.user.value.uid
-        val office = _uiState.value.office ?: return@launch
+        val user = userViewModel.user.value
+        val office = _uiState.value.office
 
-        // Remove officeId from vet
-        userViewModel.updateVetOfficeId(null)
+        if (user !is Vet || office == null) return@launch
 
-        // Remove vet from office list
-        val updatedOffice = office.copy(vets = office.vets.filterNot { it == userId })
-        officeRepository.updateOffice(updatedOffice)
+        try {
+          // Remove officeId from vet first
+          userViewModel.updateVetOfficeId(null)
 
-        onSuccess()
+          // Remove vet from office list
+          val updatedOffice = office.copy(vets = office.vets.filterNot { it == user.uid })
+          officeRepository.updateOffice(updatedOffice)
+
+          _uiState.value = _uiState.value.copy(office = updatedOffice)
+          onSuccess()
+        } catch (e: Exception) {
+          onError(e)
+        }
       }
 
   fun updateOffice(onSuccess: () -> Unit = {}) =

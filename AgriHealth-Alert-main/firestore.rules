@@ -96,7 +96,8 @@ service cloud.firestore {
     match /offices/{officeId} {
 
       // Only vets may read office information
-      allow get: if hasRole("Vet");
+      allow get: if hasRole("Vet")
+                   && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId == officeId;
 
       // Only vets can create, and the creator must set themselves as owner.
       // Also, the stored `id` must match the document ID.

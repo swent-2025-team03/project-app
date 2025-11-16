@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.ADDRESS_FIELD
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.CREATE_BUTTON
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.DESCRIPTION_FIELD
@@ -34,21 +33,15 @@ fun CreateOfficeScreen(
     userViewModel: UserViewModel = viewModel(),
     onGoBack: () -> Unit,
     onCreated: () -> Unit,
-    viewModelFactory: ViewModelProvider.Factory? = null
 ) {
-
-  val factory = remember {
-    viewModelFactory
-        ?: object : ViewModelProvider.Factory {
-          override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return CreateOfficeViewModel(
-                userViewModel = userViewModel, officeRepository = OfficeRepositoryFirestore())
-                as T
-          }
-        }
-  }
-
-  val vm: CreateOfficeViewModel = viewModel(factory = factory)
+  val vm: CreateOfficeViewModel =
+      viewModel(
+          factory =
+              object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return CreateOfficeViewModel(userViewModel) as T
+                }
+              })
 
   val uiState by vm.uiState.collectAsState()
 

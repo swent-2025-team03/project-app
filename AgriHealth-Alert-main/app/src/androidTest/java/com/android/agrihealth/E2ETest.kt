@@ -275,60 +275,25 @@ class E2ETest : FirebaseEmulatorsTest() {
     openManageOfficeFromProfile()
 
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      try {
-        composeTestRule
-            .onAllNodesWithTag(ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON)
-            .fetchSemanticsNodes()
-            .isNotEmpty()
-      } catch (e: AssertionError) {
-        false
-      }
+      composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON).isDisplayed()
     }
-
-    composeTestRule
-        .onNodeWithTag(ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON)
-        .assertIsDisplayed()
   }
 
   private fun openManageOfficeFromProfile() {
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      try {
-        composeTestRule
-            .onAllNodesWithTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON)
-            .fetchSemanticsNodes()
-            .isNotEmpty()
-      } catch (e: AssertionError) {
-        false
-      }
+      composeTestRule.onNodeWithTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON).isDisplayed()
     }
 
-    composeTestRule
-        .onNodeWithTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
+    composeTestRule.onNodeWithTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON).performClick()
 
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      try {
-        composeTestRule
-            .onAllNodesWithTag(ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON)
-            .fetchSemanticsNodes()
-            .isNotEmpty()
-      } catch (e: AssertionError) {
-        false
-      }
+      composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON).isDisplayed()
     }
   }
 
   private fun createOffice() {
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      try {
-        composeTestRule
-            .onAllNodesWithTag(ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON)
-            .fetchSemanticsNodes()
-            .isNotEmpty()
-      } catch (e: AssertionError) {
-        false
-      }
+      composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON).isDisplayed()
     }
 
     composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.JOIN_OFFICE_BUTTON).assertIsDisplayed()
@@ -338,14 +303,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performClick()
 
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      try {
-        composeTestRule
-            .onAllNodesWithTag(CreateOfficeScreenTestTags.NAME_FIELD)
-            .fetchSemanticsNodes()
-            .isNotEmpty()
-      } catch (e: AssertionError) {
-        false
-      }
+      composeTestRule.onNodeWithTag(CreateOfficeScreenTestTags.NAME_FIELD).isDisplayed()
     }
 
     composeTestRule
@@ -356,14 +314,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(CreateOfficeScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()
 
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      try {
-        composeTestRule
-            .onAllNodesWithTag(CreateOfficeScreenTestTags.CREATE_BUTTON)
-            .fetchSemanticsNodes()
-            .isNotEmpty()
-      } catch (e: AssertionError) {
-        false
-      }
+      composeTestRule.onNodeWithTag(CreateOfficeScreenTestTags.CREATE_BUTTON).isDisplayed()
     }
 
     composeTestRule
@@ -371,21 +322,9 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    goBack()
-    openManageOfficeFromProfile()
-
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      try {
-        composeTestRule
-            .onAllNodesWithTag(ManageOfficeScreenTestTags.OFFICE_NAME)
-            .fetchSemanticsNodes()
-            .isNotEmpty()
-      } catch (e: AssertionError) {
-        false
-      }
+      composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.OFFICE_NAME).isDisplayed()
     }
-
-    composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.OFFICE_NAME).assertIsDisplayed()
   }
 
   private fun checkLinkedVetIsNotEmpty() {

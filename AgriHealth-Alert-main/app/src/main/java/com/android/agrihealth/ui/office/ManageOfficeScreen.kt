@@ -21,10 +21,29 @@ import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON
+import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.JOIN_OFFICE_BUTTON
+import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.LEAVE_OFFICE_BUTTON
+import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_ADDRESS
+import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_DESCRIPTION
+import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_NAME
+import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_VET_LIST
+import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
 
-@SuppressLint("StateFlowValueCalledInComposition")
+object ManageOfficeScreenTestTags {
+  const val CREATE_OFFICE_BUTTON = "CreateOfficeButton"
+  const val JOIN_OFFICE_BUTTON = "JoinOfficeButton"
+  const val OFFICE_NAME = "OfficeName"
+  const val OFFICE_ADDRESS = "OfficeAddress"
+  const val OFFICE_DESCRIPTION = "OfficeDescription"
+  const val OFFICE_VET_LIST = "OfficeVetList"
+  const val SAVE_BUTTON = "SaveButton"
+  const val LEAVE_OFFICE_BUTTON = "LeaveOfficeButton"
+}
+
+@SuppressLint("StateFlowValueCalledInComposition", "SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManageOfficeScreen(
@@ -32,25 +51,23 @@ fun ManageOfficeScreen(
     onGoBack: () -> Unit = {},
     onCreateOffice: () -> Unit = {},
     onJoinOffice: () -> Unit = {},
-    viewModelFactory: ViewModelProvider.Factory? = null
 ) {
-  val factory = remember {
-    viewModelFactory
-        ?: object : ViewModelProvider.Factory {
-          override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return ManageOfficeViewModel(userViewModel, OfficeRepositoryFirestore()) as T
-          }
-        }
-  }
+  val vm: ManageOfficeViewModel =
+      viewModel(
+          factory =
+              object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return ManageOfficeViewModel(userViewModel, OfficeRepositoryFirestore()) as T
+                }
+              })
 
-  val vm: ManageOfficeViewModel = viewModel(factory = factory)
   val uiState by vm.uiState.collectAsState()
 
   var showLeaveDialog by remember { mutableStateOf(false) }
 
   val isOwner = uiState.office?.ownerId == userViewModel.user.value.uid
 
-  LaunchedEffect(Unit) { vm.loadOffice() }
+  LaunchedEffect(userViewModel.user.value) { vm.loadOffice() }
 
   Scaffold(
       topBar = {
@@ -70,13 +87,13 @@ fun ManageOfficeScreen(
               if (uiState.office == null) {
                 Button(
                     onClick = onCreateOffice,
-                    modifier = Modifier.fillMaxWidth().testTag("CreateOfficeButton")) {
+                    modifier = Modifier.fillMaxWidth().testTag(CREATE_OFFICE_BUTTON)) {
                       Text("Create My Office")
                     }
 
                 Button(
                     onClick = onJoinOffice,
-                    modifier = Modifier.fillMaxWidth().testTag("JoinOfficeButton")) {
+                    modifier = Modifier.fillMaxWidth().testTag(JOIN_OFFICE_BUTTON)) {
                       Text("Join an Office")
                     }
               } else {
@@ -85,7 +102,7 @@ fun ManageOfficeScreen(
                     onValueChange = { if (isOwner) vm.onNameChange(it) },
                     label = { Text("Office Name") },
                     enabled = isOwner,
-                    modifier = Modifier.fillMaxWidth().testTag("OfficeName"))
+                    modifier = Modifier.fillMaxWidth().testTag(OFFICE_NAME))
 
                 OutlinedTextField(
                     value =
@@ -94,7 +111,7 @@ fun ManageOfficeScreen(
                     onValueChange = { if (isOwner) vm.onDescriptionChange(it) },
                     label = { Text("Description") },
                     enabled = isOwner,
-                    modifier = Modifier.fillMaxWidth().testTag("OfficeDescription"))
+                    modifier = Modifier.fillMaxWidth().testTag(OFFICE_DESCRIPTION))
 
                 OutlinedTextField(
                     value =
@@ -103,22 +120,23 @@ fun ManageOfficeScreen(
                     onValueChange = { if (isOwner) vm.onAddressChange(it) },
                     label = { Text("Address") },
                     enabled = isOwner,
-                    modifier = Modifier.fillMaxWidth().testTag("OfficeAddress"))
+                    modifier = Modifier.fillMaxWidth().testTag(OFFICE_ADDRESS))
 
                 Text("Vets in this office:", style = MaterialTheme.typography.titleMedium)
 
                 LazyColumn(
                     modifier =
-                        Modifier.fillMaxWidth().heightIn(max = 300.dp).testTag("OfficeVetList")) {
+                        Modifier.fillMaxWidth().heightIn(max = 300.dp).testTag(OFFICE_VET_LIST)) {
                       items(uiState.office!!.vets) { vetId -> AuthorName(vetId) }
                     }
 
                 if (isOwner) {
                   Button(
                       onClick = { vm.updateOffice() },
-                      modifier = Modifier.fillMaxWidth().testTag("SaveButton")) {
-                        Text("Save Changes")
-                      }
+                      modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),
+                  ) {
+                    Text("Save Changes")
+                  }
                 }
 
                 val leaveButtonEnabled = isOwner
@@ -128,7 +146,7 @@ fun ManageOfficeScreen(
                     colors =
                         ButtonDefaults.outlinedButtonColors(contentColor = StatusColors().spam),
                     border = BorderStroke(1.dp, StatusColors().spam),
-                    modifier = Modifier.fillMaxWidth().testTag("LeaveOfficeButton")) {
+                    modifier = Modifier.fillMaxWidth().testTag(LEAVE_OFFICE_BUTTON)) {
                       Text("Leave My Office")
                     }
                 // TODO: improve leave button permissions; currently only owners can trigger dialog

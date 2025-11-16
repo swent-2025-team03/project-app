@@ -108,6 +108,7 @@ open class UserViewModel(
           _user.value = updated
         } catch (e: Exception) {
           Log.e("UserViewModel", "Failed to update vet officeId", e)
+          throw e
         }
       }
     }

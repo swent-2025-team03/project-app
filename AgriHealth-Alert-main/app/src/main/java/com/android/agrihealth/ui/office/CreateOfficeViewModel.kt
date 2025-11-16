@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepository
-import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
+import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.ui.user.UserViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -19,7 +19,7 @@ data class CreateOfficeUiState(
 
 class CreateOfficeViewModel(
     private val userViewModel: UserViewModel,
-    private val officeRepository: OfficeRepository = OfficeRepositoryFirestore()
+    private val officeRepository: OfficeRepository = OfficeRepositoryProvider.get()
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(CreateOfficeUiState())
