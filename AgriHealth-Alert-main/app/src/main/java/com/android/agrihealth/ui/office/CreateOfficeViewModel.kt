@@ -4,76 +4,80 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepository
+import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.ui.user.UserViewModel
-import java.util.UUID
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+
+data class CreateOfficeUiState(
+    val name: String = "",
+    val description: String = "",
+    val address: String = "",
+    val loading: Boolean = false,
+    val error: String? = null
+)
 
 class CreateOfficeViewModel(
     private val userViewModel: UserViewModel,
-    private val officeRepository: OfficeRepository
+    private val officeRepository: OfficeRepository = OfficeRepositoryFirestore()
 ) : ViewModel() {
 
-  private val _name = MutableStateFlow("")
-  val name = _name.asStateFlow()
-
-  private val _description = MutableStateFlow("")
-  val description = _description.asStateFlow()
-
-  private val _address = MutableStateFlow("")
-  val address = _address.asStateFlow()
-
-  private val _loading = MutableStateFlow(false)
-  val loading = _loading.asStateFlow()
-
-  private val _error = MutableStateFlow<String?>(null)
-  val error = _error.asStateFlow()
+  private val _uiState = MutableStateFlow(CreateOfficeUiState())
+  val uiState = _uiState.asStateFlow()
 
   fun onNameChange(value: String) {
-    _name.value = value
+    _uiState.update { it.copy(name = value) }
   }
 
   fun onDescriptionChange(value: String) {
-    _description.value = value
+    _uiState.update { it.copy(description = value) }
   }
 
   fun onAddressChange(value: String) {
-    _address.value = value
+    _uiState.update { it.copy(address = value) }
   }
 
   fun createOffice(onSuccess: () -> Unit) {
-    if (_name.value.isBlank()) {
-      _error.value = "Office name cannot be empty."
+    val state = _uiState.value
+
+    if (state.name.isBlank()) {
+      _uiState.update { it.copy(error = "Office name cannot be empty.") }
       return
     }
 
     val vet = userViewModel.user.value
 
     viewModelScope.launch {
-      _loading.value = true
+      _uiState.update { it.copy(loading = true, error = null) }
 
-      val officeId = UUID.randomUUID().toString()
+      val officeId = officeRepository.getNewUid()
 
       val createdOffice =
           Office(
               id = officeId,
-              name = _name.value,
-              description = _description.value.ifBlank { null },
-              address = null, // TODO: implement Location selection
+              name = state.name,
+              description = state.description.ifBlank { null },
+              address = null,
               ownerId = vet.uid,
               vets = listOf(vet.uid))
 
       try {
         officeRepository.addOffice(createdOffice)
 
-        userViewModel.updateVetOfficeId(officeId)
+        try {
+          // Attempt to update user data
+          userViewModel.updateVetOfficeId(officeId)
+        } catch (e: Exception) {
+          // Rollback if user update fails
+          officeRepository.deleteOffice(officeId)
+          throw e
+        }
 
-        _loading.value = false
+        _uiState.update { it.copy(loading = false) }
         onSuccess()
       } catch (e: Exception) {
-        _error.value = e.message ?: "Failed to create office"
-        _loading.value = false
+
+        _uiState.update { it.copy(loading = false, error = e.message ?: "Failed to create office") }
       }
     }
   }

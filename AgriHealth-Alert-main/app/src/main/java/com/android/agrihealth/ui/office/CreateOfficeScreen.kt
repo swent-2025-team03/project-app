@@ -1,6 +1,8 @@
 package com.android.agrihealth.ui.office
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll // NEW: added for landscape scrolling
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -34,6 +36,7 @@ fun CreateOfficeScreen(
     onCreated: () -> Unit,
     viewModelFactory: ViewModelProvider.Factory? = null
 ) {
+
   val factory = remember {
     viewModelFactory
         ?: object : ViewModelProvider.Factory {
@@ -47,11 +50,7 @@ fun CreateOfficeScreen(
 
   val vm: CreateOfficeViewModel = viewModel(factory = factory)
 
-  val name by vm.name.collectAsState()
-  val description by vm.description.collectAsState()
-  val address by vm.address.collectAsState()
-  val loading by vm.loading.collectAsState()
-  val error by vm.error.collectAsState()
+  val uiState by vm.uiState.collectAsState()
 
   Scaffold(
       topBar = {
@@ -62,42 +61,48 @@ fun CreateOfficeScreen(
             },
             modifier = Modifier.testTag(TOP_BAR))
       }) { padding ->
-        Column(modifier = Modifier.padding(padding).padding(16.dp)) {
-          OutlinedTextField(
-              value = name,
-              onValueChange = vm::onNameChange,
-              label = { Text("Office Name") },
-              modifier = Modifier.fillMaxWidth().testTag(NAME_FIELD))
+        Column(
+            modifier =
+                Modifier.padding(padding).padding(16.dp).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
-          Spacer(Modifier.height(16.dp))
+              // Input: Office Name
+              OutlinedTextField(
+                  value = uiState.name,
+                  onValueChange = vm::onNameChange,
+                  label = { Text("Office Name") },
+                  modifier = Modifier.fillMaxWidth().testTag(NAME_FIELD))
 
-          OutlinedTextField(
-              value = description,
-              onValueChange = vm::onDescriptionChange,
-              label = { Text("Description (optional)") },
-              modifier = Modifier.fillMaxWidth().testTag(DESCRIPTION_FIELD))
+              // Input: Office Description
+              OutlinedTextField(
+                  value = uiState.description,
+                  onValueChange = vm::onDescriptionChange,
+                  label = { Text("Description (optional)") },
+                  modifier = Modifier.fillMaxWidth().testTag(DESCRIPTION_FIELD))
 
-          Spacer(Modifier.height(16.dp))
+              // Input: Office Address TODO: currently unused
+              OutlinedTextField(
+                  value = uiState.address,
+                  onValueChange = vm::onAddressChange,
+                  label = { Text("Address (optional)") },
+                  modifier = Modifier.fillMaxWidth().testTag(ADDRESS_FIELD))
 
-          OutlinedTextField(
-              value = address,
-              onValueChange = vm::onAddressChange,
-              label = { Text("Address (optional)") },
-              modifier = Modifier.fillMaxWidth().testTag(ADDRESS_FIELD))
-
-          Spacer(Modifier.height(24.dp))
-
-          if (error != null) {
-            Text(error!!, color = MaterialTheme.colorScheme.error)
-            Spacer(Modifier.height(16.dp))
-          }
-
-          Button(
-              onClick = { vm.createOffice(onCreated) },
-              enabled = !loading,
-              modifier = Modifier.fillMaxWidth().testTag(CREATE_BUTTON)) {
-                Text(if (loading) "Creating..." else "Create Office")
+              // Error text (only shown when not null)
+              if (uiState.error != null) {
+                Text(uiState.error ?: "", color = MaterialTheme.colorScheme.error)
               }
-        }
+
+              Button(
+                  onClick = { vm.createOffice(onCreated) },
+                  enabled = !uiState.loading,
+                  modifier = Modifier.fillMaxWidth().testTag(CREATE_BUTTON)) {
+                    if (uiState.loading) {
+                      CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                      Spacer(Modifier.width(8.dp))
+                    }
+
+                    Text("Create Office")
+                  }
+            }
       }
 }
