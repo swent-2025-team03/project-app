@@ -8,6 +8,7 @@ import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
+import com.android.agrihealth.core.design.theme.Test
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
@@ -19,6 +20,8 @@ import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
 import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags
+import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.android.agrihealth.ui.profile.ChangePasswordScreenTestTags
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
@@ -92,6 +95,24 @@ class E2ETest : FirebaseEmulatorsTest() {
     completeSignIn(email, pwd)
     checkOverviewScreenIsDisplayed()
     assert(uid == Firebase.auth.uid)
+  }
+
+  @Test
+  fun testVet_SignIn_CreateOffice() {
+    composeTestRule.setContent { AgriHealthApp() }
+    composeTestRule.waitForIdle()
+    val email = "vet@example.com"
+    val pwd = "StrongPwd!123"
+
+    completeSignUp(email, pwd, isVet = true)
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
+    checkOverviewScreenIsDisplayed()
+    goToProfileFromOverview()
+    checkManageOfficeWhenNoOffice()
+    createOffice()
+    leaveOffice()
   }
 
   // ----------- Scenario: Farmer -----------
@@ -249,6 +270,80 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(EditProfileScreenTestTags.ADD_CODE_BUTTON)
         .assertIsDisplayed()
         .performClick()
+  }
+
+  private fun checkManageOfficeWhenNoOffice() {
+    openManageOfficeFromProfile()
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON).isDisplayed()
+    }
+  }
+
+  private fun openManageOfficeFromProfile() {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON).isDisplayed()
+    }
+
+    composeTestRule.onNodeWithTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON).performClick()
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON).isDisplayed()
+    }
+  }
+
+  private fun createOffice() {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON).isDisplayed()
+    }
+
+    composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.JOIN_OFFICE_BUTTON).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(CreateOfficeScreenTestTags.NAME_FIELD).isDisplayed()
+    }
+
+    composeTestRule
+        .onNodeWithTag(CreateOfficeScreenTestTags.NAME_FIELD)
+        .assertIsDisplayed()
+        .performTextInput("Vet Office")
+    composeTestRule.onNodeWithTag(CreateOfficeScreenTestTags.ADDRESS_FIELD).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CreateOfficeScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(CreateOfficeScreenTestTags.CREATE_BUTTON).isDisplayed()
+    }
+
+    composeTestRule
+        .onNodeWithTag(CreateOfficeScreenTestTags.CREATE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.OFFICE_NAME).isDisplayed()
+    }
+  }
+
+  private fun leaveOffice() {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.LEAVE_OFFICE_BUTTON).isDisplayed()
+    }
+
+    composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.LEAVE_OFFICE_BUTTON).performClick()
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.CONFIRM_LEAVE).isDisplayed()
+    }
+
+    composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.CONFIRM_LEAVE).performClick()
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ProfileScreenTestTags.PROFILE_IMAGE).isDisplayed()
+    }
   }
 
   private fun checkLinkedVetIsNotEmpty() {
