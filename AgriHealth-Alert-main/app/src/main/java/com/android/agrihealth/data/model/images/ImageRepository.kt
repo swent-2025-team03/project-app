@@ -32,8 +32,8 @@ interface ImageRepository {
   fun reduceFileSize(bytes: ByteArray): ByteArray
 
   /**
-   * Resizes the provided image to a lower resolution to reduce file size. Leaves the image unchanged if it was already small enough. Returns the modified
-   * image
+   * Resizes the provided image to a lower resolution to reduce file size. Leaves the image
+   * unchanged if it was already small enough. Returns the modified image
    */
   fun resizeImage(bitmap: Bitmap): Bitmap
 

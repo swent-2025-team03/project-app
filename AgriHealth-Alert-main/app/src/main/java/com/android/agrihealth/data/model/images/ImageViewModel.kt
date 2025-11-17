@@ -1,7 +1,6 @@
 package com.android.agrihealth.data.model.images
 
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +19,8 @@ sealed class ImageUiState {
   data class Error(val msg: String) : ImageUiState()
 }
 
-class ImageViewModel(private val repository: ImageRepository = ImageRepositoryProvider.repository) : ViewModel() {
+class ImageViewModel(private val repository: ImageRepository = ImageRepositoryProvider.repository) :
+    ViewModel() {
   private val _uiState = MutableStateFlow<ImageUiState>(ImageUiState.Idle)
   val uiState: StateFlow<ImageUiState> = _uiState
 
