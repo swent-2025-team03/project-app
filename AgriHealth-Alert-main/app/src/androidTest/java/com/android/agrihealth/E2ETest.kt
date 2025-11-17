@@ -112,6 +112,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     goToProfileFromOverview()
     checkManageOfficeWhenNoOffice()
     createOffice()
+    leaveOffice()
   }
 
   // ----------- Scenario: Farmer -----------
@@ -324,6 +325,24 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.OFFICE_NAME).isDisplayed()
+    }
+  }
+
+  private fun leaveOffice() {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.LEAVE_OFFICE_BUTTON).isDisplayed()
+    }
+
+    composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.LEAVE_OFFICE_BUTTON).performClick()
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.CONFIRM_LEAVE).isDisplayed()
+    }
+
+    composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.CONFIRM_LEAVE).performClick()
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ProfileScreenTestTags.PROFILE_IMAGE).isDisplayed()
     }
   }
 
