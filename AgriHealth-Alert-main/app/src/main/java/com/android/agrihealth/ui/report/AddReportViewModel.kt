@@ -51,23 +51,19 @@ class AddReportViewModel(
             id = reportRepository.getNewReportId(),
             title = current.title,
             description = current.description,
-            photoUri = null,
+            questionForms = emptyList(),
+            photoUri = null, // currently unused
             farmerId = userId,
             vetId = current.chosenVet,
             status = ReportStatus.PENDING,
             answer = null,
-            location = Location(46.7990813, 6.6259961))
+            location = Location(46.7990813, 6.6259961) // null // optional until implemented
+            )
 
-    viewModelScope.launch {
-      try {
-        reportRepository.addReport(newReport)
-        // Success: stop loading
-        _uiState.value = _uiState.value.copy(isLoading = false)
-        clearInputs() // TODO conditionner au succès réel si nécessaire
-      } catch (e: Exception) {
-        _uiState.value = _uiState.value.copy(isLoading = false)
-      }
-    }
+    viewModelScope.launch { reportRepository.addReport(newReport) }
+
+    // Clears all the fields
+    clearInputs() // TODO: Call only if addReport succeeds
 
     return true
   }

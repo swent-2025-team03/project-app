@@ -8,6 +8,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.rule.GrantPermissionRule
+import com.android.agrihealth.data.model.device.location.LocationProvider
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
@@ -46,6 +47,7 @@ object MapScreenTestReports {
           "rep_id1",
           "Report title 1",
           "Description 1",
+          emptyList(),
           null,
           "farmerId1",
           "vetId1",
@@ -57,6 +59,7 @@ object MapScreenTestReports {
           "rep_id2",
           "Report title 2",
           "Description aaaa 2",
+          emptyList(),
           null,
           "farmerId2",
           "vetId2",
@@ -68,6 +71,7 @@ object MapScreenTestReports {
           "rep_id3",
           "Report title 3",
           "Description 3",
+          emptyList(),
           null,
           "farmerId3",
           "vetId1",
@@ -79,6 +83,7 @@ object MapScreenTestReports {
           "rep_id4",
           "Report title 4",
           "Description aaaa 4",
+          emptyList(),
           null,
           "farmerId4",
           "vetId4",
@@ -138,7 +143,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
       isViewedFromOverview: Boolean = true,
       selectedReportId: String? = null,
       startingPosition: Location? = null
-  ) {
+  ): MapViewModel {
     val mapViewModel =
         MapViewModel(
             reportRepository = reportRepository,
@@ -153,6 +158,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
             startingPosition = startingPosition)
       }
     }
+    return mapViewModel
   }
 
   @Test
@@ -337,9 +343,8 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun loadingOverlay_showsWhileFetchingLocation() = runTest {
 
-    // Simulate slow GPS on purpose
+    // Fake slow GPS
     val slowRepository = mockk<LocationRepository>(relaxed = true)
-
     every { slowRepository.hasFineLocationPermission() } returns true
     every { slowRepository.hasCoarseLocationPermission() } returns true
 
@@ -348,22 +353,42 @@ class MapScreenTest : FirebaseEmulatorsTest() {
           delay(1500) // simulate slow GPS
           Location(46.95, 7.44, "Loaded Position")
         }
-
     coEvery { slowRepository.getCurrentLocation() } returns Location(46.95, 7.44, "Loaded Position")
 
+    // Inject slow repo
     LocationRepositoryProvider.repository = slowRepository
     locationViewModel = LocationViewModel()
 
+    // Display MapScreen
     setContentToMapWithVM()
 
+    // Trigger loading manually (MapViewModel does NOT call it in init)
+    composeTestRule.runOnUiThread {
+      (locationViewModel as? LocationProvider)?.let {
+        // call through mapViewModel
+      }
+    }
+    /*
+    composeTestRule.runOnUiThread {
+        // Access the mapViewModel used in setContentToMapWithVM()
+        val vm = (composeTestRule.activity as ComponentActivity)
+            .intent.extras?.get("mapViewModel") as MapViewModel? ?: mapViewModel
+        vm.setStartingLocation(null)
+    }
+    */
+
+    // Loading should be visible
     composeTestRule.onNodeWithTag("loading_overlay_scrim").assertIsDisplayed()
     composeTestRule.onNodeWithTag("loading_overlay_spinner").assertIsDisplayed()
 
+    // Finish coroutines
     advanceUntilIdle()
 
+    // Loading should disappear
     composeTestRule.onNodeWithTag("loading_overlay_scrim").assertDoesNotExist()
     composeTestRule.onNodeWithTag("loading_overlay_spinner").assertDoesNotExist()
 
+    // Map is displayed
     composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
   }
 }

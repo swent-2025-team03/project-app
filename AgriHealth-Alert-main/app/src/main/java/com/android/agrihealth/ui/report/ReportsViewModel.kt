@@ -27,6 +27,7 @@ data class ReportViewUIState(
             id = "RPT001",
             title = "My sheep is acting strange",
             description = "Since this morning, my sheep keeps getting on its front knees.",
+            questionForms = emptyList(),
             photoUri = null, // Placeholder for now
             farmerId = "FARMER_123",
             vetId = "VET_456",

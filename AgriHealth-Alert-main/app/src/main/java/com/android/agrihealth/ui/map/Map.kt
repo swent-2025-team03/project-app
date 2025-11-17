@@ -460,6 +460,7 @@ fun PreviewReportInfo() {
           title = "Veryyyyyyyyyyyyy long title",
           description =
               "very very very very very very very very very very very very very very very very very long description",
+          questionForms = emptyList(),
           farmerId = "farmer id",
           vetId = "vetId",
           status = ReportStatus.IN_PROGRESS,
