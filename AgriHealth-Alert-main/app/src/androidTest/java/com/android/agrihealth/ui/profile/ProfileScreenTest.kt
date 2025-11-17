@@ -190,4 +190,21 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(CODE_BUTTON_FARMER).performClick()
     assert(clicked)
   }
+
+  @Test
+  fun vetProfile_displaysManageOfficeButton() {
+    val vm =
+        makeFakeViewModel(
+            Vet(
+                uid = "vet123",
+                firstname = "John",
+                lastname = "Doe",
+                email = "john@vet.com",
+                address = null,
+                officeId = null))
+
+    composeTestRule.setContent { ProfileScreen(userViewModel = vm, onManageOffice = {}) }
+
+    composeTestRule.onNodeWithTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON).assertExists()
+  }
 }
