@@ -7,7 +7,12 @@ import com.google.firebase.storage.storage
 import java.net.InetSocketAddress
 import java.net.Socket
 
-data class FirebaseEnvironment(val host: String, val firestorePort: Int, val authPort: Int, val storagePort: Int)
+data class FirebaseEnvironment(
+    val host: String,
+    val firestorePort: Int,
+    val authPort: Int,
+    val storagePort: Int
+)
 
 /** Handles which Firebase emulator to run, and makes sure useEmulators() isn't called twice */
 object FirebaseEmulatorsManager {
@@ -28,11 +33,16 @@ object FirebaseEmulatorsManager {
   fun linkEmulators() {
     if (emulatorInitialized) return
 
-    val shouldUseLocal = isLocalRunning(FIRESTORE_PORT) && isLocalRunning(AUTH_PORT) && isLocalRunning(STORAGE_PORT)
+    val shouldUseLocal =
+        isLocalRunning(FIRESTORE_PORT) && isLocalRunning(AUTH_PORT) && isLocalRunning(STORAGE_PORT)
+
+    if (!shouldUseLocal)
+        throw IllegalStateException(
+            "Firebase emulators not running locally, run: firebase emulators:start")
 
     environment =
         FirebaseEnvironment(
-            host = if (shouldUseLocal) LOCAL_HOST else REMOTE_HOST,
+            host = LOCAL_HOST,
             firestorePort = FIRESTORE_PORT,
             authPort = AUTH_PORT,
             storagePort = STORAGE_PORT)
