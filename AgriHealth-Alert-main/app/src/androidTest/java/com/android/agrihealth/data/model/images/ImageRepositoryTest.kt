@@ -2,15 +2,28 @@ package com.android.agrihealth.data.model.images
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.net.Uri
 import android.util.Log
-import androidx.compose.foundation.layout.size
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkClass
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
 import java.io.ByteArrayOutputStream
 import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ImageRepositoryTest : FirebaseEmulatorsTest() {
   val repository = ImageRepositoryProvider.repository
 
@@ -20,6 +33,16 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
   // val pattern = (x < width/2 && y < height/2) || (x >= width/2 && y >= height/2)
   val testImageBM = generateTestImage()
   val testImageBA = bitmapToByteArray(testImageBM)
+
+  @Before
+  fun setup() {
+    Dispatchers.setMain(StandardTestDispatcher())
+  }
+
+  @After
+  fun tearDown() {
+    Dispatchers.resetMain()
+  }
 
   private fun bitmapToByteArray(bitmap: Bitmap): ByteArray {
     val byteStream = ByteArrayOutputStream()
@@ -162,5 +185,40 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
     val reducedImage = repository.reduceFileSize(bigImage)
 
     assert(!repository.isFileTooLarge(reducedImage))
+  }
+
+  @Test
+  fun viewModel_downloadIdenticalAsUpload() = runTest {
+    // Cannot mock an interface, so just take the class of a child of the interface
+    val fakeRepo = mockkClass(ImageRepositoryProvider.repository::class)
+    val uri: Uri = mockk()
+    val bytes = byteArrayOf(1, 2, 3, 4)
+    val path = "images/test.png"
+
+    every { fakeRepo.resolveUri(uri) } returns bytes
+    every { fakeRepo.reduceFileSize(bytes) } returns bytes
+    coEvery { fakeRepo.uploadImage(bytes) } returns Result.success(path)
+    coEvery { fakeRepo.downloadImage(path) } returns Result.success(bytes)
+
+    val viewModel = ImageViewModel(repository = fakeRepo)
+
+    // Upload and check if success
+    viewModel.upload(uri)
+    advanceUntilIdle()
+
+    var uiState = viewModel.uiState.value
+    assert(uiState is ImageUiState.UploadSuccess)
+
+    // Download and check if valid file
+    val resultPath = (uiState as ImageUiState.UploadSuccess).path
+
+    viewModel.download(resultPath)
+    advanceUntilIdle()
+
+    uiState = viewModel.uiState.value
+    assert(uiState is ImageUiState.DownloadSuccess)
+
+    val resultBytes = (uiState as ImageUiState.DownloadSuccess).imageData
+    assert(resultBytes.contentEquals(bytes))
   }
 }
