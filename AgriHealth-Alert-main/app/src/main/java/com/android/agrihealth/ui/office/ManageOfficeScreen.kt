@@ -21,6 +21,7 @@ import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.CONFIRM_LEAVE
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.JOIN_OFFICE_BUTTON
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.LEAVE_OFFICE_BUTTON
@@ -41,6 +42,7 @@ object ManageOfficeScreenTestTags {
   const val OFFICE_VET_LIST = "OfficeVetList"
   const val SAVE_BUTTON = "SaveButton"
   const val LEAVE_OFFICE_BUTTON = "LeaveOfficeButton"
+  const val CONFIRM_LEAVE = "ConfirmLeaveOffice"
 }
 
 @SuppressLint("StateFlowValueCalledInComposition", "SuspiciousIndentation")
@@ -161,7 +163,8 @@ fun ManageOfficeScreen(
                             onClick = {
                               showLeaveDialog = false
                               vm.leaveOffice(onSuccess = onGoBack)
-                            }) {
+                            },
+                            modifier = Modifier.testTag(CONFIRM_LEAVE)) {
                               Text("Leave")
                             }
                       },
