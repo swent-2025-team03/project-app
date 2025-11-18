@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -91,7 +92,9 @@ fun AddReportScreen(
   // For the dropdown menu
   var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
   var selectedOption by remember { mutableStateOf((user as Farmer).defaultVet ?: "") }
-  addReportViewModel.setVet(selectedOption)
+    LaunchedEffect(selectedOption) {
+        addReportViewModel.setVet(selectedOption)
+    }
 
   // For the confirmation snackbar (i.e alter window)
   val snackbarHostState = remember { SnackbarHostState() }
@@ -151,7 +154,6 @@ fun AddReportScreen(
               uiState.questionForms.forEachIndexed { index, question ->
                 when (question) {
                   is OpenQuestion -> {
-                    Log.d("test tag:", "QUESTION_${index}_OPEN !")
                     OpenQuestionItem(
                         question = question,
                         onAnswerChange = { updated ->
@@ -161,7 +163,6 @@ fun AddReportScreen(
                         modifier = Modifier.testTag("QUESTION_${index}_OPEN"))
                   }
                   is YesOrNoQuestion -> {
-                    Log.d("test tag:", "QUESTION_${index}_YESORNO")
                     YesOrNoQuestionItem(
                         question = question,
                         onAnswerChange = { updated ->
@@ -171,7 +172,6 @@ fun AddReportScreen(
                         modifier = Modifier.testTag("QUESTION_${index}_YESORNO"))
                   }
                   is MCQ -> {
-                    Log.d("test tag:", "QUESTION_${index}_MCQ")
                     MCQItem(
                         question = question,
                         onAnswerChange = { updated ->
@@ -181,14 +181,13 @@ fun AddReportScreen(
                         modifier = Modifier.testTag("QUESTION_${index}_MCQ"))
                   }
                   is MCQO -> {
-                    Log.d("test tag:", "QUESTION_${index}_MCQO")
                     MCQOItem(
                         question = question,
                         onAnswerChange = { updated ->
                           addReportViewModel.updateQuestion(index, updated)
                         },
                         enabled = true,
-                        modifier = Modifier.testTag("QUESTION_${index}_MCQ"))
+                        modifier = Modifier.testTag("QUESTION_${index}_MCQO"))
                   }
                 }
               }

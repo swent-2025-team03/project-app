@@ -21,6 +21,7 @@ import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
+import com.android.agrihealth.data.model.report.QuestionForm
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.UserRole
@@ -42,6 +43,20 @@ object ReportViewScreenTestTags {
   const val SCROLL_CONTAINER = "ReportViewScrollContainer"
 
   fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
+}
+
+@Composable
+private fun QuestionItem(
+    question: QuestionForm,
+    onAnswerChange: (QuestionForm) -> Unit = {},
+    enabled: Boolean = false
+) {
+    when (question) {
+        is OpenQuestion -> OpenQuestionItem(question, { onAnswerChange(it) }, enabled)
+        is YesOrNoQuestion -> YesOrNoQuestionItem(question, { onAnswerChange(it) }, enabled)
+        is MCQ -> MCQItem(question, { onAnswerChange(it) }, enabled)
+        is MCQO -> MCQOItem(question, { onAnswerChange(it) }, enabled)
+    }
 }
 
 /**
@@ -167,16 +182,7 @@ fun ReportViewScreen(
                   style = MaterialTheme.typography.titleMedium,
                   fontWeight = FontWeight.SemiBold)
 
-              uiState.report.questionForms.forEach { question ->
-                when (question) {
-                  is OpenQuestion ->
-                      OpenQuestionItem(question = question, onAnswerChange = {}, enabled = false)
-                  is YesOrNoQuestion ->
-                      YesOrNoQuestionItem(question = question, onAnswerChange = {}, enabled = false)
-                  is MCQ -> MCQItem(question = question, onAnswerChange = {}, enabled = false)
-                  is MCQO -> MCQOItem(question = question, onAnswerChange = {}, enabled = false)
-                }
-              }
+            uiState.report.questionForms.forEach { QuestionItem(it) }
 
               // ---- Answer section ----
               Text(

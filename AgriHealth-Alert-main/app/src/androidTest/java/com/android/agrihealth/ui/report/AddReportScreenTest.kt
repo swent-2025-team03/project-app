@@ -9,6 +9,7 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -200,7 +201,11 @@ class AddReportScreenTest {
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
         .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
-    composeRule.onNodeWithText(AddReportFeedbackTexts.FAILURE).assertIsDisplayed()
+      composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+          composeRule.onAllNodesWithText(AddReportFeedbackTexts.FAILURE)
+              .fetchSemanticsNodes().isNotEmpty()
+      }
+      composeRule.onNodeWithText(AddReportFeedbackTexts.FAILURE).assertIsDisplayed()
   }
 
   @Test
@@ -240,7 +245,8 @@ class AddReportScreenTest {
     createReport("title", "description")
     // Check that dialog appears
     composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeRule.onNodeWithText(AddReportFeedbackTexts.SUCCESS).isDisplayed()
+        composeRule.onAllNodesWithText(AddReportFeedbackTexts.SUCCESS)
+            .fetchSemanticsNodes().isNotEmpty()
     }
     composeRule.onNodeWithText("OK").assertIsDisplayed()
   }
@@ -260,9 +266,10 @@ class AddReportScreenTest {
     }
 
     createReport("title", "description")
-    composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeRule.onNodeWithText("OK").isDisplayed()
-    }
+      composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+          composeRule.onAllNodesWithText("OK")
+              .fetchSemanticsNodes().isNotEmpty()
+      }
     composeRule.onNodeWithText("OK").performClick()
 
     Assert.assertTrue(called)
