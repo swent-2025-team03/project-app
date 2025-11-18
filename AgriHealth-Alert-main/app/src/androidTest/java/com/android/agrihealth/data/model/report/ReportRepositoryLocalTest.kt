@@ -21,7 +21,6 @@ class ReportRepositoryLocalTest {
           title = "Test Report",
           description = "This is a test report",
           questionForms = emptyList(),
-          photoUri = "http://example.com/photo.jpg",
           photoUri = null,
           farmerId = "farmer123",
           vetId = "vet456",
