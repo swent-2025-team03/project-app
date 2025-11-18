@@ -14,11 +14,11 @@ interface ImageRepository {
    * Uploads the provided byte array as an image to the backend storage to be downloaded later.
    * Returns the storage path
    */
-  suspend fun uploadImage(byteArray: ByteArray): Result<String>
+  suspend fun uploadImage(bytes: ByteArray): Result<String>
 
   /**
    * Downloads an image from the backend storage at the given backend storage path. Returns a byte
-   * array of the image data, can be converted to a bitmap with toBitmap()
+   * array of the image data, result can be directly converted to a bitmap with toBitmap()
    */
   suspend fun downloadImage(path: String): Result<ByteArray>
 
@@ -26,24 +26,24 @@ interface ImageRepository {
   fun isFileTooLarge(bytes: ByteArray): Boolean
 
   /**
-   * Reduces the file size of the provided image by compressing, resizing, ... Returns the modified
+   * Reduces the file size of the provided image by resizing, compressing, ... Returns the modified
    * image
    */
   fun reduceFileSize(bytes: ByteArray): ByteArray
 
   /**
-   * Resizes the provided image to a lower resolution to reduce file size. Returns the modified
-   * image
+   * Resizes the provided image to a lower resolution to reduce file size. Leaves the image
+   * unchanged if it was already small enough. Returns the modified image
    */
   fun resizeImage(bitmap: Bitmap): Bitmap
 
   /**
    * Compresses the provided image to a lower quality to reduce file size. Returns the modified
-   * image
+   * image as a byte array
    */
   fun compressImage(bitmap: Bitmap): ByteArray
 
-  /** Gets the content from the specified URI and returns the corresponding bytes */
+  /** Gets the content from the specified URI and returns the corresponding byte array */
   fun resolveUri(uri: Uri): ByteArray
 
   companion object {

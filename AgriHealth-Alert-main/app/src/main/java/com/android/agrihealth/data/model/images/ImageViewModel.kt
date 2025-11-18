@@ -19,9 +19,8 @@ sealed class ImageUiState {
   data class Error(val msg: String) : ImageUiState()
 }
 
-class ImageViewModel() : ViewModel() {
-  private val repository: ImageRepository = ImageRepositoryProvider.repository
-
+class ImageViewModel(private val repository: ImageRepository = ImageRepositoryProvider.repository) :
+    ViewModel() {
   private val _uiState = MutableStateFlow<ImageUiState>(ImageUiState.Idle)
   val uiState: StateFlow<ImageUiState> = _uiState
 

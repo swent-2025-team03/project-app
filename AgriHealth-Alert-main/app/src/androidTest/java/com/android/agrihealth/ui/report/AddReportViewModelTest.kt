@@ -151,13 +151,4 @@ class AddReportViewModelTest {
     assertEquals("", state.chosenVet)
     assertEquals(null, state.photoUri)
   }
-
-  private fun getPicture(pictureName: String): Uri {
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    val file = File(context.cacheDir, pictureName)
-    val assetManager = InstrumentationRegistry.getInstrumentation().context.assets
-    val inputStream = assetManager.open(pictureName)
-    inputStream.use { input -> file.outputStream().use { output -> input.copyTo(output) } }
-    return Uri.fromFile(file)
-  }
 }

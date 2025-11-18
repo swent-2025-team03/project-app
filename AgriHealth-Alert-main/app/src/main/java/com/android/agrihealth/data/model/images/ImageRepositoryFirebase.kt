@@ -3,7 +3,6 @@ package com.android.agrihealth.data.model.images
 import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.net.Uri
-import android.util.Log
 import androidx.core.graphics.scale
 import com.android.agrihealth.data.model.images.ImageRepository.Companion.toBitmap
 import com.google.firebase.storage.FirebaseStorage
@@ -17,30 +16,17 @@ class ImageRepositoryFirebase : ImageRepository {
   override val IMAGE_FORMAT = Bitmap.CompressFormat.JPEG
   val storage = FirebaseStorage.getInstance()
 
-  /*override suspend fun uploadImage(imageUri: Uri): Result<String> {
-    return try {
-      val inputStream =
-          resolver.openInputStream(imageUri)
-              ?: throw IllegalArgumentException("Could not read file with URI $imageUri")
-      val byteArray = inputStream.readBytes()
-      uploadImage(byteArray)
-    } catch (e: Exception) {
-      Result.failure(e)
-    }
-  }*/
-
-  override suspend fun uploadImage(byteArray: ByteArray): Result<String> {
+  override suspend fun uploadImage(bytes: ByteArray): Result<String> {
     return try {
       val fileName = System.currentTimeMillis()
       val imageRef = storage.reference.child("images/$fileName.jpg")
 
-      imageRef.putBytes(byteArray).await()
+      imageRef.putBytes(bytes).await()
 
       val path = imageRef.path
 
       Result.success(path)
     } catch (e: Exception) {
-      Log.e("ImageRepository", "Failed to upload image: ${e.message}")
       Result.failure(e)
     }
   }
@@ -49,11 +35,10 @@ class ImageRepositoryFirebase : ImageRepository {
     return try {
       val storageRef = storage.reference.child(path)
 
-      val byteArray = storageRef.getBytes(MAX_FILE_SIZE).await()
+      val bytes = storageRef.getBytes(MAX_FILE_SIZE).await()
 
-      Result.success(byteArray)
+      Result.success(bytes)
     } catch (e: Exception) {
-      Log.e("ImageRepository", "Failed to download image: ${e.message}")
       Result.failure(e)
     }
   }
@@ -64,7 +49,10 @@ class ImageRepositoryFirebase : ImageRepository {
 
   override fun reduceFileSize(bytes: ByteArray): ByteArray {
     val initBitmap = bytes.toBitmap()
+
     val resizedBitmap = resizeImage(initBitmap)
+
+    // Always finish with compression
     return compressImage(resizedBitmap)
   }
 
