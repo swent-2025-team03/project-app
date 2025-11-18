@@ -6,7 +6,6 @@ import androidx.compose.ui.test.assertAny
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -201,11 +200,13 @@ class AddReportScreenTest {
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
         .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
-      composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-          composeRule.onAllNodesWithText(AddReportFeedbackTexts.FAILURE)
-              .fetchSemanticsNodes().isNotEmpty()
-      }
-      composeRule.onNodeWithText(AddReportFeedbackTexts.FAILURE).assertIsDisplayed()
+    composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeRule
+          .onAllNodesWithText(AddReportFeedbackTexts.FAILURE)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+    composeRule.onNodeWithText(AddReportFeedbackTexts.FAILURE).assertIsDisplayed()
   }
 
   @Test
@@ -245,8 +246,10 @@ class AddReportScreenTest {
     createReport("title", "description")
     // Check that dialog appears
     composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-        composeRule.onAllNodesWithText(AddReportFeedbackTexts.SUCCESS)
-            .fetchSemanticsNodes().isNotEmpty()
+      composeRule
+          .onAllNodesWithText(AddReportFeedbackTexts.SUCCESS)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
     }
     composeRule.onNodeWithText("OK").assertIsDisplayed()
   }
@@ -266,10 +269,9 @@ class AddReportScreenTest {
     }
 
     createReport("title", "description")
-      composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-          composeRule.onAllNodesWithText("OK")
-              .fetchSemanticsNodes().isNotEmpty()
-      }
+    composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeRule.onAllNodesWithText("OK").fetchSemanticsNodes().isNotEmpty()
+    }
     composeRule.onNodeWithText("OK").performClick()
 
     Assert.assertTrue(called)

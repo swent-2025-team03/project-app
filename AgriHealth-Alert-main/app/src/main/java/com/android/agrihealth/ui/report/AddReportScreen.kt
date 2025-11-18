@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.report
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -92,9 +91,7 @@ fun AddReportScreen(
   // For the dropdown menu
   var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
   var selectedOption by remember { mutableStateOf((user as Farmer).defaultVet ?: "") }
-    LaunchedEffect(selectedOption) {
-        addReportViewModel.setVet(selectedOption)
-    }
+  LaunchedEffect(selectedOption) { addReportViewModel.setVet(selectedOption) }
 
   // For the confirmation snackbar (i.e alter window)
   val snackbarHostState = remember { SnackbarHostState() }

@@ -51,12 +51,12 @@ private fun QuestionItem(
     onAnswerChange: (QuestionForm) -> Unit = {},
     enabled: Boolean = false
 ) {
-    when (question) {
-        is OpenQuestion -> OpenQuestionItem(question, { onAnswerChange(it) }, enabled)
-        is YesOrNoQuestion -> YesOrNoQuestionItem(question, { onAnswerChange(it) }, enabled)
-        is MCQ -> MCQItem(question, { onAnswerChange(it) }, enabled)
-        is MCQO -> MCQOItem(question, { onAnswerChange(it) }, enabled)
-    }
+  when (question) {
+    is OpenQuestion -> OpenQuestionItem(question, { onAnswerChange(it) }, enabled)
+    is YesOrNoQuestion -> YesOrNoQuestionItem(question, { onAnswerChange(it) }, enabled)
+    is MCQ -> MCQItem(question, { onAnswerChange(it) }, enabled)
+    is MCQO -> MCQOItem(question, { onAnswerChange(it) }, enabled)
+  }
 }
 
 /**
@@ -182,7 +182,7 @@ fun ReportViewScreen(
                   style = MaterialTheme.typography.titleMedium,
                   fontWeight = FontWeight.SemiBold)
 
-            uiState.report.questionForms.forEach { QuestionItem(it) }
+              uiState.report.questionForms.forEach { QuestionItem(it) }
 
               // ---- Answer section ----
               Text(
