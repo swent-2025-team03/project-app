@@ -493,10 +493,8 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun mapClickViewReport() {
-    composeTestRule
-        .onNodeWithTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
+    waitUntilTestTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)
+    composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON).performClick()
   }
 
   private fun goToProfileFromOverview() {
@@ -504,6 +502,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(OverviewScreenTestTags.PROFILE_BUTTON)
         .assertIsDisplayed()
         .performClick()
+    waitUntilTestTag(ProfileScreenTestTags.PROFILE_IMAGE)
   }
 
   private fun clickAddVetCode() {
