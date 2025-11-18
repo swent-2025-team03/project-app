@@ -5,8 +5,16 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.navigation.compose.rememberNavController
+import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.testutil.FakeOverviewRepository
+import com.android.agrihealth.ui.loading.LoadingTestTags
+import com.android.agrihealth.ui.navigation.NavigationActions
+import io.mockk.coEvery
+import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -97,4 +105,88 @@ class OverviewStableUITest {
 
     assertEquals("Option 1", selectedOption)
   }
+
+
+
+  @Test
+  fun overview_showsLoadingOverlayWhileLoadingReports_fakeRepo() {
+    val sample =
+      Report(
+        id = "R1",
+        title = "Coughing cow",
+        description = "cough...",
+        farmerId = "F1",
+        vetId = "V1",
+        status = ReportStatus.PENDING,
+        questionForms = emptyList(),
+        answer = null,
+        photoUri = null,
+        location = null,
+      )
+
+    val slowRepo = SlowFakeReportRepository(
+      reports = listOf(sample),
+      delayMs = 1200L,
+    )
+
+    val vm = OverviewViewModel(reportRepository = slowRepo)
+
+    composeTestRule.setContent {
+      val nav = rememberNavController()
+      OverviewScreen(
+        userRole = UserRole.FARMER,
+        userId = "F1",
+        overviewViewModel = vm,
+        navigationActions = NavigationActions(nav),
+      )
+    }
+
+    composeTestRule.waitUntil(2_000) { vm.uiState.value.isLoading }
+
+    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
+
+    composeTestRule.waitUntil(4_000) { !vm.uiState.value.isLoading }
+
+    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
+    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
+  }
+
+
+
+
+}
+
+
+
+class SlowFakeReportRepository(
+  private val reports: List<Report> = emptyList(),
+  private val delayMs: Long = 1200
+) : ReportRepository {
+
+  override fun getNewReportId(): String = "slow-id"
+
+  override suspend fun getAllReports(uid: String): List<Report> {
+    kotlinx.coroutines.delay(delayMs)
+    return reports
+  }
+
+  override suspend fun getReportsByFarmer(farmerId: String): List<Report> {
+    kotlinx.coroutines.delay(delayMs)
+    return reports.filter { it.farmerId == farmerId }
+  }
+
+  override suspend fun getReportsByVet(vetId: String): List<Report> {
+    kotlinx.coroutines.delay(delayMs)
+    return reports.filter { it.vetId == vetId }
+  }
+
+  override suspend fun getReportById(id: String): Report? {
+    kotlinx.coroutines.delay(delayMs)
+    return reports.find { it.id == id }
+  }
+
+  override suspend fun addReport(report: Report) {}
+  override suspend fun editReport(reportId: String, newReport: Report) {}
+  override suspend fun deleteReport(reportId: String) {}
 }

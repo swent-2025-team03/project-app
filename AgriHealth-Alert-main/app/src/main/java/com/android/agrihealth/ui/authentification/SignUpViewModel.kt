@@ -35,6 +35,7 @@ data class SignUpUIState(
     val role: UserRole? = null,
     val errorMsg: String? = null,
     val hasFailed: Boolean = false,
+    val isLoading: Boolean = false
 ) {
 
   fun isValid(): Boolean {
@@ -103,48 +104,66 @@ open class SignUpViewModel(
     _uiState.value = _uiState.value.copy(role = role)
   }
 
-  fun signUp() {
-    val state = _uiState.value
+    fun signUp() {
+        val state = _uiState.value
 
-    if (state.isValid()) {
-      val user =
-          when (state.role) {
-            UserRole.FARMER ->
-                Farmer("", state.firstname, state.lastname, state.email, null, emptyList(), null)
-            UserRole.VET -> Vet("", state.firstname, state.lastname, state.email, null)
-            else -> null
-          }
+        if (state.isValid()) {
+            val user =
+                when (state.role) {
+                    UserRole.FARMER ->
+                        Farmer("", state.firstname, state.lastname, state.email, null, emptyList(), null)
+                    UserRole.VET ->
+                        Vet("", state.firstname, state.lastname, state.email, null)
+                    else -> null
+                }
 
-      if (user != null) {
-        viewModelScope.launch {
-          authRepository
-              .signUpWithEmailAndPassword(state.email, state.password, user)
-              .fold(
-                  { user -> _uiState.update { it.copy(user = user) } },
-                  { failure ->
-                    setErrorMsg(
-                        when (failure) {
-                          is com.google.firebase.auth.FirebaseAuthException ->
-                              SignUpErrorMsg.ALREADY_USED_EMAIL
-                          else -> SignUpErrorMsg.TIMEOUT
-                        })
-                  })
+            if (user != null) {
+                viewModelScope.launch {
+
+                    // --- LOADING START ---
+                    _uiState.value = _uiState.value.copy(isLoading = true)
+
+                    authRepository
+                        .signUpWithEmailAndPassword(state.email, state.password, user)
+                        .fold(
+                            { firebaseUser ->
+                                _uiState.update {
+                                    it.copy(
+                                        user = firebaseUser,
+                                        isLoading = false
+                                    )
+                                }
+                            },
+                            { failure ->
+                                _uiState.update {
+                                    it.copy(
+                                        isLoading = false,
+                                        errorMsg = when (failure) {
+                                            is com.google.firebase.auth.FirebaseAuthException ->
+                                                SignUpErrorMsg.ALREADY_USED_EMAIL
+                                            else -> SignUpErrorMsg.TIMEOUT
+                                        }
+                                    )
+                                }
+                            }
+                        )
+                }
+            }
+        } else {
+            _uiState.value = state.copy(hasFailed = true)
+
+            val errorMsg =
+                when {
+                    !state.isFilled() -> SignUpErrorMsg.EMPTY_FIELDS
+                    state.role == null -> SignUpErrorMsg.ROLE_NULL
+                    state.emailIsMalformed() -> SignUpErrorMsg.BAD_EMAIL_FORMAT
+                    state.passwordIsWeak() -> SignUpErrorMsg.WEAK_PASSWORD
+                    state.password != state.cnfPassword -> SignUpErrorMsg.CNF_PASSWORD_DIFF
+                    else -> null
+                }
+            errorMsg?.let { setErrorMsg(it) }
         }
-      }
-    } else {
-      _uiState.value = state.copy(hasFailed = true)
-      val errorMsg =
-          when {
-            !state.isFilled() -> SignUpErrorMsg.EMPTY_FIELDS
-            state.role == null -> SignUpErrorMsg.ROLE_NULL
-            state.emailIsMalformed() -> SignUpErrorMsg.BAD_EMAIL_FORMAT
-            state.passwordIsWeak() -> SignUpErrorMsg.WEAK_PASSWORD
-            state.password != state.cnfPassword -> SignUpErrorMsg.CNF_PASSWORD_DIFF
-            else -> null
-          }
-      errorMsg?.let { setErrorMsg(it) }
     }
-  }
 
   fun createLocalUser(firebaseUser: FirebaseUser): User? {
     val state = _uiState.value

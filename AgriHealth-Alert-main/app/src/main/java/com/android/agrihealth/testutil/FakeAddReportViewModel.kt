@@ -6,8 +6,8 @@ import com.android.agrihealth.ui.report.AddReportViewModelContract
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
-  private val _uiState = MutableStateFlow(AddReportUiState())
+open class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
+  protected val _uiState = MutableStateFlow(AddReportUiState())
   override val uiState: StateFlow<AddReportUiState> = _uiState
 
   override fun setTitle(newTitle: String) {

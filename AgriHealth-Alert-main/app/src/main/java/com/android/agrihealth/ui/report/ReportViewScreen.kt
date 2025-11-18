@@ -21,6 +21,7 @@ import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
+import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 
@@ -77,73 +78,83 @@ fun ReportViewScreen(
   val selectedStatus = uiState.status
 
   var isSpamDialogOpen by remember { mutableStateOf(false) }
-
-  Scaffold(
-      topBar = {
-        // Top bar with back arrow and title/status
-        TopAppBar(
-            title = {
-              Row(
-                  modifier = Modifier.fillMaxWidth(),
-                  horizontalArrangement = Arrangement.SpaceBetween,
-                  verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = report.title,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f))
-                    Box(
-                        modifier =
-                            Modifier.background(
-                                    color = statusColor(selectedStatus),
-                                    shape = MaterialTheme.shapes.small)
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                                .testTag(ReportViewScreenTestTags.STATUS_BADGE_BOX)) {
-                          Text(
-                              text = selectedStatus.name.replace("_", " "),
-                              style = MaterialTheme.typography.labelLarge,
-                              color = MaterialTheme.colorScheme.onSurface,
-                              modifier =
-                                  Modifier.testTag(ReportViewScreenTestTags.STATUS_BADGE_TEXT))
+    LoadingOverlay(isLoading = uiState.isLoading) {
+        Scaffold(
+            topBar = {
+                // Top bar with back arrow and title/status
+                TopAppBar(
+                    title = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = report.title,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Box(
+                                modifier =
+                                    Modifier.background(
+                                        color = statusColor(selectedStatus),
+                                        shape = MaterialTheme.shapes.small
+                                    )
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                        .testTag(ReportViewScreenTestTags.STATUS_BADGE_BOX)
+                            ) {
+                                Text(
+                                    text = selectedStatus.name.replace("_", " "),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier =
+                                        Modifier.testTag(ReportViewScreenTestTags.STATUS_BADGE_TEXT)
+                                )
+                            }
                         }
-                  }
-            },
-            navigationIcon = {
-              IconButton(
-                  onClick = { navigationActions.goBack() },
-                  modifier =
-                      Modifier.testTag(
-                          com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON)) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back")
-                  }
-            })
-      }) { padding ->
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = { navigationActions.goBack() },
+                            modifier =
+                                Modifier.testTag(
+                                    com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
+                                )
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                    })
+            }) { padding ->
 
-        // Main scrollable content
-        Column(
-            modifier =
-                Modifier.padding(padding)
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            // Main scrollable content
+            Column(
+                modifier =
+                    Modifier.padding(padding)
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
 
-              // ---- Farmer or Vet info line ----
-              Row(
-                  verticalAlignment = Alignment.CenterVertically,
-                  modifier = Modifier.testTag(ReportViewScreenTestTags.ROLE_INFO_LINE)) {
+                // ---- Farmer or Vet info line ----
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.testTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
+                ) {
                     if (userRole == UserRole.VET) {
-                      AuthorName(uid = report.farmerId, showRole = true)
+                        AuthorName(uid = report.farmerId, showRole = true)
                     } else {
-                      AuthorName(uid = report.vetId, showRole = true)
+                        AuthorName(uid = report.vetId, showRole = true)
                     }
-                  }
+                }
 
-              // ---- Photo ---- For now, I am skipping this part since I had trouble loading a
-              // placeholder image
-              /*Image(
+                // ---- Photo ---- For now, I am skipping this part since I had trouble loading a
+                // placeholder image
+                /*Image(
                   imageVector = Icons.Filled.Image,
                   contentDescription = "Report photo",
                   modifier = Modifier
@@ -152,163 +163,181 @@ fun ReportViewScreen(
                       .background(MaterialTheme.colorScheme.surfaceVariant)
               )*/
 
-              // ---- Description ----
-              Text(text = report.description, style = MaterialTheme.typography.bodyLarge)
+                // ---- Description ----
+                Text(text = report.description, style = MaterialTheme.typography.bodyLarge)
 
-              // ---- Answer section ----
-              Text(
-                  text = "Answer:",
-                  style = MaterialTheme.typography.titleMedium,
-                  fontWeight = FontWeight.SemiBold)
-
-              if (userRole == UserRole.FARMER) {
-                // Farmer: read-only answer
+                // ---- Answer section ----
                 Text(
-                    text = report.answer ?: "No answer yet.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-              } else if (userRole == UserRole.VET) {
-                // Vet: editable TextField
-                OutlinedTextField(
-                    value = answerText,
-                    onValueChange = { viewModel.onAnswerChange(it) },
-                    placeholder = { Text("Write your answer here...") },
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .heightIn(min = 100.dp)
-                            .testTag(ReportViewScreenTestTags.ANSWER_FIELD))
-              }
+                    text = "Answer:",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
 
-              // ---- Status dropdown (Vet only) ----
-              if (userRole == UserRole.VET) {
-                var expanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = !expanded },
-                    modifier = Modifier.testTag(ReportViewScreenTestTags.STATUS_DROPDOWN_BOX)) {
-                      OutlinedTextField(
-                          value = selectedStatus.name.replace("_", " "),
-                          onValueChange = {},
-                          label = { Text("Status") },
-                          readOnly = true,
-                          trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                          },
-                          modifier =
-                              Modifier.menuAnchor()
-                                  .fillMaxWidth()
-                                  .testTag(ReportViewScreenTestTags.STATUS_DROPDOWN_FIELD))
-                      ExposedDropdownMenu(
-                          expanded = expanded,
-                          onDismissRequest = { expanded = false },
-                          modifier =
-                              Modifier.testTag(ReportViewScreenTestTags.STATUS_DROPDOWN_MENU)) {
+                if (userRole == UserRole.FARMER) {
+                    // Farmer: read-only answer
+                    Text(
+                        text = report.answer ?: "No answer yet.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else if (userRole == UserRole.VET) {
+                    // Vet: editable TextField
+                    OutlinedTextField(
+                        value = answerText,
+                        onValueChange = { viewModel.onAnswerChange(it) },
+                        placeholder = { Text("Write your answer here...") },
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .heightIn(min = 100.dp)
+                                .testTag(ReportViewScreenTestTags.ANSWER_FIELD)
+                    )
+                }
+
+                // ---- Status dropdown (Vet only) ----
+                if (userRole == UserRole.VET) {
+                    var expanded by remember { mutableStateOf(false) }
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded },
+                        modifier = Modifier.testTag(ReportViewScreenTestTags.STATUS_DROPDOWN_BOX)
+                    ) {
+                        OutlinedTextField(
+                            value = selectedStatus.name.replace("_", " "),
+                            onValueChange = {},
+                            label = { Text("Status") },
+                            readOnly = true,
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                            },
+                            modifier =
+                                Modifier.menuAnchor()
+                                    .fillMaxWidth()
+                                    .testTag(ReportViewScreenTestTags.STATUS_DROPDOWN_FIELD)
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier =
+                                Modifier.testTag(ReportViewScreenTestTags.STATUS_DROPDOWN_MENU)
+                        ) {
                             listOf(ReportStatus.IN_PROGRESS, ReportStatus.RESOLVED).forEach { status
-                              ->
-                              DropdownMenuItem(
-                                  text = { Text(status.name.replace("_", " ")) },
-                                  onClick = {
-                                    viewModel.onStatusChange(status)
-                                    expanded = false
-                                  },
-                                  modifier =
-                                      Modifier.testTag(
-                                          ReportViewScreenTestTags.getTagForStatusOption(
-                                              status.name)))
+                                ->
+                                DropdownMenuItem(
+                                    text = { Text(status.name.replace("_", " ")) },
+                                    onClick = {
+                                        viewModel.onStatusChange(status)
+                                        expanded = false
+                                    },
+                                    modifier =
+                                        Modifier.testTag(
+                                            ReportViewScreenTestTags.getTagForStatusOption(
+                                                status.name
+                                            )
+                                        )
+                                )
                             }
-                          }
+                        }
                     }
-              }
+                }
 
-              // ---- Bottom section: Map + Spam + Save ----
-              Column(
-                  modifier = Modifier.fillMaxWidth(),
-                  verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                // ---- Bottom section: Map + Spam + Save ----
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     // Row with View on Map (left) + Report Spam (right)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                          OutlinedButton(
-                              modifier =
-                                  Modifier.weight(1f).testTag(ReportViewScreenTestTags.VIEW_ON_MAP),
-                              onClick = {
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        OutlinedButton(
+                            modifier =
+                                Modifier.weight(1f).testTag(ReportViewScreenTestTags.VIEW_ON_MAP),
+                            onClick = {
                                 navigationActions.navigateTo(
                                     Screen.Map(
                                         report.location?.latitude,
                                         report.location?.longitude,
-                                        reportId))
-                              }) {
-                                Text("View on Map")
-                              }
+                                        reportId
+                                    )
+                                )
+                            }) {
+                            Text("View on Map")
+                        }
 
-                          if (userRole == UserRole.VET) {
+                        if (userRole == UserRole.VET) {
                             val isAlreadySpam = selectedStatus == ReportStatus.SPAM
                             if (!isAlreadySpam) {
-                              val color = StatusColors().spam
-                              OutlinedButton(
-                                  onClick = { isSpamDialogOpen = true },
-                                  colors =
-                                      ButtonDefaults.outlinedButtonColors(contentColor = color),
-                                  border = BorderStroke(1.dp, color),
-                                  shape = MaterialTheme.shapes.medium,
-                                  modifier =
-                                      Modifier.weight(1f)
-                                          .testTag(ReportViewScreenTestTags.SPAM_BUTTON)) {
+                                val color = StatusColors().spam
+                                OutlinedButton(
+                                    onClick = { isSpamDialogOpen = true },
+                                    colors =
+                                        ButtonDefaults.outlinedButtonColors(contentColor = color),
+                                    border = BorderStroke(1.dp, color),
+                                    shape = MaterialTheme.shapes.medium,
+                                    modifier =
+                                        Modifier.weight(1f)
+                                            .testTag(ReportViewScreenTestTags.SPAM_BUTTON)
+                                ) {
                                     Text("Report as spam")
-                                  }
+                                }
                             } else {
-                              Button(
-                                  onClick = {},
-                                  enabled = false,
-                                  colors =
-                                      ButtonDefaults.buttonColors(
-                                          containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                          contentColor =
-                                              MaterialTheme.colorScheme.onSurfaceVariant),
-                                  modifier =
-                                      Modifier.weight(1f)
-                                          .testTag(ReportViewScreenTestTags.SPAM_BUTTON)) {
+                                Button(
+                                    onClick = {},
+                                    enabled = false,
+                                    colors =
+                                        ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                            contentColor =
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                        ),
+                                    modifier =
+                                        Modifier.weight(1f)
+                                            .testTag(ReportViewScreenTestTags.SPAM_BUTTON)
+                                ) {
                                     Text("Reported as spam")
-                                  }
+                                }
                             }
-                          }
                         }
+                    }
 
                     // Save button (Vet only)
                     if (userRole == UserRole.VET) {
-                      Button(
-                          onClick = { viewModel.onSave() },
-                          modifier =
-                              Modifier.fillMaxWidth()
-                                  .testTag(ReportViewScreenTestTags.SAVE_BUTTON)) {
+                        Button(
+                            onClick = { viewModel.onSave() },
+                            modifier =
+                                Modifier.fillMaxWidth()
+                                    .testTag(ReportViewScreenTestTags.SAVE_BUTTON)
+                        ) {
                             Text("Save")
-                          }
+                        }
                     }
-                  }
+                }
 
-              // ---- Spam confirmation dialog ----
-              if (isSpamDialogOpen) {
-                AlertDialog(
-                    onDismissRequest = { isSpamDialogOpen = false },
-                    title = { Text("Report as spam?") },
-                    text = {
-                      Text("This will mark the report as spam and hide it from regular view.")
-                    },
-                    confirmButton = {
-                      TextButton(
-                          onClick = {
-                            viewModel.onSpam()
-                            isSpamDialogOpen = false
-                          }) {
-                            Text("Confirm", color = MaterialTheme.colorScheme.error)
-                          }
-                    },
-                    dismissButton = {
-                      TextButton(onClick = { isSpamDialogOpen = false }) { Text("Cancel") }
-                    })
-              }
+                // ---- Spam confirmation dialog ----
+                if (isSpamDialogOpen) {
+                    AlertDialog(
+                        onDismissRequest = { isSpamDialogOpen = false },
+                        title = { Text("Report as spam?") },
+                        text = {
+                            Text("This will mark the report as spam and hide it from regular view.")
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    viewModel.onSpam()
+                                    isSpamDialogOpen = false
+                                }) {
+                                Text("Confirm", color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { isSpamDialogOpen = false }) { Text("Cancel") }
+                        })
+                }
             }
-      }
+        }
+    }
 }
 
 /*  If you want to use the preview, just de-comment this block.

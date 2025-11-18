@@ -8,7 +8,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.rule.GrantPermissionRule
-import com.android.agrihealth.data.model.device.location.LocationProvider
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
@@ -19,6 +18,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.repository.ReportRepositoryLocal
 import com.android.agrihealth.fakes.FakeAuthProvider
+import com.android.agrihealth.ui.loading.LoadingTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.user.UserViewModel
 import com.google.android.gms.maps.model.LatLng
@@ -143,7 +143,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
       isViewedFromOverview: Boolean = true,
       selectedReportId: String? = null,
       startingPosition: Location? = null
-  ): MapViewModel {
+  ) {
     val mapViewModel =
         MapViewModel(
             reportRepository = reportRepository,
@@ -158,7 +158,6 @@ class MapScreenTest : FirebaseEmulatorsTest() {
             startingPosition = startingPosition)
       }
     }
-    return mapViewModel
   }
 
   @Test
@@ -339,54 +338,64 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     assertEquals(6, positions2?.size)
   }
 
+
+    private fun setupMapWithSlowGps(): MapViewModel {
+        val slowRepository = mockk<LocationRepository>(relaxed = true).apply {
+            every { hasFineLocationPermission() } returns true
+            every { hasCoarseLocationPermission() } returns true
+
+            coEvery { getLastKnownLocation() } coAnswers {
+                delay(1500L)
+                Location(46.95, 7.44, "Loaded Position")
+            }
+            coEvery { getCurrentLocation() } returns Location(46.95, 7.44, "Loaded Position")
+        }
+
+        LocationRepositoryProvider.repository = slowRepository
+        locationViewModel = LocationViewModel()
+
+        val mapViewModel =
+            MapViewModel(
+                reportRepository = reportRepository,
+                locationViewModel = locationViewModel,
+                authProvider = FakeAuthProvider(),
+                selectedReportId = null)
+
+        composeTestRule.setContent {
+            MaterialTheme {
+                MapScreen(
+                    mapViewModel = mapViewModel,
+                    isViewedFromOverview = true,
+                    startingPosition = null)
+            }
+        }
+
+        return mapViewModel
+    }
+
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun loadingOverlay_showsWhileFetchingLocation() = runTest {
 
-    // Fake slow GPS
-    val slowRepository = mockk<LocationRepository>(relaxed = true)
-    every { slowRepository.hasFineLocationPermission() } returns true
-    every { slowRepository.hasCoarseLocationPermission() } returns true
+      composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
+      composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
 
-    coEvery { slowRepository.getLastKnownLocation() } coAnswers
-        {
-          delay(1500) // simulate slow GPS
-          Location(46.95, 7.44, "Loaded Position")
-        }
-    coEvery { slowRepository.getCurrentLocation() } returns Location(46.95, 7.44, "Loaded Position")
-
-    // Inject slow repo
-    LocationRepositoryProvider.repository = slowRepository
-    locationViewModel = LocationViewModel()
-
-    // Display MapScreen
-    setContentToMapWithVM()
-
-    // Trigger loading manually (MapViewModel does NOT call it in init)
-    composeTestRule.runOnUiThread {
-      (locationViewModel as? LocationProvider)?.let {
-        // call through mapViewModel
+      val mapViewModel = setupMapWithSlowGps()
+      composeTestRule.runOnUiThread {
+          mapViewModel.setStartingLocation(null)
       }
-    }
-    /*
-    composeTestRule.runOnUiThread {
-        // Access the mapViewModel used in setContentToMapWithVM()
-        val vm = (composeTestRule.activity as ComponentActivity)
-            .intent.extras?.get("mapViewModel") as MapViewModel? ?: mapViewModel
-        vm.setStartingLocation(null)
-    }
-    */
 
     // Loading should be visible
-    composeTestRule.onNodeWithTag("loading_overlay_scrim").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("loading_overlay_spinner").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
 
     // Finish coroutines
-    advanceUntilIdle()
-
+      composeTestRule.waitUntil(timeoutMillis = 3000L) {
+          !mapViewModel.uiState.value.isLoading
+      }
     // Loading should disappear
-    composeTestRule.onNodeWithTag("loading_overlay_scrim").assertDoesNotExist()
-    composeTestRule.onNodeWithTag("loading_overlay_spinner").assertDoesNotExist()
+    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
+    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
 
     // Map is displayed
     composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()

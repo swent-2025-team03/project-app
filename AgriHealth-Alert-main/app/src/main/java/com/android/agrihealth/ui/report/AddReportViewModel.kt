@@ -37,37 +37,39 @@ class AddReportViewModel(
   override fun setVet(option: String) {
     _uiState.value = _uiState.value.copy(chosenVet = option)
   }
+    override suspend fun createReport(): Boolean {
+        val current = _uiState.value
+        if (current.title.isBlank() || current.description.isBlank()) {
+            return false
+        }
 
-  override suspend fun createReport(): Boolean {
-    val current = _uiState.value
-    if (current.title.isBlank() || current.description.isBlank()) {
-      return false
+        _uiState.value = _uiState.value.copy(isLoading = true)
+
+        return try {
+            val newReport =
+                Report(
+                    id = reportRepository.getNewReportId(),
+                    title = current.title,
+                    description = current.description,
+                    questionForms = emptyList(),
+                    photoUri = null,
+                    farmerId = userId,
+                    vetId = current.chosenVet,
+                    status = ReportStatus.PENDING,
+                    answer = null,
+                    location = Location(46.7990813, 6.6259961)
+                )
+
+            reportRepository.addReport(newReport)
+
+            clearInputs()
+            true
+        } catch (e: Exception) {
+            false
+        } finally {
+            _uiState.value = _uiState.value.copy(isLoading = false)
+        }
     }
-    // Set loading true
-    _uiState.value = _uiState.value.copy(isLoading = true)
-
-    val newReport =
-        Report(
-            id = reportRepository.getNewReportId(),
-            title = current.title,
-            description = current.description,
-            questionForms = emptyList(),
-            photoUri = null, // currently unused
-            farmerId = userId,
-            vetId = current.chosenVet,
-            status = ReportStatus.PENDING,
-            answer = null,
-            location = Location(46.7990813, 6.6259961) // null // optional until implemented
-            )
-
-    viewModelScope.launch { reportRepository.addReport(newReport) }
-
-    // Clears all the fields
-    clearInputs() // TODO: Call only if addReport succeeds
-
-    return true
-  }
-
   override fun clearInputs() {
     _uiState.value = AddReportUiState()
   }

@@ -26,6 +26,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
+import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -78,7 +79,7 @@ fun OverviewScreen(
 
   LaunchedEffect(userId) { overviewViewModel.loadReports(userRole, userId) }
 
-  Scaffold(
+  LoadingOverlay(isLoading = uiState.isLoading){ Scaffold(
       // -- Top App Bar with logout icon --
       topBar = {
         TopAppBar(
@@ -216,6 +217,7 @@ fun OverviewScreen(
               }
         }
       })
+      }
 }
 
 /**

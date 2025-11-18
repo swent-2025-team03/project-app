@@ -12,21 +12,36 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
+
+object LoadingTestTags {
+    const val ROOT = "loading_overlay_root"
+    const val SCRIM = "loading_overlay_scrim"
+    const val SPINNER = "loading_overlay_spinner"
+}
 
 @Composable
 fun LoadingOverlay(isLoading: Boolean, content: @Composable () -> Unit) {
-  Box(modifier = Modifier.fillMaxSize().testTag("loading_overlay_root")) {
+  Box(modifier = Modifier.fillMaxSize().testTag(LoadingTestTags.ROOT)) {
     content()
 
     if (isLoading) {
-      Box(
-          Modifier.fillMaxSize()
-              .background(Color.Black.copy(alpha = 0.1f))
-              .testTag("loading_overlay_scrim"),
-          contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.5f))
+                .testTag(LoadingTestTags.SCRIM)
+                .zIndex(100f),
+            contentAlignment = Alignment.Center
+        ) {
             CircularProgressIndicator(
-                modifier = Modifier.size(58.dp).testTag("loading_overlay_spinner"))
-          }
+                color = Color.White,
+                strokeWidth = 6.dp,
+                modifier = Modifier
+                    .size(64.dp)
+                    .testTag(LoadingTestTags.SPINNER)
+            )
+        }
     }
   }
 }

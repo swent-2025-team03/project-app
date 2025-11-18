@@ -65,4 +65,7 @@ class ChangePasswordScreenTest {
     composeTestRule.onNodeWithText(ChangePasswordFeedbackTexts.NEW_WEAK).assertIsNotDisplayed()
     assert(success)
   }
+
+//TODO test with the save button disabled when loading
+
 }
