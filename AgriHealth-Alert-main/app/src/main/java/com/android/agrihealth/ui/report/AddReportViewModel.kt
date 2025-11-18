@@ -3,6 +3,8 @@ package com.android.agrihealth.ui.report
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.report.HealthQuestionFactory
+import com.android.agrihealth.data.model.report.QuestionForm
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
@@ -16,6 +18,7 @@ data class AddReportUiState(
     val title: String = "",
     val description: String = "",
     val chosenVet: String = "",
+    val questionForms: List<QuestionForm> = emptyList(),
 )
 
 class AddReportViewModel(
@@ -25,6 +28,11 @@ class AddReportViewModel(
   private val _uiState = MutableStateFlow(AddReportUiState())
   override val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
 
+    init {
+        _uiState.value = _uiState.value.copy(
+            questionForms = HealthQuestionFactory.animalHealthQuestions()
+        )
+    }
   override fun setTitle(newTitle: String) {
     _uiState.value = _uiState.value.copy(title = newTitle)
   }
@@ -37,18 +45,28 @@ class AddReportViewModel(
     _uiState.value = _uiState.value.copy(chosenVet = option)
   }
 
-  override suspend fun createReport(): Boolean {
+    override fun updateQuestion(index: Int, updated: QuestionForm) {
+        val updatedList = _uiState.value.questionForms.toMutableList()
+        updatedList[index] = updated
+        _uiState.value = _uiState.value.copy(questionForms = updatedList)
+    }
+
+    override suspend fun createReport(): Boolean {
     val uiState = _uiState.value
     if (uiState.title.isBlank() || uiState.description.isBlank()) {
       return false
     }
+        val allQuestionsAnswered = uiState.questionForms.all { it.isValid() }
+        if (!allQuestionsAnswered) {
+            return false
+        }
 
     val newReport =
         Report(
             id = reportRepository.getNewReportId(),
             title = uiState.title,
             description = uiState.description,
-            questionForms = emptyList(),
+            questionForms = uiState.questionForms,
             photoUri = null, // currently unused
             farmerId = userId,
             vetId = uiState.chosenVet,

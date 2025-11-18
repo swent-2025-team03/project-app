@@ -455,11 +455,66 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
         .assertIsDisplayed()
         .performTextInput(description)
+
+// --- Answer all questions ---
+      val scrollContainer = composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+      var index = 0
+      while (true) {
+          composeTestRule.waitForIdle()
+
+          // OpenQuestion
+          val openNode = composeTestRule.onAllNodesWithTag("QUESTION_${index}_OPEN").fetchSemanticsNodes().firstOrNull()
+          if (openNode != null) {
+              scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_OPEN"))
+              composeTestRule.onNodeWithTag("QUESTION_${index}_OPEN").performTextInput("answer $index")
+              index++
+              continue
+          }
+
+          // YesOrNo
+          val yesNode = composeTestRule.onAllNodesWithTag("QUESTION_${index}_YESORNO").fetchSemanticsNodes().firstOrNull()
+          if (yesNode != null) {
+              scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_YESORNO"))
+              val options = composeTestRule.onAllNodesWithTag("QUESTION_${index}_YESORNO")
+              options[0].performClick()
+              index++
+              continue
+          }
+
+          // MCQ
+          val mcqNode = composeTestRule.onAllNodesWithTag("QUESTION_${index}_MCQ").fetchSemanticsNodes().firstOrNull()
+          if (mcqNode != null) {
+              scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQ"))
+              val options = composeTestRule.onAllNodesWithTag("QUESTION_${index}_MCQ")
+              options[0].performClick()
+              index++
+              continue
+          }
+
+          // MCQO
+          val mcqONode = composeTestRule.onAllNodesWithTag("QUESTION_${index}_MCQO").fetchSemanticsNodes().firstOrNull()
+          if (mcqONode != null) {
+              scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQO"))
+              val options = composeTestRule.onAllNodesWithTag("QUESTION_${index}_MCQO")
+              options[0].performClick()
+              index++
+              continue
+          }
+          break
+      }
+
+      composeTestRule
+        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+        .performScrollToNode(hasTestTag(AddReportScreenTestTags.VET_DROPDOWN))
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN)
         .assertIsDisplayed()
         .performClick()
     composeTestRule.onNodeWithText(vetId).assertIsDisplayed().performClick()
+
+    composeTestRule
+        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+        .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON)
         .assertIsDisplayed()
@@ -505,6 +560,9 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun reportViewClickViewOnMap() {
+    composeTestRule
+          .onNodeWithTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
+          .performScrollToNode(hasTestTag(ReportViewScreenTestTags.VIEW_ON_MAP))
     composeTestRule
         .onNodeWithTag(ReportViewScreenTestTags.VIEW_ON_MAP)
         .assertIsDisplayed()

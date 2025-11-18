@@ -18,7 +18,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.core.design.theme.statusColor
+import com.android.agrihealth.data.model.report.MCQ
+import com.android.agrihealth.data.model.report.MCQO
+import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -35,6 +39,7 @@ object ReportViewScreenTestTags {
   const val SPAM_BUTTON = "SpamButton"
   const val VIEW_ON_MAP = "viewReportOnMap"
   const val SAVE_BUTTON = "SaveButton"
+    const val SCROLL_CONTAINER = "ReportViewScrollContainer"
 
   fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
 }
@@ -127,7 +132,8 @@ fun ReportViewScreen(
                 Modifier.padding(padding)
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .testTag(ReportViewScreenTestTags.SCROLL_CONTAINER),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
               // ---- Farmer or Vet info line ----
@@ -155,7 +161,44 @@ fun ReportViewScreen(
               // ---- Description ----
               Text(text = report.description, style = MaterialTheme.typography.bodyLarge)
 
-              // ---- Answer section ----
+            // ---- Questions (read-only) ----
+            Text(
+                text = "Questions:",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            uiState.report.questionForms.forEach { question ->
+                when (question) {
+                    is OpenQuestion ->
+                        OpenQuestionItem(
+                            question = question,
+                            onAnswerChange = {},
+                            enabled = false
+                        )
+                    is YesOrNoQuestion ->
+                        YesOrNoQuestionItem(
+                            question = question,
+                            onAnswerChange = {},
+                            enabled = false
+                        )
+                    is MCQ ->
+                        MCQItem(
+                            question = question,
+                            onAnswerChange = {},
+                            enabled = false
+                        )
+                    is MCQO ->
+                        MCQOItem(
+                            question = question,
+                            onAnswerChange = {},
+                            enabled = false
+                        )
+                }
+            }
+
+
+            // ---- Answer section ----
               Text(
                   text = "Answer:",
                   style = MaterialTheme.typography.titleMedium,

@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,17 +23,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.report.MCQ
+import com.android.agrihealth.data.model.report.MCQO
+import com.android.agrihealth.data.model.report.OpenQuestion
+import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.user.UserViewModel
 import kotlinx.coroutines.launch
+
+// -- imports for preview --
+/*
+import androidx.compose.ui.tooling.preview.Preview
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.testutil.FakeAddReportViewModel
+ */
 
 /** Tags for the various components. For testing purposes */
 object AddReportScreenTestTags {
@@ -40,6 +49,7 @@ object AddReportScreenTestTags {
   const val DESCRIPTION_FIELD = "descriptionField"
   const val VET_DROPDOWN = "vetDropDown"
   const val CREATE_BUTTON = "createButton"
+  const val SCROLL_CONTAINER = "AddReportScrollContainer"
 
   fun getTestTagForVet(vetId: String): String = "vetOption_$vetId"
 }
@@ -123,7 +133,8 @@ fun AddReportScreen(
                 Modifier.padding(padding)
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
               Field(
                   uiState.title,
@@ -136,7 +147,46 @@ fun AddReportScreen(
                   "Description",
                   AddReportScreenTestTags.DESCRIPTION_FIELD)
 
-              ExposedDropdownMenuBox(
+            // Questions
+            uiState.questionForms.forEachIndexed { index, question ->
+                when (question) {
+
+                    is OpenQuestion -> {
+                        Log.d("test tag:" , "QUESTION_${index}_OPEN !")
+                        OpenQuestionItem(
+                            question = question,
+                            onAnswerChange = { updated -> addReportViewModel.updateQuestion(index, updated) },
+                            enabled = true,
+                            modifier = Modifier.testTag("QUESTION_${index}_OPEN")
+                        ) }
+                    is YesOrNoQuestion -> {
+                        Log.d("test tag:" , "QUESTION_${index}_YESORNO")
+                        YesOrNoQuestionItem(
+                            question = question,
+                            onAnswerChange = { updated -> addReportViewModel.updateQuestion(index, updated) },
+                            enabled = true,
+                            modifier = Modifier.testTag("QUESTION_${index}_YESORNO")
+                        ) }
+                    is MCQ -> {
+                        Log.d("test tag:" , "QUESTION_${index}_MCQ")
+                        MCQItem(
+                            question = question,
+                            onAnswerChange = { updated -> addReportViewModel.updateQuestion(index, updated) },
+                            enabled = true,
+                            modifier = Modifier.testTag("QUESTION_${index}_MCQ")
+                        ) }
+                    is MCQO -> {
+                        Log.d("test tag:" , "QUESTION_${index}_MCQO")
+                        MCQOItem(
+                            question = question,
+                            onAnswerChange = { updated -> addReportViewModel.updateQuestion(index, updated) },
+                            enabled = true,
+                            modifier = Modifier.testTag("QUESTION_${index}_MCQ")
+                        ) }
+                }
+            }
+
+            ExposedDropdownMenuBox(
                   expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                     OutlinedTextField(
                         value = selectedOption,
@@ -230,6 +280,7 @@ private fun Field(
  * Preview of the ReportViewScreen for both farmer and vet roles. Allows testing of layout and
  * colors directly in Android Studio.
  */
+/*
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 fun AddReportScreenPreview() {
@@ -241,3 +292,4 @@ fun AddReportScreenPreview() {
         addReportViewModel = FakeAddReportViewModel())
   }
 }
+*/
