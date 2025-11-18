@@ -13,8 +13,6 @@ import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.testutil.FakeOverviewRepository
 import com.android.agrihealth.ui.loading.LoadingTestTags
 import com.android.agrihealth.ui.navigation.NavigationActions
-import io.mockk.coEvery
-import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -106,38 +104,37 @@ class OverviewStableUITest {
     assertEquals("Option 1", selectedOption)
   }
 
-
-
   @Test
   fun overview_showsLoadingOverlayWhileLoadingReports_fakeRepo() {
     val sample =
-      Report(
-        id = "R1",
-        title = "Coughing cow",
-        description = "cough...",
-        farmerId = "F1",
-        vetId = "V1",
-        status = ReportStatus.PENDING,
-        questionForms = emptyList(),
-        answer = null,
-        photoUri = null,
-        location = null,
-      )
+        Report(
+            id = "R1",
+            title = "Coughing cow",
+            description = "cough...",
+            farmerId = "F1",
+            vetId = "V1",
+            status = ReportStatus.PENDING,
+            questionForms = emptyList(),
+            answer = null,
+            photoUri = null,
+            location = null,
+        )
 
-    val slowRepo = SlowFakeReportRepository(
-      reports = listOf(sample),
-      delayMs = 1200L,
-    )
+    val slowRepo =
+        SlowFakeReportRepository(
+            reports = listOf(sample),
+            delayMs = 1200L,
+        )
 
     val vm = OverviewViewModel(reportRepository = slowRepo)
 
     composeTestRule.setContent {
       val nav = rememberNavController()
       OverviewScreen(
-        userRole = UserRole.FARMER,
-        userId = "F1",
-        overviewViewModel = vm,
-        navigationActions = NavigationActions(nav),
+          userRole = UserRole.FARMER,
+          userId = "F1",
+          overviewViewModel = vm,
+          navigationActions = NavigationActions(nav),
       )
     }
 
@@ -151,17 +148,11 @@ class OverviewStableUITest {
     composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
     composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
   }
-
-
-
-
 }
 
-
-
 class SlowFakeReportRepository(
-  private val reports: List<Report> = emptyList(),
-  private val delayMs: Long = 1200
+    private val reports: List<Report> = emptyList(),
+    private val delayMs: Long = 1200
 ) : ReportRepository {
 
   override fun getNewReportId(): String = "slow-id"
@@ -187,6 +178,8 @@ class SlowFakeReportRepository(
   }
 
   override suspend fun addReport(report: Report) {}
+
   override suspend fun editReport(reportId: String, newReport: Report) {}
+
   override suspend fun deleteReport(reportId: String) {}
 }

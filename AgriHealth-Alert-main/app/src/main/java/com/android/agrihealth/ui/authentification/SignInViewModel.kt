@@ -9,13 +9,11 @@ import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.R
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
+import com.android.agrihealth.data.model.authentification.AuthUser
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuthException
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -33,7 +31,7 @@ data class SignInUIState(
     val password: String = "",
     val emailIsInvalid: Boolean = false,
     val passwordIsInvalid: Boolean = false,
-    val user: FirebaseUser? = Firebase.auth.currentUser,
+    val user: AuthUser? = null,
     val isNewGoogle: Boolean = false,
     val errorMsg: String? = null,
 ) {

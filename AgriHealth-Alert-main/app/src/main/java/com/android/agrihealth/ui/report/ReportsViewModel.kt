@@ -56,25 +56,25 @@ class ReportViewModel(
 
   /** Loads a report by its ID and updates the state. */
   fun loadReport(reportID: String) {
-      viewModelScope.launch {
-          _uiState.value = _uiState.value.copy(isLoading = true)
-          try {
-              val fetchedReport = repository.getReportById(reportID)
-              if (fetchedReport != null) {
-                  _uiState.value = _uiState.value.copy(
-                      report = fetchedReport,
-                      answerText = fetchedReport.answer ?: "",
-                      status = fetchedReport.status,
-                      isLoading = false
-                  )
-              } else {
-                  _uiState.value = _uiState.value.copy(isLoading = false)
-              }
-          } catch (e: Exception) {
-              _uiState.value = _uiState.value.copy(isLoading = false)
-              Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
-          }
+    viewModelScope.launch {
+      _uiState.value = _uiState.value.copy(isLoading = true)
+      try {
+        val fetchedReport = repository.getReportById(reportID)
+        if (fetchedReport != null) {
+          _uiState.value =
+              _uiState.value.copy(
+                  report = fetchedReport,
+                  answerText = fetchedReport.answer ?: "",
+                  status = fetchedReport.status,
+                  isLoading = false)
+        } else {
+          _uiState.value = _uiState.value.copy(isLoading = false)
+        }
+      } catch (e: Exception) {
+        _uiState.value = _uiState.value.copy(isLoading = false)
+        Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
       }
+    }
   }
 
   fun onAnswerChange(newText: String) {
@@ -91,21 +91,20 @@ class ReportViewModel(
 
   /** Saves the modified report, then triggers the saveCompleted flag on success. */
   fun onSave() {
-      viewModelScope.launch {
-          _uiState.value = _uiState.value.copy(isLoading = true)
-          try {
-              val updatedReport = _uiState.value.report.copy(
-                  answer = _uiState.value.answerText,
-                  status = _uiState.value.status
-              )
-              repository.editReport(updatedReport.id, updatedReport)
-              _uiState.value = _uiState.value.copy(isLoading = false)
-              _saveCompleted.value = true
-          } catch (e: Exception) {
-              _uiState.value = _uiState.value.copy(isLoading = false)
-              Log.e("ReportViewModel", "Error saving report", e)
-          }
+    viewModelScope.launch {
+      _uiState.value = _uiState.value.copy(isLoading = true)
+      try {
+        val updatedReport =
+            _uiState.value.report.copy(
+                answer = _uiState.value.answerText, status = _uiState.value.status)
+        repository.editReport(updatedReport.id, updatedReport)
+        _uiState.value = _uiState.value.copy(isLoading = false)
+        _saveCompleted.value = true
+      } catch (e: Exception) {
+        _uiState.value = _uiState.value.copy(isLoading = false)
+        Log.e("ReportViewModel", "Error saving report", e)
       }
+    }
   }
 
   /** Resets the flag after the UI has consumed the navigation event. */

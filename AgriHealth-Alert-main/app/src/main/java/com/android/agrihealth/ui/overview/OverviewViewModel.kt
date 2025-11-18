@@ -31,7 +31,7 @@ data class OverviewUIState(
     val farmerOptions: List<String> = emptyList(),
     val filteredReports: List<Report> = emptyList(),
     val isLoading: Boolean = false,
-    )
+)
 
 /**
  * ViewModel holding the state of reports displayed on the Overview screen. Currently uses mock data
@@ -48,39 +48,37 @@ class OverviewViewModel(
 
   /** Loads reports based on user role and ID. */
   override fun loadReports(userRole: UserRole, userId: String) {
-      viewModelScope.launch {
-          _uiState.value = _uiState.value.copy(isLoading = true)
+    viewModelScope.launch {
+      _uiState.value = _uiState.value.copy(isLoading = true)
 
-          try {
-              val reports =
-                  when (userRole) {
-                      UserRole.FARMER -> reportRepository.getReportsByFarmer(userId)
-                      UserRole.VET -> reportRepository.getReportsByVet(userId)
-                  }.sortedByDescending { it.createdAt }
+      try {
+        val reports =
+            when (userRole) {
+              UserRole.FARMER -> reportRepository.getReportsByFarmer(userId)
+              UserRole.VET -> reportRepository.getReportsByVet(userId)
+            }.sortedByDescending { it.createdAt }
 
-              val vetOptions = reports.map { it.vetId }.distinct()
-              val farmerOptions = reports.map { it.farmerId }.distinct()
+        val vetOptions = reports.map { it.vetId }.distinct()
+        val farmerOptions = reports.map { it.farmerId }.distinct()
 
-              val filtered =
-                  applyFilters(
-                      reports,
-                      _uiState.value.selectedStatus,
-                      _uiState.value.selectedVet,
-                      _uiState.value.selectedFarmer
-                  )
+        val filtered =
+            applyFilters(
+                reports,
+                _uiState.value.selectedStatus,
+                _uiState.value.selectedVet,
+                _uiState.value.selectedFarmer)
 
-              _uiState.value =
-                  _uiState.value.copy(
-                      reports = reports,
-                      vetOptions = vetOptions,
-                      farmerOptions = farmerOptions,
-                      filteredReports = filtered,
-                      isLoading = false
-                  )
-          } catch (e: Exception) {
-              _uiState.value = OverviewUIState(isLoading = false)
-          }
+        _uiState.value =
+            _uiState.value.copy(
+                reports = reports,
+                vetOptions = vetOptions,
+                farmerOptions = farmerOptions,
+                filteredReports = filtered,
+                isLoading = false)
+      } catch (e: Exception) {
+        _uiState.value = OverviewUIState(isLoading = false)
       }
+    }
   }
 
   override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {

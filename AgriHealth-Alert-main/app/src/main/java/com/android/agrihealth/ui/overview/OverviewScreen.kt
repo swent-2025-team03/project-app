@@ -79,145 +79,148 @@ fun OverviewScreen(
 
   LaunchedEffect(userId) { overviewViewModel.loadReports(userRole, userId) }
 
-  LoadingOverlay(isLoading = uiState.isLoading){ Scaffold(
-      // -- Top App Bar with logout icon --
-      topBar = {
-        TopAppBar(
-            title = {
-              Text(
-                  "Overview",
-                  style = MaterialTheme.typography.titleLarge,
-                  modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE))
-            },
-            navigationIcon = {
-              IconButton(
-                  onClick = { navigationActions?.navigateTo(Screen.Profile) },
-                  modifier = Modifier.testTag("ProfileButton")) {
-                    Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "Profile")
-                  }
-            },
-            actions = {
-              IconButton(
-                  onClick = {
-                    overviewViewModel.signOut(credentialManager)
-                    navigationActions?.navigateToAuthAndClear()
-                  },
-                  modifier = Modifier.testTag(OverviewScreenTestTags.LOGOUT_BUTTON)) {
-                    Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Sign Out")
-                  }
-            })
-      },
+  LoadingOverlay(isLoading = uiState.isLoading) {
+    Scaffold(
+        // -- Top App Bar with logout icon --
+        topBar = {
+          TopAppBar(
+              title = {
+                Text(
+                    "Overview",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE))
+              },
+              navigationIcon = {
+                IconButton(
+                    onClick = { navigationActions?.navigateTo(Screen.Profile) },
+                    modifier = Modifier.testTag("ProfileButton")) {
+                      Icon(
+                          imageVector = Icons.Default.AccountCircle, contentDescription = "Profile")
+                    }
+              },
+              actions = {
+                IconButton(
+                    onClick = {
+                      overviewViewModel.signOut(credentialManager)
+                      navigationActions?.navigateToAuthAndClear()
+                    },
+                    modifier = Modifier.testTag(OverviewScreenTestTags.LOGOUT_BUTTON)) {
+                      Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Sign Out")
+                    }
+              })
+        },
 
-      // -- Bottom navigation menu --
-      bottomBar = {
-        BottomNavigationMenu(
-            selectedTab = Tab.Overview,
-            onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
-            modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
-      },
+        // -- Bottom navigation menu --
+        bottomBar = {
+          BottomNavigationMenu(
+              selectedTab = Tab.Overview,
+              onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
+              modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
+        },
 
-      // -- Main content area --
-      content = { paddingValues ->
-        val topPadding = paddingValues.calculateTopPadding()
-        val bottomPadding = paddingValues.calculateBottomPadding()
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-          val screen = this.maxHeight
-          Column(
-              modifier =
-                  Modifier.padding(paddingValues)
-                      .padding(horizontal = 16.dp)
-                      .onSizeChanged { size ->
-                        with(density) {
-                          lazySpace =
-                              screen - size.height.toDp() - topPadding - bottomPadding +
-                                  maxOf(minLazySpace, lazySpace)
+        // -- Main content area --
+        content = { paddingValues ->
+          val topPadding = paddingValues.calculateTopPadding()
+          val bottomPadding = paddingValues.calculateBottomPadding()
+          BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val screen = this.maxHeight
+            Column(
+                modifier =
+                    Modifier.padding(paddingValues)
+                        .padding(horizontal = 16.dp)
+                        .onSizeChanged { size ->
+                          with(density) {
+                            lazySpace =
+                                screen - size.height.toDp() - topPadding - bottomPadding +
+                                    maxOf(minLazySpace, lazySpace)
+                          }
+                        }
+                        .testTag(OverviewScreenTestTags.SCREEN)
+                        .verticalScroll(rememberScrollState())) {
+                  // -- Latest alert section --
+                  Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
+
+                  Spacer(modifier = Modifier.height(12.dp))
+                  LatestAlertCard()
+
+                  Spacer(modifier = Modifier.height(24.dp))
+
+                  // -- Create a new report buton --
+                  // Display the button only if the user role is FARMER
+                  if (userRole == UserRole.FARMER) {
+                    Button(
+                        onClick = onAddReport,
+                        modifier =
+                            Modifier.align(Alignment.CenterHorizontally)
+                                .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
+                          Text("Create a new report")
+                        }
+                  }
+
+                  Spacer(modifier = Modifier.height(15.dp))
+                  // -- Past reports list --
+                  Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
+                  Spacer(modifier = Modifier.height(12.dp))
+
+                  Row(
+                      verticalAlignment = Alignment.CenterVertically,
+                      modifier = Modifier.fillMaxWidth()) {
+                        // -- Status filter --
+                        DropdownMenuWrapper(
+                            options = listOf(null) + ReportStatus.entries,
+                            selectedOption = uiState.selectedStatus,
+                            onOptionSelected = {
+                              overviewViewModel.updateFilters(
+                                  it, uiState.selectedVet, uiState.selectedFarmer)
+                            },
+                            modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN),
+                            placeholder = "Filter by status",
+                            labelProvider = { status -> status?.displayString() ?: "-" })
+                        Spacer(modifier = Modifier.width(8.dp))
+                        if (userRole == UserRole.FARMER) {
+                          // -- VetId filter (only for farmer) --
+                          DropdownMenuWrapper(
+                              options = listOf(null) + uiState.vetOptions,
+                              selectedOption = uiState.selectedVet,
+                              onOptionSelected = {
+                                overviewViewModel.updateFilters(
+                                    status = uiState.selectedStatus,
+                                    vetId = it,
+                                    farmerId = uiState.selectedFarmer)
+                              },
+                              modifier = Modifier.testTag(OverviewScreenTestTags.VET_ID_DROPDOWN),
+                              placeholder = "Filter by vets")
+                        } else if (userRole == UserRole.VET) {
+                          // -- FarmerId filter (only for vet) --
+                          DropdownMenuWrapper(
+                              options = listOf(null) + uiState.farmerOptions,
+                              selectedOption = uiState.selectedFarmer,
+                              onOptionSelected = {
+                                overviewViewModel.updateFilters(
+                                    status = uiState.selectedStatus,
+                                    vetId = uiState.selectedVet,
+                                    farmerId = it)
+                              },
+                              modifier =
+                                  Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN),
+                              placeholder = "Filter by farmers")
                         }
                       }
-                      .testTag(OverviewScreenTestTags.SCREEN)
-                      .verticalScroll(rememberScrollState())) {
-                // -- Latest alert section --
-                Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
 
-                Spacer(modifier = Modifier.height(12.dp))
-                LatestAlertCard()
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // -- Create a new report buton --
-                // Display the button only if the user role is FARMER
-                if (userRole == UserRole.FARMER) {
-                  Button(
-                      onClick = onAddReport,
-                      modifier =
-                          Modifier.align(Alignment.CenterHorizontally)
-                              .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
-                        Text("Create a new report")
-                      }
-                }
-
-                Spacer(modifier = Modifier.height(15.dp))
-                // -- Past reports list --
-                Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()) {
-                      // -- Status filter --
-                      DropdownMenuWrapper(
-                          options = listOf(null) + ReportStatus.entries,
-                          selectedOption = uiState.selectedStatus,
-                          onOptionSelected = {
-                            overviewViewModel.updateFilters(
-                                it, uiState.selectedVet, uiState.selectedFarmer)
-                          },
-                          modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN),
-                          placeholder = "Filter by status",
-                          labelProvider = { status -> status?.displayString() ?: "-" })
-                      Spacer(modifier = Modifier.width(8.dp))
-                      if (userRole == UserRole.FARMER) {
-                        // -- VetId filter (only for farmer) --
-                        DropdownMenuWrapper(
-                            options = listOf(null) + uiState.vetOptions,
-                            selectedOption = uiState.selectedVet,
-                            onOptionSelected = {
-                              overviewViewModel.updateFilters(
-                                  status = uiState.selectedStatus,
-                                  vetId = it,
-                                  farmerId = uiState.selectedFarmer)
-                            },
-                            modifier = Modifier.testTag(OverviewScreenTestTags.VET_ID_DROPDOWN),
-                            placeholder = "Filter by vets")
-                      } else if (userRole == UserRole.VET) {
-                        // -- FarmerId filter (only for vet) --
-                        DropdownMenuWrapper(
-                            options = listOf(null) + uiState.farmerOptions,
-                            selectedOption = uiState.selectedFarmer,
-                            onOptionSelected = {
-                              overviewViewModel.updateFilters(
-                                  status = uiState.selectedStatus,
-                                  vetId = uiState.selectedVet,
-                                  farmerId = it)
-                            },
-                            modifier = Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN),
-                            placeholder = "Filter by farmers")
-                      }
+                  LazyColumn(modifier = Modifier.height(maxOf(lazySpace, minLazySpace))) {
+                    items(uiState.filteredReports) { report ->
+                      ReportItem(
+                          userRole = userRole,
+                          report = report,
+                          onClick = { onReportClick(report.id) },
+                      )
+                      HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                     }
-
-                LazyColumn(modifier = Modifier.height(maxOf(lazySpace, minLazySpace))) {
-                  items(uiState.filteredReports) { report ->
-                    ReportItem(
-                        userRole = userRole,
-                        report = report,
-                        onClick = { onReportClick(report.id) },
-                    )
-                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                   }
                 }
-              }
-        }
-      })
-      }
+          }
+        })
+  }
 }
 
 /**

@@ -9,7 +9,6 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Co
 import com.google.firebase.Firebase
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.tasks.await
 
@@ -21,12 +20,11 @@ class AuthRepositoryFirebase(
   override suspend fun signInWithEmailAndPassword(
       email: String,
       password: String
-  ): Result<FirebaseUser> {
+  ): Result<AuthUser> {
     return try {
       val loginResult = auth.signInWithEmailAndPassword(email, password).await()
       val user = loginResult.user ?: return Result.failure(NullPointerException("Log in failed"))
-
-      Result.success(user)
+      Result.success(AuthUser(uid = user.uid, email = user.email))
     } catch (e: Exception) {
       Result.failure(e)
     }
@@ -51,22 +49,18 @@ class AuthRepositoryFirebase(
     }
   }
 
-  override suspend fun signInWithGoogle(credential: Credential): Result<FirebaseUser> {
+  override suspend fun signInWithGoogle(credential: Credential): Result<AuthUser> {
     return try {
       if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
         val idToken = helper.extractIdTokenCredential(credential.data).idToken
         val firebaseCred = helper.toFirebaseCredential(idToken)
-
-        // Sign in with Firebase
         val user =
             auth.signInWithCredential(firebaseCred).await().user
                 ?: return Result.failure(
                     IllegalStateException("Login failed : Could not retrieve user information"))
-
-        Result.success(user)
+        Result.success(AuthUser(uid = user.uid, email = user.email))
       } else {
-        return Result.failure(
-            IllegalStateException("Login failed: Credential is not of type Google ID"))
+        Result.failure(IllegalStateException("Login failed: Credential is not of type Google ID"))
       }
     } catch (e: Exception) {
       Result.failure(
@@ -78,16 +72,16 @@ class AuthRepositoryFirebase(
       email: String,
       password: String,
       userData: User
-  ): Result<FirebaseUser> {
+  ): Result<AuthUser> {
     val userRepository = UserRepositoryProvider.repository
 
     return try {
       val creationResult = auth.createUserWithEmailAndPassword(email, password).await()
-      val user =
+      val firebaseUser =
           creationResult.user
               ?: return Result.failure(NullPointerException("Account creation failed"))
 
-      userData.uid = user.uid
+      userData.uid = firebaseUser.uid
 
       val updatedUser =
           when (userData) {
@@ -98,11 +92,11 @@ class AuthRepositoryFirebase(
       try {
         userRepository.addUser(updatedUser)
       } catch (_: Exception) {
-        user.delete().await()
-        Result.failure<FirebaseUser>(NullPointerException("Account creation failed"))
+        firebaseUser.delete().await()
+        return Result.failure(NullPointerException("Account creation failed"))
       }
 
-      Result.success(user)
+      Result.success(AuthUser(uid = firebaseUser.uid, email = firebaseUser.email))
     } catch (e: Exception) {
       Result.failure(e)
     }
@@ -119,14 +113,11 @@ class AuthRepositoryFirebase(
 
   override suspend fun deleteAccount(): Result<Unit> {
     val userRepository = UserRepositoryProvider.repository
-
     return try {
-      val user =
+      val firebaseUser =
           auth.currentUser ?: return Result.failure(NullPointerException("User not logged in"))
-
-      userRepository.deleteUser(user.uid)
-      user.delete().await()
-
+      userRepository.deleteUser(firebaseUser.uid)
+      firebaseUser.delete().await()
       Result.success(Unit)
     } catch (e: Exception) {
       Result.failure(e)

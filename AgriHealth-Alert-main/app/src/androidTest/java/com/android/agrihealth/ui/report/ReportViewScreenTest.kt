@@ -10,12 +10,13 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.testutil.FakeOverviewViewModel
+import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
+import com.android.agrihealth.ui.loading.LoadingTestTags
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
-import com.android.agrihealth.ui.loading.LoadingTestTags
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -359,46 +360,58 @@ class ReportViewScreenTest {
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).assertIsDisplayed()
     assertTrue(fakeRepo.editCalled)
   }
-    @Test
-    fun reportView_showsLoadingOverlayWhileFetchingReport() {
-        // Fake slow repository that delays getReportById
-        val slowRepo = object : ReportRepository {
-            private val sample = ReportViewUIState().report
-            override fun getNewReportId(): String = "NEW_ID"
-            override suspend fun getAllReports(userId: String) = emptyList<Report>()
-            override suspend fun getReportsByFarmer(farmerId: String) = emptyList<Report>()
-            override suspend fun getReportsByVet(vetId: String) = emptyList<Report>()
-            override suspend fun getReportById(reportId: String): Report? {
-                kotlinx.coroutines.delay(1200) // simulate slow fetch
-                return sample.copy(id = reportId)
-            }
-            override suspend fun addReport(report: Report) {}
-            override suspend fun editReport(reportId: String, newReport: Report) {}
-            override suspend fun deleteReport(reportId: String) {}
+
+  @Test
+  fun reportView_showsLoadingOverlayWhileFetchingReport() {
+    // Fake slow repository that delays getReportById
+    val slowRepo =
+        object : ReportRepository {
+          private val sample = ReportViewUIState().report
+
+          override fun getNewReportId(): String = "NEW_ID"
+
+          override suspend fun getAllReports(userId: String) = emptyList<Report>()
+
+          override suspend fun getReportsByFarmer(farmerId: String) = emptyList<Report>()
+
+          override suspend fun getReportsByVet(vetId: String) = emptyList<Report>()
+
+          override suspend fun getReportById(reportId: String): Report? {
+            kotlinx.coroutines.delay(1200) // simulate slow fetch
+            return sample.copy(id = reportId)
+          }
+
+          override suspend fun addReport(report: Report) {}
+
+          override suspend fun editReport(reportId: String, newReport: Report) {}
+
+          override suspend fun deleteReport(reportId: String) {}
         }
 
-        val vm = ReportViewModel(repository = slowRepo)
+    val vm = ReportViewModel(repository = slowRepo)
 
-        composeTestRule.setContent {
-            val nav = rememberNavController()
-            val navigation = NavigationActions(nav)
-            ReportViewScreen(
-                navigationActions = navigation,
-                userRole = UserRole.VET,
-                viewModel = vm,
-                reportId = "RPT_SLOW"
-            )
-        }
-
-        composeTestRule.waitUntil(timeoutMillis = 3000) { vm.uiState.value.isLoading }
-
-        composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
-
-        composeTestRule.waitUntil(timeoutMillis = 5000) { !vm.uiState.value.isLoading }
-
-        composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
-        composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
+    composeTestRule.setContent {
+      val nav = rememberNavController()
+      val navigation = NavigationActions(nav)
+      ReportViewScreen(
+          navigationActions = navigation,
+          userRole = UserRole.VET,
+          viewModel = vm,
+          reportId = "RPT_SLOW")
     }
 
+    composeTestRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
+      vm.uiState.value.isLoading
+    }
+
+    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
+
+    composeTestRule.waitUntil(timeoutMillis = TestConstants.LONG_TIMEOUT) {
+      !vm.uiState.value.isLoading
+    }
+
+    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
+    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
+  }
 }

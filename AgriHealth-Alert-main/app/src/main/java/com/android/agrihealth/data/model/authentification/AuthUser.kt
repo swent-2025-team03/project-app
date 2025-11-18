@@ -1,4 +1,3 @@
 package com.android.agrihealth.data.model.authentification
 
-class AuthUser {
-}
+data class AuthUser(val uid: String, val email: String?)

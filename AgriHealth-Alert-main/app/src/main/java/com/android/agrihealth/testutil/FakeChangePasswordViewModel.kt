@@ -25,11 +25,11 @@ class FakeChangePasswordViewModel(val oldPassword: String = "password") :
   }
 
   override fun changePassword() {
-    _uiState.value = _uiState.value.copy(newWeak = false, oldWrong = false, isLoading = true)
+    _uiState.value = _uiState.value.copy(newWeak = false, oldWrong = false)
     if (_uiState.value.isWeak()) {
-      _uiState.value = _uiState.value.copy(newWeak = true, isLoading = false)
+      _uiState.value = _uiState.value.copy(newWeak = true)
     } else if (_uiState.value.oldPassword != oldPassword) {
-      _uiState.value = _uiState.value.copy(oldWrong = true, isLoading = false)
-    } else _uiState.value = _uiState.value.copy(success = true, isLoading = false)
+      _uiState.value = _uiState.value.copy(oldWrong = true)
+    } else _uiState.value = _uiState.value.copy(success = true)
   }
 }

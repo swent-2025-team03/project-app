@@ -22,7 +22,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.testutil.FakeChangePasswordViewModel
-import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 
@@ -53,9 +52,7 @@ fun ChangePasswordScreen(
   LaunchedEffect(Unit) { changePasswordViewModel.setEmail(userEmail) }
 
   LaunchedEffect(uiState.success) { if (uiState.success) onUpdatePassword.invoke() }
-
-    LoadingOverlay(isLoading = uiState.isLoading) {
-    Scaffold(
+  Scaffold(
       topBar = {
         // Top bar with back arrow and title/status
         TopAppBar(
@@ -110,10 +107,14 @@ fun ChangePasswordScreen(
                   error = uiState.newWeak)
 
               // Save button
-
+              Button(
+                  onClick = { changePasswordViewModel.changePassword() },
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(ChangePasswordScreenTestTags.SAVE_BUTTON)) {
+                    Text("Save Changes")
+                  }
             }
       }
-    }
 }
 
 @Composable

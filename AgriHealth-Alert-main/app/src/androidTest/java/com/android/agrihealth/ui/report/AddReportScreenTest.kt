@@ -160,57 +160,54 @@ class AddReportScreenTest {
     Assert.assertTrue(called)
   }
 
-
-    @Test
-    fun createReport_showsLoadingOverlay() {
-        // Fake ViewModel that simulates slow repository
-        val slowViewModel = object : FakeAddReportViewModel() {
-            override suspend fun createReport(): Boolean {
-                _uiState.value = _uiState.value.copy(isLoading = true)
-                kotlinx.coroutines.delay(1200) // simulate slow Firestore
-                _uiState.value = _uiState.value.copy(isLoading = false)
-                return true
-            }
+  @Test
+  fun createReport_showsLoadingOverlay() {
+    // Fake ViewModel that simulates slow repository
+    val slowViewModel =
+        object : FakeAddReportViewModel() {
+          override suspend fun createReport(): Boolean {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            kotlinx.coroutines.delay(1200) // simulate slow Firestore
+            _uiState.value = _uiState.value.copy(isLoading = false)
+            return true
+          }
         }
 
-        composeRule.setContent {
-            MaterialTheme {
-                AddReportScreen(
-                    userRole = UserRole.FARMER,
-                    userId = "test_user",
-                    onCreateReport = {},
-                    addReportViewModel = slowViewModel
-                )
-            }
-        }
-
-        // Initially overlay not visible
-        composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
-        composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
-
-        // Enter valid input
-        composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD)
-            .performTextInput("Slow Test Title")
-        composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
-            .performTextInput("Desc")
-
-        // Click create
-        composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
-
-        // Wait until loading state becomes true (defensive, though immediate)
-        composeRule.waitUntil(timeoutMillis = 1000) { slowViewModel.uiState.value.isLoading }
-
-        // Assert that loading overlay appears
-        composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
-        composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
-
-        // Wait until loading finishes
-        composeRule.waitUntil(timeoutMillis = 3000) { !slowViewModel.uiState.value.isLoading }
-
-        // Overlay should be gone
-        composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
-        composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = slowViewModel)
+      }
     }
 
-}
+    // Initially overlay not visible
+    composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
+    composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
 
+    // Enter valid input
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD)
+        .performTextInput("Slow Test Title")
+    composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD).performTextInput("Desc")
+
+    // Click create
+    composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
+
+    // Wait until loading state becomes true (defensive, though immediate)
+    composeRule.waitUntil(timeoutMillis = 1000) { slowViewModel.uiState.value.isLoading }
+
+    // Assert that loading overlay appears
+    composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
+    composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
+
+    // Wait until loading finishes
+    composeRule.waitUntil(timeoutMillis = 3000) { !slowViewModel.uiState.value.isLoading }
+
+    // Overlay should be gone
+    composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
+    composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
+  }
+}

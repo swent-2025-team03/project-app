@@ -15,8 +15,7 @@ data class ChangePasswordUiState(
     val success: Boolean = false,
     val oldWrong: Boolean = false,
     val newPassword: String = "",
-    val newWeak: Boolean = false,
-    val isLoading: Boolean = false,
+    val newWeak: Boolean = false
 ) {
   fun isWeak(): Boolean {
     return newPassword.length < 6
@@ -46,16 +45,13 @@ class ChangePasswordViewModel(
     if (_uiState.value.isWeak()) {
       _uiState.value = _uiState.value.copy(newWeak = true)
     }
-    _uiState.value = _uiState.value.copy(isLoading = true)
     viewModelScope.launch {
       repository.reAuthenticate(_uiState.value.email, _uiState.value.oldPassword).fold({
         repository.changePassword(_uiState.value.newPassword).fold({
-          _uiState.value = _uiState.value.copy(success = true, isLoading = false)
-        }) {
-          _uiState.value = _uiState.value.copy(isLoading = false)
-        }
+          _uiState.value = _uiState.value.copy(success = true)
+        }) {}
       }) {
-        _uiState.value = _uiState.value.copy(oldWrong = true, isLoading = false)
+        _uiState.value = _uiState.value.copy(oldWrong = true)
       }
     }
   }
