@@ -413,6 +413,7 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.SAVE_BUTTON)
+        .performScrollTo()
         .assertIsDisplayed()
         .performClick()
 
