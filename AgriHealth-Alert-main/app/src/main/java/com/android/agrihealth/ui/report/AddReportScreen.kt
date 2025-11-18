@@ -147,46 +147,53 @@ fun AddReportScreen(
                   "Description",
                   AddReportScreenTestTags.DESCRIPTION_FIELD)
 
-            // Questions
-            uiState.questionForms.forEachIndexed { index, question ->
+              // Questions
+              uiState.questionForms.forEachIndexed { index, question ->
                 when (question) {
-
-                    is OpenQuestion -> {
-                        Log.d("test tag:" , "QUESTION_${index}_OPEN !")
-                        OpenQuestionItem(
-                            question = question,
-                            onAnswerChange = { updated -> addReportViewModel.updateQuestion(index, updated) },
-                            enabled = true,
-                            modifier = Modifier.testTag("QUESTION_${index}_OPEN")
-                        ) }
-                    is YesOrNoQuestion -> {
-                        Log.d("test tag:" , "QUESTION_${index}_YESORNO")
-                        YesOrNoQuestionItem(
-                            question = question,
-                            onAnswerChange = { updated -> addReportViewModel.updateQuestion(index, updated) },
-                            enabled = true,
-                            modifier = Modifier.testTag("QUESTION_${index}_YESORNO")
-                        ) }
-                    is MCQ -> {
-                        Log.d("test tag:" , "QUESTION_${index}_MCQ")
-                        MCQItem(
-                            question = question,
-                            onAnswerChange = { updated -> addReportViewModel.updateQuestion(index, updated) },
-                            enabled = true,
-                            modifier = Modifier.testTag("QUESTION_${index}_MCQ")
-                        ) }
-                    is MCQO -> {
-                        Log.d("test tag:" , "QUESTION_${index}_MCQO")
-                        MCQOItem(
-                            question = question,
-                            onAnswerChange = { updated -> addReportViewModel.updateQuestion(index, updated) },
-                            enabled = true,
-                            modifier = Modifier.testTag("QUESTION_${index}_MCQ")
-                        ) }
+                  is OpenQuestion -> {
+                    Log.d("test tag:", "QUESTION_${index}_OPEN !")
+                    OpenQuestionItem(
+                        question = question,
+                        onAnswerChange = { updated ->
+                          addReportViewModel.updateQuestion(index, updated)
+                        },
+                        enabled = true,
+                        modifier = Modifier.testTag("QUESTION_${index}_OPEN"))
+                  }
+                  is YesOrNoQuestion -> {
+                    Log.d("test tag:", "QUESTION_${index}_YESORNO")
+                    YesOrNoQuestionItem(
+                        question = question,
+                        onAnswerChange = { updated ->
+                          addReportViewModel.updateQuestion(index, updated)
+                        },
+                        enabled = true,
+                        modifier = Modifier.testTag("QUESTION_${index}_YESORNO"))
+                  }
+                  is MCQ -> {
+                    Log.d("test tag:", "QUESTION_${index}_MCQ")
+                    MCQItem(
+                        question = question,
+                        onAnswerChange = { updated ->
+                          addReportViewModel.updateQuestion(index, updated)
+                        },
+                        enabled = true,
+                        modifier = Modifier.testTag("QUESTION_${index}_MCQ"))
+                  }
+                  is MCQO -> {
+                    Log.d("test tag:", "QUESTION_${index}_MCQO")
+                    MCQOItem(
+                        question = question,
+                        onAnswerChange = { updated ->
+                          addReportViewModel.updateQuestion(index, updated)
+                        },
+                        enabled = true,
+                        modifier = Modifier.testTag("QUESTION_${index}_MCQ"))
+                  }
                 }
-            }
+              }
 
-            ExposedDropdownMenuBox(
+              ExposedDropdownMenuBox(
                   expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                     OutlinedTextField(
                         value = selectedOption,

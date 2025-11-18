@@ -11,7 +11,9 @@ interface AddReportViewModelContract {
   fun setDescription(newDescription: String)
 
   fun setVet(vetId: String)
+
   fun updateQuestion(index: Int, updated: QuestionForm)
+
   suspend fun createReport(): Boolean
 
   fun clearInputs()

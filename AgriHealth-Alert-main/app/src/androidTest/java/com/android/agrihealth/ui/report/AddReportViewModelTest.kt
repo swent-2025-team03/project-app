@@ -113,7 +113,8 @@ class AddReportViewModelTest {
               viewModel.updateQuestion(index, MCQ(question.question, question.answers, 0))
             }
             is MCQO -> {
-              viewModel.updateQuestion(index, MCQO(question.question, question.answers, 0, "Other answer $index"))
+              viewModel.updateQuestion(
+                  index, MCQO(question.question, question.answers, 0, "Other answer $index"))
             }
           }
         }

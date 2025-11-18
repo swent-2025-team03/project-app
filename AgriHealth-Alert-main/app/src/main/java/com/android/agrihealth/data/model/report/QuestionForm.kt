@@ -49,7 +49,7 @@ class OpenQuestion(question: String, userAnswer: String = "") :
         userAnswer = userAnswer,
         questionType = QuestionType.OPEN) {
   override fun isValid(): Boolean {
-      return userAnswer.isNotBlank()
+    return userAnswer.isNotBlank()
   }
 }
 

@@ -39,7 +39,7 @@ object ReportViewScreenTestTags {
   const val SPAM_BUTTON = "SpamButton"
   const val VIEW_ON_MAP = "viewReportOnMap"
   const val SAVE_BUTTON = "SaveButton"
-    const val SCROLL_CONTAINER = "ReportViewScrollContainer"
+  const val SCROLL_CONTAINER = "ReportViewScrollContainer"
 
   fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
 }
@@ -161,44 +161,24 @@ fun ReportViewScreen(
               // ---- Description ----
               Text(text = report.description, style = MaterialTheme.typography.bodyLarge)
 
-            // ---- Questions (read-only) ----
-            Text(
-                text = "Questions:",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
+              // ---- Questions (read-only) ----
+              Text(
+                  text = "Questions:",
+                  style = MaterialTheme.typography.titleMedium,
+                  fontWeight = FontWeight.SemiBold)
 
-            uiState.report.questionForms.forEach { question ->
+              uiState.report.questionForms.forEach { question ->
                 when (question) {
-                    is OpenQuestion ->
-                        OpenQuestionItem(
-                            question = question,
-                            onAnswerChange = {},
-                            enabled = false
-                        )
-                    is YesOrNoQuestion ->
-                        YesOrNoQuestionItem(
-                            question = question,
-                            onAnswerChange = {},
-                            enabled = false
-                        )
-                    is MCQ ->
-                        MCQItem(
-                            question = question,
-                            onAnswerChange = {},
-                            enabled = false
-                        )
-                    is MCQO ->
-                        MCQOItem(
-                            question = question,
-                            onAnswerChange = {},
-                            enabled = false
-                        )
+                  is OpenQuestion ->
+                      OpenQuestionItem(question = question, onAnswerChange = {}, enabled = false)
+                  is YesOrNoQuestion ->
+                      YesOrNoQuestionItem(question = question, onAnswerChange = {}, enabled = false)
+                  is MCQ -> MCQItem(question = question, onAnswerChange = {}, enabled = false)
+                  is MCQO -> MCQOItem(question = question, onAnswerChange = {}, enabled = false)
                 }
-            }
+              }
 
-
-            // ---- Answer section ----
+              // ---- Answer section ----
               Text(
                   text = "Answer:",
                   style = MaterialTheme.typography.titleMedium,

@@ -23,20 +23,15 @@ fun OpenQuestionItem(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(question.question)
-        OutlinedTextField(
-            value = question.userAnswer,
-            onValueChange = { newAnswer ->
-                onAnswerChange(OpenQuestion(question.question, newAnswer))
-            },
-            label = { Text("Open Question") },
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            enabled = enabled
-        )
-    }
+  Column(modifier = Modifier.padding(vertical = 8.dp)) {
+    Text(question.question)
+    OutlinedTextField(
+        value = question.userAnswer,
+        onValueChange = { newAnswer -> onAnswerChange(OpenQuestion(question.question, newAnswer)) },
+        label = { Text("Open Question") },
+        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
+        enabled = enabled)
+  }
 }
 
 @Composable
@@ -46,20 +41,19 @@ fun YesOrNoQuestionItem(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+  Column(modifier = Modifier.padding(vertical = 8.dp)) {
     Text(question.question, modifier = Modifier.padding(bottom = 4.dp))
-    Row (verticalAlignment = Alignment.CenterVertically) {
-        listOf("Yes", "No").forEachIndexed { idx, text ->
-            RadioButton(
-                selected = question.answerIndex == idx,
-                onClick = { onAnswerChange(YesOrNoQuestion(question.question, idx)) },
-                enabled = enabled,
-                modifier = modifier
-            )
-            Text(text)
-        }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+      listOf("Yes", "No").forEachIndexed { idx, text ->
+        RadioButton(
+            selected = question.answerIndex == idx,
+            onClick = { onAnswerChange(YesOrNoQuestion(question.question, idx)) },
+            enabled = enabled,
+            modifier = modifier)
+        Text(text)
+      }
     }
-        }
+  }
 }
 
 @Composable
@@ -69,24 +63,24 @@ fun MCQItem(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    Column (modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(question.question, modifier = Modifier.padding(bottom = 4.dp))
-        question.answers.forEachIndexed { idx, answer ->
-            Row (verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(
-                    selected = question.answerIndex == idx,
-                    onClick = if (enabled) {
-                        { onAnswerChange(MCQ(question.question, question.answers, idx)) }
-                    } else {
-                        {}
-                    },
-                    enabled = enabled,
-                    modifier = modifier
-                )
-                Text(answer)
-            }
-        }
+  Column(modifier = Modifier.padding(vertical = 8.dp)) {
+    Text(question.question, modifier = Modifier.padding(bottom = 4.dp))
+    question.answers.forEachIndexed { idx, answer ->
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        RadioButton(
+            selected = question.answerIndex == idx,
+            onClick =
+                if (enabled) {
+                  { onAnswerChange(MCQ(question.question, question.answers, idx)) }
+                } else {
+                  {}
+                },
+            enabled = enabled,
+            modifier = modifier)
+        Text(answer)
+      }
     }
+  }
 }
 
 @Composable
@@ -96,32 +90,33 @@ fun MCQOItem(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    Column (modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(question.question, modifier = Modifier.padding(bottom = 4.dp))
-        question.answers.forEachIndexed { idx, answer ->
-            Row (verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(
-                    selected = question.answerIndex == idx,
-                    onClick = if (enabled) {
-                        { onAnswerChange(MCQO(question.question, question.answers, idx, question.userAnswer)) }
-                    } else {
-                        {}
-                    },
-                    enabled = enabled,
-                    modifier = modifier
-                )
-                Text(answer)
-            }
-        }
-        OutlinedTextField(
-            value = question.userAnswer,
-            onValueChange = { onAnswerChange(MCQO(question.question, question.answers, question.answerIndex, it))
-            },
-            label = { Text("Other") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-            enabled = enabled
-        )
+  Column(modifier = Modifier.padding(vertical = 8.dp)) {
+    Text(question.question, modifier = Modifier.padding(bottom = 4.dp))
+    question.answers.forEachIndexed { idx, answer ->
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        RadioButton(
+            selected = question.answerIndex == idx,
+            onClick =
+                if (enabled) {
+                  {
+                    onAnswerChange(
+                        MCQO(question.question, question.answers, idx, question.userAnswer))
+                  }
+                } else {
+                  {}
+                },
+            enabled = enabled,
+            modifier = modifier)
+        Text(answer)
+      }
     }
+    OutlinedTextField(
+        value = question.userAnswer,
+        onValueChange = {
+          onAnswerChange(MCQO(question.question, question.answers, question.answerIndex, it))
+        },
+        label = { Text("Other") },
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        enabled = enabled)
+  }
 }

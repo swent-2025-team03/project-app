@@ -28,11 +28,11 @@ class AddReportViewModel(
   private val _uiState = MutableStateFlow(AddReportUiState())
   override val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
 
-    init {
-        _uiState.value = _uiState.value.copy(
-            questionForms = HealthQuestionFactory.animalHealthQuestions()
-        )
-    }
+  init {
+    _uiState.value =
+        _uiState.value.copy(questionForms = HealthQuestionFactory.animalHealthQuestions())
+  }
+
   override fun setTitle(newTitle: String) {
     _uiState.value = _uiState.value.copy(title = newTitle)
   }
@@ -45,21 +45,21 @@ class AddReportViewModel(
     _uiState.value = _uiState.value.copy(chosenVet = option)
   }
 
-    override fun updateQuestion(index: Int, updated: QuestionForm) {
-        val updatedList = _uiState.value.questionForms.toMutableList()
-        updatedList[index] = updated
-        _uiState.value = _uiState.value.copy(questionForms = updatedList)
-    }
+  override fun updateQuestion(index: Int, updated: QuestionForm) {
+    val updatedList = _uiState.value.questionForms.toMutableList()
+    updatedList[index] = updated
+    _uiState.value = _uiState.value.copy(questionForms = updatedList)
+  }
 
-    override suspend fun createReport(): Boolean {
+  override suspend fun createReport(): Boolean {
     val uiState = _uiState.value
     if (uiState.title.isBlank() || uiState.description.isBlank()) {
       return false
     }
-        val allQuestionsAnswered = uiState.questionForms.all { it.isValid() }
-        if (!allQuestionsAnswered) {
-            return false
-        }
+    val allQuestionsAnswered = uiState.questionForms.all { it.isValid() }
+    if (!allQuestionsAnswered) {
+      return false
+    }
 
     val newReport =
         Report(

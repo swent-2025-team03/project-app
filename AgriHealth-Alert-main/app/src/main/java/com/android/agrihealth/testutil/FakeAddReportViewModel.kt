@@ -12,16 +12,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
-  private val _uiState = MutableStateFlow(
-    AddReportUiState(
-      questionForms = listOf(
-        OpenQuestion("Open Question 1", ""),
-        YesOrNoQuestion("Yes/No Question 1", 0),
-        MCQ("MCQ Question 1", listOf("Option A", "Option B"), -1),
-        MCQO("MCQO Question 1", listOf("Option A", "Option B"), -1, "")
-      )
-    )
-  )
+  private val _uiState =
+      MutableStateFlow(
+          AddReportUiState(
+              questionForms =
+                  listOf(
+                      OpenQuestion("Open Question 1", ""),
+                      YesOrNoQuestion("Yes/No Question 1", 0),
+                      MCQ("MCQ Question 1", listOf("Option A", "Option B"), -1),
+                      MCQO("MCQO Question 1", listOf("Option A", "Option B"), -1, ""))))
   override val uiState: StateFlow<AddReportUiState> = _uiState
 
   override fun setTitle(newTitle: String) {

@@ -5,7 +5,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertAny
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
-import androidx.compose.ui.test.hasAnyChild
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -54,59 +53,68 @@ class AddReportScreenTest {
 
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    // -- Helper function --
-    private fun createReport (title: String, description: String) {
-        composeRule
-            .onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD)
-            .performTextInput(title)
-        composeRule
-            .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
-            .performTextInput(description)
-        val scrollContainer = composeRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        var index = 0
-        while (true) {
-            composeRule.waitForIdle()
-            val openNode = composeRule.onAllNodesWithTag("QUESTION_${index}_OPEN").fetchSemanticsNodes().firstOrNull()
-            if (openNode != null) {
-                scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_OPEN"))
-                composeRule.onNodeWithTag("QUESTION_${index}_OPEN").performTextInput("answer $index")
-                index++
-                continue
-            }
-            val yesNode = composeRule.onAllNodesWithTag("QUESTION_${index}_YESORNO").fetchSemanticsNodes().firstOrNull()
-            if (yesNode != null) {
-                scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_YESORNO"))
-                val options = composeRule.onAllNodesWithTag("QUESTION_${index}_YESORNO")
-                options[0].performClick()
-                index++
-                continue
-            }
-            val mcqNode = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQ").fetchSemanticsNodes().firstOrNull()
-            if (mcqNode != null) {
-                scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQ"))
-                val options = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQ")
-                options[0].performClick()
-                index++
-                continue
-            }
-            val mcqONode = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQO").fetchSemanticsNodes().firstOrNull()
-            if (mcqONode != null) {
-                scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQO"))
-                val options = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQO")
-                options[0].performClick()
-                index++
-                continue
-            }
-            break
-        }
-
-        composeRule
-            .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-            .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
-        composeRule
-            .onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON)
-            .performClick()
+  // -- Helper function --
+  private fun createReport(title: String, description: String) {
+    composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput(title)
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
+        .performTextInput(description)
+    val scrollContainer = composeRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+    var index = 0
+    while (true) {
+      composeRule.waitForIdle()
+      val openNode =
+          composeRule
+              .onAllNodesWithTag("QUESTION_${index}_OPEN")
+              .fetchSemanticsNodes()
+              .firstOrNull()
+      if (openNode != null) {
+        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_OPEN"))
+        composeRule.onNodeWithTag("QUESTION_${index}_OPEN").performTextInput("answer $index")
+        index++
+        continue
+      }
+      val yesNode =
+          composeRule
+              .onAllNodesWithTag("QUESTION_${index}_YESORNO")
+              .fetchSemanticsNodes()
+              .firstOrNull()
+      if (yesNode != null) {
+        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_YESORNO"))
+        val options = composeRule.onAllNodesWithTag("QUESTION_${index}_YESORNO")
+        options[0].performClick()
+        index++
+        continue
+      }
+      val mcqNode =
+          composeRule.onAllNodesWithTag("QUESTION_${index}_MCQ").fetchSemanticsNodes().firstOrNull()
+      if (mcqNode != null) {
+        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQ"))
+        val options = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQ")
+        options[0].performClick()
+        index++
+        continue
+      }
+      val mcqONode =
+          composeRule
+              .onAllNodesWithTag("QUESTION_${index}_MCQO")
+              .fetchSemanticsNodes()
+              .firstOrNull()
+      if (mcqONode != null) {
+        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQO"))
+        val options = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQO")
+        options[0].performClick()
+        index++
+        continue
+      }
+      break
     }
+
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+        .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
+    composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
+  }
 
   @Test
   fun displayAllFieldsAndButtons() {
@@ -124,43 +132,51 @@ class AddReportScreenTest {
 
     val scrollContainer = composeRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
 
-      val viewModel = FakeAddReportViewModel()
-      val questions = viewModel.uiState.value.questionForms
-      questions.forEachIndexed { index, question ->
-          when (question) {
-              is OpenQuestion -> {
-                  val node = composeRule.onAllNodesWithTag("QUESTION_${index}_OPEN").fetchSemanticsNodes().firstOrNull()
-                  if (node != null) {
-                      scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_OPEN"))
-                      composeRule.onNodeWithTag("QUESTION_${index}_OPEN").assertIsDisplayed()
-                  }
-              }
-              is YesOrNoQuestion -> {
-                  val nodes = composeRule.onAllNodesWithTag("QUESTION_${index}_YESORNO").fetchSemanticsNodes()
-                  if (nodes.isNotEmpty()) {
-                      scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_YESORNO"))
-                      composeRule.onAllNodesWithTag("QUESTION_${index}_YESORNO")
-                          .assertAny(hasAnyAncestor(hasTestTag(AddReportScreenTestTags.SCROLL_CONTAINER)))
-                  }
-              }
-              is MCQ -> {
-                  val nodes = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQ").fetchSemanticsNodes()
-                  if (nodes.isNotEmpty()) {
-                      scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQ"))
-                      composeRule.onAllNodesWithTag("QUESTION_${index}_MCQ")
-                          .assertAny(hasAnyAncestor(hasTestTag(AddReportScreenTestTags.SCROLL_CONTAINER)))
-                  }
-              }
-              is MCQO -> {
-                  val nodes = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQO").fetchSemanticsNodes()
-                  if (nodes.isNotEmpty()) {
-                      scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQO"))
-                      composeRule.onAllNodesWithTag("QUESTION_${index}_MCQO")
-                          .assertAny(hasAnyAncestor(hasTestTag(AddReportScreenTestTags.SCROLL_CONTAINER)))
-                  }
-              }
+    val viewModel = FakeAddReportViewModel()
+    val questions = viewModel.uiState.value.questionForms
+    questions.forEachIndexed { index, question ->
+      when (question) {
+        is OpenQuestion -> {
+          val node =
+              composeRule
+                  .onAllNodesWithTag("QUESTION_${index}_OPEN")
+                  .fetchSemanticsNodes()
+                  .firstOrNull()
+          if (node != null) {
+            scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_OPEN"))
+            composeRule.onNodeWithTag("QUESTION_${index}_OPEN").assertIsDisplayed()
           }
+        }
+        is YesOrNoQuestion -> {
+          val nodes =
+              composeRule.onAllNodesWithTag("QUESTION_${index}_YESORNO").fetchSemanticsNodes()
+          if (nodes.isNotEmpty()) {
+            scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_YESORNO"))
+            composeRule
+                .onAllNodesWithTag("QUESTION_${index}_YESORNO")
+                .assertAny(hasAnyAncestor(hasTestTag(AddReportScreenTestTags.SCROLL_CONTAINER)))
+          }
+        }
+        is MCQ -> {
+          val nodes = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQ").fetchSemanticsNodes()
+          if (nodes.isNotEmpty()) {
+            scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQ"))
+            composeRule
+                .onAllNodesWithTag("QUESTION_${index}_MCQ")
+                .assertAny(hasAnyAncestor(hasTestTag(AddReportScreenTestTags.SCROLL_CONTAINER)))
+          }
+        }
+        is MCQO -> {
+          val nodes = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQO").fetchSemanticsNodes()
+          if (nodes.isNotEmpty()) {
+            scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQO"))
+            composeRule
+                .onAllNodesWithTag("QUESTION_${index}_MCQO")
+                .assertAny(hasAnyAncestor(hasTestTag(AddReportScreenTestTags.SCROLL_CONTAINER)))
+          }
+        }
       }
+    }
 
     scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.VET_DROPDOWN))
     composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).assertIsDisplayed()
@@ -180,8 +196,9 @@ class AddReportScreenTest {
       }
     }
     // Click with fields empty
-      composeRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-          .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+        .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
     composeRule.onNodeWithText(AddReportFeedbackTexts.FAILURE).assertIsDisplayed()
   }
@@ -200,9 +217,10 @@ class AddReportScreenTest {
             addReportViewModel = FakeAddReportViewModel())
       }
     }
-      composeRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-          .performScrollToNode(hasTestTag(AddReportScreenTestTags.VET_DROPDOWN))
-      composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).performClick()
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+        .performScrollToNode(hasTestTag(AddReportScreenTestTags.VET_DROPDOWN))
+    composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).performClick()
     val firstVet = "Best Vet Ever!"
     composeRule.onNodeWithText(firstVet).assertIsDisplayed().performClick()
     composeRule.onNodeWithText(firstVet).assertIsDisplayed()
@@ -219,12 +237,12 @@ class AddReportScreenTest {
             addReportViewModel = FakeAddReportViewModel())
       }
     }
-    createReport("title","description")
+    createReport("title", "description")
     // Check that dialog appears
     composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-        composeRule.onNodeWithText(AddReportFeedbackTexts.SUCCESS).isDisplayed()
+      composeRule.onNodeWithText(AddReportFeedbackTexts.SUCCESS).isDisplayed()
     }
-      composeRule.onNodeWithText("OK").assertIsDisplayed()
+    composeRule.onNodeWithText("OK").assertIsDisplayed()
   }
 
   @Test
@@ -241,10 +259,10 @@ class AddReportScreenTest {
       }
     }
 
-    createReport("title","description")
-      composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-          composeRule.onNodeWithText("OK").isDisplayed()
-      }
+    createReport("title", "description")
+    composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeRule.onNodeWithText("OK").isDisplayed()
+    }
     composeRule.onNodeWithText("OK").performClick()
 
     Assert.assertTrue(called)
