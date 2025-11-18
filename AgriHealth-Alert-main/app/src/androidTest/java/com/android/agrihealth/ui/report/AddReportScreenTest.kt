@@ -184,7 +184,7 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertDoesNotExist()
     composeRule
         .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-        .assertTextEquals(AddReport_UploadButtonTexts.UPLOAD_IMAGE)
+        .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
   }
 
   @Test
@@ -205,13 +205,13 @@ class AddReportScreenTest {
     composeRule
         .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
         .assertIsDisplayed()
-        .assertTextEquals(AddReport_UploadButtonTexts.REMOVE_IMAGE)
+        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
         .performClick()
     composeRule.waitForIdle()
     composeRule
         .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
         .assertIsDisplayed()
-        .assertTextEquals(AddReport_UploadButtonTexts.UPLOAD_IMAGE)
+        .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
         .performClick()
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertDoesNotExist()
   }
@@ -235,6 +235,6 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
     composeRule
         .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-        .assertTextEquals(AddReport_UploadButtonTexts.REMOVE_IMAGE)
+        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
   }
 }

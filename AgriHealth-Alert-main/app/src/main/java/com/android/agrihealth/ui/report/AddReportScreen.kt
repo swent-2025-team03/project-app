@@ -24,7 +24,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -65,18 +64,23 @@ object AddReportFeedbackTexts {
   const val FAILURE = "Please fill in all required fields..."
 }
 
-// Used for testing purposes
+/**   Constants for testing purposes  */
 object AddReportConstants {
   val vetOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")
 }
 
-object AddReport_UploadButtonTexts {
+/**   Texts on the button used to upload/remove a photo   */
+object AddReportUploadButtonTexts {
   const val UPLOAD_IMAGE = "Upload Image"
   const val REMOVE_IMAGE = "Remove Image"
 }
 
-private val imageUploadButton_UploadColor = Color(0xFF43b593)
-private val imageUploadButton_RemoveColor = Color(0xFFd45d5d)
+/**   Texts of the dialog shown when clicking on uploading photo button */
+object AddReportDialogTexts {
+  const val GALLERY = "Gallery"
+  const val CAMERA = "camera"
+  const val CANCEL = "cancel"
+}
 
 /** This **MUST** be the same as in:
  *     AndroidManifest.xml --> <provider --> android:authorities
@@ -199,7 +203,7 @@ fun AddReportScreen(
               UploadedImagePreview(photoUri = uiState.photoUri)
 
               UploadRemovePhotoButton(
-                  photoAlreadyUploaded = uiState.photoUri != null,
+                  photoAlreadyPicked = uiState.photoUri != null,
                   onImagePicked = { addReportViewModel.setPhoto(it) },
                   onImageRemoved = { addReportViewModel.removePhoto() })
 
@@ -250,9 +254,15 @@ private fun Field(
 }
 
 
+/**
+ *   Button used to either upload or remove a photo depending on if one has already been selected
+ *
+ *   @param photoAlreadyPicked True if a photo has already been picked, False otherwise
+ *   @param onImagePicked What happens after an image has been picked
+ */
 @Composable
 fun UploadRemovePhotoButton(
-  photoAlreadyUploaded: Boolean,
+  photoAlreadyPicked: Boolean,
   onImagePicked: (Uri?) -> Unit,
   onImageRemoved: () -> Unit,
 ) {
@@ -278,9 +288,22 @@ fun UploadRemovePhotoButton(
     }
   }
 
+  fun launchCamera() {
+    val file = File(
+      context.cacheDir,
+      "temp_${System.currentTimeMillis()}.jpg"
+    )
+    cameraImageUri.value = FileProvider.getUriForFile(
+      context,
+      "${context.packageName}.$FILE_PROVIDER",
+      file
+    )
+    cameraLauncher.launch(cameraImageUri.value)
+  }
+
   Button(
     onClick = {
-      if (photoAlreadyUploaded) {
+      if (photoAlreadyPicked) {
         onImageRemoved()
       } else {
         showDialog = true
@@ -294,7 +317,7 @@ fun UploadRemovePhotoButton(
     )
   ) {
     Text(
-      text = if (photoAlreadyUploaded) AddReport_UploadButtonTexts.REMOVE_IMAGE else AddReport_UploadButtonTexts.UPLOAD_IMAGE,
+      text = if (photoAlreadyPicked) AddReportUploadButtonTexts.REMOVE_IMAGE else AddReportUploadButtonTexts.UPLOAD_IMAGE,
       style = MaterialTheme.typography.titleLarge
     )
   }
@@ -316,27 +339,17 @@ fun UploadRemovePhotoButton(
             colors = ButtonDefaults.textButtonColors(
               contentColor = MaterialTheme.colorScheme.onSurface
             )
-          ) { Text("Gallery") }
+          ) { Text(AddReportDialogTexts.GALLERY) }
           TextButton(
             modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CAMERA),
             onClick = {
-              // Prepare file Uri for camera image
-              val file = File(
-                context.cacheDir,
-                "temp_${System.currentTimeMillis()}.jpg"
-              )
-              cameraImageUri.value = FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.${FILE_PROVIDER}",
-                file
-              )
               showDialog = false
-              cameraLauncher.launch(cameraImageUri.value)
+              launchCamera()
             },
             colors = ButtonDefaults.textButtonColors(
               contentColor = MaterialTheme.colorScheme.onSurface
             )
-          ) { Text("Camera") }
+          ) { Text(AddReportDialogTexts.CAMERA) }
         }
       },
       dismissButton = {
@@ -345,7 +358,7 @@ fun UploadRemovePhotoButton(
           onClick = { showDialog = false },
           colors = ButtonDefaults.textButtonColors(
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        )) { Text("Cancel")
+        )) { Text(AddReportDialogTexts.CANCEL)
         }
       }
     )
