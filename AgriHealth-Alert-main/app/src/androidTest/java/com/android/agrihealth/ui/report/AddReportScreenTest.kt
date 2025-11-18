@@ -237,4 +237,28 @@ class AddReportScreenTest {
         .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
         .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
   }
+
+  @Test
+  fun uploadImageDialog_cancelButton_dismissesDialog_noPhotoPicked() {
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+          userRole = UserRole.FARMER,
+          userId = "test_user",
+          onCreateReport = {},
+          addReportViewModel = FakeAddReportViewModel())
+      }
+    }
+
+    // Open the dialog
+    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
+    // The dialog should be shown
+    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG).assertIsDisplayed()
+    // Click cancel
+    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_CANCEL).performClick()
+    // Dialog should be dismissed
+    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG).assertDoesNotExist()
+    // Image should not be picked
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertDoesNotExist()
+  }
 }

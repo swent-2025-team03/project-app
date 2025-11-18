@@ -89,6 +89,7 @@ class AddReportViewModelTest {
     viewModel.setDescription("Desc")
     assertEquals("Desc", viewModel.uiState.value.description)
     assertEquals("", viewModel.uiState.value.title)
+    assertEquals("", viewModel.uiState.value.chosenVet)
     assertNull(viewModel.uiState.value.photoUri)
   }
 
@@ -96,6 +97,8 @@ class AddReportViewModelTest {
   fun setVet_updatesVetOnly() {
     viewModel.setVet("Vet")
     assertEquals("Vet", viewModel.uiState.value.chosenVet)
+    assertEquals("", viewModel.uiState.value.title)
+    assertEquals("", viewModel.uiState.value.description)
   }
 
   @Test
@@ -103,6 +106,8 @@ class AddReportViewModelTest {
     val fakePicture = TestAssetUtils.getUriFrom(TestAssetUtils.FAKE_PHOTO_FILE)
     viewModel.setPhoto(fakePicture)
     assertEquals(fakePicture, viewModel.uiState.value.photoUri)
+    assertEquals("", viewModel.uiState.value.title)
+    assertEquals("", viewModel.uiState.value.description)
   }
 
   @Test
