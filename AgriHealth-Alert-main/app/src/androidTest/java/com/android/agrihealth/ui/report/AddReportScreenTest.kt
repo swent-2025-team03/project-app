@@ -2,6 +2,7 @@ package com.android.agrihealth.ui.report
 
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertTextEquals
@@ -220,9 +221,9 @@ class AddReportScreenTest {
   @Test
   fun imagePreview_isShownWhenUploaded() {
     val imageUri = getUriFrom(FAKE_PHOTO_FILE)
-
     val fakeViewModel = FakeAddReportViewModel()
     fakeViewModel.setPhoto(imageUri)
+
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
@@ -275,7 +276,7 @@ class AddReportScreenTest {
     }
 
     composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_GALLERY).performClick()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_GALLERY).assertHasClickAction()
 
     // Simulate picking photo from gallery
     val imageUri = getUriFrom(FAKE_PHOTO_FILE)
@@ -303,7 +304,7 @@ class AddReportScreenTest {
     }
 
     composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_CAMERA).performClick()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_CAMERA).assertHasClickAction()
 
     // Simulate picking photo with camera
     val cameraUri = getUriFrom(FAKE_PHOTO_FILE)
