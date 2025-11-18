@@ -26,9 +26,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
@@ -39,6 +41,7 @@ import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.user.UserViewModel
 import kotlinx.coroutines.launch
+import java.io.File
 
 /** Tags for the various components. For testing purposes */
 object AddReportScreenTestTags {
@@ -47,6 +50,10 @@ object AddReportScreenTestTags {
   const val VET_DROPDOWN = "vetDropDown"
   const val CREATE_BUTTON = "createButton"
   const val UPLOAD_IMAGE_BUTTON = "uploadImageButton"
+  const val UPLOAD_IMAGE_DIALOG = "uploadImageDialog"
+  const val DIALOG_GALLERY = "uploadImageDialogGallery"
+  const val DIALOG_CAMERA = "uploadImageDialogCamera"
+  const val DIALOG_CANCEL = "uploadImageDialogCancel"
   const val IMAGE_PREVIEW = "imageDisplay"
 
   fun getTestTagForVet(vetId: String): String = "vetOption_$vetId"
@@ -70,6 +77,11 @@ object AddReport_UploadButtonTexts {
 
 private val imageUploadButton_UploadColor = Color(0xFF43b593)
 private val imageUploadButton_RemoveColor = Color(0xFFd45d5d)
+
+/** This **MUST** be the same as in:
+ *     AndroidManifest.xml --> <provider --> android:authorities
+ */
+private const val FILE_PROVIDER = "fileprovider"   // TODO: Maybe move this into its own object
 
 /**
  * Displays the report creation screen for farmers
@@ -186,10 +198,11 @@ fun AddReportScreen(
 
               UploadedImagePreview(photoUri = uiState.photoUri)
 
-              ImageUploadButton(
-                  photoUri = uiState.photoUri,
+              UploadRemovePhotoButton(
+                  photoAlreadyUploaded = uiState.photoUri != null,
                   onImagePicked = { addReportViewModel.setPhoto(it) },
                   onImageRemoved = { addReportViewModel.removePhoto() })
+
 
               CreateReportButton(
                   addReportViewModel = addReportViewModel,
@@ -236,40 +249,109 @@ private fun Field(
   )
 }
 
+
 @Composable
-fun ImageUploadButton(
-    photoUri: Uri?,
-    onImagePicked: (Uri?) -> Unit,
-    onImageRemoved: () -> Unit,
+fun UploadRemovePhotoButton(
+  photoAlreadyUploaded: Boolean,
+  onImagePicked: (Uri?) -> Unit,
+  onImageRemoved: () -> Unit,
 ) {
-  val imagePickerLauncher =
-      rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri?
-        ->
-        onImagePicked(uri)
-      }
-  val imageAlreadyUploaded = photoUri != null
-  val buttonColor =
-      if (imageAlreadyUploaded) imageUploadButton_RemoveColor else imageUploadButton_UploadColor
+  var showDialog by remember { mutableStateOf(false) }
+  val context = LocalContext.current
+
+  // Gallery picker launcher
+  val galleryLauncher = rememberLauncherForActivityResult(
+    contract = ActivityResultContracts.GetContent()
+  ) { uri: Uri? ->
+    showDialog = false
+    onImagePicked(uri)
+  }
+
+  // Camera picker launcher
+  val cameraImageUri = remember { mutableStateOf<Uri?>(null) }
+  val cameraLauncher = rememberLauncherForActivityResult(
+    contract = ActivityResultContracts.TakePicture()
+  ) { success ->
+    showDialog = false
+    if (success) {
+      onImagePicked(cameraImageUri.value)
+    }
+  }
 
   Button(
-      onClick = {
-        if (imageAlreadyUploaded) {
-          onImageRemoved()
-        } else {
-          // Upload new image
-          imagePickerLauncher.launch("image/*")
+    onClick = {
+      if (photoAlreadyUploaded) {
+        onImageRemoved()
+      } else {
+        showDialog = true
+      }
+    },
+    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
+
+    // TODO: Make button change color based on status when the app theme will be more developed
+    colors = ButtonDefaults.buttonColors(
+      containerColor = MaterialTheme.colorScheme.primary
+    )
+  ) {
+    Text(
+      text = if (photoAlreadyUploaded) AddReport_UploadButtonTexts.REMOVE_IMAGE else AddReport_UploadButtonTexts.UPLOAD_IMAGE,
+      style = MaterialTheme.typography.titleLarge
+    )
+  }
+
+  if (showDialog) {
+    AlertDialog(
+      modifier = Modifier.testTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG),
+      onDismissRequest = { showDialog = false },
+      title = { Text("Select Image Source") },
+      text = { Text("Choose from gallery or take a new photo.") },
+      confirmButton = {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+          TextButton(
+            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_GALLERY),
+            onClick = {
+              showDialog = false
+              galleryLauncher.launch("image/*")
+            },
+            colors = ButtonDefaults.textButtonColors(
+              contentColor = MaterialTheme.colorScheme.onSurface
+            )
+          ) { Text("Gallery") }
+          TextButton(
+            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CAMERA),
+            onClick = {
+              // Prepare file Uri for camera image
+              val file = File(
+                context.cacheDir,
+                "temp_${System.currentTimeMillis()}.jpg"
+              )
+              cameraImageUri.value = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.${FILE_PROVIDER}",
+                file
+              )
+              showDialog = false
+              cameraLauncher.launch(cameraImageUri.value)
+            },
+            colors = ButtonDefaults.textButtonColors(
+              contentColor = MaterialTheme.colorScheme.onSurface
+            )
+          ) { Text("Camera") }
         }
       },
-      modifier =
-          Modifier.fillMaxWidth()
-              .padding(vertical = 8.dp)
-              .testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
-      colors = ButtonDefaults.buttonColors(containerColor = buttonColor)) {
-        Text(
-            text = if (imageAlreadyUploaded) "Remove Image" else "Upload Image",
-            style = MaterialTheme.typography.titleLarge)
+      dismissButton = {
+        TextButton(
+          modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CANCEL),
+          onClick = { showDialog = false },
+          colors = ButtonDefaults.textButtonColors(
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )) { Text("Cancel")
+        }
       }
+    )
+  }
 }
+
 
 @Composable
 fun UploadedImagePreview(photoUri: Uri?, modifier: Modifier = Modifier) {
