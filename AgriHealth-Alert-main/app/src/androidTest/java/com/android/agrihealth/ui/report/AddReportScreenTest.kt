@@ -3,6 +3,7 @@ package com.android.agrihealth.ui.report
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -21,6 +22,7 @@ import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
 import org.junit.Rule
@@ -212,7 +214,6 @@ class AddReportScreenTest {
         .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
         .assertIsDisplayed()
         .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
-        .performClick()
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertDoesNotExist()
   }
 
@@ -239,7 +240,7 @@ class AddReportScreenTest {
   }
 
   @Test
-  fun uploadImageDialog_cancelButton_dismissesDialog_noPhotoPicked() {
+  fun uploadImageDialog_cancel_dismissedNoPhotoPicked() {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
@@ -250,15 +251,68 @@ class AddReportScreenTest {
       }
     }
 
-    // Open the dialog
     composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
-    // The dialog should be shown
     composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG).assertIsDisplayed()
-    // Click cancel
     composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_CANCEL).performClick()
-    // Dialog should be dismissed
-    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG).assertDoesNotExist()
-    // Image should not be picked
-    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertDoesNotExist()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG).assertIsNotDisplayed()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsNotDisplayed()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).assertTextEquals(
+      AddReportUploadButtonTexts.UPLOAD_IMAGE)
+  }
+
+
+  @Test
+  fun uploadImageDialog_gallery_setsPhoto() {
+    val fakeViewModel = FakeAddReportViewModel()
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+          userRole = UserRole.FARMER,
+          userId = "test_user",
+          onCreateReport = {},
+          addReportViewModel = fakeViewModel)
+      }
+    }
+
+    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_GALLERY).performClick()
+
+    // Simulate picking photo from gallery
+    val imageUri = getUriFrom(FAKE_PHOTO_FILE)
+    fakeViewModel.setPhoto(imageUri)
+
+    composeRule.waitForIdle()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+      .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+  }
+
+
+  @Test
+  fun uploadImageDialog_camera_setsPhoto() {
+    val fakeViewModel = FakeAddReportViewModel()
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+          userRole = UserRole.FARMER,
+          userId = "test_user",
+          onCreateReport = {},
+          addReportViewModel = fakeViewModel)
+      }
+    }
+
+    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_CAMERA).performClick()
+
+    // Simulate picking photo with camera
+    val cameraUri = getUriFrom(FAKE_PHOTO_FILE)
+    fakeViewModel.setPhoto(cameraUri)
+
+    composeRule.waitForIdle()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+      .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
   }
 }
