@@ -41,7 +41,7 @@ sealed class QuestionForm(
 }
 
 /** Question with a simple text field can type in to answer. */
-class OpenQuestion(question: String, userAnswer: String) :
+class OpenQuestion(question: String, userAnswer: String = "") :
     QuestionForm(
         question = question,
         answers = emptyList(),
@@ -54,7 +54,7 @@ class OpenQuestion(question: String, userAnswer: String) :
 }
 
 /** Multiple choice question. */
-class MCQ(question: String, answers: List<String>, answerIndex: Int) :
+class MCQ(question: String, answers: List<String>, answerIndex: Int = -1) :
     QuestionForm(
         question = question,
         answers = answers,
@@ -67,7 +67,7 @@ class MCQ(question: String, answers: List<String>, answerIndex: Int) :
 }
 
 /** Special case of an MCQ where the answer is only yes or no. */
-class YesOrNoQuestion(question: String, answerIndex: Int) :
+class YesOrNoQuestion(question: String, answerIndex: Int = -1) :
     QuestionForm(
         question = question,
         answers = listOf("Yes", "No"),
@@ -80,7 +80,12 @@ class YesOrNoQuestion(question: String, answerIndex: Int) :
 }
 
 /** MCQ with an added "other" option where the user can type his answer. */
-class MCQO(question: String, answers: List<String>, answerIndex: Int, userAnswer: String) :
+class MCQO(
+    question: String,
+    answers: List<String>,
+    answerIndex: Int = -1,
+    userAnswer: String = ""
+) :
     QuestionForm(
         question = question,
         answers = answers,
