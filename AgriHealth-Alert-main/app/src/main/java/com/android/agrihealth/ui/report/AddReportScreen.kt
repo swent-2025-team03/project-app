@@ -237,6 +237,14 @@ fun AddReportScreen(
       }
 }
 
+/**
+ *  A text filed used in the addReport screen
+ *
+ *  @param value The text stored on the text field
+ *  @param onValueChange What happens when the text on the text field changes
+ *  @param placeholder The placeholder shown when the text field is empty
+ *  @param testTag The test tag associated with the text field
+ */
 @Composable
 private fun Field(
     value: String,
@@ -258,7 +266,8 @@ private fun Field(
  *   Button used to either upload or remove a photo depending on if one has already been selected
  *
  *   @param photoAlreadyPicked True if a photo has already been picked, False otherwise
- *   @param onImagePicked What happens after an image has been picked
+ *   @param onImagePicked What happens when a click was performed when the button shows "Upload image"
+ *   @param onImageRemoved What happens when a click was performed when the button shows "Remove image"
  */
 @Composable
 fun UploadRemovePhotoButton(
@@ -382,6 +391,13 @@ fun UploadedImagePreview(photoUri: Uri?, modifier: Modifier = Modifier) {
   }
 }
 
+/**
+ *   Buttons that allows creating a report and uploading it on the repository
+ *
+ *   @param addReportViewModel The viewModel associated with this screen
+ *   @param snackbarHostState Current state of the object managing the snackbar
+ *   @param onSuccess What happens after the report has been submitted
+ */
 @Composable
 fun CreateReportButton(
     addReportViewModel: AddReportViewModelContract,
