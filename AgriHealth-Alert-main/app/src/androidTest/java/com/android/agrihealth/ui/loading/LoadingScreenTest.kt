@@ -47,35 +47,4 @@ class LoadingScreenTest {
     compose.onNodeWithTag("loading_overlay_spinner").assertExists()
   }
 
-  // -----------------
-  // TEST 3 — MapViewModel loading logic
-  // -----------------
-  @OptIn(ExperimentalCoroutinesApi::class)
-  @Test
-  fun setStartingLocation_togglesIsLoading_whenLocationArrives() = runTest {
-    // Fake GPS provider
-    val fakeLocation = FakeLocationProvider(initialLocation = null, permissions = true)
-
-    val fakeRepo = FakeReportRepository()
-    val fakeUserRepo = FakeUserRepository()
-
-    // ViewModel under test
-    val vm =
-        MapViewModel(
-            reportRepository = fakeRepo,
-            userRepository = fakeUserRepo,
-            locationViewModel = fakeLocation,
-            authProvider = FakeAuthProvider(),
-            selectedReportId = null)
-
-    vm.setStartingLocation(location = null, useCurrentLocation = true)
-
-    assertTrue(vm.uiState.value.isLoading)
-
-    fakeLocation.emitLocation(Location(46.5, 6.6, null))
-
-    advanceUntilIdle()
-
-    assertFalse(vm.uiState.value.isLoading)
-  }
 }

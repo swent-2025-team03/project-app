@@ -18,6 +18,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.repository.ReportRepositoryLocal
 import com.android.agrihealth.fakes.FakeAuthProvider
+import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.loading.LoadingTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.user.UserViewModel
@@ -385,7 +386,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
 
     // Finish coroutines
-    composeTestRule.waitUntil(timeoutMillis = 3000L) { !mapViewModel.uiState.value.isLoading }
+    composeTestRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) { !mapViewModel.uiState.value.isLoading }
     // Loading should disappear
     composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
     composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()

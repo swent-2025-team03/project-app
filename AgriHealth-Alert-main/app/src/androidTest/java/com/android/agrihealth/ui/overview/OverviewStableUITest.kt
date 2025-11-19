@@ -11,6 +11,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.testutil.FakeOverviewRepository
+import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.loading.LoadingTestTags
 import com.android.agrihealth.ui.navigation.NavigationActions
 import junit.framework.TestCase.assertEquals
@@ -138,12 +139,12 @@ class OverviewStableUITest {
       )
     }
 
-    composeTestRule.waitUntil(2_000) { vm.uiState.value.isLoading }
+    composeTestRule.waitUntil(TestConstants.SHORT_TIMEOUT) { vm.uiState.value.isLoading }
 
     composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
     composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
 
-    composeTestRule.waitUntil(4_000) { !vm.uiState.value.isLoading }
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) { !vm.uiState.value.isLoading }
 
     composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
     composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()

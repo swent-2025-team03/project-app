@@ -13,6 +13,7 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
+import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.loading.LoadingTestTags
 import com.android.agrihealth.ui.user.UserViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -197,14 +198,14 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
 
     // Wait until loading state becomes true (defensive, though immediate)
-    composeRule.waitUntil(timeoutMillis = 1000) { slowViewModel.uiState.value.isLoading }
+    composeRule.waitUntil(timeoutMillis = TestConstants.SHORT_TIMEOUT) { slowViewModel.uiState.value.isLoading }
 
     // Assert that loading overlay appears
     composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
     composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
 
     // Wait until loading finishes
-    composeRule.waitUntil(timeoutMillis = 3000) { !slowViewModel.uiState.value.isLoading }
+    composeRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) { !slowViewModel.uiState.value.isLoading }
 
     // Overlay should be gone
     composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
