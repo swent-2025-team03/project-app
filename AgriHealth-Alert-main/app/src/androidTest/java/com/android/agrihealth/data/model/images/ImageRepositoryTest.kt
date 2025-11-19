@@ -221,4 +221,40 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
     val resultBytes = (uiState as ImageUiState.DownloadSuccess).imageData
     assert(resultBytes.contentEquals(bytes))
   }
+
+  @Test
+  fun viewModel_uploadAndDownloadErrorOnFail() = runTest {
+    val fakeRepo = mockkClass(ImageRepositoryProvider.repository::class)
+    val uri: Uri = mockk()
+    val bytes = byteArrayOf(1, 2, 3, 4)
+    val path = "images/test.png"
+
+    val uploadErrorMsg = "Upload failure"
+    val downloadErrorMsg = "Download failure"
+
+    every { fakeRepo.resolveUri(uri) } returns bytes
+    every { fakeRepo.reduceFileSize(bytes) } returns bytes
+    coEvery { fakeRepo.uploadImage(bytes) } returns Result.failure(Exception(uploadErrorMsg))
+    coEvery { fakeRepo.downloadImage(path) } returns Result.failure(Exception(downloadErrorMsg))
+
+    val viewModel = ImageViewModel(repository = fakeRepo)
+
+    // Upload and check if failed with correct exception
+    viewModel.upload(uri)
+    advanceUntilIdle()
+
+    var uiState = viewModel.uiState.value
+    assert(uiState is ImageUiState.Error)
+    var errorMsg = (uiState as ImageUiState.Error).msg
+    assert(uploadErrorMsg in errorMsg)
+
+    // Download and check if failed with correct exception
+    viewModel.download(path)
+    advanceUntilIdle()
+
+    uiState = viewModel.uiState.value
+    assert(uiState is ImageUiState.Error)
+    errorMsg = (uiState as ImageUiState.Error).msg
+    assert(downloadErrorMsg in errorMsg)
+  }
 }

@@ -7,13 +7,12 @@ import org.junit.Test
 
 class FirebaseEmulatorsManagerTest {
   @Test
-  fun hostMatchesLocalIfRunning() {
+  fun localEmulatorsAreRunning() {
     FirebaseEmulatorsManager.linkEmulators()
 
     val environment = FirebaseEmulatorsManager.environment
-    val localhost = "10.0.2.2"
+    val expectedHost = "10.0.2.2"
 
-    if (isLocalRunning(environment.firestorePort)) assertEquals(environment.host, localhost)
-    else assertNotEquals(environment.host, localhost)
+    assert(environment.host == expectedHost)
   }
 }
