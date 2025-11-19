@@ -54,25 +54,33 @@ class ReportViewModel(
   private val _saveCompleted = MutableStateFlow(false)
   val saveCompleted: StateFlow<Boolean> = _saveCompleted.asStateFlow()
 
+  private suspend fun <T> withLoading(block: suspend () -> T): T {
+    _uiState.value = _uiState.value.copy(isLoading = true)
+    return try {
+      block()
+    } finally {
+      _uiState.value = _uiState.value.copy(isLoading = false)
+    }
+  }
+
   /** Loads a report by its ID and updates the state. */
   fun loadReport(reportID: String) {
     viewModelScope.launch {
-      _uiState.value = _uiState.value.copy(isLoading = true)
-      try {
-        val fetchedReport = repository.getReportById(reportID)
-        if (fetchedReport != null) {
-          _uiState.value =
-              _uiState.value.copy(
-                  report = fetchedReport,
-                  answerText = fetchedReport.answer ?: "",
-                  status = fetchedReport.status,
-                  isLoading = false)
-        } else {
-          _uiState.value = _uiState.value.copy(isLoading = false)
+      withLoading {
+        try {
+          val fetchedReport = repository.getReportById(reportID)
+          if (fetchedReport != null) {
+            _uiState.value =
+                _uiState.value.copy(
+                    report = fetchedReport,
+                    answerText = fetchedReport.answer ?: "",
+                    status = fetchedReport.status,
+                )
+          }
+          // si null : on laisse le state comme avant (sauf isLoading qui est géré par withLoading)
+        } catch (e: Exception) {
+          Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
         }
-      } catch (e: Exception) {
-        _uiState.value = _uiState.value.copy(isLoading = false)
-        Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
       }
     }
   }
@@ -92,17 +100,20 @@ class ReportViewModel(
   /** Saves the modified report, then triggers the saveCompleted flag on success. */
   fun onSave() {
     viewModelScope.launch {
-      _uiState.value = _uiState.value.copy(isLoading = true)
-      try {
-        val updatedReport =
-            _uiState.value.report.copy(
-                answer = _uiState.value.answerText, status = _uiState.value.status)
-        repository.editReport(updatedReport.id, updatedReport)
-        _uiState.value = _uiState.value.copy(isLoading = false)
-        _saveCompleted.value = true
-      } catch (e: Exception) {
-        _uiState.value = _uiState.value.copy(isLoading = false)
-        Log.e("ReportViewModel", "Error saving report", e)
+      withLoading {
+        try {
+          val current = _uiState.value
+          val updatedReport =
+              current.report.copy(
+                  answer = current.answerText,
+                  status = current.status,
+              )
+
+          repository.editReport(updatedReport.id, updatedReport)
+          _saveCompleted.value = true
+        } catch (e: Exception) {
+          Log.e("ReportViewModel", "Error saving report", e)
+        }
       }
     }
   }

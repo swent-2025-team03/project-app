@@ -24,6 +24,15 @@ class AddReportViewModel(
   private val _uiState = MutableStateFlow(AddReportUiState())
   override val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
 
+  private suspend fun <T> withLoading(block: suspend () -> T): T {
+    _uiState.value = _uiState.value.copy(isLoading = true)
+    return try {
+      block()
+    } finally {
+      _uiState.value = _uiState.value.copy(isLoading = false)
+    }
+  }
+
   override fun setTitle(newTitle: String) {
     _uiState.value = _uiState.value.copy(title = newTitle)
   }
@@ -44,28 +53,28 @@ class AddReportViewModel(
 
     _uiState.value = _uiState.value.copy(isLoading = true)
 
-    return try {
-      val newReport =
-          Report(
-              id = reportRepository.getNewReportId(),
-              title = current.title,
-              description = current.description,
-              questionForms = emptyList(),
-              photoUri = null,
-              farmerId = userId,
-              vetId = current.chosenVet,
-              status = ReportStatus.PENDING,
-              answer = null,
-              location = Location(46.7990813, 6.6259961))
+    return withLoading {
+      try {
+        val newReport =
+            Report(
+                id = reportRepository.getNewReportId(),
+                title = current.title,
+                description = current.description,
+                questionForms = emptyList(),
+                photoUri = null,
+                farmerId = userId,
+                vetId = current.chosenVet,
+                status = ReportStatus.PENDING,
+                answer = null,
+                location = Location(46.7990813, 6.6259961))
 
-      reportRepository.addReport(newReport)
+        reportRepository.addReport(newReport)
 
-      clearInputs()
-      true
-    } catch (e: Exception) {
-      false
-    } finally {
-      _uiState.value = _uiState.value.copy(isLoading = false)
+        clearInputs()
+        true
+      } catch (e: Exception) {
+        false
+      }
     }
   }
 

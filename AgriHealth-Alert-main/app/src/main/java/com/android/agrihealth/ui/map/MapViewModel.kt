@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -37,6 +38,15 @@ class MapViewModel(
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(MapUIState())
   val uiState: StateFlow<MapUIState> = _uiState.asStateFlow()
+
+  private suspend fun <T> withLoading(block: suspend () -> T): T {
+    _uiState.update { it.copy(isLoading = true) }
+    return try {
+      block()
+    } finally {
+      _uiState.update { it.copy(isLoading = false) }
+    }
+  }
 
   private val _startingLocation = MutableStateFlow(Location(46.9481, 7.4474, null)) // Bern
   val startingLocation = _startingLocation.asStateFlow()
@@ -96,32 +106,29 @@ class MapViewModel(
    * @param useCurrentLocation will fetch new location instead of using last known location if true.
    */
   fun setStartingLocation(location: Location?, useCurrentLocation: Boolean = false) {
-    // Specific starting point, takes priority because of report navigation for example
-    _uiState.value = _uiState.value.copy(isLoading = true)
+    viewModelScope.launch {
+      withLoading {
+        if (location != null) {
+          _startingLocation.value = location
+          _zoom.value = 15f
+          return@withLoading
+        }
 
-    if (location != null) {
-      _startingLocation.value = location
-      _zoom.value = 15f
-      _uiState.value = _uiState.value.copy(isLoading = false)
-    }
-    // Default starting position, so either location or workplace or default
-    else {
-      viewModelScope.launch {
         _zoom.value = 12f
+
         if (locationViewModel.hasLocationPermissions()) {
           if (useCurrentLocation) {
             locationViewModel.getCurrentLocation()
           } else {
             locationViewModel.getLastKnownLocation()
           }
-          val gpsLocation =
-              withTimeoutOrNull(3_000) {
-                locationViewModel.locationState.firstOrNull { it != null }
-              }
 
-          _startingLocation.value = gpsLocation ?: getLocationFromUserAddress() ?: return@launch
+          val gpsLocation =
+              withTimeoutOrNull(3000) { locationViewModel.locationState.firstOrNull { it != null } }
+
+          _startingLocation.value =
+              gpsLocation ?: getLocationFromUserAddress() ?: return@withLoading
         }
-        _uiState.value = _uiState.value.copy(isLoading = false)
       }
     }
   }

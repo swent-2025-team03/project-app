@@ -5,11 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
-import com.android.agrihealth.data.model.authentification.AuthUser
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -28,15 +28,15 @@ object SignUpErrorMsg {
 data class SignUpUIState(
     val email: String = "",
     val password: String = "",
-    val user: AuthUser? = null,
+    val user: FirebaseUser? = null,
     val firstname: String = "",
     val lastname: String = "",
     val cnfPassword: String = "",
     val role: UserRole? = null,
     val errorMsg: String? = null,
     val hasFailed: Boolean = false,
-    val isLoading: Boolean = false
 ) {
+
   fun isValid(): Boolean {
     return !emailIsMalformed() &&
         isFilled() &&
@@ -45,16 +45,21 @@ data class SignUpUIState(
         role != null
   }
 
-  fun passwordIsWeak(): Boolean = password.length < 6
+  fun passwordIsWeak(): Boolean {
+    return password.length < 6
+  }
 
-  fun emailIsMalformed(): Boolean = !Patterns.EMAIL_ADDRESS.matcher(email).matches()
+  fun emailIsMalformed(): Boolean {
+    return !Patterns.EMAIL_ADDRESS.matcher(email).matches()
+  }
 
-  fun isFilled(): Boolean =
-      email.isNotEmpty() &&
-          password.isNotEmpty() &&
-          firstname.isNotEmpty() &&
-          lastname.isNotEmpty() &&
-          cnfPassword.isNotEmpty()
+  fun isFilled(): Boolean {
+    return email.isNotEmpty() &&
+        password.isNotEmpty() &&
+        firstname.isNotEmpty() &&
+        lastname.isNotEmpty() &&
+        cnfPassword.isNotEmpty()
+  }
 }
 
 open class SignUpViewModel(
@@ -66,71 +71,68 @@ open class SignUpViewModel(
 
   /** Clears the error message in the UI state. */
   fun clearErrorMsg() {
-    _uiState.update { it.copy(errorMsg = null) }
+    _uiState.value = _uiState.value.copy(errorMsg = null)
   }
 
   /** Sets an error message in the UI state. */
   private fun setErrorMsg(errorMsg: String) {
-    _uiState.update { it.copy(errorMsg = errorMsg) }
+    _uiState.value = _uiState.value.copy(errorMsg = errorMsg)
   }
 
   fun setName(name: String) {
-    _uiState.update { it.copy(firstname = name) }
+    _uiState.value = _uiState.value.copy(firstname = name)
   }
 
   fun setSurname(surname: String) {
-    _uiState.update { it.copy(lastname = surname) }
+    _uiState.value = _uiState.value.copy(lastname = surname)
   }
 
   fun setPassword(password: String) {
-    _uiState.update { it.copy(password = password) }
+    _uiState.value = _uiState.value.copy(password = password)
   }
 
   fun setCnfPassword(cnfPassword: String) {
-    _uiState.update { it.copy(cnfPassword = cnfPassword) }
+    _uiState.value = _uiState.value.copy(cnfPassword = cnfPassword)
   }
 
   fun setEmail(email: String) {
-    _uiState.update { it.copy(email = email) }
+    _uiState.value = _uiState.value.copy(email = email)
   }
 
   fun onSelected(role: UserRole) {
-    _uiState.update { it.copy(role = role) }
+    _uiState.value = _uiState.value.copy(role = role)
   }
 
   fun signUp() {
     val state = _uiState.value
+
     if (state.isValid()) {
-      val userData: User? =
+      val user =
           when (state.role) {
             UserRole.FARMER ->
                 Farmer("", state.firstname, state.lastname, state.email, null, emptyList(), null)
             UserRole.VET -> Vet("", state.firstname, state.lastname, state.email, null)
             else -> null
           }
-      if (userData != null) {
+
+      if (user != null) {
         viewModelScope.launch {
-          _uiState.update { it.copy(isLoading = true) }
           authRepository
-              .signUpWithEmailAndPassword(state.email, state.password, userData)
+              .signUpWithEmailAndPassword(state.email, state.password, user)
               .fold(
-                  { authUser -> _uiState.update { it.copy(user = authUser, isLoading = false) } },
+                  { user -> _uiState.update { it.copy(user = user) } },
                   { failure ->
-                    _uiState.update {
-                      it.copy(
-                          isLoading = false,
-                          errorMsg =
-                              when (failure) {
-                                is com.google.firebase.auth.FirebaseAuthException ->
-                                    SignUpErrorMsg.ALREADY_USED_EMAIL
-                                else -> SignUpErrorMsg.TIMEOUT
-                              })
-                    }
+                    setErrorMsg(
+                        when (failure) {
+                          is com.google.firebase.auth.FirebaseAuthException ->
+                              SignUpErrorMsg.ALREADY_USED_EMAIL
+                          else -> SignUpErrorMsg.TIMEOUT
+                        })
                   })
         }
       }
     } else {
-      _uiState.update { state.copy(hasFailed = true) }
+      _uiState.value = state.copy(hasFailed = true)
       val errorMsg =
           when {
             !state.isFilled() -> SignUpErrorMsg.EMPTY_FIELDS
@@ -144,12 +146,12 @@ open class SignUpViewModel(
     }
   }
 
-  fun createLocalUser(authUser: AuthUser): User? {
+  fun createLocalUser(firebaseUser: FirebaseUser): User? {
     val state = _uiState.value
     return when (state.role) {
       UserRole.FARMER ->
           Farmer(
-              uid = authUser.uid,
+              uid = firebaseUser.uid,
               firstname = state.firstname,
               lastname = state.lastname,
               email = state.email,
@@ -158,7 +160,7 @@ open class SignUpViewModel(
               defaultVet = null)
       UserRole.VET ->
           Vet(
-              uid = authUser.uid,
+              uid = firebaseUser.uid,
               firstname = state.firstname,
               lastname = state.lastname,
               email = state.email,

@@ -20,11 +20,11 @@ import androidx.credentials.Credential
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.authentification.AuthRepository
-import com.android.agrihealth.data.model.authentification.AuthUser
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.user.UserViewModel
+import com.google.firebase.auth.FirebaseUser
+import kotlin.let
 
 object SignUpScreenTestTags {
   const val SCREEN = "SignUpScreen"
@@ -60,103 +60,100 @@ fun SignUpScreen(
   }
 
   LaunchedEffect(signUpUIState.user) {
-    signUpUIState.user?.let { authUser ->
-      val newUser = signUpViewModel.createLocalUser(authUser)
+    signUpUIState.user?.let { firebaseUser ->
+      val newUser = signUpViewModel.createLocalUser(firebaseUser)
 
       if (newUser != null) {
         userViewModel.setUser(newUser)
       }
-
       // Navigate away only after updating in-memory user
       onSignedUp()
     }
   }
-  LoadingOverlay(isLoading = signUpUIState.isLoading) {
-    Scaffold(
-        snackbarHost = {
-          SnackbarHost(
-              hostState = snackbarHostState,
-              modifier = Modifier.testTag(SignUpScreenTestTags.SNACKBAR))
-        },
-        topBar = {
-          TopAppBar(
-              title = {},
-              navigationIcon = {
-                IconButton(
-                    onClick = onBack,
-                    modifier = Modifier.testTag(SignUpScreenTestTags.BACK_BUTTON)) {
-                      Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-              })
-        }) { padding ->
-          Column(
-              Modifier.background(MaterialTheme.colorScheme.surface)
-                  .fillMaxSize()
-                  .padding(padding)
-                  .padding(horizontal = 24.dp)
-                  .testTag(SignUpScreenTestTags.SCREEN)
-                  .verticalScroll(rememberScrollState()),
-              horizontalAlignment = Alignment.CenterHorizontally) {
-                Spacer(Modifier.height(24.dp))
-                Text(
-                    "Create An Account",
-                    style = MaterialTheme.typography.displaySmall,
-                    modifier = Modifier.testTag(SignUpScreenTestTags.TITLE))
-                Spacer(Modifier.height(24.dp))
 
-                Field(
-                    signUpUIState.firstname,
-                    { signUpViewModel.setName(it) },
-                    "Name",
-                    modifier = Modifier.testTag(SignUpScreenTestTags.FIRSTNAME_FIELD))
-                Field(
-                    signUpUIState.lastname,
-                    { signUpViewModel.setSurname(it) },
-                    "Surname",
-                    modifier = Modifier.testTag(SignUpScreenTestTags.LASTNAME_FIELD))
-                Field(
-                    signUpUIState.email,
-                    { signUpViewModel.setEmail(it) },
-                    "Email",
-                    modifier = Modifier.testTag(SignUpScreenTestTags.EMAIL_FIELD),
-                    signUpUIState.hasFailed && signUpUIState.emailIsMalformed())
-                Field(
-                    signUpUIState.password,
-                    { signUpViewModel.setPassword(it) },
-                    "Password",
-                    modifier = Modifier.testTag(SignUpScreenTestTags.PASSWORD_FIELD),
-                    signUpUIState.hasFailed && signUpUIState.passwordIsWeak())
-                Field(
-                    signUpUIState.cnfPassword,
-                    { signUpViewModel.setCnfPassword(it) },
-                    "Confirm Password",
-                    modifier = Modifier.testTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD),
-                    signUpUIState.hasFailed &&
-                        (signUpUIState.cnfPassword != signUpUIState.password ||
-                            signUpUIState.passwordIsWeak()))
+  Scaffold(
+      snackbarHost = {
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.testTag(SignUpScreenTestTags.SNACKBAR))
+      },
+      topBar = {
+        TopAppBar(
+            title = {},
+            navigationIcon = {
+              IconButton(
+                  onClick = onBack, modifier = Modifier.testTag(SignUpScreenTestTags.BACK_BUTTON)) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                  }
+            })
+      }) { padding ->
+        Column(
+            Modifier.background(MaterialTheme.colorScheme.surface)
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 24.dp)
+                .testTag(SignUpScreenTestTags.SCREEN)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally) {
+              Spacer(Modifier.height(24.dp))
+              Text(
+                  "Create An Account",
+                  style = MaterialTheme.typography.displaySmall,
+                  modifier = Modifier.testTag(SignUpScreenTestTags.TITLE))
+              Spacer(Modifier.height(24.dp))
 
-                Spacer(Modifier.height(16.dp))
-                Text("Are you a vet or a farmer ?", style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(12.dp))
+              Field(
+                  signUpUIState.firstname,
+                  { signUpViewModel.setName(it) },
+                  "Name",
+                  modifier = Modifier.testTag(SignUpScreenTestTags.FIRSTNAME_FIELD))
+              Field(
+                  signUpUIState.lastname,
+                  { signUpViewModel.setSurname(it) },
+                  "Surname",
+                  modifier = Modifier.testTag(SignUpScreenTestTags.LASTNAME_FIELD))
+              Field(
+                  signUpUIState.email,
+                  { signUpViewModel.setEmail(it) },
+                  "Email",
+                  modifier = Modifier.testTag(SignUpScreenTestTags.EMAIL_FIELD),
+                  signUpUIState.hasFailed && signUpUIState.emailIsMalformed())
+              Field(
+                  signUpUIState.password,
+                  { signUpViewModel.setPassword(it) },
+                  "Password",
+                  modifier = Modifier.testTag(SignUpScreenTestTags.PASSWORD_FIELD),
+                  signUpUIState.hasFailed && signUpUIState.passwordIsWeak())
+              Field(
+                  signUpUIState.cnfPassword,
+                  { signUpViewModel.setCnfPassword(it) },
+                  "Confirm Password",
+                  modifier = Modifier.testTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD),
+                  signUpUIState.hasFailed &&
+                      (signUpUIState.cnfPassword != signUpUIState.password ||
+                          signUpUIState.passwordIsWeak()))
 
-                RoleSelector(
-                    selected = signUpUIState.role, onSelected = { signUpViewModel.onSelected(it) })
+              Spacer(Modifier.height(16.dp))
+              Text("Are you a vet or a farmer ?", style = MaterialTheme.typography.titleMedium)
+              Spacer(Modifier.height(12.dp))
 
-                Spacer(Modifier.height(28.dp))
-                Button(
-                    onClick = { signUpViewModel.signUp() },
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .height(56.dp)
-                            .testTag(SignUpScreenTestTags.SAVE_BUTTON),
-                    shape = RoundedCornerShape(20.dp),
-                ) {
-                  Text("Save", style = MaterialTheme.typography.titleLarge)
-                }
-                Spacer(Modifier.height(24.dp))
+              RoleSelector(
+                  selected = signUpUIState.role, onSelected = { signUpViewModel.onSelected(it) })
+
+              Spacer(Modifier.height(28.dp))
+              Button(
+                  onClick = { signUpViewModel.signUp() },
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .height(56.dp)
+                          .testTag(SignUpScreenTestTags.SAVE_BUTTON),
+                  shape = RoundedCornerShape(20.dp),
+              ) {
+                Text("Save", style = MaterialTheme.typography.titleLarge)
               }
-        }
-  }
+              Spacer(Modifier.height(24.dp))
+            }
+      }
 }
 
 @Composable
@@ -223,7 +220,7 @@ private fun SignUpScreenPreview() {
         override suspend fun signInWithEmailAndPassword(
             email: String,
             password: String
-        ): Result<AuthUser> {
+        ): Result<FirebaseUser> {
           TODO("Not yet implemented")
         }
 
@@ -235,7 +232,7 @@ private fun SignUpScreenPreview() {
           TODO("Not yet implemented")
         }
 
-        override suspend fun signInWithGoogle(credential: Credential): Result<AuthUser> {
+        override suspend fun signInWithGoogle(credential: Credential): Result<FirebaseUser> {
           TODO("Not yet implemented")
         }
 
@@ -243,7 +240,7 @@ private fun SignUpScreenPreview() {
             email: String,
             password: String,
             userData: User
-        ): Result<AuthUser> {
+        ): Result<FirebaseUser> {
           TODO("Not yet implemented")
         }
 
@@ -256,5 +253,6 @@ private fun SignUpScreenPreview() {
         }
       }
   val vm = object : SignUpViewModel(authRepo) {}
+
   AgriHealthAppTheme { SignUpScreen(signUpViewModel = vm) }
 }
