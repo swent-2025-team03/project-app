@@ -386,7 +386,9 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
 
     // Finish coroutines
-    composeTestRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) { !mapViewModel.uiState.value.isLoading }
+    composeTestRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
+      !mapViewModel.uiState.value.isLoading
+    }
     // Loading should disappear
     composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
     composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()

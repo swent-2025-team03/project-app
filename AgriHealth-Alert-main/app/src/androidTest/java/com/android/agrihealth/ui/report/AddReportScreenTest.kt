@@ -198,14 +198,18 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
 
     // Wait until loading state becomes true (defensive, though immediate)
-    composeRule.waitUntil(timeoutMillis = TestConstants.SHORT_TIMEOUT) { slowViewModel.uiState.value.isLoading }
+    composeRule.waitUntil(timeoutMillis = TestConstants.SHORT_TIMEOUT) {
+      slowViewModel.uiState.value.isLoading
+    }
 
     // Assert that loading overlay appears
     composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
     composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
 
     // Wait until loading finishes
-    composeRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) { !slowViewModel.uiState.value.isLoading }
+    composeRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
+      !slowViewModel.uiState.value.isLoading
+    }
 
     // Overlay should be gone
     composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()

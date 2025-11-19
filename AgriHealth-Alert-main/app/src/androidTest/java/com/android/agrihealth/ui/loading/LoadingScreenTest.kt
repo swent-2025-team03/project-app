@@ -5,17 +5,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.fakes.FakeAuthProvider
-import com.android.agrihealth.fakes.FakeReportRepository
-import com.android.agrihealth.fakes.FakeUserRepository
-import com.android.agrihealth.testutil.FakeLocationProvider
-import com.android.agrihealth.ui.map.MapViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -46,5 +35,4 @@ class LoadingScreenTest {
     compose.onNodeWithTag("loading_overlay_scrim").assertExists()
     compose.onNodeWithTag("loading_overlay_spinner").assertExists()
   }
-
 }
