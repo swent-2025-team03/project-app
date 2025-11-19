@@ -27,7 +27,7 @@ fun OpenQuestionItem(
     Text(question.question)
     OutlinedTextField(
         value = question.userAnswer,
-        onValueChange = { newAnswer -> onAnswerChange(OpenQuestion(question.question, newAnswer)) },
+        onValueChange = { newAnswer -> onAnswerChange(question.copy(userAnswer = newAnswer)) },
         label = { Text("Open Question") },
         modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
         enabled = enabled)
@@ -47,7 +47,7 @@ fun YesOrNoQuestionItem(
       listOf("Yes", "No").forEachIndexed { idx, text ->
         RadioButton(
             selected = question.answerIndex == idx,
-            onClick = { onAnswerChange(YesOrNoQuestion(question.question, idx)) },
+            onClick = { onAnswerChange(question.copy(answerIndex = idx)) },
             enabled = enabled,
             modifier = modifier)
         Text(text)
@@ -71,7 +71,7 @@ fun MCQItem(
             selected = question.answerIndex == idx,
             onClick =
                 if (enabled) {
-                  { onAnswerChange(MCQ(question.question, question.answers, idx)) }
+                  { onAnswerChange(question.copy(answerIndex = idx)) }
                 } else {
                   {}
                 },
@@ -98,10 +98,7 @@ fun MCQOItem(
             selected = question.answerIndex == idx,
             onClick =
                 if (enabled) {
-                  {
-                    onAnswerChange(
-                        MCQO(question.question, question.answers, idx, question.userAnswer))
-                  }
+                  { onAnswerChange(question.copy(answerIndex = idx)) }
                 } else {
                   {}
                 },
@@ -112,9 +109,7 @@ fun MCQOItem(
     }
     OutlinedTextField(
         value = question.userAnswer,
-        onValueChange = {
-          onAnswerChange(MCQO(question.question, question.answers, question.answerIndex, it))
-        },
+        onValueChange = { onAnswerChange(question.copy(userAnswer = it)) },
         label = { Text("Other") },
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         enabled = enabled)

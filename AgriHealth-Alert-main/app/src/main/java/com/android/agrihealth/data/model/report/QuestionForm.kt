@@ -12,36 +12,18 @@ package com.android.agrihealth.data.model.report
  *   when storing data in firebase or rendering in UI.
  */
 sealed class QuestionForm(
-    val question: String,
-    val answers: List<String>,
-    val answerIndex: Int,
-    val userAnswer: String,
-    val questionType: QuestionType
+    open val question: String,
+    open val answers: List<String>,
+    open val answerIndex: Int,
+    open val userAnswer: String,
+    open val questionType: QuestionType
 ) {
-  override fun equals(other: Any?): Boolean {
-    val otherForm = other as? QuestionForm ?: return false
-    return (otherForm.question == question &&
-        otherForm.questionType == questionType &&
-        otherForm.userAnswer == userAnswer &&
-        otherForm.answers == answers &&
-        otherForm.answerIndex == answerIndex)
-  }
-
-  override fun hashCode(): Int {
-    var result = answerIndex
-    result = 31 * result + question.hashCode()
-    result = 31 * result + answers.hashCode()
-    result = 31 * result + userAnswer.hashCode()
-    result = 31 * result + questionType.hashCode()
-    return result
-  }
-
   /** checks if a form has valid values. */
   abstract fun isValid(): Boolean
 }
 
 /** Question with a simple text field can type in to answer. */
-class OpenQuestion(question: String, userAnswer: String = "") :
+data class OpenQuestion(override val question: String, override val userAnswer: String = "") :
     QuestionForm(
         question = question,
         answers = emptyList(),
@@ -54,7 +36,11 @@ class OpenQuestion(question: String, userAnswer: String = "") :
 }
 
 /** Multiple choice question. */
-class MCQ(question: String, answers: List<String>, answerIndex: Int = -1) :
+data class MCQ(
+    override val question: String,
+    override val answers: List<String>,
+    override val answerIndex: Int = -1
+) :
     QuestionForm(
         question = question,
         answers = answers,
@@ -67,7 +53,7 @@ class MCQ(question: String, answers: List<String>, answerIndex: Int = -1) :
 }
 
 /** Special case of an MCQ where the answer is only yes or no. */
-class YesOrNoQuestion(question: String, answerIndex: Int = -1) :
+data class YesOrNoQuestion(override val question: String, override val answerIndex: Int = -1) :
     QuestionForm(
         question = question,
         answers = listOf("Yes", "No"),
@@ -80,11 +66,11 @@ class YesOrNoQuestion(question: String, answerIndex: Int = -1) :
 }
 
 /** MCQ with an added "other" option where the user can type his answer. */
-class MCQO(
-    question: String,
-    answers: List<String>,
-    answerIndex: Int = -1,
-    userAnswer: String = ""
+data class MCQO(
+    override val question: String,
+    override val answers: List<String>,
+    override val answerIndex: Int = -1,
+    override val userAnswer: String = ""
 ) :
     QuestionForm(
         question = question,
