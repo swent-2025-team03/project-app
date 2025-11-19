@@ -16,6 +16,7 @@ import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -115,5 +116,10 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
     composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignInErrorMsg.TIMEOUT).isDisplayed()
     }
+  }
+
+  @After
+  fun turnOnInternet() {
+    setNetworkEnabled(true)
   }
 }

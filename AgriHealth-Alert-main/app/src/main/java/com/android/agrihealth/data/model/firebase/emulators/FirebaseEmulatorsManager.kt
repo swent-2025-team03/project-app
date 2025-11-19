@@ -36,7 +36,9 @@ object FirebaseEmulatorsManager {
 
     with(environment) {
       Firebase.firestore.useEmulator(host, firestorePort)
+
       Firebase.auth.useEmulator(host, authPort)
+      Firebase.auth.firebaseAuthSettings.setAppVerificationDisabledForTesting(true)
     }
 
     emulatorInitialized = true
