@@ -35,7 +35,9 @@ object FirebaseEmulatorsManager {
     val shouldUseLocal =
         isLocalRunning(FIRESTORE_PORT) && isLocalRunning(AUTH_PORT) && isLocalRunning(STORAGE_PORT)
 
-    check(shouldUseLocal) { "Firebase emulators not running locally, run: firebase emulators:start" }
+    check(shouldUseLocal) {
+      "Firebase emulators not running locally, run: firebase emulators:start"
+    }
 
     environment =
         FirebaseEnvironment(
