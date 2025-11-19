@@ -1,13 +1,10 @@
 package com.android.agrihealth.ui.report
 
-import android.net.Uri
-import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.utils.TestAssetUtils
 import com.android.agrihealth.utils.TestAssetUtils.cleanupTestAssets
-import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking

@@ -35,11 +35,11 @@ class AddReportViewModel(
     _uiState.value = _uiState.value.copy(description = newDescription)
   }
 
-  override fun setVet(option: String) {
-    _uiState.value = _uiState.value.copy(chosenVet = option)
+  override fun setVet(vetId: String) {
+    _uiState.value = _uiState.value.copy(chosenVet = vetId)
   }
 
-  override fun setPhoto(uri: Uri?) {
+  override fun setPhoto(uri: String?) {
     _uiState.value = _uiState.value.copy(photoUri = uri)
   }
 

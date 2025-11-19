@@ -375,6 +375,11 @@ fun UploadRemovePhotoButton(
 }
 
 
+/**
+ *  Displays the photo that was picked by the user before being uploaded and possible compressed by the image repository
+ *
+ *  TODO: Display the photo stored on the image repository to avoid discrepancy
+ */
 @Composable
 fun UploadedImagePreview(photoUri: Uri?, modifier: Modifier = Modifier) {
   if (photoUri != null) {

@@ -2,6 +2,7 @@ package com.android.agrihealth.data.model.report
 
 import android.net.Uri
 import com.android.agrihealth.data.model.location.Location
+import java.net.URL
 import java.time.Instant
 
 enum class ReportStatus {
@@ -12,17 +13,17 @@ enum class ReportStatus {
 }
 
 data class Report(
-    val id: String,
-    val title: String,
-    val description: String,
-    val photoUri: Uri?,
-    val questionForms: List<QuestionForm>,
-    val farmerId: String,
-    val vetId: String,
-    val status: ReportStatus,
-    val answer: String?,
-    val location: Location?,
-    val createdAt: Instant = Instant.now() // Auto-set creation timestamp
+  val id: String,
+  val title: String,
+  val description: String,
+  val photoUri: String?,
+  val questionForms: List<QuestionForm>,
+  val farmerId: String,
+  val vetId: String,
+  val status: ReportStatus,
+  val answer: String?,
+  val location: Location?,
+  val createdAt: Instant = Instant.now() // Auto-set creation timestamp
 )
 
 fun ReportStatus.displayString(): String =
