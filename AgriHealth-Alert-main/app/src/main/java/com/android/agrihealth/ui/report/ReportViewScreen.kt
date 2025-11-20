@@ -135,9 +135,19 @@ fun ReportViewScreen(
                   verticalAlignment = Alignment.CenterVertically,
                   modifier = Modifier.testTag(ReportViewScreenTestTags.ROLE_INFO_LINE)) {
                     if (userRole == UserRole.VET) {
-                      AuthorName(uid = report.farmerId, showRole = true)
+                      // Vet views farmer
+                      AuthorName(
+                          uid = report.farmerId,
+                          showRole = true,
+                          onClick = {
+                            navigationActions.navigateTo(Screen.ViewUser(report.farmerId))
+                          })
                     } else {
-                      AuthorName(uid = report.vetId, showRole = true)
+                      // Farmer views vet
+                      AuthorName(
+                          uid = report.vetId,
+                          showRole = true,
+                          onClick = { navigationActions.navigateTo(Screen.ViewUser(report.vetId)) })
                     }
                   }
 
