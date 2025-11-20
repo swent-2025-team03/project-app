@@ -306,13 +306,7 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
 
     // Enter valid input
-    composeRule
-        .onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD)
-        .performTextInput("Slow Test Title")
-    composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD).performTextInput("Desc")
-
-    // Click create
-    composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
+    createReport("Slow Test Title", "Desc")
 
     // Wait until loading state becomes true (defensive, though immediate)
     composeRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {

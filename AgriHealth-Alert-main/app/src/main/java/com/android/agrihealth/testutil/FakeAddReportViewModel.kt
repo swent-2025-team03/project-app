@@ -11,8 +11,8 @@ import com.android.agrihealth.ui.report.AddReportViewModelContract
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
-  private val _uiState =
+open class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
+  val _uiState =
       MutableStateFlow(
           AddReportUiState(
               questionForms =
