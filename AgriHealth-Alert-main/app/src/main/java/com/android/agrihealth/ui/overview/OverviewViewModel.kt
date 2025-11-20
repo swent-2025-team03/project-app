@@ -29,7 +29,8 @@ data class OverviewUIState(
     val selectedFarmer: String? = null,
     val vetOptions: List<String> = emptyList(),
     val farmerOptions: List<String> = emptyList(),
-    val filteredReports: List<Report> = emptyList()
+    val filteredReports: List<Report> = emptyList(),
+    val isLoading: Boolean = false,
 )
 
 /**
@@ -43,35 +44,49 @@ class OverviewViewModel(
   private val _uiState = MutableStateFlow(OverviewUIState())
   override val uiState: StateFlow<OverviewUIState> = _uiState.asStateFlow()
 
+  private suspend fun <T> withLoading(block: suspend () -> T): T {
+    _uiState.value = _uiState.value.copy(isLoading = true)
+    return try {
+      block()
+    } finally {
+      _uiState.value = _uiState.value.copy(isLoading = false)
+    }
+  }
+
   private lateinit var authRepository: AuthRepository
 
   /** Loads reports based on user role and ID. */
   override fun loadReports(userRole: UserRole, userId: String) {
     viewModelScope.launch {
-      try {
-        val reports =
-            when (userRole) {
-              UserRole.FARMER -> reportRepository.getReportsByFarmer(userId)
-              UserRole.VET -> reportRepository.getReportsByVet(userId)
-            }.sortedByDescending { it.createdAt }
-        val vetOptions = reports.map { it.vetId }.distinct()
-        val farmerOptions = reports.map { it.farmerId }.distinct()
-        val filtered =
-            applyFilters(
-                reports,
-                _uiState.value.selectedStatus,
-                _uiState.value.selectedVet,
-                _uiState.value.selectedFarmer,
-            )
+      withLoading {
+        try {
+          val reports =
+              when (userRole) {
+                UserRole.FARMER -> reportRepository.getReportsByFarmer(userId)
+                UserRole.VET -> reportRepository.getReportsByVet(userId)
+              }.sortedByDescending { it.createdAt }
 
-        _uiState.value =
-            _uiState.value.copy(
-                reports = reports,
-                vetOptions = vetOptions,
-                farmerOptions = farmerOptions,
-                filteredReports = filtered)
-      } catch (e: Exception) {
-        _uiState.value = OverviewUIState(reports = emptyList())
+          val vetOptions = reports.map { it.vetId }.distinct()
+          val farmerOptions = reports.map { it.farmerId }.distinct()
+
+          val filtered =
+              applyFilters(
+                  reports,
+                  _uiState.value.selectedStatus,
+                  _uiState.value.selectedVet,
+                  _uiState.value.selectedFarmer,
+              )
+
+          _uiState.value =
+              _uiState.value.copy(
+                  reports = reports,
+                  vetOptions = vetOptions,
+                  farmerOptions = farmerOptions,
+                  filteredReports = filtered,
+              )
+        } catch (e: Exception) {
+          _uiState.value = OverviewUIState(reports = emptyList())
+        }
       }
     }
   }

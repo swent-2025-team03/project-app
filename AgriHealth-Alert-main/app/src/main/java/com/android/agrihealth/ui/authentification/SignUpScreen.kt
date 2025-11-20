@@ -65,7 +65,6 @@ fun SignUpScreen(
       if (newUser != null) {
         userViewModel.setUser(newUser)
       }
-
       // Navigate away only after updating in-memory user
       onSignedUp()
     }

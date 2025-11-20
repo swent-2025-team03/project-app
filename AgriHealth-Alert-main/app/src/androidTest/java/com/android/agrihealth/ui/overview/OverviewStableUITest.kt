@@ -5,8 +5,15 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.navigation.compose.rememberNavController
+import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeOverviewRepository
+import com.android.agrihealth.testutil.SlowFakeReportRepository
+import com.android.agrihealth.testutil.TestConstants
+import com.android.agrihealth.ui.loading.LoadingTestTags
+import com.android.agrihealth.ui.navigation.NavigationActions
 import junit.framework.TestCase.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -96,5 +103,49 @@ class OverviewStableUITest {
     composeTestRule.onNodeWithText("Option 1").performClick()
 
     assertEquals("Option 1", selectedOption)
+  }
+
+  @Test
+  fun overview_showsLoadingOverlayWhileLoadingReports_fakeRepo() {
+    val sample =
+        Report(
+            id = "R1",
+            title = "Coughing cow",
+            description = "cough...",
+            farmerId = "F1",
+            vetId = "V1",
+            status = ReportStatus.PENDING,
+            questionForms = emptyList(),
+            answer = null,
+            photoUri = null,
+            location = null,
+        )
+
+    val slowRepo =
+        SlowFakeReportRepository(
+            reports = listOf(sample),
+        )
+
+    val vm = OverviewViewModel(reportRepository = slowRepo)
+
+    composeTestRule.setContent {
+      val nav = rememberNavController()
+      OverviewScreen(
+          userRole = UserRole.FARMER,
+          userId = "F1",
+          overviewViewModel = vm,
+          navigationActions = NavigationActions(nav),
+      )
+    }
+
+    composeTestRule.waitUntil(TestConstants.SHORT_TIMEOUT) { vm.uiState.value.isLoading }
+
+    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) { !vm.uiState.value.isLoading }
+
+    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
+    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
   }
 }
