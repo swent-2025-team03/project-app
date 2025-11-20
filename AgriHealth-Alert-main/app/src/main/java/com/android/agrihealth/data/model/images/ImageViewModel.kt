@@ -8,7 +8,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 /**
- * UI state to tell the UI what the view-model is doing. Meant to be read only through the view model, with a when on the current state
+ * UI state to tell the UI what the view-model is doing. Meant to be read only through the view
+ * model, with a when on the current state
  */
 sealed class ImageUIState {
   object Idle : ImageUIState()
@@ -23,7 +24,8 @@ sealed class ImageUIState {
 }
 
 /**
- * View-model to handle image upload/download with the photo storage backend. Designed to use upload() or download() and then use a when on the UI state to handle response.
+ * View-model to handle image upload/download with the photo storage backend. Designed to use
+ * upload() or download() and then use a when on the UI state to handle response.
  */
 class ImageViewModel(private val repository: ImageRepository = ImageRepositoryProvider.repository) :
     ViewModel() {
@@ -31,7 +33,8 @@ class ImageViewModel(private val repository: ImageRepository = ImageRepositoryPr
   val uiState: StateFlow<ImageUIState> = _uiState
 
   /**
-   * Uploads an image to the photos backend using a URI to the file content. Updates UI state to UploadSuccess, containing the online path to the image
+   * Uploads an image to the photos backend using a URI to the file content. Updates UI state to
+   * UploadSuccess, containing the online path to the image
    */
   fun upload(uri: Uri) =
       viewModelScope.launch {
@@ -42,13 +45,12 @@ class ImageViewModel(private val repository: ImageRepository = ImageRepositoryPr
         repository
             .uploadImage(bytes)
             .onSuccess { path -> _uiState.value = ImageUIState.UploadSuccess(path) }
-            .onFailure { e ->
-              _uiState.value = ImageUIState.Error(e)
-            }
+            .onFailure { e -> _uiState.value = ImageUIState.Error(e) }
       }
 
   /**
-   * Downloads an image from the photos backend using the online path. Updates UI state to DownloadSuccess, containing the ByteArray image data
+   * Downloads an image from the photos backend using the online path. Updates UI state to
+   * DownloadSuccess, containing the ByteArray image data
    */
   fun download(path: String) =
       viewModelScope.launch {
@@ -57,8 +59,6 @@ class ImageViewModel(private val repository: ImageRepository = ImageRepositoryPr
         repository
             .downloadImage(path)
             .onSuccess { bytes -> _uiState.value = ImageUIState.DownloadSuccess(bytes) }
-            .onFailure { e ->
-              _uiState.value = ImageUIState.Error(e)
-            }
+            .onFailure { e -> _uiState.value = ImageUIState.Error(e) }
       }
 }

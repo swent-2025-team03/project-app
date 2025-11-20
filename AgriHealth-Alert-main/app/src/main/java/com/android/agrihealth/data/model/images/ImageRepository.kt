@@ -5,7 +5,8 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 
 /**
- * Interface to communicate with the photos backend, to upload and download images, and handle image data
+ * Interface to communicate with the photos backend, to upload and download images, and handle image
+ * data
  */
 interface ImageRepository {
   val MAX_FILE_SIZE: Long
@@ -35,14 +36,14 @@ interface ImageRepository {
   fun reduceFileSize(bytes: ByteArray): ByteArray
 
   /**
-   * (Intended for internal usage) Resizes the provided image to a lower resolution to reduce file size. Leaves the image
-   * unchanged if it was already small enough. Returns the modified image
+   * (Intended for internal usage) Resizes the provided image to a lower resolution to reduce file
+   * size. Leaves the image unchanged if it was already small enough. Returns the modified image
    */
   fun resizeImage(bitmap: Bitmap): Bitmap
 
   /**
-   * (Intended for internal usage) Compresses the provided image to a lower quality to reduce file size. Returns the modified
-   * image as a byte array
+   * (Intended for internal usage) Compresses the provided image to a lower quality to reduce file
+   * size. Returns the modified image as a byte array
    */
   fun compressImage(bitmap: Bitmap): ByteArray
 

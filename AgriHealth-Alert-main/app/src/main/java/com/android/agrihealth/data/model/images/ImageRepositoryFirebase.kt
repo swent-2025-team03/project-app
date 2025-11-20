@@ -10,9 +10,7 @@ import com.google.firebase.storage.FirebaseStorage
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.tasks.await
 
-/**
- * Image repository communicating with Firebase Storage to handle images
- */
+/** Image repository communicating with Firebase Storage to handle images */
 class ImageRepositoryFirebase : ImageRepository {
   override val MAX_FILE_SIZE: Long = 3 * 1024 * 1024
   override val IMAGE_MAX_WIDTH: Int = 2048
