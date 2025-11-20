@@ -10,6 +10,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.testutil.FakeOverviewViewModel
+import com.android.agrihealth.testutil.SlowFakeReportRepository
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
 import com.android.agrihealth.ui.loading.LoadingTestTags
@@ -363,30 +364,12 @@ class ReportViewScreenTest {
 
   @Test
   fun reportView_showsLoadingOverlayWhileFetchingReport() {
-    // Fake slow repository that delays getReportById
+    val sampleReport = ReportViewUIState().report.copy(id = "RPT_SLOW")
+
     val slowRepo =
-        object : ReportRepository {
-          private val sample = ReportViewUIState().report
-
-          override fun getNewReportId(): String = "NEW_ID"
-
-          override suspend fun getAllReports(userId: String) = emptyList<Report>()
-
-          override suspend fun getReportsByFarmer(farmerId: String) = emptyList<Report>()
-
-          override suspend fun getReportsByVet(vetId: String) = emptyList<Report>()
-
-          override suspend fun getReportById(reportId: String): Report? {
-            kotlinx.coroutines.delay(1200) // simulate slow fetch
-            return sample.copy(id = reportId)
-          }
-
-          override suspend fun addReport(report: Report) {}
-
-          override suspend fun editReport(reportId: String, newReport: Report) {}
-
-          override suspend fun deleteReport(reportId: String) {}
-        }
+        SlowFakeReportRepository(
+            reports = listOf(sampleReport),
+        )
 
     val vm = ReportViewModel(repository = slowRepo)
 

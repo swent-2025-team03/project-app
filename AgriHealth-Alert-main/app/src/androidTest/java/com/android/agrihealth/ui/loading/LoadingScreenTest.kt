@@ -20,8 +20,8 @@ class LoadingScreenTest {
     compose.setContent { LoadingOverlay(isLoading = false) { Box(Modifier.testTag("content")) } }
 
     compose.onNodeWithTag("content").assertExists()
-    compose.onNodeWithTag("loading_overlay_scrim").assertDoesNotExist()
-    compose.onNodeWithTag("loading_overlay_spinner").assertDoesNotExist()
+    compose.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
+    compose.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
   }
 
   // -----------------
@@ -32,7 +32,7 @@ class LoadingScreenTest {
     compose.setContent { LoadingOverlay(isLoading = true) { Box(Modifier.testTag("content")) } }
 
     compose.onNodeWithTag("content").assertExists()
-    compose.onNodeWithTag("loading_overlay_scrim").assertExists()
-    compose.onNodeWithTag("loading_overlay_spinner").assertExists()
+    compose.onNodeWithTag(LoadingTestTags.SCRIM).assertExists()
+    compose.onNodeWithTag(LoadingTestTags.SPINNER).assertExists()
   }
 }
