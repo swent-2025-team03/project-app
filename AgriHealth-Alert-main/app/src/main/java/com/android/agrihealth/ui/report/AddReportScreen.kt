@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,6 +32,7 @@ import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.ui.common.AuthorNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.user.UserViewModel
@@ -189,34 +191,52 @@ fun AddReportScreen(
                 }
               }
 
+              val vetNames = remember { mutableStateMapOf<String, String>() }
+
+              // Load names for each linked vet
+              vets.forEach { vetId ->
+                val vm: AuthorNameViewModel = viewModel<AuthorNameViewModel>(key = vetId)
+                val label by vm.label.collectAsState()
+
+                LaunchedEffect(vetId) {
+                  vm.load(uid = vetId, deletedText = "Deleted vet", unassignedText = "Unknown vet")
+                }
+
+                vetNames[vetId] = label
+              }
+
+              val selectedVetName = vetNames[selectedOption] ?: "Unknown vet"
+
               ExposedDropdownMenuBox(
                   expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                     OutlinedTextField(
-                        value = selectedOption,
-                        onValueChange = {}, // No direct text editing
+                        value = selectedVetName,
+                        onValueChange = {},
                         readOnly = true,
                         label = { Text("Choose a Vet") },
                         trailingIcon = {
                           ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                         },
                         modifier =
-                            Modifier.menuAnchor() // Needed for M3 dropdown alignment
+                            Modifier.menuAnchor()
                                 .fillMaxWidth()
                                 .testTag(AddReportScreenTestTags.VET_DROPDOWN))
 
                     ExposedDropdownMenu(
                         expanded = expanded, onDismissRequest = { expanded = false }) {
-                          vets.forEach { option ->
+                          vets.forEach { vetId ->
+                            val displayName = vetNames[vetId] ?: vetId
+
                             DropdownMenuItem(
-                                text = { Text(option) },
+                                text = { Text(displayName) },
                                 onClick = {
-                                  selectedOption = option
-                                  addReportViewModel.setVet(option)
+                                  selectedOption = vetId
+                                  addReportViewModel.setVet(vetId)
                                   expanded = false
                                 },
                                 modifier =
                                     Modifier.testTag(
-                                        AddReportScreenTestTags.getTestTagForVet(option)))
+                                        AddReportScreenTestTags.getTestTagForVet(vetId)))
                           }
                         }
                   }
