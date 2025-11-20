@@ -227,7 +227,7 @@ class AddReportScreenTest {
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
         .performScrollToNode(hasTestTag(AddReportScreenTestTags.VET_DROPDOWN))
     composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).performClick()
-    val firstVet = "Best Vet Ever!"
+    val firstVet = "Unknown vet"
     composeRule.onNodeWithText(firstVet).assertIsDisplayed().performClick()
     composeRule.onNodeWithText(firstVet).assertIsDisplayed()
   }
