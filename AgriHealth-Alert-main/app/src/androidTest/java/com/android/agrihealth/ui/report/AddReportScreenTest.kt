@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -198,13 +199,19 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
 
     // Wait until loading state becomes true (defensive, though immediate)
-    composeRule.waitUntil(timeoutMillis = TestConstants.SHORT_TIMEOUT) {
-      slowViewModel.uiState.value.isLoading
+    composeRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
+      composeRule.onAllNodesWithTag(LoadingTestTags.SCRIM).fetchSemanticsNodes().isNotEmpty() &&
+          composeRule.onAllNodesWithTag(LoadingTestTags.SPINNER).fetchSemanticsNodes().isNotEmpty()
     }
 
     // Assert that loading overlay appears
     composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
     composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
+
+    composeRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
+      composeRule.onAllNodesWithTag(LoadingTestTags.SCRIM).fetchSemanticsNodes().isEmpty() &&
+          composeRule.onAllNodesWithTag(LoadingTestTags.SPINNER).fetchSemanticsNodes().isEmpty()
+    }
 
     // Wait until loading finishes
     composeRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
