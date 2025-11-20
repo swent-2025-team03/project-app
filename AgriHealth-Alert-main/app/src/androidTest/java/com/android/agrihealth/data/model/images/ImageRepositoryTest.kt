@@ -20,6 +20,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -73,7 +74,7 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
     return bitmap
   }
 
-  fun generateBigImage(): Bitmap {
+  private fun generateBigImage(): Bitmap {
     // Probably big enough
     val width = (sqrt(repository.MAX_FILE_SIZE.toFloat() / 4) * 1.35).toInt()
     // PNG compression is good at reducing size for patterns
@@ -85,18 +86,18 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
     val result = repository.uploadImage(testImageBA)
 
     if (result.isFailure) Log.e("ImagesTest", "Error: ${result.exceptionOrNull()?.message}")
-    assert(result.isSuccess)
+    assertTrue(result.isSuccess)
     Log.w("ImagesTest", "Uploaded image: ${result.getOrNull()}")
   }
 
   @Test
   fun downloadImage_getsIdenticalAsUpload() = runTest {
     val uploadResult = repository.uploadImage(testImageBA)
-    assert(uploadResult.isSuccess)
+    assertTrue(uploadResult.isSuccess)
     val imageUrl = uploadResult.getOrNull()
 
     val downloadResult = repository.downloadImage(imageUrl!!)
-    assert(downloadResult.isSuccess)
+    assertTrue(downloadResult.isSuccess)
     val downloadedByteArray = downloadResult.getOrNull()!!
 
     // Debug to check if the images are indeed different
@@ -126,8 +127,8 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
     }
     */
 
-    assert(testImageBA.size == downloadedByteArray.size)
-    assert(testImageBA.contentEquals(downloadedByteArray))
+    assertTrue(testImageBA.size == downloadedByteArray.size)
+    assertTrue(testImageBA.contentEquals(downloadedByteArray))
   }
 
   @Test
@@ -136,8 +137,8 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
 
     val bigImage = bitmapToByteArray(generateBigImage())
 
-    assert(!repository.isFileTooLarge(smallImage))
-    assert(repository.isFileTooLarge(bigImage))
+    assertTrue(!repository.isFileTooLarge(smallImage))
+    assertTrue(repository.isFileTooLarge(bigImage))
   }
 
   @Test
@@ -151,8 +152,8 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
     val newWidth = resizedImage.width
     val newHeight = resizedImage.height
 
-    assert(bigWidth == newWidth * factor)
-    assert(bigHeight == newHeight * factor)
+    assertTrue(bigWidth == newWidth * factor)
+    assertTrue(bigHeight == newHeight * factor)
   }
 
   @Test
@@ -161,30 +162,30 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
 
     val resizedImage = repository.resizeImage(smallImage)
 
-    assert(smallImage.width == resizedImage.width)
-    assert(smallImage.height == resizedImage.height)
+    assertTrue(smallImage.width == resizedImage.width)
+    assertTrue(smallImage.height == resizedImage.height)
   }
 
   @Test
   fun compressImage_loopsUntilSmall() {
     val bigImage = generateBigImage()
 
-    assert(repository.isFileTooLarge(bitmapToByteArray(bigImage)))
+    assertTrue(repository.isFileTooLarge(bitmapToByteArray(bigImage)))
 
     val compressedImage = repository.compressImage(bigImage)
 
-    assert(!repository.isFileTooLarge(compressedImage))
+    assertTrue(!repository.isFileTooLarge(compressedImage))
   }
 
   @Test
   fun reduceFileSize_reducesBigImageUntilSmall() {
     val bigImage = bitmapToByteArray(generateBigImage())
 
-    assert(repository.isFileTooLarge(bigImage))
+    assertTrue(repository.isFileTooLarge(bigImage))
 
     val reducedImage = repository.reduceFileSize(bigImage)
 
-    assert(!repository.isFileTooLarge(reducedImage))
+    assertTrue(!repository.isFileTooLarge(reducedImage))
   }
 
   @Test
@@ -207,19 +208,19 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
     advanceUntilIdle()
 
     var uiState = viewModel.uiState.value
-    assert(uiState is ImageUiState.UploadSuccess)
+    assertTrue(uiState is ImageUIState.UploadSuccess)
 
     // Download and check if valid file
-    val resultPath = (uiState as ImageUiState.UploadSuccess).path
+    val resultPath = (uiState as ImageUIState.UploadSuccess).path
 
     viewModel.download(resultPath)
     advanceUntilIdle()
 
     uiState = viewModel.uiState.value
-    assert(uiState is ImageUiState.DownloadSuccess)
+    assertTrue(uiState is ImageUIState.DownloadSuccess)
 
-    val resultBytes = (uiState as ImageUiState.DownloadSuccess).imageData
-    assert(resultBytes.contentEquals(bytes))
+    val resultBytes = (uiState as ImageUIState.DownloadSuccess).imageData
+    assertTrue(resultBytes.contentEquals(bytes))
   }
 
   @Test
@@ -244,17 +245,17 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
     advanceUntilIdle()
 
     var uiState = viewModel.uiState.value
-    assert(uiState is ImageUiState.Error)
-    var errorMsg = (uiState as ImageUiState.Error).msg
-    assert(uploadErrorMsg in errorMsg)
+    assertTrue(uiState is ImageUIState.Error)
+    var errorMsg = (uiState as ImageUIState.Error).e.message
+    assertTrue(uploadErrorMsg in errorMsg!!)
 
     // Download and check if failed with correct exception
     viewModel.download(path)
     advanceUntilIdle()
 
     uiState = viewModel.uiState.value
-    assert(uiState is ImageUiState.Error)
-    errorMsg = (uiState as ImageUiState.Error).msg
-    assert(downloadErrorMsg in errorMsg)
+    assertTrue(uiState is ImageUIState.Error)
+    errorMsg = (uiState as ImageUIState.Error).e.message
+    assertTrue(downloadErrorMsg in errorMsg!!)
   }
 }
