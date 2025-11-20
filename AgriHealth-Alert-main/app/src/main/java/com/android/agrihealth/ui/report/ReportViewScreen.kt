@@ -159,7 +159,6 @@ fun ReportViewScreen(
                       // Vet views farmer
                       AuthorName(
                           uid = report.farmerId,
-                          showRole = true,
                           onClick = {
                             navigationActions.navigateTo(Screen.ViewUser(report.farmerId))
                           })
@@ -167,7 +166,6 @@ fun ReportViewScreen(
                       // Farmer views vet
                       AuthorName(
                           uid = report.vetId,
-                          showRole = true,
                           onClick = { navigationActions.navigateTo(Screen.ViewUser(report.vetId)) })
                     }
                   }
