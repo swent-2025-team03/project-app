@@ -50,6 +50,7 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
+import kotlin.math.max
 
 // Todo: Implement real week days
 // Todo: Current date fetching
@@ -58,7 +59,7 @@ import com.android.agrihealth.ui.navigation.Tab
 // Todo: implement task click to view Report
 // Todo: implement switch day by clicking on week days
 // Todo: implement setting due date if seen from ViewReport screen
-val report1 =
+val previewReport1 =
     Report(
         id = "1",
         title = "Checkup with Farmer John",
@@ -70,11 +71,11 @@ val report1 =
         status = ReportStatus.IN_PROGRESS,
         answer = null,
         location = Location(latitude = 12.34, longitude = 56.78, name = "Farmhouse A"),
-        startTime = 9f,
-        duration = 2f)
+        startTime = 7f,
+        duration = 1.5f)
 
-val report2 = report1.copy(startTime = 2f)
-val report3 = report1.copy(startTime = 5f)
+val previewReport2 = previewReport1.copy(startTime = 2f, duration = null)
+val previewReport3 = previewReport1.copy(startTime = 5f, duration = 0.9f)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -116,23 +117,23 @@ fun PlannerScreen(navigationActions: NavigationActions? = null) {
               Text("16 - 22 nov", style = MaterialTheme.typography.titleMedium)
             }
             Row(modifier = Modifier.fillMaxWidth()) {
-              listOf("S", "M", "T", "W", "T", "F", "S").forEach { it ->
+              listOf("S", "M", "T", "W", "T", "F", "S").forEach { dayLetter ->
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                  Text(it)
+                  Text(dayLetter)
                 }
               }
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                  listOf("16", "17", "18", "19", "20", "21", "22").forEach { it ->
-                    DayCard(Modifier.weight(1f), it)
+                  listOf("16", "17", "18", "19", "20", "21", "22").forEach { dayNumber ->
+                    DayCard(Modifier.weight(1f), dayNumber)
                   }
                 }
             Row(modifier = Modifier.fillMaxWidth()) {
               Text("17 Mon", style = MaterialTheme.typography.titleLarge)
             }
-            DailyScheduler(listOf(report1, report2, report3)) { it ->
+            DailyScheduler(listOf(previewReport1, previewReport2, previewReport3)) { it ->
               navigationActions?.navigateTo(Screen.ViewReport(it))
             }
           }
@@ -232,14 +233,14 @@ fun DailyTasks(
     reports
         .filter { it.startTime != null }
         .forEach { report ->
-          val topOffset = report.startTime?.times(hourHeight.value)
-          val taskHeight = (report.duration)?.times(hourHeight.value)
+          val topOffset = report.startTime!!.times(hourHeight.value)
+          val taskHeight = max(report.duration?.times(hourHeight.value) ?: 0f, 30f)
 
           Column(
               modifier =
                   Modifier.fillMaxWidth()
-                      .height(taskHeight?.dp ?: 0.dp)
-                      .offset(y = topOffset?.dp ?: 0.dp)
+                      .height(taskHeight.dp)
+                      .offset(y = topOffset.dp)
                       .padding(horizontal = 0.dp)
                       .background(
                           color = statusColor(report.status), shape = MaterialTheme.shapes.medium)
@@ -247,17 +248,19 @@ fun DailyTasks(
               verticalArrangement = Arrangement.Top) {
                 Text(
                     report.title,
-                    modifier = Modifier.padding(4.dp).weight(1f, fill = false),
                     style = MaterialTheme.typography.titleLarge,
                     color = onStatusColor(report.status),
-                    overflow = TextOverflow.Ellipsis)
-                report.location?.name?.let {
-                  Text(
-                      it,
-                      modifier = Modifier.padding(bottom = 4.dp).weight(1f, fill = false),
-                      style = MaterialTheme.typography.bodyMedium,
-                      color = onStatusColor(report.status))
-                }
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = if (taskHeight.dp >= 90.dp) 2 else 1)
+                if (taskHeight.dp >= 54.dp)
+                    report.location?.name?.let {
+                      Text(
+                          it,
+                          modifier = Modifier.weight(1f, fill = false),
+                          style = MaterialTheme.typography.bodyMedium,
+                          color = onStatusColor(report.status),
+                          maxLines = 1)
+                    }
               }
         }
   }
