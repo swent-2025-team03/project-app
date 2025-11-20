@@ -24,7 +24,6 @@ import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.user.UserViewModel
 import com.google.firebase.auth.FirebaseUser
-import kotlin.let
 
 object SignUpScreenTestTags {
   const val SCREEN = "SignUpScreen"

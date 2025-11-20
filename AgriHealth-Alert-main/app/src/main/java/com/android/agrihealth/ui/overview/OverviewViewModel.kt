@@ -85,7 +85,7 @@ class OverviewViewModel(
                   filteredReports = filtered,
               )
         } catch (e: Exception) {
-          _uiState.value = OverviewUIState()
+          _uiState.value = OverviewUIState(reports = emptyList())
         }
       }
     }

@@ -77,7 +77,6 @@ class ReportViewModel(
                     status = fetchedReport.status,
                 )
           }
-          // si null : on laisse le state comme avant (sauf isLoading qui est géré par withLoading)
         } catch (e: Exception) {
           Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
         }
@@ -108,7 +107,6 @@ class ReportViewModel(
                   answer = current.answerText,
                   status = current.status,
               )
-
           repository.editReport(updatedReport.id, updatedReport)
           _saveCompleted.value = true
         } catch (e: Exception) {
