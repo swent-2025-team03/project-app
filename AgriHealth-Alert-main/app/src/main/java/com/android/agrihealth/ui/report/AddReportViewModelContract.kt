@@ -2,7 +2,6 @@ package com.android.agrihealth.ui.report
 
 import android.net.Uri
 import kotlinx.coroutines.flow.StateFlow
-import java.net.URL
 
 interface AddReportViewModelContract {
   val uiState: StateFlow<AddReportUiState>
@@ -17,7 +16,7 @@ interface AddReportViewModelContract {
 
   fun clearInputs()
 
-  fun setPhoto(uri: String?)
+  fun setPhoto(uri: Uri?) // TODO: Change to "String?"
 
   fun removePhoto()
 }

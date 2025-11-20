@@ -23,7 +23,6 @@ import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
 import org.junit.Rule
@@ -245,10 +244,10 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-          userRole = UserRole.FARMER,
-          userId = "test_user",
-          onCreateReport = {},
-          addReportViewModel = FakeAddReportViewModel())
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = FakeAddReportViewModel())
       }
     }
 
@@ -257,10 +256,10 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_CANCEL).performClick()
     composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG).assertIsNotDisplayed()
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsNotDisplayed()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).assertTextEquals(
-      AddReportUploadButtonTexts.UPLOAD_IMAGE)
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
   }
-
 
   @Test
   fun uploadImageDialog_gallery_setsPhoto() {
@@ -268,10 +267,10 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-          userRole = UserRole.FARMER,
-          userId = "test_user",
-          onCreateReport = {},
-          addReportViewModel = fakeViewModel)
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = fakeViewModel)
       }
     }
 
@@ -285,10 +284,9 @@ class AddReportScreenTest {
     composeRule.waitForIdle()
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
     composeRule
-      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-      .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
   }
-
 
   @Test
   fun uploadImageDialog_camera_setsPhoto() {
@@ -296,10 +294,10 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-          userRole = UserRole.FARMER,
-          userId = "test_user",
-          onCreateReport = {},
-          addReportViewModel = fakeViewModel)
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = fakeViewModel)
       }
     }
 
@@ -313,7 +311,7 @@ class AddReportScreenTest {
     composeRule.waitForIdle()
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
     composeRule
-      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-      .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
   }
 }

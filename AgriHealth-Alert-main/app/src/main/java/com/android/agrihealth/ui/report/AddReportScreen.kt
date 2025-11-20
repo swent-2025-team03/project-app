@@ -39,8 +39,8 @@ import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.user.UserViewModel
-import kotlinx.coroutines.launch
 import java.io.File
+import kotlinx.coroutines.launch
 
 /** Tags for the various components. For testing purposes */
 object AddReportScreenTestTags {
@@ -64,28 +64,26 @@ object AddReportFeedbackTexts {
   const val FAILURE = "Please fill in all required fields..."
 }
 
-/**   Constants for testing purposes  */
+/** Constants for testing purposes */
 object AddReportConstants {
   val vetOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")
 }
 
-/**   Texts on the button used to upload/remove a photo   */
+/** Texts on the button used to upload/remove a photo */
 object AddReportUploadButtonTexts {
   const val UPLOAD_IMAGE = "Upload Image"
   const val REMOVE_IMAGE = "Remove Image"
 }
 
-/**   Texts of the dialog shown when clicking on uploading photo button */
+/** Texts of the dialog shown when clicking on uploading photo button */
 object AddReportDialogTexts {
   const val GALLERY = "Gallery"
   const val CAMERA = "camera"
   const val CANCEL = "cancel"
 }
 
-/** This **MUST** be the same as in:
- *     AndroidManifest.xml --> <provider --> android:authorities
- */
-private const val FILE_PROVIDER = "fileprovider"   // TODO: Maybe move this into its own object
+/** This **MUST** be the same as in: AndroidManifest.xml --> <provider --> android:authorities */
+private const val FILE_PROVIDER = "fileprovider" // TODO: Maybe move this into its own object
 
 /**
  * Displays the report creation screen for farmers
@@ -207,7 +205,6 @@ fun AddReportScreen(
                   onImagePicked = { addReportViewModel.setPhoto(it) },
                   onImageRemoved = { addReportViewModel.removePhoto() })
 
-
               CreateReportButton(
                   addReportViewModel = addReportViewModel,
                   snackbarHostState = snackbarHostState,
@@ -238,12 +235,12 @@ fun AddReportScreen(
 }
 
 /**
- *  A text filed used in the addReport screen
+ * A text filed used in the addReport screen
  *
- *  @param value The text stored on the text field
- *  @param onValueChange What happens when the text on the text field changes
- *  @param placeholder The placeholder shown when the text field is empty
- *  @param testTag The test tag associated with the text field
+ * @param value The text stored on the text field
+ * @param onValueChange What happens when the text on the text field changes
+ * @param placeholder The placeholder shown when the text field is empty
+ * @param testTag The test tag associated with the text field
  */
 @Composable
 private fun Field(
@@ -261,124 +258,121 @@ private fun Field(
   )
 }
 
-
 /**
- *   Button used to either upload or remove a photo depending on if one has already been selected
+ * Button used to either upload or remove a photo depending on if one has already been selected
  *
- *   @param photoAlreadyPicked True if a photo has already been picked, False otherwise
- *   @param onImagePicked What happens when a click was performed when the button shows "Upload image"
- *   @param onImageRemoved What happens when a click was performed when the button shows "Remove image"
+ * @param photoAlreadyPicked True if a photo has already been picked, False otherwise
+ * @param onImagePicked What happens when a click was performed when the button shows "Upload image"
+ * @param onImageRemoved What happens when a click was performed when the button shows "Remove
+ *   image"
  */
 @Composable
 fun UploadRemovePhotoButton(
-  photoAlreadyPicked: Boolean,
-  onImagePicked: (Uri?) -> Unit,
-  onImageRemoved: () -> Unit,
+    photoAlreadyPicked: Boolean,
+    onImagePicked: (Uri?) -> Unit,
+    onImageRemoved: () -> Unit,
 ) {
   var showDialog by remember { mutableStateOf(false) }
   val context = LocalContext.current
 
   // Gallery picker launcher
-  val galleryLauncher = rememberLauncherForActivityResult(
-    contract = ActivityResultContracts.GetContent()
-  ) { uri: Uri? ->
-    showDialog = false
-    onImagePicked(uri)
-  }
+  val galleryLauncher =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri?
+        ->
+        showDialog = false
+        onImagePicked(uri)
+      }
 
   // Camera picker launcher
   val cameraImageUri = remember { mutableStateOf<Uri?>(null) }
-  val cameraLauncher = rememberLauncherForActivityResult(
-    contract = ActivityResultContracts.TakePicture()
-  ) { success ->
-    showDialog = false
-    if (success) {
-      onImagePicked(cameraImageUri.value)
-    }
-  }
+  val cameraLauncher =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.TakePicture()) { success
+        ->
+        showDialog = false
+        if (success) {
+          onImagePicked(cameraImageUri.value)
+        }
+      }
 
   fun launchCamera() {
-    val file = File(
-      context.cacheDir,
-      "temp_${System.currentTimeMillis()}.jpg"
-    )
-    cameraImageUri.value = FileProvider.getUriForFile(
-      context,
-      "${context.packageName}.$FILE_PROVIDER",
-      file
-    )
+    val file = File(context.cacheDir, "temp_${System.currentTimeMillis()}.jpg")
+    cameraImageUri.value =
+        FileProvider.getUriForFile(context, "${context.packageName}.$FILE_PROVIDER", file)
     cameraLauncher.launch(cameraImageUri.value)
   }
 
   Button(
-    onClick = {
-      if (photoAlreadyPicked) {
-        onImageRemoved()
-      } else {
-        showDialog = true
-      }
-    },
-    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
+      onClick = {
+        if (photoAlreadyPicked) {
+          onImageRemoved()
+        } else {
+          showDialog = true
+        }
+      },
+      modifier =
+          Modifier.fillMaxWidth()
+              .padding(vertical = 8.dp)
+              .testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
 
-    // TODO: Make button change color based on status when the app theme will be more developed
-    colors = ButtonDefaults.buttonColors(
-      containerColor = MaterialTheme.colorScheme.primary
-    )
-  ) {
-    Text(
-      text = if (photoAlreadyPicked) AddReportUploadButtonTexts.REMOVE_IMAGE else AddReportUploadButtonTexts.UPLOAD_IMAGE,
-      style = MaterialTheme.typography.titleLarge
-    )
-  }
+      // TODO: Make button change color based on status when the app theme will be more developed
+      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
+        Text(
+            text =
+                if (photoAlreadyPicked) AddReportUploadButtonTexts.REMOVE_IMAGE
+                else AddReportUploadButtonTexts.UPLOAD_IMAGE,
+            style = MaterialTheme.typography.titleLarge)
+      }
 
   if (showDialog) {
     AlertDialog(
-      modifier = Modifier.testTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG),
-      onDismissRequest = { showDialog = false },
-      title = { Text("Select Image Source") },
-      text = { Text("Choose from gallery or take a new photo.") },
-      confirmButton = {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        modifier = Modifier.testTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG),
+        onDismissRequest = { showDialog = false },
+        title = { Text("Select Image Source") },
+        text = { Text("Choose from gallery or take a new photo.") },
+        confirmButton = {
+          Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(
+                modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_GALLERY),
+                onClick = {
+                  showDialog = false
+                  galleryLauncher.launch("image/*")
+                },
+                colors =
+                    ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onSurface)) {
+                  Text(AddReportDialogTexts.GALLERY)
+                }
+            TextButton(
+                modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CAMERA),
+                onClick = {
+                  showDialog = false
+                  launchCamera()
+                },
+                colors =
+                    ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onSurface)) {
+                  Text(AddReportDialogTexts.CAMERA)
+                }
+          }
+        },
+        dismissButton = {
           TextButton(
-            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_GALLERY),
-            onClick = {
-              showDialog = false
-              galleryLauncher.launch("image/*")
-            },
-            colors = ButtonDefaults.textButtonColors(
-              contentColor = MaterialTheme.colorScheme.onSurface
-            )
-          ) { Text(AddReportDialogTexts.GALLERY) }
-          TextButton(
-            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CAMERA),
-            onClick = {
-              showDialog = false
-              launchCamera()
-            },
-            colors = ButtonDefaults.textButtonColors(
-              contentColor = MaterialTheme.colorScheme.onSurface
-            )
-          ) { Text(AddReportDialogTexts.CAMERA) }
-        }
-      },
-      dismissButton = {
-        TextButton(
-          modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CANCEL),
-          onClick = { showDialog = false },
-          colors = ButtonDefaults.textButtonColors(
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        )) { Text(AddReportDialogTexts.CANCEL)
-        }
-      }
-    )
+              modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CANCEL),
+              onClick = { showDialog = false },
+              colors =
+                  ButtonDefaults.textButtonColors(
+                      contentColor = MaterialTheme.colorScheme.onSurfaceVariant)) {
+                Text(AddReportDialogTexts.CANCEL)
+              }
+        })
   }
 }
 
-
 /**
- *  Displays the photo that was picked by the user before being uploaded and possible compressed by the image repository
+ * Displays the photo that was picked by the user before being uploaded and possible compressed by
+ * the image repository
  *
- *  TODO: Display the photo stored on the image repository to avoid discrepancy
+ * TODO: Display the photo stored on the image repository to avoid discrepancy
  */
 @Composable
 fun UploadedImagePreview(photoUri: Uri?, modifier: Modifier = Modifier) {
@@ -397,11 +391,11 @@ fun UploadedImagePreview(photoUri: Uri?, modifier: Modifier = Modifier) {
 }
 
 /**
- *   Buttons that allows creating a report and uploading it on the repository
+ * Buttons that allows creating a report and uploading it on the repository
  *
- *   @param addReportViewModel The viewModel associated with this screen
- *   @param snackbarHostState Current state of the object managing the snackbar
- *   @param onSuccess What happens after the report has been submitted
+ * @param addReportViewModel The viewModel associated with this screen
+ * @param snackbarHostState Current state of the object managing the snackbar
+ * @param onSuccess What happens after the report has been submitted
  */
 @Composable
 fun CreateReportButton(
