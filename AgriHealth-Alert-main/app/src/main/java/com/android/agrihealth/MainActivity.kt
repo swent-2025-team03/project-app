@@ -43,6 +43,7 @@ import com.android.agrihealth.ui.office.CreateOfficeScreen
 import com.android.agrihealth.ui.office.ManageOfficeScreen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
+import com.android.agrihealth.ui.planner.PlannerScreen
 import com.android.agrihealth.ui.profile.ChangePasswordScreen
 import com.android.agrihealth.ui.profile.ChangePasswordViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreen
@@ -293,6 +294,19 @@ fun AgriHealthApp(
               navigationActions = navigationActions,
               isViewedFromOverview = (sourceReport == null),
               startingPosition = location)
+        }
+
+    composable(
+        route = Screen.Planner.route,
+        arguments =
+            listOf(
+                navArgument("reportId") {
+                  type = NavType.StringType
+                  nullable = true
+                  defaultValue = null
+                })) { backStackEntry ->
+          val reportId = backStackEntry.arguments?.getString("reportId")
+          PlannerScreen(navigationActions)
         }
   }
 }

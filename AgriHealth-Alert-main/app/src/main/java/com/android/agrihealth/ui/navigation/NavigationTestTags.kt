@@ -7,10 +7,12 @@ object NavigationTestTags {
   const val TOP_BAR_TITLE = "TopBarTitle"
   const val OVERVIEW_TAB = "OverviewTab"
   const val MAP_TAB = "MapTab"
+  const val PLANNER_TAB = "PlannerTab"
 
   fun getTabTestTag(tab: Tab): String =
       when (tab) {
         is Tab.Overview -> OVERVIEW_TAB
         is Tab.Map -> MAP_TAB
+        is Tab.Planner -> PLANNER_TAB
       }
 }

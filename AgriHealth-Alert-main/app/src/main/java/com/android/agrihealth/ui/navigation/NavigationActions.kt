@@ -75,6 +75,14 @@ sealed class Screen(
       const val route = "map?lat={lat}&lng={lng}&reportId={reportId}"
     }
   }
+
+  data class Planner(val reportId: String? = null) :
+      Screen(
+          route = "planner?reportId=${reportId}", name = "Planner", isTopLevelDestination = true) {
+    companion object {
+      const val route = "planner?reportId={reportId}"
+    }
+  }
 }
 
 open class NavigationActions(
