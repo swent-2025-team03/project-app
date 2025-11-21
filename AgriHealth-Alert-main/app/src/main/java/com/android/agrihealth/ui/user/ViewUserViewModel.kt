@@ -21,9 +21,9 @@ open class ViewUserViewModel(
     private val userRepository: UserRepositoryFirestore = UserRepositoryFirestore()
 ) : ViewModel() {
 
-  val uiState = mutableStateOf<ViewUserUiState>(ViewUserUiState.Loading)
+  open val uiState = mutableStateOf<ViewUserUiState>(ViewUserUiState.Loading)
 
-  fun load(currentUser: User) {
+  open fun load(currentUser: User) {
     viewModelScope.launch {
       uiState.value = ViewUserUiState.Loading
 
