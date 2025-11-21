@@ -1,4 +1,4 @@
-package com.android.agrihealth.fakes
+package com.android.agrihealth.testutil
 
 import com.android.agrihealth.data.model.auth.AuthProvider
 
