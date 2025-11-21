@@ -20,6 +20,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -127,8 +128,8 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
     }
     */
 
-    assertTrue(testImageBA.size == downloadedByteArray.size)
-    assertTrue(testImageBA.contentEquals(downloadedByteArray))
+    assertEquals(testImageBA.size, downloadedByteArray.size)
+    assertTrue(testImageBA.contentEquals(downloadedByteArray)) //not assertEquals due to compression
   }
 
   @Test
@@ -152,8 +153,8 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
     val newWidth = resizedImage.width
     val newHeight = resizedImage.height
 
-    assertTrue(bigWidth == newWidth * factor)
-    assertTrue(bigHeight == newHeight * factor)
+    assertEquals(bigWidth, newWidth * factor)
+    assertEquals(bigHeight, newHeight * factor)
   }
 
   @Test
@@ -162,8 +163,8 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
 
     val resizedImage = repository.resizeImage(smallImage)
 
-    assertTrue(smallImage.width == resizedImage.width)
-    assertTrue(smallImage.height == resizedImage.height)
+    assertEquals(smallImage.width, resizedImage.width)
+    assertEquals(smallImage.height, resizedImage.height)
   }
 
   @Test
@@ -220,7 +221,7 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
     assertTrue(uiState is ImageUIState.DownloadSuccess)
 
     val resultBytes = (uiState as ImageUIState.DownloadSuccess).imageData
-    assertTrue(resultBytes.contentEquals(bytes))
+    assertTrue(resultBytes.contentEquals(bytes)) //not assertEquals due to compression
   }
 
   @Test
