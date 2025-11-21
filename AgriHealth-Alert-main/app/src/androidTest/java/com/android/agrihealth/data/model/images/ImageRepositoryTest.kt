@@ -129,7 +129,8 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
     */
 
     assertEquals(testImageBA.size, downloadedByteArray.size)
-    assertTrue(testImageBA.contentEquals(downloadedByteArray)) //not assertEquals due to compression
+    assertTrue(
+        testImageBA.contentEquals(downloadedByteArray)) // not assertEquals due to compression
   }
 
   @Test
@@ -221,7 +222,7 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
     assertTrue(uiState is ImageUIState.DownloadSuccess)
 
     val resultBytes = (uiState as ImageUIState.DownloadSuccess).imageData
-    assertTrue(resultBytes.contentEquals(bytes)) //not assertEquals due to compression
+    assertTrue(resultBytes.contentEquals(bytes)) // not assertEquals due to compression
   }
 
   @Test
