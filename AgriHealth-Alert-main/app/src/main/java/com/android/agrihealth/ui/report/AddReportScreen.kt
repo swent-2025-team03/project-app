@@ -46,24 +46,24 @@ import com.android.agrihealth.testutil.FakeAddReportViewModel
 
 /** Tags for the various components. For testing purposes */
 object AddReportScreenTestTags {
-  const val TITLE_FIELD = "titleField"
-  const val DESCRIPTION_FIELD = "descriptionField"
-  const val VET_DROPDOWN = "vetDropDown"
-  const val CREATE_BUTTON = "createButton"
-  const val SCROLL_CONTAINER = "AddReportScrollContainer"
+    const val TITLE_FIELD = "titleField"
+    const val DESCRIPTION_FIELD = "descriptionField"
+    const val VET_DROPDOWN = "vetDropDown"
+    const val CREATE_BUTTON = "createButton"
+    const val SCROLL_CONTAINER = "AddReportScrollContainer"
 
-  fun getTestTagForVet(vetId: String): String = "vetOption_$vetId"
+    fun getTestTagForVet(vetId: String): String = "vetOption_$vetId"
 }
 
 /** Texts for the report creation feedback. For testing purposes */
 object AddReportFeedbackTexts {
-  const val SUCCESS = "Report created successfully!"
-  const val FAILURE = "Please fill in all required fields..."
+    const val SUCCESS = "Report created successfully!"
+    const val FAILURE = "Please fill in all required fields..."
 }
 
 // Used for testing purposes
 object AddReportConstants {
-  val vetOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")
+    val vetOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")
 }
 
 /**
@@ -85,22 +85,21 @@ fun AddReportScreen(
     addReportViewModel: AddReportViewModelContract
 ) {
 
-  val uiState by addReportViewModel.uiState.collectAsState()
-  val user by userViewModel.user.collectAsState()
-  val vets = (user as Farmer).linkedVets
+    val uiState by addReportViewModel.uiState.collectAsState()
+    val user by userViewModel.user.collectAsState()
+    val vets = (user as Farmer).linkedVets
 
-  // For the dropdown menu
-  var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
-  var selectedOption by remember { mutableStateOf((user as Farmer).defaultVet ?: "") }
-  LaunchedEffect(selectedOption) { addReportViewModel.setVet(selectedOption) }
+    // For the dropdown menu
+    var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
+    var selectedOption by remember { mutableStateOf((user as Farmer).defaultVet ?: "") }
+    LaunchedEffect(selectedOption) { addReportViewModel.setVet(selectedOption) }
 
-  // For the confirmation snackbar (i.e alter window)
-  val snackbarHostState = remember { SnackbarHostState() }
-  val scope = rememberCoroutineScope()
+    // For the confirmation snackbar (i.e alter window)
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-  // For the dialog when adding a report is successful
-  var showSuccessDialog by remember { mutableStateOf(false) }
-  LoadingOverlay(isLoading = uiState.isLoading) {
+    // For the dialog when adding a report is successful
+    var showSuccessDialog by remember { mutableStateOf(false) }
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
@@ -147,7 +146,7 @@ fun AddReportScreen(
                     { addReportViewModel.setDescription(it) },
                     "Description",
                     AddReportScreenTestTags.DESCRIPTION_FIELD)
-
+                AddReportScreenTestTags.DESCRIPTION_FIELD)
                 // Questions
                 uiState.questionForms.forEachIndexed { index, question ->
                   when (question) {
@@ -204,7 +203,7 @@ fun AddReportScreen(
                               Modifier.menuAnchor() // Needed for M3 dropdown alignment
                                   .fillMaxWidth()
                                   .testTag(AddReportScreenTestTags.VET_DROPDOWN))
-
+                        YesOrNoQuestionItem(
                       ExposedDropdownMenu(
                           expanded = expanded, onDismissRequest = { expanded = false }) {
                             vets.forEach { option ->
@@ -221,7 +220,7 @@ fun AddReportScreen(
                             }
                           }
                     }
-
+                    is MCQO -> {
                 Button(
                     onClick = {
                       scope.launch {
@@ -240,7 +239,7 @@ fun AddReportScreen(
                       Text("Create Report", style = MaterialTheme.typography.titleLarge)
                     }
               }
-
+                    trailingIcon = {
           // If adding the report was successful
           if (showSuccessDialog) {
             AlertDialog(
@@ -261,8 +260,50 @@ fun AddReportScreen(
                 title = { Text("Success!") },
                 text = { Text(AddReportFeedbackTexts.SUCCESS) })
           }
-        }
+                                    AddReportScreenTestTags.getTestTagForVet(option)))
   }
+            }
+
+            Button(
+                onClick = {
+                    scope.launch {
+                        val created = addReportViewModel.createReport()
+                        if (created) {
+                            showSuccessDialog = true
+                        } else {
+                            snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
+                        }
+                    }
+                },
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .height(56.dp)
+                        .testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
+                Text("Create Report", style = MaterialTheme.typography.titleLarge)
+            }
+        }
+
+        // If adding the report was successful
+        if (showSuccessDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    showSuccessDialog = false
+                    onBack()
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showSuccessDialog = false
+                            onCreateReport()
+                            onBack()
+                        }) {
+                        Text("OK")
+                    }
+                },
+                title = { Text("Success!") },
+                text = { Text(AddReportFeedbackTexts.SUCCESS) })
+        }
+    }
 }
 
 @Composable
@@ -272,13 +313,13 @@ private fun Field(
     placeholder: String,
     testTag: String
 ) {
-  OutlinedTextField(
-      value = value,
-      onValueChange = onValueChange,
-      placeholder = { Text(placeholder) },
-      singleLine = true,
-      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
-  )
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        placeholder = { Text(placeholder) },
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
+    )
 }
 
 /**

@@ -98,7 +98,6 @@ fun ReportViewScreen(
   val selectedStatus = uiState.status
 
   var isSpamDialogOpen by remember { mutableStateOf(false) }
-  LoadingOverlay(isLoading = uiState.isLoading) {
     Scaffold(
         topBar = {
           // Top bar with back arrow and title/status

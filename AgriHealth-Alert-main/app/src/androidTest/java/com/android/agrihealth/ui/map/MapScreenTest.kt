@@ -372,28 +372,4 @@ class MapScreenTest : FirebaseEmulatorsTest() {
     return mapViewModel
   }
 
-  @OptIn(ExperimentalCoroutinesApi::class)
-  @Test
-  fun loadingOverlay_showsWhileFetchingLocation() = runTest {
-    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
-    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
-
-    val mapViewModel = setupMapWithSlowGps()
-    composeTestRule.runOnUiThread { mapViewModel.setStartingLocation(null) }
-
-    // Loading should be visible
-    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
-
-    // Finish coroutines
-    composeTestRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
-      !mapViewModel.uiState.value.isLoading
-    }
-    // Loading should disappear
-    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
-    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
-
-    // Map is displayed
-    composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
-  }
 }

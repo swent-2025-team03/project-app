@@ -29,8 +29,7 @@ data class OverviewUIState(
     val selectedFarmer: String? = null,
     val vetOptions: List<String> = emptyList(),
     val farmerOptions: List<String> = emptyList(),
-    val filteredReports: List<Report> = emptyList(),
-    val isLoading: Boolean = false,
+    val filteredReports: List<Report> = emptyList()
 )
 
 /**
@@ -41,96 +40,82 @@ class OverviewViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
 ) : ViewModel(), OverviewViewModelContract {
 
-  private val _uiState = MutableStateFlow(OverviewUIState())
-  override val uiState: StateFlow<OverviewUIState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(OverviewUIState())
+    override val uiState: StateFlow<OverviewUIState> = _uiState.asStateFlow()
 
-  private suspend fun <T> withLoading(block: suspend () -> T): T {
-    _uiState.value = _uiState.value.copy(isLoading = true)
-    return try {
-      block()
-    } finally {
-      _uiState.value = _uiState.value.copy(isLoading = false)
-    }
-  }
+    private lateinit var authRepository: AuthRepository
 
-  private lateinit var authRepository: AuthRepository
+    /** Loads reports based on user role and ID. */
+    override fun loadReports(userRole: UserRole, userId: String) {
+        viewModelScope.launch {
+            try {
+                val reports =
+                    when (userRole) {
+                        UserRole.FARMER -> reportRepository.getReportsByFarmer(userId)
+                        UserRole.VET -> reportRepository.getReportsByVet(userId)
+                    }.sortedByDescending { it.createdAt }
+                val vetOptions = reports.map { it.vetId }.distinct()
+                val farmerOptions = reports.map { it.farmerId }.distinct()
+                val filtered =
+                    applyFilters(
+                        reports,
+                        _uiState.value.selectedStatus,
+                        _uiState.value.selectedVet,
+                        _uiState.value.selectedFarmer,
+                    )
 
-  /** Loads reports based on user role and ID. */
-  override fun loadReports(userRole: UserRole, userId: String) {
-    viewModelScope.launch {
-      withLoading {
-        try {
-          val reports =
-              when (userRole) {
-                UserRole.FARMER -> reportRepository.getReportsByFarmer(userId)
-                UserRole.VET -> reportRepository.getReportsByVet(userId)
-              }.sortedByDescending { it.createdAt }
-
-          val vetOptions = reports.map { it.vetId }.distinct()
-          val farmerOptions = reports.map { it.farmerId }.distinct()
-
-          val filtered =
-              applyFilters(
-                  reports,
-                  _uiState.value.selectedStatus,
-                  _uiState.value.selectedVet,
-                  _uiState.value.selectedFarmer,
-              )
-
-          _uiState.value =
-              _uiState.value.copy(
-                  reports = reports,
-                  vetOptions = vetOptions,
-                  farmerOptions = farmerOptions,
-                  filteredReports = filtered,
-              )
-        } catch (e: Exception) {
-          _uiState.value = OverviewUIState(reports = emptyList())
+                _uiState.value =
+                    _uiState.value.copy(
+                        reports = reports,
+                        vetOptions = vetOptions,
+                        farmerOptions = farmerOptions,
+                        filteredReports = filtered)
+            } catch (e: Exception) {
+                _uiState.value = OverviewUIState(reports = emptyList())
+            }
         }
-      }
     }
-  }
 
-  override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {
-    val filtered = applyFilters(_uiState.value.reports, status, vetId, farmerId)
-    _uiState.value =
-        _uiState.value.copy(
-            selectedStatus = status,
-            selectedVet = vetId,
-            selectedFarmer = farmerId,
-            filteredReports = filtered)
-  }
-
-  private fun applyFilters(
-      reports: List<Report>,
-      status: ReportStatus?,
-      vetId: String?,
-      farmerId: String?
-  ): List<Report> {
-    return reports.filter { report ->
-      (status == null || report.status == status) &&
-          (vetId == null || report.vetId == vetId) &&
-          (farmerId == null || report.farmerId == farmerId)
+    override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {
+        val filtered = applyFilters(_uiState.value.reports, status, vetId, farmerId)
+        _uiState.value =
+            _uiState.value.copy(
+                selectedStatus = status,
+                selectedVet = vetId,
+                selectedFarmer = farmerId,
+                filteredReports = filtered)
     }
-  }
 
-  /**
-   * Is Now handled in when fetching the data from the repository Return reports filtered by user
-   * role. Farmers see only their own reports, Vets see all reports.
-   */
-  fun getReportsForUser(userRole: UserRole, userId: String): List<Report> {
-    val allReports = uiState.value.reports
-    return when (userRole) {
-      UserRole.FARMER -> allReports.filter { it.farmerId == userId }
-      UserRole.VET -> allReports
+    private fun applyFilters(
+        reports: List<Report>,
+        status: ReportStatus?,
+        vetId: String?,
+        farmerId: String?
+    ): List<Report> {
+        return reports.filter { report ->
+            (status == null || report.status == status) &&
+                    (vetId == null || report.vetId == vetId) &&
+                    (farmerId == null || report.farmerId == farmerId)
+        }
     }
-  }
 
-  override fun signOut(credentialManager: CredentialManager) {
-    authRepository = AuthRepositoryProvider.repository
-    viewModelScope.launch {
-      authRepository.signOut()
-      credentialManager.clearCredentialState(ClearCredentialStateRequest())
+    /**
+     * Is Now handled in when fetching the data from the repository Return reports filtered by user
+     * role. Farmers see only their own reports, Vets see all reports.
+     */
+    fun getReportsForUser(userRole: UserRole, userId: String): List<Report> {
+        val allReports = uiState.value.reports
+        return when (userRole) {
+            UserRole.FARMER -> allReports.filter { it.farmerId == userId }
+            UserRole.VET -> allReports
+        }
     }
-  }
+
+    override fun signOut(credentialManager: CredentialManager) {
+        authRepository = AuthRepositoryProvider.repository
+        viewModelScope.launch {
+            authRepository.signOut()
+            credentialManager.clearCredentialState(ClearCredentialStateRequest())
+        }
+    }
 }
