@@ -293,7 +293,7 @@ fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
           val uid = if (userRole == UserRole.VET) report.farmerId else report.vetId
           Row(verticalAlignment = Alignment.CenterVertically) {
             // Show full name and role, no label
-            AuthorName(uid = uid, showRole = true)
+            AuthorName(uid = uid)
           }
           Text(
               text = report.description.let { if (it.length > 50) it.take(50) + "..." else it },

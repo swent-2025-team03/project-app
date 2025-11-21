@@ -33,7 +33,7 @@ import org.junit.rules.TestRule
  * First implementation of navigation tests. Doesn't cover all auth and assumes that the first
  * screen of AgrihealthApp is Overview.
  */
-class NavigationSprint1Test : FirebaseEmulatorsTest() {
+class NavigationTest : FirebaseEmulatorsTest() {
   private val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
   @get:Rule
@@ -132,6 +132,49 @@ class NavigationSprint1Test : FirebaseEmulatorsTest() {
     composeTestRule
         .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
         .assertTextContains(Screen.Overview.name)
+  }
+
+  @Test
+  fun overviewScreen_navigateToPlanner() {
+    // Click on the Planner tab in the bottom navigation bar
+    composeTestRule.onNodeWithTag(NavigationTestTags.PLANNER_TAB).performClick()
+    // Assert that the Planner screen is displayed
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+      composeTestRule.onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE).isDisplayed()
+    }
+    composeTestRule
+        .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
+        .assertTextContains(Screen.Planner().name)
+  }
+
+  @Test
+  fun plannerScreen_navigateToOverviewUsingSystemBack() {
+    // Navigate to the Planner screen
+    composeTestRule.onNodeWithTag(NavigationTestTags.PLANNER_TAB).performClick()
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+      composeTestRule.onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE).isDisplayed()
+    }
+    // Simulate system back press
+    pressBack(false)
+    // Assert that the Overview screen is displayed
+    sleep(TestConstants.SHORT_TIMEOUT)
+    composeTestRule
+        .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
+        .assertTextContains(Screen.Overview.name)
+  }
+
+  @Test
+  fun plannerScreen_navigateToMap() {
+    composeTestRule.onNodeWithTag(NavigationTestTags.PLANNER_TAB).performClick()
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+      composeTestRule.onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE).isDisplayed()
+    }
+    // Click on the Map tab in the bottom navigation bar
+    composeTestRule.onNodeWithTag(NavigationTestTags.MAP_TAB).performClick()
+    // Assert that the Map screen is displayed
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+      composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).isDisplayed()
+    }
   }
 
   private fun pressBack(shouldFinish: Boolean) {

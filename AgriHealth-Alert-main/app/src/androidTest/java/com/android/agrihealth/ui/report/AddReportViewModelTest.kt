@@ -1,7 +1,11 @@
 package com.android.agrihealth.ui.report
 
+import com.android.agrihealth.data.model.report.MCQ
+import com.android.agrihealth.data.model.report.MCQO
+import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.repository.ReportRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -95,6 +99,26 @@ class AddReportViewModelTest {
       runTest(StandardTestDispatcher()) {
         viewModel.setTitle("Report")
         viewModel.setDescription("A description")
+
+        val questions = viewModel.uiState.value.questionForms
+        questions.forEachIndexed { index, question ->
+          when (question) {
+            is OpenQuestion -> {
+              viewModel.updateQuestion(index, OpenQuestion(question.question, "Answer $index"))
+            }
+            is YesOrNoQuestion -> {
+              viewModel.updateQuestion(index, YesOrNoQuestion(question.question, 0))
+            }
+            is MCQ -> {
+              viewModel.updateQuestion(index, MCQ(question.question, question.answers, 0))
+            }
+            is MCQO -> {
+              viewModel.updateQuestion(
+                  index, MCQO(question.question, question.answers, 0, "Other answer $index"))
+            }
+          }
+        }
+
         viewModel.setVet(AddReportConstants.vetOptions[0])
         val result = viewModel.createReport()
         advanceUntilIdle() // To avoid errors of synchronization which would make this test
@@ -110,6 +134,17 @@ class AddReportViewModelTest {
         val addedReport = repository.storedReport!!
         assertEquals("Report", addedReport.title)
         assertEquals("A description", addedReport.description)
+        addedReport.questionForms.forEachIndexed { index, question ->
+          when (question) {
+            is OpenQuestion -> assertEquals("Answer $index", question.userAnswer)
+            is YesOrNoQuestion -> assertEquals(0, question.answerIndex)
+            is MCQ -> assertEquals(0, question.answerIndex)
+            is MCQO -> {
+              assertEquals(0, question.answerIndex)
+              assertEquals("Other answer $index", question.userAnswer)
+            }
+          }
+        }
         assertEquals(AddReportConstants.vetOptions[0], addedReport.vetId)
         assertEquals(ReportStatus.PENDING, addedReport.status)
       }
