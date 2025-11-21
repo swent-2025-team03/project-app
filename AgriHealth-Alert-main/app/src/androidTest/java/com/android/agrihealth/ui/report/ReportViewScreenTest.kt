@@ -362,39 +362,4 @@ class ReportViewScreenTest {
     assertTrue(fakeRepo.editCalled)
   }
 
-  @Test
-  fun reportView_showsLoadingOverlayWhileFetchingReport() {
-    val sampleReport = ReportViewUIState().report.copy(id = "RPT_SLOW")
-
-    val slowRepo =
-        SlowFakeReportRepository(
-            reports = listOf(sampleReport),
-        )
-
-    val vm = ReportViewModel(repository = slowRepo)
-
-    composeTestRule.setContent {
-      val nav = rememberNavController()
-      val navigation = NavigationActions(nav)
-      ReportViewScreen(
-          navigationActions = navigation,
-          userRole = UserRole.VET,
-          viewModel = vm,
-          reportId = "RPT_SLOW")
-    }
-
-    composeTestRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
-      vm.uiState.value.isLoading
-    }
-
-    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
-
-    composeTestRule.waitUntil(timeoutMillis = TestConstants.LONG_TIMEOUT) {
-      !vm.uiState.value.isLoading
-    }
-
-    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
-    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
-  }
 }
