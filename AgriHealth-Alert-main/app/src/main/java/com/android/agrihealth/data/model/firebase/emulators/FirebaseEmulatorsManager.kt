@@ -8,10 +8,10 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 data class FirebaseEnvironment(
-  val host: String,
-  val firestorePort: Int,
-  val authPort: Int,
-  val storagePort: Int
+    val host: String,
+    val firestorePort: Int,
+    val authPort: Int,
+    val storagePort: Int
 )
 
 /** Handles which Firebase emulator to run, and makes sure useEmulators() isn't called twice */
@@ -33,18 +33,18 @@ object FirebaseEmulatorsManager {
     if (emulatorInitialized) return
 
     val shouldUseLocal =
-      isLocalRunning(FIRESTORE_PORT) && isLocalRunning(AUTH_PORT) && isLocalRunning(STORAGE_PORT)
+        isLocalRunning(FIRESTORE_PORT) && isLocalRunning(AUTH_PORT) && isLocalRunning(STORAGE_PORT)
 
     check(shouldUseLocal) {
       "Firebase emulators not running locally, run: firebase emulators:start"
     }
 
     environment =
-      FirebaseEnvironment(
-        host = LOCAL_HOST,
-        firestorePort = FIRESTORE_PORT,
-        authPort = AUTH_PORT,
-        storagePort = STORAGE_PORT)
+        FirebaseEnvironment(
+            host = LOCAL_HOST,
+            firestorePort = FIRESTORE_PORT,
+            authPort = AUTH_PORT,
+            storagePort = STORAGE_PORT)
 
     with(environment) {
       Firebase.firestore.useEmulator(host, firestorePort)

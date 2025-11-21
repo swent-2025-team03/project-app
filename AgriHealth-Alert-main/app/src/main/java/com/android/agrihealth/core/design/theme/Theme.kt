@@ -128,6 +128,7 @@ fun AgriHealthAppTheme(
       colorScheme = colorScheme, shapes = shapes, typography = typography, content = content)
 }
 
+/** Returns the appropriate color for the given [ReportStatus]. */
 @Composable
 fun statusColor(status: ReportStatus): Color {
   val colors = LocalStatusColors.current
@@ -136,5 +137,17 @@ fun statusColor(status: ReportStatus): Color {
     ReportStatus.IN_PROGRESS -> colors.inProgress
     ReportStatus.RESOLVED -> colors.resolved
     ReportStatus.SPAM -> colors.spam
+  }
+}
+
+/** Returns the appropriate "on" color for the given [ReportStatus]. */
+@Composable
+fun onStatusColor(status: ReportStatus): Color {
+  val colors = LocalStatusColors.current
+  return when (status) {
+    ReportStatus.PENDING -> colors.onPending
+    ReportStatus.IN_PROGRESS -> colors.onInProgress
+    ReportStatus.RESOLVED -> colors.onResolved
+    ReportStatus.SPAM -> colors.onSpam
   }
 }

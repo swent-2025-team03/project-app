@@ -182,12 +182,11 @@ dependencies {
     // ----------       Robolectric     ------------
     testImplementation(libs.robolectric)
 
-    // ----------Firebase Authentication------------
+    // ----------Firebase------------
     implementation(libs.firebase.database)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.storage)
-    implementation(libs.firebase.storage.ktx)
 
     // Http networking for firebase tests
     implementation(libs.okhttp)
