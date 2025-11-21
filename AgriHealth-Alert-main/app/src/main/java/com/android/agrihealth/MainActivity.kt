@@ -214,6 +214,7 @@ fun AgriHealthApp(
       }
       composable(Screen.ManageOffice.route) {
         ManageOfficeScreen(
+            navigationActions = navigationActions,
             userViewModel = userViewModel,
             onGoBack = { navigationActions.goBack() },
             onCreateOffice = { navigationActions.navigateTo(Screen.CreateOffice) },
