@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 
 /**
  * UI state to tell the UI what the view-model is doing. Meant to be read only through the view
- * model, with a when on the current state
+ * model, with a "when ()" on the current state
  */
 sealed class ImageUIState {
   object Idle : ImageUIState()
@@ -25,7 +25,7 @@ sealed class ImageUIState {
 
 /**
  * View-model to handle image upload/download with the photo storage backend. Designed to use
- * upload() or download() and then use a when on the UI state to handle response.
+ * upload() or download() and then use a "when ()" on the UI state to handle response.
  */
 class ImageViewModel(private val repository: ImageRepository = ImageRepositoryProvider.repository) :
     ViewModel() {
