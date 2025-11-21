@@ -18,7 +18,6 @@ data class FirebaseEnvironment(
 object FirebaseEmulatorsManager {
   private var emulatorInitialized = false
   private const val LOCAL_HOST = "10.0.2.2"
-  private const val REMOTE_HOST = "firebase.okau.moe"
   private const val FIRESTORE_PORT = 8081
   private const val AUTH_PORT = 9099
   private const val STORAGE_PORT = 9199
@@ -36,9 +35,9 @@ object FirebaseEmulatorsManager {
     val shouldUseLocal =
         isLocalRunning(FIRESTORE_PORT) && isLocalRunning(AUTH_PORT) && isLocalRunning(STORAGE_PORT)
 
-    if (!shouldUseLocal)
-        throw IllegalStateException(
-            "Firebase emulators not running locally, run: firebase emulators:start")
+    check(shouldUseLocal) {
+      "Firebase emulators not running locally, run: firebase emulators:start"
+    }
 
     environment =
         FirebaseEnvironment(

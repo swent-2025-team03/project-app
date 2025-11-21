@@ -5,10 +5,12 @@ import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.graphics.scale
 import com.android.agrihealth.data.model.images.ImageRepository.Companion.toBitmap
+import com.android.agrihealth.ui.user.UserViewModel
 import com.google.firebase.storage.FirebaseStorage
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.tasks.await
 
+/** Image repository communicating with Firebase Storage to handle images */
 class ImageRepositoryFirebase : ImageRepository {
   override val MAX_FILE_SIZE: Long = 3 * 1024 * 1024
   override val IMAGE_MAX_WIDTH: Int = 2048
@@ -18,14 +20,16 @@ class ImageRepositoryFirebase : ImageRepository {
 
   override suspend fun uploadImage(bytes: ByteArray): Result<String> {
     return try {
+      val uid = UserViewModel().user.value.uid
       val fileName = System.currentTimeMillis()
-      val imageRef = storage.reference.child("images/$fileName.jpg")
+      val childPath = "$uid/$fileName.jpg"
+      val imageRef = storage.reference.child(childPath)
 
       imageRef.putBytes(bytes).await()
 
-      val path = imageRef.path
+      val fullPath = imageRef.path
 
-      Result.success(path)
+      Result.success(fullPath)
     } catch (e: Exception) {
       Result.failure(e)
     }
