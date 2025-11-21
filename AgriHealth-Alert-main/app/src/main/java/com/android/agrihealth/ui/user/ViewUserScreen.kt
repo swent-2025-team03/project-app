@@ -66,7 +66,10 @@ fun ViewUserScreen(
             },
             navigationIcon = {
               IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    modifier = Modifier.testTag(ViewUserScreenTestTags.BACK_BUTTON))
               }
             },
             modifier = Modifier.testTag(ViewUserScreenTestTags.TOP_BAR))
@@ -137,8 +140,6 @@ private fun ViewUserContent(user: User) {
         if (user is Vet) {
           val officeRepo = OfficeRepositoryFirestore()
           var officeName by remember { mutableStateOf("Loading…") }
-          val context = LocalContext.current
-          val scope = rememberCoroutineScope()
 
           LaunchedEffect(user.officeId) {
             val id = user.officeId

@@ -42,9 +42,11 @@ open class ViewUserViewModel(
     fun provideFactory(targetUserId: String): ViewModelProvider.Factory =
         object : ViewModelProvider.Factory {
           override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return ViewUserViewModel(
-                targetUserId = targetUserId, userRepository = UserRepositoryFirestore())
-                as T
+            if (modelClass.isAssignableFrom(ViewUserViewModel::class.java)) {
+              @Suppress("UNCHECKED_CAST")
+              return ViewUserViewModel(targetUserId, UserRepositoryFirestore()) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class: $modelClass")
           }
         }
   }
