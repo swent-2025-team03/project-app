@@ -30,7 +30,6 @@ class FakeUserRepository(private val userAddress: Location? = null) : UserReposi
   }
 
   override suspend fun updateUser(user: User) {
-    // Remplace ou insère l'utilisateur
     store[user.uid] = user
   }
 

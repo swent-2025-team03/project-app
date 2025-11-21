@@ -46,62 +46,62 @@ class ReportViewModel(
     private val repository: ReportRepository = ReportRepositoryProvider.repository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ReportViewUIState())
-    val uiState: StateFlow<ReportViewUIState> = _uiState.asStateFlow()
+  private val _uiState = MutableStateFlow(ReportViewUIState())
+  val uiState: StateFlow<ReportViewUIState> = _uiState.asStateFlow()
 
-    // Flag to indicate that saving is completed (success). Observed by the UI for navigation.
-    private val _saveCompleted = MutableStateFlow(false)
-    val saveCompleted: StateFlow<Boolean> = _saveCompleted.asStateFlow()
+  // Flag to indicate that saving is completed (success). Observed by the UI for navigation.
+  private val _saveCompleted = MutableStateFlow(false)
+  val saveCompleted: StateFlow<Boolean> = _saveCompleted.asStateFlow()
 
-    /** Loads a report by its ID and updates the state. */
-    fun loadReport(reportID: String) {
-        viewModelScope.launch {
-            try {
-                val fetchedReport = repository.getReportById(reportID)
-                if (fetchedReport != null) {
-                    _uiState.value =
-                        ReportViewUIState(
-                            report = fetchedReport,
-                            answerText = fetchedReport.answer ?: "",
-                            status = fetchedReport.status)
-                } else {
-                    Log.e("ReportViewModel", "Report with ID $reportID not found.")
-                }
-            } catch (e: Exception) {
-                Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
-            }
+  /** Loads a report by its ID and updates the state. */
+  fun loadReport(reportID: String) {
+    viewModelScope.launch {
+      try {
+        val fetchedReport = repository.getReportById(reportID)
+        if (fetchedReport != null) {
+          _uiState.value =
+              ReportViewUIState(
+                  report = fetchedReport,
+                  answerText = fetchedReport.answer ?: "",
+                  status = fetchedReport.status)
+        } else {
+          Log.e("ReportViewModel", "Report with ID $reportID not found.")
         }
+      } catch (e: Exception) {
+        Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
+      }
     }
+  }
 
-    fun onAnswerChange(newText: String) {
-        _uiState.value = _uiState.value.copy(answerText = newText)
-    }
+  fun onAnswerChange(newText: String) {
+    _uiState.value = _uiState.value.copy(answerText = newText)
+  }
 
-    fun onStatusChange(newStatus: ReportStatus) {
-        _uiState.value = _uiState.value.copy(status = newStatus)
-    }
+  fun onStatusChange(newStatus: ReportStatus) {
+    _uiState.value = _uiState.value.copy(status = newStatus)
+  }
 
-    fun onSpam() {
-        _uiState.value = _uiState.value.copy(status = ReportStatus.SPAM)
-    }
+  fun onSpam() {
+    _uiState.value = _uiState.value.copy(status = ReportStatus.SPAM)
+  }
 
-    /** Saves the modified report, then triggers the saveCompleted flag on success. */
-    fun onSave() {
-        viewModelScope.launch {
-            try {
-                val updatedReport =
-                    _uiState.value.report.copy(
-                        answer = _uiState.value.answerText, status = _uiState.value.status)
-                repository.editReport(updatedReport.id, updatedReport)
-                _saveCompleted.value = true
-            } catch (e: Exception) {
-                Log.e("ReportViewModel", "Error saving report", e)
-            }
-        }
+  /** Saves the modified report, then triggers the saveCompleted flag on success. */
+  fun onSave() {
+    viewModelScope.launch {
+      try {
+        val updatedReport =
+            _uiState.value.report.copy(
+                answer = _uiState.value.answerText, status = _uiState.value.status)
+        repository.editReport(updatedReport.id, updatedReport)
+        _saveCompleted.value = true
+      } catch (e: Exception) {
+        Log.e("ReportViewModel", "Error saving report", e)
+      }
     }
+  }
 
-    /** Resets the flag after the UI has consumed the navigation event. */
-    fun consumeSaveCompleted() {
-        _saveCompleted.value = false
-    }
+  /** Resets the flag after the UI has consumed the navigation event. */
+  fun consumeSaveCompleted() {
+    _saveCompleted.value = false
+  }
 }
