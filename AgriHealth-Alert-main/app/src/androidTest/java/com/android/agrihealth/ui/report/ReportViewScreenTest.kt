@@ -10,10 +10,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.testutil.FakeOverviewViewModel
-import com.android.agrihealth.testutil.SlowFakeReportRepository
-import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
-import com.android.agrihealth.ui.loading.LoadingTestTags
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
@@ -361,5 +358,4 @@ class ReportViewScreenTest {
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).assertIsDisplayed()
     assertTrue(fakeRepo.editCalled)
   }
-
 }

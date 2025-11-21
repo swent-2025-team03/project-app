@@ -25,65 +25,65 @@ class AddReportViewModel(
     private val userId: String,
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository
 ) : ViewModel(), AddReportViewModelContract {
-    private val _uiState = MutableStateFlow(AddReportUiState())
-    override val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
+  private val _uiState = MutableStateFlow(AddReportUiState())
+  override val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
 
-    init {
-        _uiState.value =
-            _uiState.value.copy(questionForms = HealthQuestionFactory.animalHealthQuestions())
+  init {
+    _uiState.value =
+        _uiState.value.copy(questionForms = HealthQuestionFactory.animalHealthQuestions())
+  }
+
+  override fun setTitle(newTitle: String) {
+    _uiState.value = _uiState.value.copy(title = newTitle)
+  }
+
+  override fun setDescription(newDescription: String) {
+    _uiState.value = _uiState.value.copy(description = newDescription)
+  }
+
+  override fun setVet(option: String) {
+    _uiState.value = _uiState.value.copy(chosenVet = option)
+  }
+
+  override fun updateQuestion(index: Int, updated: QuestionForm) {
+    val updatedList = _uiState.value.questionForms.toMutableList()
+    updatedList[index] = updated
+    _uiState.value = _uiState.value.copy(questionForms = updatedList)
+  }
+
+  override suspend fun createReport(): Boolean {
+    val uiState = _uiState.value
+    if (uiState.title.isBlank() || uiState.description.isBlank()) {
+      return false
+    }
+    val allQuestionsAnswered = uiState.questionForms.all { it.isValid() }
+    if (!allQuestionsAnswered) {
+      return false
     }
 
-    override fun setTitle(newTitle: String) {
-        _uiState.value = _uiState.value.copy(title = newTitle)
-    }
-
-    override fun setDescription(newDescription: String) {
-        _uiState.value = _uiState.value.copy(description = newDescription)
-    }
-
-    override fun setVet(option: String) {
-        _uiState.value = _uiState.value.copy(chosenVet = option)
-    }
-
-    override fun updateQuestion(index: Int, updated: QuestionForm) {
-        val updatedList = _uiState.value.questionForms.toMutableList()
-        updatedList[index] = updated
-        _uiState.value = _uiState.value.copy(questionForms = updatedList)
-    }
-
-    override suspend fun createReport(): Boolean {
-        val uiState = _uiState.value
-        if (uiState.title.isBlank() || uiState.description.isBlank()) {
-            return false
-        }
-        val allQuestionsAnswered = uiState.questionForms.all { it.isValid() }
-        if (!allQuestionsAnswered) {
-            return false
-        }
-
-        val newReport =
-            Report(
-                id = reportRepository.getNewReportId(),
-                title = uiState.title,
-                description = uiState.description,
-                questionForms = uiState.questionForms,
-                photoUri = null, // currently unused
-                farmerId = userId,
-                vetId = uiState.chosenVet,
-                status = ReportStatus.PENDING,
-                answer = null,
-                location = Location(46.7990813, 6.6259961) // null // optional until implemented
+    val newReport =
+        Report(
+            id = reportRepository.getNewReportId(),
+            title = uiState.title,
+            description = uiState.description,
+            questionForms = uiState.questionForms,
+            photoUri = null, // currently unused
+            farmerId = userId,
+            vetId = uiState.chosenVet,
+            status = ReportStatus.PENDING,
+            answer = null,
+            location = Location(46.7990813, 6.6259961) // null // optional until implemented
             )
 
-        viewModelScope.launch { reportRepository.addReport(newReport) }
+    viewModelScope.launch { reportRepository.addReport(newReport) }
 
-        // Clears all the fields
-        clearInputs() // TODO: Call only if addReport succeeds
+    // Clears all the fields
+    clearInputs() // TODO: Call only if addReport succeeds
 
-        return true
-    }
+    return true
+  }
 
-    override fun clearInputs() {
-        _uiState.value = AddReportUiState()
-    }
+  override fun clearInputs() {
+    _uiState.value = AddReportUiState()
+  }
 }

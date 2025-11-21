@@ -18,8 +18,6 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.repository.ReportRepositoryLocal
 import com.android.agrihealth.fakes.FakeAuthProvider
-import com.android.agrihealth.testutil.TestConstants
-import com.android.agrihealth.ui.loading.LoadingTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.user.UserViewModel
 import com.google.android.gms.maps.model.LatLng
@@ -371,5 +369,4 @@ class MapScreenTest : FirebaseEmulatorsTest() {
 
     return mapViewModel
   }
-
 }

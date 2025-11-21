@@ -23,15 +23,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
 data class MapUIState(
-  val reports: List<Report> = emptyList(),
-  val locationPermission: Boolean = false
+    val reports: List<Report> = emptyList(),
+    val locationPermission: Boolean = false
 )
 
 class MapViewModel(
-  private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
-  private val userRepository: UserRepository = UserRepositoryProvider.repository,
-  private val locationViewModel: LocationViewModel,
-  val selectedReportId: String? = null
+    private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
+    private val userRepository: UserRepository = UserRepositoryProvider.repository,
+    private val locationViewModel: LocationViewModel,
+    val selectedReportId: String? = null
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(MapUIState())
   val uiState: StateFlow<MapUIState> = _uiState.asStateFlow()
@@ -51,8 +51,8 @@ class MapViewModel(
     }
     refreshMapPermission()
     refreshReports(
-      Firebase.auth.currentUser?.uid
-        ?: throw IllegalArgumentException("Map refreshed Reports while current user was null"))
+        Firebase.auth.currentUser?.uid
+            ?: throw IllegalArgumentException("Map refreshed Reports while current user was null"))
   }
 
   fun refreshReports(uid: String) {
@@ -61,7 +61,7 @@ class MapViewModel(
 
   fun refreshMapPermission() {
     _uiState.value =
-      _uiState.value.copy(locationPermission = locationViewModel.hasLocationPermissions())
+        _uiState.value.copy(locationPermission = locationViewModel.hasLocationPermissions())
   }
 
   private fun fetchLocalizableReports(uid: String) {
@@ -108,9 +108,9 @@ class MapViewModel(
             locationViewModel.getLastKnownLocation()
           }
           val gpsLocation =
-            withTimeoutOrNull(3_000) {
-              locationViewModel.locationState.firstOrNull { it != null }
-            }
+              withTimeoutOrNull(3_000) {
+                locationViewModel.locationState.firstOrNull { it != null }
+              }
 
           _startingLocation.value = gpsLocation ?: getLocationFromUserAddress() ?: return@launch
         }
@@ -144,9 +144,9 @@ class MapViewModel(
    */
   fun spiderifiedReports(): List<SpiderifiedReport> {
     val groups =
-      uiState.value.reports
-        .filter { it -> it.location != null }
-        .groupBy { Pair(it.location!!.latitude, it.location.longitude) }
+        uiState.value.reports
+            .filter { it -> it.location != null }
+            .groupBy { Pair(it.location!!.latitude, it.location.longitude) }
     val result = mutableListOf<SpiderifiedReport>()
 
     for ((latLong, group) in groups) {

@@ -24,7 +24,6 @@ import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.testutil.TestConstants
-import com.android.agrihealth.ui.loading.LoadingTestTags
 import com.android.agrihealth.ui.user.UserViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -277,5 +276,4 @@ class AddReportScreenTest {
 
     Assert.assertTrue(called)
   }
-
 }

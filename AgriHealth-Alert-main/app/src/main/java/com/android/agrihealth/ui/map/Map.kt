@@ -89,21 +89,21 @@ import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 
 object MapScreenTestTags {
-    const val GOOGLE_MAP_SCREEN = "googleMapScreen"
-    const val TOP_BAR_MAP_TITLE = "topBarMapTitle"
-    const val REPORT_INFO_BOX = "reportInfoBox"
-    const val REPORT_FILTER_MENU = "reportFilterDropdownMenu"
-    const val REPORT_NAVIGATION_BUTTON = "reportNavigationButton"
-    const val REFRESH_BUTTON = "mapRefreshButton"
+  const val GOOGLE_MAP_SCREEN = "googleMapScreen"
+  const val TOP_BAR_MAP_TITLE = "topBarMapTitle"
+  const val REPORT_INFO_BOX = "reportInfoBox"
+  const val REPORT_FILTER_MENU = "reportFilterDropdownMenu"
+  const val REPORT_NAVIGATION_BUTTON = "reportNavigationButton"
+  const val REFRESH_BUTTON = "mapRefreshButton"
 
-    // from bootcamp map
-    fun getTestTagForReportMarker(reportId: String): String = "reportMarker_$reportId"
+  // from bootcamp map
+  fun getTestTagForReportMarker(reportId: String): String = "reportMarker_$reportId"
 
-    fun getTestTagForReportTitle(reportId: String): String = "reportTitle_$reportId"
+  fun getTestTagForReportTitle(reportId: String): String = "reportTitle_$reportId"
 
-    fun getTestTagForReportDesc(reportId: String): String = "reportDescription_$reportId"
+  fun getTestTagForReportDesc(reportId: String): String = "reportDescription_$reportId"
 
-    fun getTestTagForFilter(filter: String?): String = "filter_$filter"
+  fun getTestTagForFilter(filter: String?): String = "filter_$filter"
 }
 
 const val AllFilterText = "All reports"
@@ -117,176 +117,176 @@ fun MapScreen(
     isViewedFromOverview: Boolean = true,
     startingPosition: Location? = null
 ) {
-    val uiState by mapViewModel.uiState.collectAsState()
-    val user by userViewModel.user.collectAsState()
-    var selectedFilter by remember { mutableStateOf<String?>(null) }
+  val uiState by mapViewModel.uiState.collectAsState()
+  val user by userViewModel.user.collectAsState()
+  var selectedFilter by remember { mutableStateOf<String?>(null) }
 
-    val mapInitialLocation by mapViewModel.startingLocation.collectAsState()
-    val mapInitialZoom by mapViewModel.zoom.collectAsState()
-    val cameraPositionState = rememberCameraPositionState {}
+  val mapInitialLocation by mapViewModel.startingLocation.collectAsState()
+  val mapInitialZoom by mapViewModel.zoom.collectAsState()
+  val cameraPositionState = rememberCameraPositionState {}
 
-    LaunchedEffect(startingPosition) { mapViewModel.setStartingLocation(startingPosition) }
+  LaunchedEffect(startingPosition) { mapViewModel.setStartingLocation(startingPosition) }
 
-    LaunchedEffect(mapInitialLocation) {
-        cameraPositionState.position =
-            CameraPosition.fromLatLngZoom(
-                LatLng(mapInitialLocation.latitude, mapInitialLocation.longitude), mapInitialZoom)
-    }
+  LaunchedEffect(mapInitialLocation) {
+    cameraPositionState.position =
+        CameraPosition.fromLatLngZoom(
+            LatLng(mapInitialLocation.latitude, mapInitialLocation.longitude), mapInitialZoom)
+  }
 
-    LaunchedEffect(user.uid) { mapViewModel.refreshReports(user.uid) }
+  LaunchedEffect(user.uid) { mapViewModel.refreshReports(user.uid) }
 
-    val selectedReport = mapViewModel.selectedReport.collectAsState()
+  val selectedReport = mapViewModel.selectedReport.collectAsState()
 
-    val googleMapUiSettings = remember {
-        MapUiSettings(
-            zoomControlsEnabled = false,
-        )
-    }
-    val context = LocalContext.current
-    val darkTheme = isSystemInDarkTheme()
-    val styleRes = if (darkTheme) R.raw.map_style_dark else R.raw.map_style_light
-    val style = MapStyleOptions.loadRawResourceStyle(context, styleRes)
+  val googleMapUiSettings = remember {
+    MapUiSettings(
+        zoomControlsEnabled = false,
+    )
+  }
+  val context = LocalContext.current
+  val darkTheme = isSystemInDarkTheme()
+  val styleRes = if (darkTheme) R.raw.map_style_dark else R.raw.map_style_light
+  val style = MapStyleOptions.loadRawResourceStyle(context, styleRes)
 
-    val googleMapMapProperties = remember(style) { MapProperties(mapStyleOptions = style) }
+  val googleMapMapProperties = remember(style) { MapProperties(mapStyleOptions = style) }
 
-    // Floating button Position
-    var reportBoxHeightPx by remember { mutableIntStateOf(0) }
-    val density = LocalDensity.current
+  // Floating button Position
+  var reportBoxHeightPx by remember { mutableIntStateOf(0) }
+  val density = LocalDensity.current
 
-    // Convert pixels to dp for layout use
-    val reportBoxHeightDp = with(density) { reportBoxHeightPx.toDp() }
+  // Convert pixels to dp for layout use
+  val reportBoxHeightDp = with(density) { reportBoxHeightPx.toDp() }
 
-    Scaffold(
-        topBar = { if (!isViewedFromOverview) MapTopBar(onBack = { navigationActions?.goBack() }) },
-        bottomBar = {
-            if (isViewedFromOverview)
-                BottomNavigationMenu(
-                    selectedTab = Tab.Map,
-                    onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
-                    modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
-        },
-        content = { pd ->
-            Box(modifier = Modifier.fillMaxSize().padding(pd)) {
-                if (!uiState.locationPermission) {
-                    if (locationPermissionsRequester(locationViewModel)) {
-                        mapViewModel.refreshMapPermission()
-                    }
-                }
-                GoogleMap(
-                    cameraPositionState = cameraPositionState,
-                    properties = googleMapMapProperties,
-                    uiSettings = googleMapUiSettings,
-                    modifier = Modifier.testTag(MapScreenTestTags.GOOGLE_MAP_SCREEN),
-                    onMapClick = { mapViewModel.setSelectedReport(null) }) {
-                    mapViewModel
-                        .spiderifiedReports()
-                        .filter { it ->
-                            selectedFilter == null || it.report.status.displayString() == selectedFilter
-                        }
-                        .forEach { it ->
-                            val report = it.report
-                            val markerSize = if (report.id == selectedReport.value?.id) 60f else 40f
-                            val markerIcon =
-                                createCircleMarker(statusColor(report.status).toArgb(), markerSize)
-                            Marker(
-                                state = MarkerState(position = it.position),
-                                anchor = Offset(0.5f, 0.5f),
-                                title = report.title,
-                                snippet = report.description,
-                                icon = markerIcon,
-                                onClick = {
-                                    mapViewModel.setSelectedReport(
-                                        if (selectedReport.value == report) null else report)
-                                    true
-                                },
-                                /*tag = testTag*/ )
-                            Polyline(points = listOf(it.position, it.center), width = 5f)
-                        }
-                }
-
-                // Debug box to make tests work
-                // Because Google map markers aren't accessible in compose tests, so I have to make this
-                // item
-                // If the box is empty or has size 0, the composable doesn't exist and tests fail
-                // Yes, this sucks
-                uiState.reports
-                    .filter { report ->
-                        selectedFilter == null || report.status.displayString() == selectedFilter
-                    }
-                    .forEach { report ->
-                        Box(
-                            modifier =
-                                Modifier.testTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
-                                    .clickable {
-                                        mapViewModel.setSelectedReport(
-                                            if (selectedReport.value == report) null else report)
-                                    }
-                                    .alpha(0f)
-                                    .size(1.dp)) {
-                            Text(":)")
-                        }
-                    }
-
-                if (isViewedFromOverview) {
-                    val options = listOf(null) + ReportStatus.entries.map { it.displayString() }
-                    FilterDropdown(options, selectedFilter) { selectedFilter = it }
-                }
-
-                FloatingActionButton(
-                    modifier =
-                        Modifier.align(Alignment.BottomEnd)
-                            .padding(
-                                end = 16.dp,
-                                bottom =
-                                    if (selectedReport.value != null) reportBoxHeightDp + 16.dp
-                                    else 16.dp)
-                            .testTag(MapScreenTestTags.REFRESH_BUTTON),
-                    onClick = {
-                        mapViewModel.refreshCameraPosition()
-
-                        val newPos = mapViewModel.startingLocation.value
-                        val newLat = newPos.latitude
-                        val newLng = newPos.longitude
-                        val newZoom = mapViewModel.zoom.value
-
-                        cameraPositionState.move(
-                            CameraUpdateFactory.newLatLngZoom(LatLng(newLat, newLng), newZoom))
-                    }) {
-                    Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh Location")
-                }
-
-                ShowReportInfo(
-                    modifier =
-                        Modifier.onGloballyPositioned { coordinates ->
-                            reportBoxHeightPx = coordinates.size.height
-                        },
-                    report = selectedReport.value,
-                    onReportClick = { navigationActions?.navigateTo(Screen.ViewReport(it)) })
+  Scaffold(
+      topBar = { if (!isViewedFromOverview) MapTopBar(onBack = { navigationActions?.goBack() }) },
+      bottomBar = {
+        if (isViewedFromOverview)
+            BottomNavigationMenu(
+                selectedTab = Tab.Map,
+                onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
+                modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
+      },
+      content = { pd ->
+        Box(modifier = Modifier.fillMaxSize().padding(pd)) {
+          if (!uiState.locationPermission) {
+            if (locationPermissionsRequester(locationViewModel)) {
+              mapViewModel.refreshMapPermission()
             }
-        })
+          }
+          GoogleMap(
+              cameraPositionState = cameraPositionState,
+              properties = googleMapMapProperties,
+              uiSettings = googleMapUiSettings,
+              modifier = Modifier.testTag(MapScreenTestTags.GOOGLE_MAP_SCREEN),
+              onMapClick = { mapViewModel.setSelectedReport(null) }) {
+                mapViewModel
+                    .spiderifiedReports()
+                    .filter { it ->
+                      selectedFilter == null || it.report.status.displayString() == selectedFilter
+                    }
+                    .forEach { it ->
+                      val report = it.report
+                      val markerSize = if (report.id == selectedReport.value?.id) 60f else 40f
+                      val markerIcon =
+                          createCircleMarker(statusColor(report.status).toArgb(), markerSize)
+                      Marker(
+                          state = MarkerState(position = it.position),
+                          anchor = Offset(0.5f, 0.5f),
+                          title = report.title,
+                          snippet = report.description,
+                          icon = markerIcon,
+                          onClick = {
+                            mapViewModel.setSelectedReport(
+                                if (selectedReport.value == report) null else report)
+                            true
+                          },
+                      /*tag = testTag*/ )
+                      Polyline(points = listOf(it.position, it.center), width = 5f)
+                    }
+              }
+
+          // Debug box to make tests work
+          // Because Google map markers aren't accessible in compose tests, so I have to make this
+          // item
+          // If the box is empty or has size 0, the composable doesn't exist and tests fail
+          // Yes, this sucks
+          uiState.reports
+              .filter { report ->
+                selectedFilter == null || report.status.displayString() == selectedFilter
+              }
+              .forEach { report ->
+                Box(
+                    modifier =
+                        Modifier.testTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+                            .clickable {
+                              mapViewModel.setSelectedReport(
+                                  if (selectedReport.value == report) null else report)
+                            }
+                            .alpha(0f)
+                            .size(1.dp)) {
+                      Text(":)")
+                    }
+              }
+
+          if (isViewedFromOverview) {
+            val options = listOf(null) + ReportStatus.entries.map { it.displayString() }
+            FilterDropdown(options, selectedFilter) { selectedFilter = it }
+          }
+
+          FloatingActionButton(
+              modifier =
+                  Modifier.align(Alignment.BottomEnd)
+                      .padding(
+                          end = 16.dp,
+                          bottom =
+                              if (selectedReport.value != null) reportBoxHeightDp + 16.dp
+                              else 16.dp)
+                      .testTag(MapScreenTestTags.REFRESH_BUTTON),
+              onClick = {
+                mapViewModel.refreshCameraPosition()
+
+                val newPos = mapViewModel.startingLocation.value
+                val newLat = newPos.latitude
+                val newLng = newPos.longitude
+                val newZoom = mapViewModel.zoom.value
+
+                cameraPositionState.move(
+                    CameraUpdateFactory.newLatLngZoom(LatLng(newLat, newLng), newZoom))
+              }) {
+                Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh Location")
+              }
+
+          ShowReportInfo(
+              modifier =
+                  Modifier.onGloballyPositioned { coordinates ->
+                    reportBoxHeightPx = coordinates.size.height
+                  },
+              report = selectedReport.value,
+              onReportClick = { navigationActions?.navigateTo(Screen.ViewReport(it)) })
+        }
+      })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapTopBar(onBack: () -> Unit) {
-    TopAppBar(
-        title = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Map",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.weight(1f).testTag(MapScreenTestTags.TOP_BAR_MAP_TITLE))
+  TopAppBar(
+      title = {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically) {
+              Text(
+                  text = "Map",
+                  style = MaterialTheme.typography.titleLarge,
+                  modifier = Modifier.weight(1f).testTag(MapScreenTestTags.TOP_BAR_MAP_TITLE))
             }
-        },
-        navigationIcon = {
-            IconButton(
-                onClick = onBack, modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+      },
+      navigationIcon = {
+        IconButton(
+            onClick = onBack, modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
+              Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
-        })
+      })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -296,22 +296,22 @@ fun FilterDropdown(
     selectedOption: String?,
     onOptionSelected: (String?) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    val textFieldBackgroundColor = MaterialTheme.colorScheme.surface
+  var expanded by remember { mutableStateOf(false) }
+  val textFieldBackgroundColor = MaterialTheme.colorScheme.surface
 
-    val textMeasurer = rememberTextMeasurer()
-    val maxTextWidth =
-        remember(options) {
-            options.maxOf {
-                textMeasurer.measure(text = AnnotatedString(it ?: AllFilterText)).size.width
-            }
+  val textMeasurer = rememberTextMeasurer()
+  val maxTextWidth =
+      remember(options) {
+        options.maxOf {
+          textMeasurer.measure(text = AnnotatedString(it ?: AllFilterText)).size.width
         }
-    val dropdownWidth = maxTextWidth - 32.dp.value
+      }
+  val dropdownWidth = maxTextWidth - 32.dp.value
 
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded },
-        modifier = Modifier.padding(16.dp).width(dropdownWidth.dp)) {
+  ExposedDropdownMenuBox(
+      expanded = expanded,
+      onExpandedChange = { expanded = !expanded },
+      modifier = Modifier.padding(16.dp).width(dropdownWidth.dp)) {
         OutlinedTextField(
             value = selectedOption ?: AllFilterText,
             onValueChange = {},
@@ -327,17 +327,17 @@ fun FilterDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             modifier = Modifier.background(color = MaterialTheme.colorScheme.surface)) {
-            options.forEach { option ->
+              options.forEach { option ->
                 DropdownMenuItem(
                     onClick = {
-                        onOptionSelected(option)
-                        expanded = false
+                      onOptionSelected(option)
+                      expanded = false
                     },
                     text = { Text(option ?: AllFilterText) },
                     modifier = Modifier.testTag(MapScreenTestTags.getTestTagForFilter(option)))
+              }
             }
-        }
-    }
+      }
 }
 
 /**
@@ -356,19 +356,19 @@ fun ShowReportInfo(
     report: Report?,
     onReportClick: (String) -> Unit = {}
 ) {
-    if (report == null) return
+  if (report == null) return
 
-    Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.REPORT_INFO_BOX)) {
-        Column(
-            modifier =
-                modifier
-                    .background(color = MaterialTheme.colorScheme.surface)
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween) {
+  Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.REPORT_INFO_BOX)) {
+    Column(
+        modifier =
+            modifier
+                .background(color = MaterialTheme.colorScheme.surface)
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(16.dp)) {
+          Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
                     text = report.title,
                     style = MaterialTheme.typography.titleLarge,
@@ -391,84 +391,84 @@ fun ShowReportInfo(
                             MaterialTheme.colorScheme.onPrimaryContainer,
                             disabledContainerColor = MaterialTheme.colorScheme.surface,
                             disabledContentColor = MaterialTheme.colorScheme.onSurface)) {
-                    Icon(
-                        imageVector = Icons.Default.Preview,
-                        contentDescription = "View Report",
-                        modifier = Modifier.size(24.dp))
-                }
-            }
+                      Icon(
+                          imageVector = Icons.Default.Preview,
+                          contentDescription = "View Report",
+                          modifier = Modifier.size(24.dp))
+                    }
+              }
 
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = report.description,
-                modifier = Modifier.testTag(MapScreenTestTags.getTestTagForReportDesc(report.id)))
-            Spacer(modifier = Modifier.height(8.dp))
+          Spacer(modifier = Modifier.height(4.dp))
+          Text(
+              text = report.description,
+              modifier = Modifier.testTag(MapScreenTestTags.getTestTagForReportDesc(report.id)))
+          Spacer(modifier = Modifier.height(8.dp))
         }
-    }
+  }
 }
 
 fun createCircleMarker(color: Int, radius: Float = 40f, strokeWidth: Float = 8f): BitmapDescriptor {
-    val size = (radius * 2 + strokeWidth).toInt()
-    val bitmap = createBitmap(size, size)
-    val canvas = Canvas(bitmap)
+  val size = (radius * 2 + strokeWidth).toInt()
+  val bitmap = createBitmap(size, size)
+  val canvas = Canvas(bitmap)
 
-    // Draw filled circle
-    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-    paint.color = color
-    paint.style = Paint.Style.FILL
-    canvas.drawCircle(size / 2f, size / 2f, radius, paint)
+  // Draw filled circle
+  val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+  paint.color = color
+  paint.style = Paint.Style.FILL
+  canvas.drawCircle(size / 2f, size / 2f, radius, paint)
 
-    // Draw white outline
-    val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    strokePaint.color = Color.WHITE
-    strokePaint.style = Paint.Style.STROKE
-    strokePaint.strokeWidth = strokeWidth
-    canvas.drawCircle(size / 2f, size / 2f, radius, strokePaint)
+  // Draw white outline
+  val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG)
+  strokePaint.color = Color.WHITE
+  strokePaint.style = Paint.Style.STROKE
+  strokePaint.strokeWidth = strokeWidth
+  canvas.drawCircle(size / 2f, size / 2f, radius, strokePaint)
 
-    // Draw white center dot
-    val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    val dotRadius = radius / 4f
-    dotPaint.color = Color.WHITE
-    dotPaint.style = Paint.Style.FILL
-    canvas.drawCircle(size / 2f, size / 2f, dotRadius, dotPaint)
+  // Draw white center dot
+  val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+  val dotRadius = radius / 4f
+  dotPaint.color = Color.WHITE
+  dotPaint.style = Paint.Style.FILL
+  canvas.drawCircle(size / 2f, size / 2f, dotRadius, dotPaint)
 
-    return BitmapDescriptorFactory.fromBitmap(bitmap)
+  return BitmapDescriptorFactory.fromBitmap(bitmap)
 }
 
 // @Preview
 @Composable
 fun PreviewMapScreen() {
-    AgriHealthAppTheme { MapScreen(startingPosition = Location(46.7990813, 6.6264253)) }
+  AgriHealthAppTheme { MapScreen(startingPosition = Location(46.7990813, 6.6264253)) }
 }
 
 // @Preview
 @Composable
 fun PreviewDropdownMenu() {
-    val options = listOf(null) + ReportStatus.entries.map { it.displayString() }
-    var selectedFilter by remember { mutableStateOf<String?>(null) }
-    AgriHealthAppTheme { FilterDropdown(options, selectedFilter) { selectedFilter = it } }
+  val options = listOf(null) + ReportStatus.entries.map { it.displayString() }
+  var selectedFilter by remember { mutableStateOf<String?>(null) }
+  AgriHealthAppTheme { FilterDropdown(options, selectedFilter) { selectedFilter = it } }
 }
 
 @Preview
 @Composable
 fun PreviewReportInfo() {
-    val report =
-        Report(
-            id = "Test",
-            title = "Veryyyyyyyyyyyyy long title",
-            description =
-                "very very very very very very very very very very very very very very very very very long description",
-            questionForms = emptyList(),
-            farmerId = "farmer id",
-            vetId = "vetId",
-            status = ReportStatus.IN_PROGRESS,
-            answer = "answer to the report",
-            location = null,
-            photoUri = null,
-        )
-    AgriHealthAppTheme {
-        ShowReportInfo(
-            report = report,
-        )
-    }
+  val report =
+      Report(
+          id = "Test",
+          title = "Veryyyyyyyyyyyyy long title",
+          description =
+              "very very very very very very very very very very very very very very very very very long description",
+          questionForms = emptyList(),
+          farmerId = "farmer id",
+          vetId = "vetId",
+          status = ReportStatus.IN_PROGRESS,
+          answer = "answer to the report",
+          location = null,
+          photoUri = null,
+      )
+  AgriHealthAppTheme {
+    ShowReportInfo(
+        report = report,
+    )
+  }
 }
