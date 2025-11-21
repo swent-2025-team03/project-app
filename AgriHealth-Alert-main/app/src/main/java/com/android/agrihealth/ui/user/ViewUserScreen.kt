@@ -13,9 +13,24 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.data.model.user.*
+
+object ViewUserScreenTestTags {
+  const val TOP_BAR = "ViewUserTopBar"
+  const val BACK_BUTTON = "ViewUserBackButton"
+  const val LOADING_INDICATOR = "ViewUserLoadingIndicator"
+  const val ERROR_TEXT = "ViewUserErrorText"
+  const val CONTENT_COLUMN = "ViewUserContentColumn"
+  const val PROFILE_ICON = "ViewUserProfileIcon"
+  const val NAME_FIELD = "ViewUserNameField"
+  const val ROLE_FIELD = "ViewUserRoleField"
+  const val OFFICE_FIELD = "ViewUserOfficeField"
+  const val ADDRESS_FIELD = "ViewUserAddressField"
+  const val DESCRIPTION_FIELD = "ViewUserDescriptionField"
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,15 +69,22 @@ fun ViewUserScreen(
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
               }
             },
-        )
+            modifier = Modifier.testTag(ViewUserScreenTestTags.TOP_BAR))
       }) { padding ->
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
         Box(modifier = Modifier.padding(padding)) {
           when (uiState) {
             is ViewUserUiState.Loading ->
-                Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
+                Box(Modifier.fillMaxSize(), Alignment.Center) {
+                  CircularProgressIndicator(
+                      modifier = Modifier.testTag(ViewUserScreenTestTags.LOADING_INDICATOR))
+                }
             is ViewUserUiState.Error ->
-                Box(Modifier.fillMaxSize(), Alignment.Center) { Text("Unable to load user.") }
+                Box(Modifier.fillMaxSize(), Alignment.Center) {
+                  Text(
+                      "Unable to load user.",
+                      modifier = Modifier.testTag(ViewUserScreenTestTags.ERROR_TEXT))
+                }
             is ViewUserUiState.Success -> {
               val user = (uiState as ViewUserUiState.Success).user
               ViewUserContent(user = user)
@@ -77,12 +99,17 @@ private fun ViewUserContent(user: User) {
   val scroll = rememberScrollState()
 
   Column(
-      modifier = Modifier.fillMaxSize().verticalScroll(scroll).padding(16.dp),
+      modifier =
+          Modifier.fillMaxSize()
+              .verticalScroll(scroll)
+              .padding(16.dp)
+              .testTag(ViewUserScreenTestTags.CONTENT_COLUMN),
       horizontalAlignment = Alignment.CenterHorizontally) {
+        // Profile icon TODO replace with real profile picture when implemented
         Icon(
             imageVector = Icons.Default.AccountCircle,
             contentDescription = "Profile",
-            modifier = Modifier.size(120.dp))
+            modifier = Modifier.size(120.dp).testTag(ViewUserScreenTestTags.PROFILE_ICON))
 
         Spacer(Modifier.height(24.dp))
 
@@ -92,7 +119,7 @@ private fun ViewUserContent(user: User) {
             onValueChange = {},
             label = { Text("Name") },
             readOnly = true,
-            modifier = Modifier.fillMaxWidth())
+            modifier = Modifier.fillMaxWidth().testTag(ViewUserScreenTestTags.NAME_FIELD))
 
         Spacer(Modifier.height(8.dp))
 
@@ -102,7 +129,7 @@ private fun ViewUserContent(user: User) {
             onValueChange = {},
             label = { Text("Role") },
             readOnly = true,
-            modifier = Modifier.fillMaxWidth())
+            modifier = Modifier.fillMaxWidth().testTag(ViewUserScreenTestTags.ROLE_FIELD))
 
         Spacer(Modifier.height(8.dp))
 
@@ -132,7 +159,7 @@ private fun ViewUserContent(user: User) {
               onValueChange = {},
               label = { Text("Office") },
               readOnly = true,
-              modifier = Modifier.fillMaxWidth())
+              modifier = Modifier.fillMaxWidth().testTag(ViewUserScreenTestTags.OFFICE_FIELD))
 
           Spacer(Modifier.height(8.dp))
         }
@@ -145,7 +172,7 @@ private fun ViewUserContent(user: User) {
               onValueChange = {},
               label = { Text("Address") },
               readOnly = true,
-              modifier = Modifier.fillMaxWidth())
+              modifier = Modifier.fillMaxWidth().testTag(ViewUserScreenTestTags.ADDRESS_FIELD))
 
           Spacer(Modifier.height(8.dp))
         }
@@ -157,7 +184,7 @@ private fun ViewUserContent(user: User) {
               onValueChange = {},
               label = { Text("Description") },
               readOnly = true,
-              modifier = Modifier.fillMaxWidth())
+              modifier = Modifier.fillMaxWidth().testTag(ViewUserScreenTestTags.DESCRIPTION_FIELD))
         }
 
         Spacer(Modifier.height(32.dp))
