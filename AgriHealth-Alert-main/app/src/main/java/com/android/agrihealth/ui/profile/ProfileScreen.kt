@@ -9,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,18 +16,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
@@ -37,17 +34,14 @@ import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.LOGOUT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_FARMER
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_VET
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_VET_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DESCRIPTION_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.GENERATED_CODE_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.MANAGE_OFFICE_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
-import kotlinx.coroutines.launch
 
 object ProfileScreenTestTags {
 
@@ -81,12 +75,13 @@ fun ProfileScreen(
   val factory = remember {
     object : androidx.lifecycle.ViewModelProvider.Factory {
       override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return ProfileViewModel(userViewModel) as T
+        return ProfileViewModel(
+            userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
+            as T
       }
     }
   }
   val profileViewModel: ProfileViewModel = viewModel(factory = factory)
-  val code by profileViewModel.generatedCode.collectAsState()
 
   val snackbarHostState = remember { SnackbarHostState() }
 
@@ -227,35 +222,10 @@ fun ProfileScreen(
               }
 
               if (user is Vet) {
-                Button(
-                    onClick = { profileViewModel.generateVetCode() },
-                    modifier =
-                        Modifier.align(Alignment.CenterHorizontally).testTag(CODE_BUTTON_VET)) {
-                      Text("Generate new Farmer's Code")
-                    }
-
-                if (code != null && userRole == UserRole.VET) {
-                  val clipboard = LocalClipboardManager.current
-                  val scope = rememberCoroutineScope()
-
-                  Row(
-                      verticalAlignment = Alignment.CenterVertically,
-                      horizontalArrangement = Arrangement.Center) {
-                        Text(
-                            "Generated Code: $code",
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(end = 8.dp).testTag(GENERATED_CODE_TEXT))
-                        IconButton(
-                            onClick = {
-                              clipboard.setText(AnnotatedString(code!!))
-                              scope.launch { snackbarHostState.showSnackbar("Code copied!") }
-                            }) {
-                              Icon(
-                                  imageVector = Icons.Filled.ContentCopy,
-                                  contentDescription = "Copy Code")
-                            }
-                      }
-                }
+                GenerateCode(
+                    profileViewModel,
+                    snackbarHostState,
+                    Modifier.align(Alignment.CenterHorizontally))
 
                 Spacer(modifier = Modifier.height(12.dp))
 

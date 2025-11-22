@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.common.AuthorNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
@@ -68,7 +69,9 @@ fun EditProfileScreen(
   val factory = remember {
     object : androidx.lifecycle.ViewModelProvider.Factory {
       override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return ProfileViewModel(userViewModel) as T
+        return ProfileViewModel(
+            userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
+            as T
       }
     }
   }

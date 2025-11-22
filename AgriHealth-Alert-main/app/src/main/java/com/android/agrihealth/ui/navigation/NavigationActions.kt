@@ -77,6 +77,13 @@ sealed class Screen(
       const val route = "planner?reportId={reportId}"
     }
   }
+
+  data class ClaimCode(val connectionRepo: String) :
+      Screen(route = "claim_code?connectionRepo=${connectionRepo}", name = "Claim a code") {
+    companion object {
+      const val route = "claim_code?connectionRepo={connectionRepo}"
+    }
+  }
 }
 
 open class NavigationActions(

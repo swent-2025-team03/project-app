@@ -1,5 +1,8 @@
 package com.android.agrihealth.data.model.connection
 
+import com.android.agrihealth.data.model.authentification.UserRepository
+import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -12,7 +15,11 @@ import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 
-class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestore) {
+class ConnectionRepository(
+    private val db: FirebaseFirestore = Firebase.firestore,
+    private val userRepository: UserRepository = UserRepositoryProvider.repository,
+    private val connectionType: String
+) {
   private companion object {
     private const val CODES_COLLECTION = FirestoreSchema.Collections.CONNECT_CODES
     private const val CONNECTIONS_COLLECTION = FirestoreSchema.Collections.CONNECTIONS
@@ -20,20 +27,26 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
     private const val STATUS_USED = FirestoreSchema.Status.USED
   }
 
-  private fun getCurrentUserId(): String {
-    return Firebase.auth.currentUser?.uid
-        ?: throw java.lang.IllegalStateException("User not logged in")
+  private suspend fun getCurrentUserOfficeId(): String {
+    val currentUid =
+        Firebase.auth.currentUser?.uid
+            ?: throw java.lang.IllegalStateException("User not logged in")
+    return userRepository.getUserFromId(currentUid).fold({ user ->
+      (user as Vet).officeId ?: throw IllegalStateException("You need to join an office")
+    }) {
+      throw IllegalStateException()
+    }
   }
 
   // Generates a unique connection code for a vet, valid for a limited time (ttlMinutes).
   // Returns: Result<String> containing the generated code, or an exception if failed.
   suspend fun generateCode(ttlMinutes: Long = 10): Result<String> = runCatching {
-    val vetId = getCurrentUserId()
+    val officeId = getCurrentUserOfficeId()
     repeat(20) {
       val code = Random.nextInt(100_000, 1_000_000).toString()
       val maybeCode =
           db.runTransaction { tx ->
-                val ref = db.collection(CODES_COLLECTION).document(code)
+                val ref = db.collection(connectionType + CODES_COLLECTION).document(code)
                 val snap = tx.get(ref)
                 if (snap.exists()) {
                   null
@@ -43,7 +56,8 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
                       ref,
                       mapOf(
                           FirestoreSchema.ConnectCodes.CODE to code,
-                          FirestoreSchema.ConnectCodes.VET_ID to vetId,
+                          FirestoreSchema.ConnectCodes.OFFICE_ID to officeId,
+                          FirestoreSchema.ConnectCodes.VET_ID to Firebase.auth.uid!!,
                           FirestoreSchema.ConnectCodes.STATUS to STATUS_OPEN,
                           FirestoreSchema.ConnectCodes.CREATED_AT to createdAt,
                           FirestoreSchema.ConnectCodes.TTL_MINUTES to ttlMinutes))
@@ -77,25 +91,25 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
   // Claims a connection code for a farmer, links the vet and farmer, and marks the code as used.
   // Returns: Result<String> containing the vetId if successful, or an exception if failed.
   suspend fun claimCode(code: String): Result<String> = runCatching {
-    val farmerId = getCurrentUserId()
-    val docRef = db.collection(CODES_COLLECTION).document(code)
+    val userId = Firebase.auth.uid!!
+    val docRef = db.collection(connectionType + CODES_COLLECTION).document(code)
     db.runTransaction { tx ->
           val snap = tx.get(docRef)
           checkCodeValidity(snap)
 
-          val vetId = snap.getString(FirestoreSchema.ConnectCodes.VET_ID)
-          if (vetId == null) throw IllegalArgumentException("Invalid vet ID.")
+          val officeId = snap.getString(FirestoreSchema.ConnectCodes.OFFICE_ID)
+          if (officeId == null) throw IllegalArgumentException("Invalid office ID.")
 
-          linkUsers(tx, vetId, farmerId)
+          linkUsers(tx, officeId, userId)
 
           tx.update(
               docRef,
               mapOf(
                   FirestoreSchema.ConnectCodes.STATUS to STATUS_USED,
                   FirestoreSchema.ConnectCodes.USED_AT to FieldValue.serverTimestamp(),
-                  FirestoreSchema.ConnectCodes.CLAIMED_BY to farmerId))
+                  FirestoreSchema.ConnectCodes.CLAIMED_BY to userId))
 
-          vetId
+          officeId
         }
         .await()
   }
@@ -104,7 +118,7 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
   // Returns: Unit. No value is returned.
   private fun linkUsers(tx: Transaction, vetId: String, farmerId: String) {
     val connId = connectionId(vetId, farmerId)
-    val ref = db.collection(CONNECTIONS_COLLECTION).document(connId)
+    val ref = db.collection(connectionType + CONNECTIONS_COLLECTION).document(connId)
     // Assume the connection doesn't exist. If not, only the timestamp changes, is it really that
     // bad?
     tx.set(

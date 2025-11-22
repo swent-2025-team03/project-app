@@ -2,6 +2,7 @@ package com.android.agrihealth
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +20,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.credentials.CredentialManager
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -27,6 +29,9 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
+import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.FARMER_TO_OFFICE
+import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.VET_TO_OFFICE
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
@@ -46,8 +51,10 @@ import com.android.agrihealth.ui.overview.OverviewViewModel
 import com.android.agrihealth.ui.planner.PlannerScreen
 import com.android.agrihealth.ui.profile.ChangePasswordScreen
 import com.android.agrihealth.ui.profile.ChangePasswordViewModel
+import com.android.agrihealth.ui.profile.ClaimCodeScreen
 import com.android.agrihealth.ui.profile.EditProfileScreen
 import com.android.agrihealth.ui.profile.ProfileScreen
+import com.android.agrihealth.ui.profile.ProfileViewModel
 import com.android.agrihealth.ui.report.AddReportScreen
 import com.android.agrihealth.ui.report.AddReportViewModel
 import com.android.agrihealth.ui.report.ReportViewModel
@@ -198,7 +205,7 @@ fun AgriHealthApp(
               navigationActions.navigateToAuthAndClear()
             },
             onEditProfile = { navigationActions.navigateTo(Screen.EditProfile(false)) },
-            onCodeFarmer = { navigationActions.navigateTo(Screen.EditProfile(true)) },
+            onCodeFarmer = { navigationActions.navigateTo(Screen.ClaimCode(FARMER_TO_OFFICE)) },
             onManageOffice = { navigationActions.navigateTo(Screen.ManageOffice) })
       }
       composable(Screen.ManageOffice.route) {
@@ -206,7 +213,7 @@ fun AgriHealthApp(
             userViewModel = userViewModel,
             onGoBack = { navigationActions.goBack() },
             onCreateOffice = { navigationActions.navigateTo(Screen.CreateOffice) },
-            onJoinOffice = { /*TODO : implement */})
+            onJoinOffice = { navigationActions.navigateTo(Screen.ClaimCode(VET_TO_OFFICE)) })
       }
       composable(Screen.CreateOffice.route) {
         CreateOfficeScreen(
@@ -296,6 +303,36 @@ fun AgriHealthApp(
                 })) { backStackEntry ->
           val reportId = backStackEntry.arguments?.getString("reportId")
           PlannerScreen(navigationActions)
+        }
+    composable(
+        route = Screen.ClaimCode.route,
+        arguments =
+            listOf(
+                navArgument("connectionRepo") {
+                  type = NavType.StringType
+                  nullable = false
+                  defaultValue = FARMER_TO_OFFICE
+                })) { backStackEntry ->
+          val connectionRepository =
+              when (backStackEntry.arguments?.getString("connectionRepo")) {
+                VET_TO_OFFICE -> ConnectionRepositoryProvider.vetToOfficeRepository
+                FARMER_TO_OFFICE -> ConnectionRepositoryProvider.farmerToOfficeRepository
+                else -> {
+                  Log.e(
+                      "ClaimCode controller",
+                      "Unknown collection path : ${backStackEntry.arguments?.getString("connectionRepo")}")
+                  ConnectionRepositoryProvider.farmerToOfficeRepository
+                }
+              }
+          val profileFactory =
+              object : androidx.lifecycle.ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return ProfileViewModel(userViewModel, connectionRepository) as T
+                }
+              }
+          ClaimCodeScreen(
+              profileViewModel = viewModel(factory = profileFactory),
+              { navigationActions.goBack() })
         }
   }
 }
