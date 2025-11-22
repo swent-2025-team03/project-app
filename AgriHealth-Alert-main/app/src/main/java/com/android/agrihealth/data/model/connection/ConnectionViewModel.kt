@@ -7,8 +7,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class ConnectionViewModel(private val repository: ConnectionRepository = ConnectionRepository()) :
-    ViewModel() {
+class ConnectionViewModel(
+    private val repository: ConnectionRepository =
+        ConnectionRepository(connectionType = "unusedViewModel")
+) : ViewModel() {
 
   private val _state = MutableStateFlow<ConnectionUiState>(ConnectionUiState.Idle)
   val state = _state.asStateFlow()

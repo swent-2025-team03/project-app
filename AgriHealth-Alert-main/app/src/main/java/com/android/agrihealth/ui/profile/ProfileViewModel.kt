@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     private val userViewModel: UserViewModel,
-    private val connectionRepository: ConnectionRepository = ConnectionRepository()
+    private val connectionRepository: ConnectionRepository,
 ) : ViewModel() {
 
   private val _generatedCode = MutableStateFlow<String?>(null)

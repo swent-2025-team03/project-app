@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.StatusColors
+import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
@@ -30,7 +31,9 @@ import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_DESCRI
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_NAME
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_VET_LIST
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
+import com.android.agrihealth.ui.profile.GenerateCode
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
+import com.android.agrihealth.ui.profile.ProfileViewModel
 import com.android.agrihealth.ui.user.UserViewModel
 
 object ManageOfficeScreenTestTags {
@@ -54,12 +57,23 @@ fun ManageOfficeScreen(
     onCreateOffice: () -> Unit = {},
     onJoinOffice: () -> Unit = {},
 ) {
+  val snackbarHostState = remember { SnackbarHostState() }
   val vm: ManageOfficeViewModel =
       viewModel(
           factory =
               object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                   return ManageOfficeViewModel(userViewModel, OfficeRepositoryFirestore()) as T
+                }
+              })
+  val connectionVm: ProfileViewModel =
+      viewModel(
+          factory =
+              object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return ProfileViewModel(
+                      userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
+                      as T
                 }
               })
 
@@ -81,7 +95,8 @@ fun ManageOfficeScreen(
               }
             },
             modifier = Modifier.testTag(TOP_BAR))
-      }) { innerPadding ->
+      },
+      snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
         Column(
             modifier =
                 Modifier.padding(innerPadding).padding(16.dp).verticalScroll(rememberScrollState()),
@@ -133,6 +148,8 @@ fun ManageOfficeScreen(
                     }
 
                 if (isOwner) {
+                  GenerateCode(
+                      profileViewModel = connectionVm, snackbarHostState = snackbarHostState)
                   Button(
                       onClick = { vm.updateOffice() },
                       modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),
