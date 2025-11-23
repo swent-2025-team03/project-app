@@ -1,7 +1,12 @@
 package com.android.agrihealth.data.model.location
 
+import android.content.Context
+import android.location.Address
+import android.location.Geocoder
 import android.location.LocationProvider
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -44,12 +49,35 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
+import java.util.Locale
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@Composable
+fun LocationPicker(
+  mapViewModel: MapViewModel = viewModel(),
+  navigationActions: NavigationActions? = null,
+  onAddress: (String?) -> Unit
+) {
+  val context = LocalContext.current
+
+  Scaffold(
+    topBar = { MapTopBar(onBack = { navigationActions?.goBack() }, title = "Select a location") },
+    bottomBar = {},
+    content = { pd -> LocationPickerScreen(
+      Modifier.padding(pd),
+      mapViewModel,
+      onLocationPicked = { lat, lng ->
+        getAddressFromLatLng(context, lat, lng, onResult = onAddress)
+      }
+    )}
+  )
+}
 
 @Composable
 fun LocationPickerScreen(
+  modifier: Modifier = Modifier,
   mapViewModel: MapViewModel = viewModel(),
-  onLocationPicked: (LatLng) -> Unit = {},
-  navigationActions: NavigationActions? = null
+  onLocationPicked: (Double, Double) -> Unit,
 ) {
   // Initial camera position
   val mapInitialLocation by mapViewModel.startingLocation.collectAsState()
@@ -66,12 +94,8 @@ fun LocationPickerScreen(
   // UI settings and theme
   val (googleMapUiSettings, googleMapMapProperties) = getUISettingsAndTheme()
 
-  // Map
-  Scaffold(
-    topBar = { MapTopBar(onBack = { navigationActions?.goBack() }, title = "Select a location") },
-    bottomBar = {},
-    content = { pd ->
-      Box(modifier = Modifier.fillMaxSize().padding(pd)) {
+  Log.w("LocationPicker", "Picking a location")
+      Box(modifier = modifier.fillMaxSize()) {
         GoogleMap(
           cameraPositionState = cameraPositionState,
           onMapLoaded = {},
@@ -87,7 +111,7 @@ fun LocationPickerScreen(
           tint = MaterialTheme.colorScheme.onBackground,
           modifier = Modifier
             .align(Alignment.Center)
-            .offset(y = (-pinSize/2.0).dp) // pin tip points at the location
+            .offset(y = (-pinSize / 2.0).dp) // pin tip points at the location
             .size(pinSize.dp)
         )
 
@@ -95,7 +119,7 @@ fun LocationPickerScreen(
         Button(
           onClick = {
             val pos = cameraPositionState.position.target
-            onLocationPicked(pos)
+            onLocationPicked(pos.latitude, pos.longitude)
           },
           modifier = Modifier
             .align(Alignment.BottomCenter)
@@ -104,15 +128,62 @@ fun LocationPickerScreen(
           Text("Select this location")
         }
       }
-    }
-  )
 
 }
 
 @Composable
-@Preview
+// @Preview
 fun LocationPickerScreenPreview() {
-  LocationRepositoryProvider.repository = LocationRepository(LocalContext.current)
+  val context = LocalContext.current
+  LocationRepositoryProvider.repository = LocationRepository(context)
   val mapViewModel = MapViewModel(locationViewModel = LocationViewModel(), showReports = false)
-  AgriHealthAppTheme { LocationPickerScreen(mapViewModel = mapViewModel, onLocationPicked = { pos -> Log.d("LocationPicker", "Picked $pos")}) }
+  AgriHealthAppTheme {
+    LocationPickerScreen(
+      mapViewModel = mapViewModel,
+      onLocationPicked = { lat, lng ->
+        Log.d("LocationPicker", "Selected coordinates Lat = $lat, Lng = $lng")
+      }
+    )
+  }
 }
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@Composable
+@Preview
+fun LocationPickerPreview() {
+  val context = LocalContext.current
+
+  LocationRepositoryProvider.repository = LocationRepository(context)
+  val mapViewModel = MapViewModel(locationViewModel = LocationViewModel(), showReports = false)
+
+  AgriHealthAppTheme {
+    LocationPicker(mapViewModel, null, onAddress = { address ->
+      Log.d("LocationPicker", "Address: $address")
+    })
+  }
+
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+fun getAddressFromLatLng(
+  context: Context,
+  lat: Double,
+  lng: Double,
+  onResult: (String?) -> Unit
+) {
+  val geocoder = Geocoder(context, Locale.getDefault())
+
+  try {
+    val addresses = geocoder.getFromLocation(
+      lat,
+      lng,
+      1
+    )
+    val result = addresses?.firstOrNull()?.getAddressLine(0)
+    onResult(result)
+  } catch (e: Exception) {
+    e.printStackTrace()
+    null
+  }
+}
+
