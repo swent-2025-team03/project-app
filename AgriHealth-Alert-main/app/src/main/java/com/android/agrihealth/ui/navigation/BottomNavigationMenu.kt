@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Place
+import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -23,11 +24,14 @@ sealed class Tab(val name: String, val icon: ImageVector, val destination: Scree
   object Overview : Tab("Overview", Icons.Outlined.Menu, Screen.Overview)
 
   object Map : Tab("Map", Icons.Outlined.Place, Screen.Map())
+
+  object Planner : Tab("Planner", Icons.Outlined.Today, Screen.Planner())
 }
 
 private val tabs =
     listOf(
         Tab.Overview,
+        Tab.Planner,
         Tab.Map,
     )
 

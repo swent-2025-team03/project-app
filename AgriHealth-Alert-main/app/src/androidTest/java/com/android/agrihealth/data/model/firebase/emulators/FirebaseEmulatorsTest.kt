@@ -60,8 +60,6 @@ open class FirebaseEmulatorsTest() {
 
   @Before
   open fun setUp() {
-    // FirebaseEmulatorsManager.linkEmulators()
-
     runTest {
       clearEmulator(authEndpoint)
       clearEmulator(firestoreEndpoint)
