@@ -137,17 +137,7 @@ fun MapScreen(
 
   val selectedReport = mapViewModel.selectedReport.collectAsState()
 
-  val googleMapUiSettings = remember {
-    MapUiSettings(
-        zoomControlsEnabled = false,
-    )
-  }
-  val context = LocalContext.current
-  val darkTheme = isSystemInDarkTheme()
-  val styleRes = if (darkTheme) R.raw.map_style_dark else R.raw.map_style_light
-  val style = MapStyleOptions.loadRawResourceStyle(context, styleRes)
-
-  val googleMapMapProperties = remember(style) { MapProperties(mapStyleOptions = style) }
+  val (googleMapUiSettings, googleMapMapProperties) = getUISettingsAndTheme()
 
   // Floating button Position
   var reportBoxHeightPx by remember { mutableIntStateOf(0) }
@@ -263,29 +253,6 @@ fun MapScreen(
               report = selectedReport.value,
               onReportClick = { navigationActions?.navigateTo(Screen.ViewReport(it)) })
         }
-      })
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MapTopBar(onBack: () -> Unit) {
-  TopAppBar(
-      title = {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically) {
-              Text(
-                  text = "Map",
-                  style = MaterialTheme.typography.titleLarge,
-                  modifier = Modifier.weight(1f).testTag(MapScreenTestTags.TOP_BAR_MAP_TITLE))
-            }
-      },
-      navigationIcon = {
-        IconButton(
-            onClick = onBack, modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
-              Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-            }
       })
 }
 
