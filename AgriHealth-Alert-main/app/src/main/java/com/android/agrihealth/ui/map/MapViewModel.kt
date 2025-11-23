@@ -32,12 +32,14 @@ class MapViewModel(
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
     private val locationViewModel: LocationViewModel,
     val selectedReportId: String? = null,
+    startingPosition: Location? = null,
     showReports: Boolean = true
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(MapUIState())
   val uiState: StateFlow<MapUIState> = _uiState.asStateFlow()
 
-  private val _startingLocation = MutableStateFlow(Location(46.9481, 7.4474, null)) // Bern
+  private val _startingLocation =
+      MutableStateFlow(startingPosition ?: Location(46.9481, 7.4474, null)) // Bern
   val startingLocation = _startingLocation.asStateFlow()
   private val _zoom = MutableStateFlow(10f)
   val zoom = _zoom.asStateFlow()

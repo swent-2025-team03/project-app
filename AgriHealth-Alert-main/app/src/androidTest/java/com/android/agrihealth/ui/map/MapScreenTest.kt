@@ -31,7 +31,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -138,8 +137,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   // repository among other things
   private fun setContentToMapWithVM(
       isViewedFromOverview: Boolean = true,
-      selectedReportId: String? = null,
-      startingPosition: Location? = null
+      selectedReportId: String? = null
   ) {
     val mapViewModel =
         MapViewModel(
@@ -148,10 +146,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
             selectedReportId = selectedReportId)
     composeTestRule.setContent {
       MaterialTheme {
-        MapScreen(
-            mapViewModel = mapViewModel,
-            isViewedFromOverview = isViewedFromOverview,
-            startingPosition = startingPosition)
+        MapScreen(mapViewModel = mapViewModel, isViewedFromOverview = isViewedFromOverview)
       }
     }
   }
@@ -255,18 +250,6 @@ class MapScreenTest : FirebaseEmulatorsTest() {
       }
     }
   }
-
-  @Test
-  fun canOverrideStartingPosition() {
-    val yverdon = Location(46.7815062, 6.6463836) // Station d'épuration d'Yverdon-les-Bains
-    setContentToMapWithVM(startingPosition = yverdon)
-    // how do i test this
-    assertTrue(true)
-  }
-
-  @Test fun mapCenteredOnUserAddress() {}
-
-  @Test fun mapCenteredOnDefaultIfNoAddress() {}
 
   @Test
   fun canNavigateFromMapToReport() = runTest {

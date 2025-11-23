@@ -55,11 +55,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.device.location.locationPermissionsRequester
-import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
@@ -107,7 +105,7 @@ fun MapScreen(
     locationViewModel: LocationViewModel = viewModel(),
     navigationActions: NavigationActions? = null,
     isViewedFromOverview: Boolean = true,
-    startingPosition: Location? = null
+    forceStartingPosition: Boolean = false
 ) {
   val uiState by mapViewModel.uiState.collectAsState()
   val user by userViewModel.user.collectAsState()
@@ -117,7 +115,8 @@ fun MapScreen(
   val mapInitialZoom by mapViewModel.zoom.collectAsState()
   val cameraPositionState = rememberCameraPositionState {}
 
-  LaunchedEffect(startingPosition) { mapViewModel.setStartingLocation(startingPosition) }
+  if (forceStartingPosition) mapViewModel.setStartingLocation(mapInitialLocation)
+  // LaunchedEffect(startingPosition) { mapViewModel.setStartingLocation(startingPosition) }
 
   LaunchedEffect(mapInitialLocation) {
     cameraPositionState.position =
@@ -394,10 +393,14 @@ fun createCircleMarker(color: Int, radius: Float = 40f, strokeWidth: Float = 8f)
   return BitmapDescriptorFactory.fromBitmap(bitmap)
 }
 
+// Preview composable functions
+/*
 // @Preview
 @Composable
 fun PreviewMapScreen() {
-  AgriHealthAppTheme { MapScreen(startingPosition = Location(46.7990813, 6.6264253)) }
+  LocationRepositoryProvider.repository = LocationRepository(LocalContext.current)
+  val mapViewModel = MapViewModel(startingPosition = Location(46.7990813, 6.6264253), locationViewModel = LocationViewModel())
+  AgriHealthAppTheme { MapScreen(mapViewModel) }
 }
 
 // @Preview
@@ -431,3 +434,4 @@ fun PreviewReportInfo() {
     )
   }
 }
+*/
