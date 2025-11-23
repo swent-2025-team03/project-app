@@ -116,7 +116,6 @@ fun MapScreen(
   val cameraPositionState = rememberCameraPositionState {}
 
   if (forceStartingPosition) mapViewModel.setStartingLocation(mapInitialLocation)
-  // LaunchedEffect(startingPosition) { mapViewModel.setStartingLocation(startingPosition) }
 
   LaunchedEffect(mapInitialLocation) {
     cameraPositionState.position =

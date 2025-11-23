@@ -53,6 +53,8 @@ class MapViewModel(
       }
     }
     refreshMapPermission()
+    setStartingLocation()
+
     if (showReports)
         refreshReports(
             Firebase.auth.currentUser?.uid
@@ -96,7 +98,7 @@ class MapViewModel(
    * @param location the map screen will start at this location if not null.
    * @param useCurrentLocation will fetch new location instead of using last known location if true.
    */
-  fun setStartingLocation(location: Location?, useCurrentLocation: Boolean = false) {
+  fun setStartingLocation(location: Location? = null, useCurrentLocation: Boolean = false) {
     // Specific starting point, takes priority because of report navigation for example
     if (location != null) {
       _startingLocation.value = location
@@ -130,7 +132,7 @@ class MapViewModel(
   }
 
   fun refreshCameraPosition() {
-    setStartingLocation(null, useCurrentLocation = true)
+    setStartingLocation(useCurrentLocation = true)
   }
 
   data class SpiderifiedReport(val report: Report, val position: LatLng, val center: LatLng)

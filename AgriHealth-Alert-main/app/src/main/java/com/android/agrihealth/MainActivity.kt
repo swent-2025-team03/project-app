@@ -285,7 +285,7 @@ fun AgriHealthApp(
               mapViewModel = mapViewModel,
               navigationActions = navigationActions,
               isViewedFromOverview = (sourceReport == null),
-              forceStartingPosition = true)
+              forceStartingPosition = (location != null))
         }
 
     composable(
