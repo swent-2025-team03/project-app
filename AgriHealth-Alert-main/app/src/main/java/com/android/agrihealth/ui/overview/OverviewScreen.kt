@@ -1,26 +1,35 @@
 package com.android.agrihealth.ui.overview
 
+import android.R.attr.onClick
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import com.android.agrihealth.core.design.theme.statusColor
+import com.android.agrihealth.data.model.alert.Alert
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
@@ -31,6 +40,8 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
+import kotlinx.coroutines.launch
+
 
 // -- imports for preview --
 /*
@@ -45,6 +56,7 @@ object OverviewScreenTestTags {
   const val LOGOUT_BUTTON = "logoutButton"
   const val SCREEN = "OverviewScreen"
   const val REPORT_ITEM = "reportItem"
+    const val ALERT_ITEM = "AlertItem"
   const val PROFILE_BUTTON = "ProfileButton"
   const val STATUS_DROPDOWN = "StatusFilterDropdown"
   const val VET_ID_DROPDOWN = "VetIdFilterDropdown"
@@ -75,8 +87,13 @@ fun OverviewScreen(
   val density = LocalDensity.current
   var lazySpace by remember { mutableStateOf(0.dp) }
   val minLazySpace = remember { 150.dp }
+  val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
-  LaunchedEffect(userId) { overviewViewModel.loadReports(userRole, userId) }
+    LaunchedEffect(userId) {
+        overviewViewModel.loadReports(userRole, userId)
+        overviewViewModel.loadAlerts()
+    }
 
   Scaffold(
       // -- Top App Bar with logout icon --
@@ -123,32 +140,75 @@ fun OverviewScreen(
           val screen = this.maxHeight
           Column(
               modifier =
-                  Modifier.padding(paddingValues)
+                  Modifier
+                      .padding(paddingValues)
                       .padding(horizontal = 16.dp)
                       .onSizeChanged { size ->
-                        with(density) {
-                          lazySpace =
-                              screen - size.height.toDp() - topPadding - bottomPadding +
-                                  maxOf(minLazySpace, lazySpace)
-                        }
+                          with(density) {
+                              lazySpace =
+                                  screen - size.height.toDp() - topPadding - bottomPadding +
+                                          maxOf(minLazySpace, lazySpace)
+                          }
                       }
                       .testTag(OverviewScreenTestTags.SCREEN)
                       .verticalScroll(rememberScrollState())) {
                 // -- Latest alert section --
                 Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
 
-                Spacer(modifier = Modifier.height(12.dp))
-                LatestAlertCard()
+                //Spacer(modifier = Modifier.height(12.dp))
 
-                Spacer(modifier = Modifier.height(24.dp))
+              val listState = rememberLazyListState()
+              val coroutineScope = rememberCoroutineScope()
 
-                // -- Create a new report buton --
+              Box(modifier = Modifier.fillMaxSize()) {
+                  LazyRow(
+                      state = listState,
+                      modifier = Modifier.fillMaxWidth(),
+                      horizontalArrangement = Arrangement.Start,
+                      contentPadding = PaddingValues(0.dp)
+                  ) {
+                      items(uiState.alerts) { alert ->
+                          AlertItem(
+                              alert = alert,
+                              onClick = {},
+                              modifier = Modifier
+                                  .fillParentMaxWidth()
+                                  .padding(horizontal = 0.dp))
+                      }
+                  }
+
+                      IconButton(
+                          onClick = {
+                              val prevIndex = (listState.firstVisibleItemIndex - 1).coerceAtLeast(0)
+                              coroutineScope.launch { listState.animateScrollToItem(prevIndex) }
+                          },
+                          modifier = Modifier.align(Alignment.CenterStart)
+                      ) {
+                          Icon(Icons.Default.ArrowBack, contentDescription = "Previous")
+                      }
+
+                      IconButton(
+                          onClick = {
+                              val nextIndex = (listState.firstVisibleItemIndex + 1)
+                                  .coerceAtMost(uiState.alerts.size - 1)
+                              coroutineScope.launch { listState.animateScrollToItem(nextIndex) }
+                          },
+                          modifier = Modifier.align(Alignment.CenterEnd)
+                      ) {
+                          Icon(Icons.Default.ArrowForward, contentDescription = "Next")
+                      }
+              }
+
+              //Spacer(modifier = Modifier.height(24.dp))
+
+                // -- Create a new report button --
                 // Display the button only if the user role is FARMER
                 if (userRole == UserRole.FARMER) {
                   Button(
                       onClick = onAddReport,
                       modifier =
-                          Modifier.align(Alignment.CenterHorizontally)
+                          Modifier
+                              .align(Alignment.CenterHorizontally)
                               .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
                         Text("Create a new report")
                       }
@@ -223,25 +283,30 @@ fun OverviewScreen(
  * implementation will fetch alerts.
  */
 @Composable
-fun LatestAlertCard() {
-  Card(modifier = Modifier.fillMaxWidth()) {
-    Column(modifier = Modifier.padding(16.dp)) {
-      // Using mock data for now, will implement the logics for LatestAlert later
-      Text("Influenza Detected", style = MaterialTheme.typography.titleMedium)
-      Text("Outbreak: 08/10/2025", style = MaterialTheme.typography.bodyMedium)
-      Text(
-          "Symptoms: Sudden drop in egg production, respiratory distress",
-          style = MaterialTheme.typography.bodyMedium)
-      Text("Region: Vaud, Switzerland", style = MaterialTheme.typography.bodyMedium)
-      Spacer(modifier = Modifier.height(8.dp))
-      // Will need to put outbreak photo
-      /*Image(
-      *    painter = painterResource(id = R.drawable.placeholder),
-      *    contentDescription = "Outbreak photo",
-      *    modifier = Modifier.height(120.dp).fillMaxWidth()
-      )*/
+fun AlertItem(alert: Alert, onClick: (() -> Unit), modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier
+            .padding(16.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(alert.title, style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = alert.description.let { if (it.length > 50) it.take(50) + "..." else it },
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 2
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "${alert.region} • ${alert.outbreakDate}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
     }
-  }
 }
 
 /** Composable displaying a simple dropdown menu for filtering or selecting options. */
@@ -283,7 +348,8 @@ fun <T> DropdownMenuWrapper(
 fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
   Row(
       modifier =
-          Modifier.fillMaxWidth()
+          Modifier
+              .fillMaxWidth()
               .testTag(OverviewScreenTestTags.REPORT_ITEM)
               .clickable { onClick() }
               .padding(vertical = 8.dp),
