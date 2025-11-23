@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.ui.map.MapTopBar
@@ -40,6 +41,14 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.rememberCameraPositionState
 import java.util.Locale
+
+object LocationPickerTestTags {
+  const val MAP_SCREEN = "googleMapScreen"
+  const val SELECT_LOCATION_BUTTON = "selectLocationButton"
+  const val CONFIRMATION_PROMPT = "confirmationPromptBox"
+  const val PROMPT_CONFIRM_BUTTON = "confirmationPromptYesButton"
+  const val PROMPT_CANCEL_BUTTON = "confirmationPromptNoButton"
+}
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
@@ -117,6 +126,7 @@ private fun LocationPickerScreen(
   Log.w("LocationPicker", "Picking a location")
   Box(modifier = modifier.fillMaxSize()) {
     GoogleMap(
+        modifier = Modifier.testTag(LocationPickerTestTags.MAP_SCREEN),
         cameraPositionState = cameraPositionState,
         onMapLoaded = {},
         properties = googleMapMapProperties,
@@ -140,7 +150,10 @@ private fun LocationPickerScreen(
           val pos = cameraPositionState.position.target
           onLocationPicked(pos.latitude, pos.longitude)
         },
-        modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp)) {
+        modifier =
+            Modifier.align(Alignment.BottomCenter)
+                .padding(16.dp)
+                .testTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON)) {
           Text("Select this location")
         }
   }
@@ -178,11 +191,24 @@ private fun AddressConfirmationPrompt(
   val text = if (address != null) "Detected address: $address" else "Finding address..."
 
   AlertDialog(
+      modifier = Modifier.testTag(LocationPickerTestTags.CONFIRMATION_PROMPT),
       onDismissRequest = onDismiss,
       title = { Text("Confirm address") },
       text = { Text(text) },
-      confirmButton = { TextButton(onClick = onConfirm) { Text("Confirm") } },
-      dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } })
+      confirmButton = {
+        TextButton(
+            modifier = Modifier.testTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON),
+            onClick = onConfirm) {
+              Text("Confirm")
+            }
+      },
+      dismissButton = {
+        TextButton(
+            modifier = Modifier.testTag(LocationPickerTestTags.PROMPT_CANCEL_BUTTON),
+            onClick = onDismiss) {
+              Text("Cancel")
+            }
+      })
 }
 
 /*
