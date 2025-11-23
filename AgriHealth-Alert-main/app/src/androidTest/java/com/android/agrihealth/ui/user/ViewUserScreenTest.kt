@@ -7,18 +7,24 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
 import org.junit.Rule
 import org.junit.Test
 
-/** Fake ViewModel for deterministic UI state control. */
-class FakeViewUserViewModel(initial: ViewUserUiState) : ViewUserViewModel(targetUserId = "fake") {
+class FakeViewUserViewModel(initial: ViewUserUiState) :
+    ViewUserViewModel(
+        targetUserId = "fake",
+        userRepository =
+            com.android.agrihealth.data.model.authentification.UserRepositoryFirestore(),
+        officeRepository = com.android.agrihealth.data.model.office.OfficeRepositoryFirestore()) {
+
   private val _state: MutableState<ViewUserUiState> = mutableStateOf(initial)
 
   override val uiState: MutableState<ViewUserUiState>
     get() = _state
 
-  override fun load(currentUser: com.android.agrihealth.data.model.user.User) {}
+  override fun load() {}
 
   fun setState(state: ViewUserUiState) {
     _state.value = state
@@ -31,7 +37,7 @@ class ViewUserScreenTest {
 
   private fun setScreen(
       vm: FakeViewUserViewModel,
-      currentUser: com.android.agrihealth.data.model.user.User =
+      currentUser: User =
           Farmer(
               uid = "cur",
               firstname = "Current",
@@ -48,15 +54,13 @@ class ViewUserScreenTest {
     }
   }
 
-  //  --- Tests ---
-
   @Test
   fun topBar_displaysCorrectly() {
     val vm = FakeViewUserViewModel(ViewUserUiState.Loading)
     setScreen(vm)
 
     composeTestRule.onNodeWithTag(ViewUserScreenTestTags.TOP_BAR).assertExists()
-    composeTestRule.onNodeWithContentDescription("Back").assertExists()
+    composeTestRule.onNodeWithTag(ViewUserScreenTestTags.BACK_BUTTON).assertExists()
   }
 
   @Test

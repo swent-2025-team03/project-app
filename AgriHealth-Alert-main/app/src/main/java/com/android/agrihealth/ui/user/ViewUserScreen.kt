@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.data.model.user.*
 
 object ViewUserScreenTestTags {
@@ -44,9 +43,8 @@ fun ViewUserScreen(
 
   val context = LocalContext.current
 
-  LaunchedEffect(Unit) { viewModel.load(currentUser) }
+  LaunchedEffect(Unit) { viewModel.load() }
 
-  // Handle errors with a toast
   if (uiState is ViewUserUiState.Error) {
     LaunchedEffect(uiState) {
       Toast.makeText(context, (uiState as ViewUserUiState.Error).message, Toast.LENGTH_LONG).show()
@@ -65,12 +63,11 @@ fun ViewUserScreen(
               }
             },
             navigationIcon = {
-              IconButton(onClick = onBack) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    modifier = Modifier.testTag(ViewUserScreenTestTags.BACK_BUTTON))
-              }
+              IconButton(
+                  onClick = onBack,
+                  modifier = Modifier.testTag(ViewUserScreenTestTags.BACK_BUTTON)) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                  }
             },
             modifier = Modifier.testTag(ViewUserScreenTestTags.TOP_BAR))
       }) { padding ->
@@ -85,12 +82,12 @@ fun ViewUserScreen(
             is ViewUserUiState.Error ->
                 Box(Modifier.fillMaxSize(), Alignment.Center) {
                   Text(
-                      "Unable to load user.",
+                      (uiState as ViewUserUiState.Error).message,
                       modifier = Modifier.testTag(ViewUserScreenTestTags.ERROR_TEXT))
                 }
             is ViewUserUiState.Success -> {
-              val user = (uiState as ViewUserUiState.Success).user
-              ViewUserContent(user = user)
+              val success = uiState as ViewUserUiState.Success
+              ViewUserContent(user = success.user, officeName = success.officeName)
             }
           }
         }
@@ -98,7 +95,7 @@ fun ViewUserScreen(
 }
 
 @Composable
-private fun ViewUserContent(user: User) {
+private fun ViewUserContent(user: User, officeName: String?) {
   val scroll = rememberScrollState()
 
   Column(
@@ -108,7 +105,6 @@ private fun ViewUserContent(user: User) {
               .padding(16.dp)
               .testTag(ViewUserScreenTestTags.CONTENT_COLUMN),
       horizontalAlignment = Alignment.CenterHorizontally) {
-        // Profile icon TODO replace with real profile picture when implemented
         Icon(
             imageVector = Icons.Default.AccountCircle,
             contentDescription = "Profile",
@@ -116,7 +112,6 @@ private fun ViewUserContent(user: User) {
 
         Spacer(Modifier.height(24.dp))
 
-        // Name field
         OutlinedTextField(
             value = "${user.firstname} ${user.lastname}",
             onValueChange = {},
@@ -126,7 +121,6 @@ private fun ViewUserContent(user: User) {
 
         Spacer(Modifier.height(8.dp))
 
-        // Role
         OutlinedTextField(
             value = user.role.displayString(),
             onValueChange = {},
@@ -136,27 +130,9 @@ private fun ViewUserContent(user: User) {
 
         Spacer(Modifier.height(8.dp))
 
-        // Office name for vets
         if (user is Vet) {
-          val officeRepo = OfficeRepositoryFirestore()
-          var officeName by remember { mutableStateOf("Loading…") }
-
-          LaunchedEffect(user.officeId) {
-            val id = user.officeId
-            if (id == null) {
-              officeName = "None"
-            } else {
-              try {
-                val office = officeRepo.getOffice(id).getOrNull()
-                officeName = office?.name ?: "None"
-              } catch (_: Exception) {
-                officeName = "None"
-              }
-            }
-          }
-
           OutlinedTextField(
-              value = officeName,
+              value = officeName ?: "None",
               onValueChange = {},
               label = { Text("Office") },
               readOnly = true,
@@ -165,8 +141,6 @@ private fun ViewUserContent(user: User) {
           Spacer(Modifier.height(8.dp))
         }
 
-        // Address
-        // TODO display real address once implemented.
         user.address?.let {
           OutlinedTextField(
               value = "Not implemented yet",
@@ -178,7 +152,6 @@ private fun ViewUserContent(user: User) {
           Spacer(Modifier.height(8.dp))
         }
 
-        // Description
         if (!user.description.isNullOrBlank()) {
           OutlinedTextField(
               value = user.description!!,
