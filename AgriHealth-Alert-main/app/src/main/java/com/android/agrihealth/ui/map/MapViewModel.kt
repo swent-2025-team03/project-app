@@ -31,7 +31,8 @@ class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
     private val locationViewModel: LocationViewModel,
-    val selectedReportId: String? = null
+    val selectedReportId: String? = null,
+    showReports: Boolean = true
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(MapUIState())
   val uiState: StateFlow<MapUIState> = _uiState.asStateFlow()
@@ -50,7 +51,7 @@ class MapViewModel(
       }
     }
     refreshMapPermission()
-    refreshReports(
+    if (showReports) refreshReports(
         Firebase.auth.currentUser?.uid
             ?: throw IllegalArgumentException("Map refreshed Reports while current user was null"))
   }
