@@ -29,13 +29,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.data.model.device.location.LocationRepository
-import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
-import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.ui.map.MapTopBar
 import com.android.agrihealth.ui.map.MapViewModel
 import com.android.agrihealth.ui.map.getUISettingsAndTheme
@@ -48,12 +43,22 @@ import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
+/**
+ * Shows a map to choose a specific location with a pin.
+ *
+ * @param mapViewModel Map view model using a location repository
+ * @param navigationActions Navigation Actions to navigate through the app
+ * @param onLatLng Action to take once the user picks some coordinates
+ * @param onAddress Action to take once the address is resolved
+ */
 fun LocationPicker(
     mapViewModel: MapViewModel = viewModel(),
     navigationActions: NavigationActions? = null,
+    onLatLng: (Double, Double) -> Unit = { _, _ -> },
     onAddress: (String?) -> Unit
 ) {
   val context = LocalContext.current
+
   var showConfirmation by remember { mutableStateOf(false) }
   var address by remember { mutableStateOf<String?>(null) }
 
@@ -66,6 +71,7 @@ fun LocationPicker(
             mapViewModel,
             onLocationPicked = { lat, lng ->
               // maybe loading goes here
+              onLatLng(lat, lng)
               getAddressFromLatLng(
                   context,
                   lat,
@@ -89,7 +95,7 @@ fun LocationPicker(
 }
 
 @Composable
-fun LocationPickerScreen(
+private fun LocationPickerScreen(
     modifier: Modifier = Modifier,
     mapViewModel: MapViewModel = viewModel(),
     onLocationPicked: (Double, Double) -> Unit,
@@ -141,10 +147,19 @@ fun LocationPickerScreen(
 }
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+/**
+ * Convert geographical coordinates into a text address
+ *
+ * @param context Current composable context
+ * @param lat Latitude to convert
+ * @param lng Longitude to convert
+ * @param onResult Action to take with the converted address. May be null if conversion failed
+ */
 fun getAddressFromLatLng(context: Context, lat: Double, lng: Double, onResult: (String?) -> Unit) {
   val geocoder = Geocoder(context, Locale.getDefault())
 
   try {
+    // Deprecated but I can't use the new function for some reason
     val addresses = geocoder.getFromLocation(lat, lng, 1)
     val result = addresses?.firstOrNull()?.getAddressLine(0)
     onResult(result)
@@ -155,7 +170,11 @@ fun getAddressFromLatLng(context: Context, lat: Double, lng: Double, onResult: (
 }
 
 @Composable
-fun AddressConfirmationPrompt(address: String?, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+private fun AddressConfirmationPrompt(
+    address: String?,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
   val text = if (address != null) "Detected address: $address" else "Finding address..."
 
   AlertDialog(
@@ -166,6 +185,7 @@ fun AddressConfirmationPrompt(address: String?, onConfirm: () -> Unit, onDismiss
       dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } })
 }
 
+/*
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 @Preview
@@ -195,3 +215,4 @@ fun LocationPickerScreenPreview() {
         })
   }
 }
+*/
