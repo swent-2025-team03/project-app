@@ -23,7 +23,7 @@ class OfficeNameTest() : FirebaseEmulatorsTest() {
   @Before
   fun setup() {
     super.setUp()
-    val vet = super.user3.copy(officeId = "office")
+    val vet = user3.copy(officeId = "office")
     var office = Office("office", "name", null, ownerId = vet.uid)
     val authRepo = AuthRepositoryProvider.repository
     val officeRepo = OfficeRepositoryProvider.get()
@@ -38,7 +38,7 @@ class OfficeNameTest() : FirebaseEmulatorsTest() {
   fun showsNoneOfficeWhenUidIsNull() {
     composeRule.setContent { OfficeName(null) }
     composeRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
-      composeRule.onNodeWithText("not assigned to an Office").isDisplayed()
+      composeRule.onNodeWithText("Not assigned to an office").isDisplayed()
     }
   }
 
@@ -54,7 +54,7 @@ class OfficeNameTest() : FirebaseEmulatorsTest() {
   fun showsDeletedOfficeWhenOfficeDoesNotExist() {
     composeRule.setContent { OfficeName("off1ce") }
     composeRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
-      composeRule.onNodeWithText("deleted Office").isDisplayed()
+      composeRule.onNodeWithText("Deleted office").isDisplayed()
     }
   }
 }
