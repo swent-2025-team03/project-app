@@ -1,6 +1,5 @@
 package com.android.agrihealth.data.model.firebase.emulators
 
-import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
@@ -34,9 +33,8 @@ object FirebaseEmulatorsManager {
    * Initializes Firebase emulators, trying locally and scanning the network in case the Android
    * device is on another machine (meaning, a physical device)
    */
-  fun linkEmulators() {
-    if (emulatorInitialized) return
-    Log.d("EmulatorManager", "Actually linking emulators")
+  fun linkEmulators(force: Boolean = false) {
+    if (emulatorInitialized && !force) return
 
     val emulatorHost = if (shouldUseLocal()) LOCAL_HOST else scanNetworkForEmulators()
 
