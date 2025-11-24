@@ -5,20 +5,20 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
-import com.android.agrihealth.data.model.authentification.UserRepositoryFirestore
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testutil.FakeOfficeRepository
+import com.android.agrihealth.testutil.FakeUserRepository
 import org.junit.Rule
 import org.junit.Test
 
 class FakeViewUserViewModel(initial: ViewUserUiState) :
     ViewUserViewModel(
         targetUserId = "fake",
-        userRepository = UserRepositoryFirestore(),
-        officeRepository = OfficeRepositoryFirestore()) {
+        userRepository = FakeUserRepository(),
+        officeRepository = FakeOfficeRepository()) {
 
   private val _state: MutableState<ViewUserUiState> = mutableStateOf(initial)
 
