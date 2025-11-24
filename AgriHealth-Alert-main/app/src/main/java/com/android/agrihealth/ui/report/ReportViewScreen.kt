@@ -2,6 +2,7 @@ package com.android.agrihealth.ui.report
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -28,6 +29,7 @@ import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
+import java.time.format.DateTimeFormatter
 
 object ReportViewScreenTestTags {
   const val STATUS_BADGE_BOX = "StatusBadgeBox"
@@ -255,6 +257,49 @@ fun ReportViewScreen(
                             }
                           }
                     }
+              }
+              // ---- Set Time section ----
+              Column {
+                Text(
+                    text = "Veterinarian visit: ",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold)
+                Spacer(modifier = Modifier.width(8.dp))
+                Row {
+                  Text(
+                      "    Start time: ",
+                      style = MaterialTheme.typography.titleMedium,
+                      fontWeight = FontWeight.SemiBold)
+                  Text(
+                      text =
+                          report.startTime
+                              ?.toLocalDate()
+                              ?.format(DateTimeFormatter.ofPattern("dd MMM yyyy")) ?: "  Not set",
+                      style = MaterialTheme.typography.bodyLarge,
+                      color = MaterialTheme.colorScheme.primaryContainer,
+                      modifier =
+                          Modifier.clickable(
+                              onClick = {
+                                navigationActions.navigateTo(Screen.Planner(reportId = report.id))
+                              }))
+                }
+                Row {
+                  Text(
+                      "    Duration: ",
+                      style = MaterialTheme.typography.titleMedium,
+                      fontWeight = FontWeight.SemiBold)
+                  Text(
+                      text =
+                          report.duration?.format(DateTimeFormatter.ofPattern("HH:mm"))
+                              ?: "  Not set",
+                      style = MaterialTheme.typography.bodyLarge,
+                      color = MaterialTheme.colorScheme.primaryContainer,
+                      modifier =
+                          Modifier.clickable(
+                              onClick = {
+                                navigationActions.navigateTo(Screen.Planner(reportId = report.id))
+                              }))
+                }
               }
 
               // ---- Bottom section: Map + Spam + Save ----
