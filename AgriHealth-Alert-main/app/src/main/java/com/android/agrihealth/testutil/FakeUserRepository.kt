@@ -26,11 +26,10 @@ class FakeUserRepository(private var targetUser: User? = null) : UserRepository 
     if (matches(uid)) {
       targetUser = null
     }
-    // no-op otherwise, like Firestore.delete()
   }
 
   override suspend fun getUserFromId(uid: String): Result<User> {
-    return if (matches(uid) && targetUser != null) {
+    return if (matches(uid)) {
       Result.success(targetUser!!)
     } else {
       Result.failure(NoSuchElementException(USER_NOT_FOUND))
