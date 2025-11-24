@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.overview
 
-import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
@@ -86,7 +85,6 @@ class OverviewViewModel(
     viewModelScope.launch {
       val alerts = alertRepository.getAlerts()
       _uiState.value = _uiState.value.copy(alerts = alerts)
-      Log.d("OverviewVM", "Loaded alerts: ${alerts.size}")
     }
   }
 
