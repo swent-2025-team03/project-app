@@ -22,9 +22,9 @@ data class FirebaseEnvironment(
 object FirebaseEmulatorsManager {
   private var emulatorInitialized = false
   private const val LOCAL_HOST = "10.0.2.2"
-  const val FIRESTORE_PORT = 8081
-  const val AUTH_PORT = 9099
-  const val STORAGE_PORT = 9199
+  private const val FIRESTORE_PORT = 8081
+  private const val AUTH_PORT = 9099
+  private const val STORAGE_PORT = 9199
 
   lateinit var environment: FirebaseEnvironment
     private set
