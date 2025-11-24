@@ -1,11 +1,15 @@
 package com.android.agrihealth.ui.common
 
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -37,11 +41,16 @@ class OfficeNameViewModel(
 fun OfficeName(
     uid: String?,
     modifier: Modifier = Modifier,
-    deletedOffice: String = "deleted Office",
-    noneOffice: String = "not assigned to an Office",
-    vm: OfficeNameViewModel = viewModel(key = uid)
+    deletedOffice: String = "Deleted office",
+    noneOffice: String = "Not assigned to an office",
+    vm: OfficeNameViewModel = viewModel(key = uid),
+    onClick: (() -> Unit)? = null
 ) {
   val uiState by vm.uiState.collectAsState()
   LaunchedEffect(uid, deletedOffice, noneOffice) { vm.loadOffice(uid, deletedOffice, noneOffice) }
-  Text(uiState, modifier)
+  Text(
+      text = uiState,
+      color = if (onClick != null) MaterialTheme.colorScheme.primary else LocalContentColor.current,
+      textDecoration = if (onClick != null) TextDecoration.Underline else TextDecoration.None,
+      modifier = if (onClick != null) Modifier.clickable { onClick() } else Modifier)
 }
