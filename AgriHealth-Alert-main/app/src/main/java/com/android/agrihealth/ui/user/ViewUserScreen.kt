@@ -1,6 +1,7 @@
 package com.android.agrihealth.ui.user
 
 import android.widget.Toast
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.*
 
 object ViewUserScreenTestTags {
@@ -36,7 +38,7 @@ object ViewUserScreenTestTags {
 fun ViewUserScreen(
     viewModel: ViewUserViewModel,
     onBack: () -> Unit,
-    userViewModel: UserViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    userViewModel: UserViewModel = viewModel()
 ) {
   val currentUser by userViewModel.user.collectAsState()
   val uiState by viewModel.uiState
@@ -97,6 +99,7 @@ fun ViewUserScreen(
 @Composable
 private fun ViewUserContent(user: User, officeName: String?) {
   val scroll = rememberScrollState()
+  val noInteraction = remember { MutableInteractionSource() }
 
   Column(
       modifier =
@@ -117,6 +120,8 @@ private fun ViewUserContent(user: User, officeName: String?) {
             onValueChange = {},
             label = { Text("Name") },
             readOnly = true,
+            interactionSource = noInteraction,
+            enabled = false,
             modifier = Modifier.fillMaxWidth().testTag(ViewUserScreenTestTags.NAME_FIELD))
 
         Spacer(Modifier.height(8.dp))
@@ -126,6 +131,8 @@ private fun ViewUserContent(user: User, officeName: String?) {
             onValueChange = {},
             label = { Text("Role") },
             readOnly = true,
+            interactionSource = noInteraction,
+            enabled = false,
             modifier = Modifier.fillMaxWidth().testTag(ViewUserScreenTestTags.ROLE_FIELD))
 
         Spacer(Modifier.height(8.dp))
@@ -136,6 +143,8 @@ private fun ViewUserContent(user: User, officeName: String?) {
               onValueChange = {},
               label = { Text("Office") },
               readOnly = true,
+              interactionSource = noInteraction,
+              enabled = false,
               modifier = Modifier.fillMaxWidth().testTag(ViewUserScreenTestTags.OFFICE_FIELD))
 
           Spacer(Modifier.height(8.dp))
@@ -147,6 +156,8 @@ private fun ViewUserContent(user: User, officeName: String?) {
               onValueChange = {},
               label = { Text("Address") },
               readOnly = true,
+              interactionSource = noInteraction,
+              enabled = false,
               modifier = Modifier.fillMaxWidth().testTag(ViewUserScreenTestTags.ADDRESS_FIELD))
 
           Spacer(Modifier.height(8.dp))
@@ -158,6 +169,8 @@ private fun ViewUserContent(user: User, officeName: String?) {
               onValueChange = {},
               label = { Text("Description") },
               readOnly = true,
+              interactionSource = noInteraction,
+              enabled = false,
               modifier = Modifier.fillMaxWidth().testTag(ViewUserScreenTestTags.DESCRIPTION_FIELD))
         }
 
