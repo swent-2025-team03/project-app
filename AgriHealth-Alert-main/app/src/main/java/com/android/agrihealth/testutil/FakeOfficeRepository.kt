@@ -25,7 +25,7 @@ class FakeOfficeRepository(initialOffices: List<Office> = emptyList()) : OfficeR
   }
 
   override suspend fun deleteOffice(id: String) {
-    if (offices.remove(id) == null) throw NoSuchElementException(OFFICE_NOT_FOUND)
+    offices.remove(id)
   }
 
   override suspend fun getOffice(id: String): Result<Office> {

@@ -7,12 +7,15 @@ private const val USER_NOT_FOUND = "User not found"
 
 class FakeUserRepository(private var targetUser: User? = null) : UserRepository {
 
+  /** Returns true if the in-memory user matches the given uid. */
+  private fun matches(uid: String): Boolean = targetUser?.uid == uid
+
   override suspend fun addUser(user: User) {
     targetUser = user
   }
 
   override suspend fun updateUser(user: User) {
-    if (targetUser != null && targetUser?.uid == user.uid) {
+    if (matches(user.uid)) {
       targetUser = user
     } else {
       throw NoSuchElementException(USER_NOT_FOUND)
@@ -20,15 +23,14 @@ class FakeUserRepository(private var targetUser: User? = null) : UserRepository 
   }
 
   override suspend fun deleteUser(uid: String) {
-    if (targetUser != null && targetUser?.uid == uid) {
+    if (matches(uid)) {
       targetUser = null
-    } else {
-      throw NoSuchElementException(USER_NOT_FOUND)
     }
+    // no-op otherwise, like Firestore.delete()
   }
 
   override suspend fun getUserFromId(uid: String): Result<User> {
-    return if (targetUser != null && targetUser?.uid == uid) {
+    return if (matches(uid) && targetUser != null) {
       Result.success(targetUser!!)
     } else {
       Result.failure(NoSuchElementException(USER_NOT_FOUND))
