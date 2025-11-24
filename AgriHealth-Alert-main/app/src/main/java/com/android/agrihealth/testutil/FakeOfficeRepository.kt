@@ -5,6 +5,8 @@ import com.android.agrihealth.data.model.office.OfficeRepository
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
+private const val OFFICE_NOT_FOUND = "Office not found"
+
 /** In-memory fake implementation of OfficeRepository for testing purposes. */
 class FakeOfficeRepository(initialOffices: List<Office> = emptyList()) : OfficeRepository {
 
@@ -18,16 +20,16 @@ class FakeOfficeRepository(initialOffices: List<Office> = emptyList()) : OfficeR
   }
 
   override suspend fun updateOffice(office: Office) {
-    if (!offices.containsKey(office.id)) throw NoSuchElementException("Office not found")
+    if (!offices.containsKey(office.id)) throw NoSuchElementException(OFFICE_NOT_FOUND)
     offices[office.id] = office
   }
 
   override suspend fun deleteOffice(id: String) {
-    if (offices.remove(id) == null) throw NoSuchElementException("Office not found")
+    if (offices.remove(id) == null) throw NoSuchElementException(OFFICE_NOT_FOUND)
   }
 
   override suspend fun getOffice(id: String): Result<Office> {
     return offices[id]?.let { Result.success(it) }
-        ?: Result.failure(NoSuchElementException("Office not found"))
+        ?: Result.failure(NoSuchElementException(OFFICE_NOT_FOUND))
   }
 }

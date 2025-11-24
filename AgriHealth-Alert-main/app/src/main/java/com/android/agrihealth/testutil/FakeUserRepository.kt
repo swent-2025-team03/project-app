@@ -3,6 +3,8 @@ package com.android.agrihealth.testutil
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.user.User
 
+private const val USER_NOT_FOUND = "User not found"
+
 class FakeUserRepository(private var targetUser: User? = null) : UserRepository {
 
   override suspend fun addUser(user: User) {
@@ -13,7 +15,7 @@ class FakeUserRepository(private var targetUser: User? = null) : UserRepository 
     if (targetUser != null && targetUser?.uid == user.uid) {
       targetUser = user
     } else {
-      throw NoSuchElementException("User not found")
+      throw NoSuchElementException(USER_NOT_FOUND)
     }
   }
 
@@ -21,7 +23,7 @@ class FakeUserRepository(private var targetUser: User? = null) : UserRepository 
     if (targetUser != null && targetUser?.uid == uid) {
       targetUser = null
     } else {
-      throw NoSuchElementException("User not found")
+      throw NoSuchElementException(USER_NOT_FOUND)
     }
   }
 
@@ -29,7 +31,7 @@ class FakeUserRepository(private var targetUser: User? = null) : UserRepository 
     return if (targetUser != null && targetUser?.uid == uid) {
       Result.success(targetUser!!)
     } else {
-      Result.failure(NoSuchElementException("User not found"))
+      Result.failure(NoSuchElementException(USER_NOT_FOUND))
     }
   }
 }
