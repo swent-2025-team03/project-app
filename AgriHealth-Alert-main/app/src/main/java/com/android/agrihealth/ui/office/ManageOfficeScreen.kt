@@ -72,7 +72,7 @@ fun ManageOfficeScreen(
               object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                   return ProfileViewModel(
-                      userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
+                      userViewModel, ConnectionRepositoryProvider.vetToOfficeRepository)
                       as T
                 }
               })
@@ -158,10 +158,8 @@ fun ManageOfficeScreen(
                   }
                 }
 
-                val leaveButtonEnabled = isOwner
                 OutlinedButton(
-                    onClick = { if (leaveButtonEnabled) showLeaveDialog = true },
-                    enabled = leaveButtonEnabled,
+                    onClick = { showLeaveDialog = true },
                     colors =
                         ButtonDefaults.outlinedButtonColors(contentColor = StatusColors().spam),
                     border = BorderStroke(1.dp, StatusColors().spam),

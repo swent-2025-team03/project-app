@@ -57,7 +57,6 @@ class ConnectionRepository(
                       mapOf(
                           FirestoreSchema.ConnectCodes.CODE to code,
                           FirestoreSchema.ConnectCodes.OFFICE_ID to officeId,
-                          FirestoreSchema.ConnectCodes.VET_ID to Firebase.auth.uid!!,
                           FirestoreSchema.ConnectCodes.STATUS to STATUS_OPEN,
                           FirestoreSchema.ConnectCodes.CREATED_AT to createdAt,
                           FirestoreSchema.ConnectCodes.TTL_MINUTES to ttlMinutes))
@@ -116,16 +115,16 @@ class ConnectionRepository(
 
   // Creates a connection document between vet and farmer if it does not already exist.
   // Returns: Unit. No value is returned.
-  private fun linkUsers(tx: Transaction, vetId: String, farmerId: String) {
-    val connId = connectionId(vetId, farmerId)
+  private fun linkUsers(tx: Transaction, officeId: String, userId: String) {
+    val connId = connectionId(officeId, userId)
     val ref = db.collection(connectionType + CONNECTIONS_COLLECTION).document(connId)
     // Assume the connection doesn't exist. If not, only the timestamp changes, is it really that
     // bad?
     tx.set(
         ref,
         mapOf(
-            FirestoreSchema.Connections.VET_ID to vetId,
-            FirestoreSchema.Connections.FARMER_ID to farmerId,
+            FirestoreSchema.Connections.OFFICE_ID to officeId,
+            FirestoreSchema.Connections.USER_ID to userId,
             FirestoreSchema.Connections.CREATED_AT to FieldValue.serverTimestamp(),
             FirestoreSchema.Connections.ACTIVE to true)) // this line NEEDS to be here or tests fail
   }

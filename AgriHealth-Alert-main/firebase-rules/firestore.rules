@@ -10,6 +10,16 @@ service cloud.firestore {
           && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
     }
 
+    function ownsOffice() {
+        return isSignedIn() && hasRole("Vet")
+        && get(/databases/$(database)/documents/offices/$(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId)).data.ownerId == request.auth.uid;
+    }
+
+    function isInOffice(officeId) {
+        return isSignedIn() && hasRole("Vet")
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId == officeId;
+    }
+
     // ---- Users ----
     match /users/{userID} {
       // Read own document OR another user's doc if an active connection exists (A__B or B__A)
@@ -44,6 +54,18 @@ service cloud.firestore {
 	  	allow read: if request.auth != null;
     }
 
+    match /farmer_to_officeconnect_codes/{code} {
+        allow create: if hasRole("Vet");
+        allow update: if hasRole("Farmer");
+        allow read: if request.auth != null;
+    }
+
+    match /vet_to_officeconnect_codes/{code} {
+        allow create: if ownsOffice();
+        allow update: if hasRole("Vet");
+        allow read: if isSignedIn();
+    }
+
     // ---- Connections ----
     match /connections/{id} {
       // Read allowed only for the two connected parties
@@ -72,6 +94,16 @@ service cloud.firestore {
         // For updates: farmerId and vetId cannot be changed
         (request.method == 'create' ||
          !(request.resource.data.diff(resource.data).changedKeys().hasAny(['farmerId','vetId'])));
+    }
+
+    match /farmerToOfficeConnections/{id} {
+      allow read: if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow write: if isSignedIn() && request.auth.uid == request.resource.data.userId;
+    }
+
+    match /vetToOfficeConnections/{id} {
+      allow read: if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow write: if isSignedIn() && request.auth.uid == request.resource.data.userId;
     }
 
     // ---- Reports ----

@@ -20,8 +20,8 @@ object FirestoreSchema {
   }
 
   object Connections {
-    const val VET_ID = "vetId"
-    const val FARMER_ID = "farmerId"
+    const val OFFICE_ID = "officeId"
+    const val USER_ID = "userId"
     const val CREATED_AT = "createdAt"
     const val ACTIVE = "active"
   }

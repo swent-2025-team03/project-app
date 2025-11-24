@@ -331,7 +331,10 @@ fun AgriHealthApp(
                 }
               }
           ClaimCodeScreen(
-              profileViewModel = viewModel(factory = profileFactory),
+              profileViewModel =
+                  viewModel(
+                      factory = profileFactory,
+                      key = backStackEntry.arguments?.getString("connectionRepo")),
               { navigationActions.goBack() })
         }
   }
