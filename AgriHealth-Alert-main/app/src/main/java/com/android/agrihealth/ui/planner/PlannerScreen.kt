@@ -1,5 +1,7 @@
 package com.android.agrihealth.ui.planner
 
+import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -26,6 +30,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,15 +58,17 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.max
 
+// Todo: show year if different from current year
 // Todo: scroll to first task of the day
 // Todo: implement task overlapping
 // Todo: implement task click to view Report
-// Todo: implement switch day by clicking on week days
 // Todo: implement setting due date if seen from ViewReport screen
+// Todo: remove Log
 val previewReport1 =
     Report(
         id = "1",
@@ -133,13 +140,9 @@ fun PlannerScreen(
                 }
               }
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                  uiState.selectedWeek.forEach { dayNumber ->
-                    DayCard(Modifier.weight(1f), dayNumber)
-                  }
-                }
+            WeeklyPager(
+                onDateSelected = { date -> plannerVM.setSelectedDate(date) },
+                mondayOfStartingWeek = uiState.today.with(DayOfWeek.MONDAY))
             Row(modifier = Modifier.fillMaxWidth()) {
               Text(
                   uiState.selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM")),
@@ -171,11 +174,47 @@ fun WeekHeader(start: LocalDate, end: LocalDate) {
   Text(text)
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DayCard(modifier: Modifier = Modifier, day: LocalDate) {
+fun WeeklyPager(
+    onDateSelected: (LocalDate) -> Unit,
+    mondayOfStartingWeek: LocalDate,
+) {
+
+  val maxPages = 1000
+  val initialPage = maxPages / 2
+  val pagerState =
+      rememberPagerState(
+          initialPage = initialPage, initialPageOffsetFraction = 0f, pageCount = { maxPages })
+
+  LaunchedEffect(pagerState.currentPage) {
+    val weekOffset = pagerState.currentPage - initialPage
+    val startOfWeek = mondayOfStartingWeek.plusWeeks(weekOffset.toLong())
+    onDateSelected(startOfWeek)
+  }
+
+  HorizontalPager(
+      state = pagerState,
+      modifier = Modifier.fillMaxWidth(),
+      pageSpacing = 16.dp,
+  ) { page ->
+    Log.d("PlannerScreen", "Rendering page: $page")
+
+    // Calculate week offset relative to the center
+    val weekOffset = page - (initialPage)
+    val startOfWeek = mondayOfStartingWeek.plusWeeks(weekOffset.toLong())
+    val week: List<LocalDate> = (0..6).map { startOfWeek.plusDays(it.toLong()) }
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+      week.forEach { day -> DayCard(Modifier.weight(1f), day, onClick = { onDateSelected(it) }) }
+    }
+  }
+}
+
+@Composable
+fun DayCard(modifier: Modifier = Modifier, day: LocalDate, onClick: (LocalDate) -> Unit = {}) {
   Card(modifier = modifier.height(64.dp)) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(4.dp),
+        modifier = Modifier.fillMaxSize().clickable(onClick = { onClick(day) }).padding(4.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally) {
           Text(
