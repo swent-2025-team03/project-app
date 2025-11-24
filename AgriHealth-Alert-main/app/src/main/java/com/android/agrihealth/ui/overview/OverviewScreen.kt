@@ -155,16 +155,17 @@ fun OverviewScreen(
                 // -- Latest alert section --
                 Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
 
-                //Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
               val listState = rememberLazyListState()
               val coroutineScope = rememberCoroutineScope()
 
-              Box(modifier = Modifier.fillMaxSize()) {
+              Box(modifier = Modifier.fillMaxWidth(),
+                  contentAlignment = Alignment.Center
+              ) {
                   LazyRow(
                       state = listState,
-                      modifier = Modifier.fillMaxWidth(),
-                      horizontalArrangement = Arrangement.Start,
+                      modifier = Modifier.align(Alignment.Center),
                       contentPadding = PaddingValues(0.dp)
                   ) {
                       items(uiState.alerts) { alert ->
@@ -172,7 +173,7 @@ fun OverviewScreen(
                               alert = alert,
                               onClick = {},
                               modifier = Modifier
-                                  .fillParentMaxWidth()
+                                  .fillMaxWidth()
                                   .padding(horizontal = 0.dp))
                       }
                   }
@@ -199,7 +200,7 @@ fun OverviewScreen(
                       }
               }
 
-              //Spacer(modifier = Modifier.height(24.dp))
+              Spacer(modifier = Modifier.height(24.dp))
 
                 // -- Create a new report button --
                 // Display the button only if the user role is FARMER
@@ -284,13 +285,14 @@ fun OverviewScreen(
  */
 @Composable
 fun AlertItem(alert: Alert, onClick: (() -> Unit), modifier: Modifier = Modifier) {
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     Card(
         modifier = modifier
-            .padding(16.dp),
+            .width(screenWidth * 0.9f),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(start = 40.dp, top = 12.dp, end = 12.dp, bottom = 12.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             Text(alert.title, style = MaterialTheme.typography.titleLarge)
