@@ -3,7 +3,10 @@ package com.android.agrihealth.ui.report
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertAny
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -25,7 +28,9 @@ import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.utils.TestAssetUtils.FAKE_PHOTO_FILE
 import com.android.agrihealth.utils.TestAssetUtils.cleanupTestAssets
+import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -282,5 +287,165 @@ class AddReportScreenTest {
     composeRule.onNodeWithText("OK").performClick()
 
     Assert.assertTrue(called)
+  }
+
+
+  // Helper function for the tests below
+  private fun scrollToUploadSection() {
+    composeRule
+      .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+      .performScrollToNode(hasTestTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON))
+  }
+
+
+  @Test
+  fun imagePreview_isNotShownWhenEmpty() {
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+          userRole = UserRole.FARMER,
+          userId = "test_user",
+          onCreateReport = {},
+          addReportViewModel = FakeAddReportViewModel())
+      }
+    }
+    scrollToUploadSection()
+    composeRule.waitForIdle()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertDoesNotExist()
+    composeRule
+      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+      .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
+  }
+
+  @Test
+  fun imagePreview_canRemoveImage() {
+    val imageUri = getUriFrom(FAKE_PHOTO_FILE)
+    val fakeViewModel = FakeAddReportViewModel()
+    fakeViewModel.setPhoto(imageUri)
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+          userRole = UserRole.FARMER,
+          userId = "test_user",
+          onCreateReport = {},
+          addReportViewModel = fakeViewModel)
+      }
+    }
+    scrollToUploadSection()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+      .assertIsDisplayed()
+      .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+      .performClick()
+    composeRule.waitForIdle()
+    composeRule
+      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+      .assertIsDisplayed()
+      .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertDoesNotExist()
+  }
+
+  @Test
+  fun imagePreview_isShownWhenUploaded() {
+    val imageUri = getUriFrom(FAKE_PHOTO_FILE)
+    val fakeViewModel = FakeAddReportViewModel()
+    fakeViewModel.setPhoto(imageUri)
+
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+          userRole = UserRole.FARMER,
+          userId = "test_user",
+          onCreateReport = {},
+          addReportViewModel = fakeViewModel)
+      }
+    }
+    scrollToUploadSection()
+    composeRule.waitForIdle()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+      .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+  }
+
+  @Test
+  fun uploadImageDialog_cancel_dismissedNoPhotoPicked() {
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+          userRole = UserRole.FARMER,
+          userId = "test_user",
+          onCreateReport = {},
+          addReportViewModel = FakeAddReportViewModel())
+      }
+    }
+
+    scrollToUploadSection()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG).assertIsDisplayed()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_CANCEL).performClick()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG).assertIsNotDisplayed()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsNotDisplayed()
+    composeRule
+      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+      .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
+  }
+
+  @Test
+  fun uploadImageDialog_gallery_setsPhoto() {
+    val fakeViewModel = FakeAddReportViewModel()
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+          userRole = UserRole.FARMER,
+          userId = "test_user",
+          onCreateReport = {},
+          addReportViewModel = fakeViewModel)
+      }
+    }
+
+    scrollToUploadSection()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_GALLERY).assertHasClickAction()
+
+    // Simulate picking photo from gallery
+    val imageUri = getUriFrom(FAKE_PHOTO_FILE)
+    fakeViewModel.setPhoto(imageUri)
+
+    composeRule.waitForIdle()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+      .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+  }
+
+  @Test
+  fun uploadImageDialog_camera_setsPhoto() {
+    val fakeViewModel = FakeAddReportViewModel()
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+          userRole = UserRole.FARMER,
+          userId = "test_user",
+          onCreateReport = {},
+          addReportViewModel = fakeViewModel)
+      }
+    }
+
+    scrollToUploadSection()
+
+    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_CAMERA).assertHasClickAction()
+
+    // Simulate picking photo with camera
+    val cameraUri = getUriFrom(FAKE_PHOTO_FILE)
+    fakeViewModel.setPhoto(cameraUri)
+
+    composeRule.waitForIdle()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+      .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
   }
 }

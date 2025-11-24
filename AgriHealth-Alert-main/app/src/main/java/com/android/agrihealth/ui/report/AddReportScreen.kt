@@ -116,6 +116,7 @@ fun AddReportScreen(
 ) {
 
   // TODO Add this back and make changes so ui state is remembered between recompositions
+  //
   //  val factory = remember(userId) {
   //    object : androidx.lifecycle.ViewModelProvider.Factory {
   //      override fun <T : ViewModel> create(modelClass: Class<T>): T {
