@@ -72,11 +72,8 @@ import kotlin.math.max
 // Todo: show year if different from current year
 // Todo: scroll to first task of the day
 // Todo: implement task overlapping
-// Todo: implement task click to view Report
 // Todo: implement setting due date if seen from ViewReport screen
 // Todo: show a line for current hour
-// Todo: add set date button on ViewReport screen
-// Todo: handle screen if viewed from viewReport
 // Todo: Fix report title clipping onto background
 // Todo: remove Log
 
@@ -84,13 +81,18 @@ import kotlin.math.max
 @Composable
 fun PlannerScreen(
     userId: String = "",
+    reportId: String? = null,
     navigationActions: NavigationActions? = null,
     plannerVM: PlannerViewModel = viewModel(),
 ) {
 
   val uiState by plannerVM.uiState.collectAsState()
 
-  LaunchedEffect(userId) { plannerVM.loadReports(userId) }
+  LaunchedEffect(userId, reportId) {
+    plannerVM.setUserId(userId)
+    plannerVM.loadReports()
+    plannerVM.setReportToSetTheDateFor(reportId)
+  }
 
   Scaffold(
       topBar = {
@@ -112,10 +114,12 @@ fun PlannerScreen(
             })
       },
       bottomBar = {
-        BottomNavigationMenu(
-            selectedTab = Tab.Planner,
-            onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
-            modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
+        if (reportId == null) {
+          BottomNavigationMenu(
+              selectedTab = Tab.Planner,
+              onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
+              modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
+        }
       },
       content = { pd ->
         Box(modifier = Modifier.padding(pd)) {
@@ -149,7 +153,16 @@ fun PlannerScreen(
               navigationActions?.navigateTo(Screen.ViewReport(it))
             }
           }
-          SetReportDateBox(modifier = Modifier.align(Alignment.BottomEnd), uiState.selectedDate)
+          if (reportId != null) {
+
+            SetReportDateBox(
+                modifier = Modifier.align(Alignment.BottomEnd),
+                report = uiState.reportToSetTheDateFor,
+                uiState.selectedDate,
+                onSetReportDateClick = { plannerVM.editReportWithNewTime() },
+                onTimeSelected = plannerVM::setReportTime,
+                onDurationSelected = plannerVM::setReportDuration)
+          }
         }
       })
 }
@@ -345,9 +358,13 @@ fun DailyTasks(
 @Composable
 fun SetReportDateBox(
     modifier: Modifier = Modifier,
+    report: Report?,
     selectedDate: LocalDate = LocalDate.now(),
-    onSetDateClick: () -> Unit = {}
+    onSetReportDateClick: () -> Unit = {},
+    onTimeSelected: (LocalTime) -> Unit = {},
+    onDurationSelected: (LocalTime) -> Unit = {}
 ) {
+  if (report == null) return
   Box(
       modifier =
           modifier
@@ -360,15 +377,17 @@ fun SetReportDateBox(
         val date = selectedDate.format(DateTimeFormatter.ofPattern("dd MMM"))
         Column {
           Text(
-              "Cows hitting the greedy uncontrollably and they are lowkey killing it",
+              report.title,
               style = MaterialTheme.typography.titleMedium,
               maxLines = 1,
               overflow = TextOverflow.Ellipsis)
           Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "Set Report for $date at ", style = MaterialTheme.typography.bodyLarge)
-            TimePickerBox()
-            Spacer(Modifier.weight(3f))
-            IconButton(onClick = onSetDateClick, modifier = Modifier.weight(1f)) {
+            Text(text = "$date at ", style = MaterialTheme.typography.bodyLarge)
+            TimePickerBox(onTimeSelected = onTimeSelected)
+            Text("   Duration: ")
+            TimePickerBox(initialTime = LocalTime.of(1, 0), onTimeSelected = onDurationSelected)
+            Spacer(Modifier.weight(2f))
+            IconButton(onClick = onSetReportDateClick, modifier = Modifier.weight(1f)) {
               Icon(Icons.Default.Add, contentDescription = "Set Report Date")
             }
           }
@@ -427,15 +446,21 @@ fun PlannerScreenPreview() {
 
   val previewReport2 =
       previewReport1.copy(
-          startTime = LocalDateTime.now().plusHours(2), duration = LocalTime.of(1, 0))
+          id = "2", startTime = LocalDateTime.now().plusHours(2), duration = LocalTime.of(1, 0))
   val previewReport3 =
       previewReport1.copy(
-          startTime = LocalDateTime.now().plusHours(4), duration = LocalTime.of(2, 0))
+          id = "3",
+          startTime = LocalDateTime.now().plusHours(4),
+          duration = LocalTime.of(2, 0),
+          status = ReportStatus.RESOLVED)
+  val previewReport4 =
+      previewReport1.copy(
+          id = "4", startTime = LocalDateTime.now().plusDays(1), duration = LocalTime.of(2, 0))
 
   val reportRepo =
       object : ReportRepository {
         private val reports: MutableList<Report> =
-            mutableListOf(previewReport1, previewReport2, previewReport3)
+            mutableListOf(previewReport1, previewReport2, previewReport3, previewReport4)
 
         private var nextId = 0
 
@@ -487,5 +512,5 @@ fun PlannerScreenPreview() {
         }
       }
   val fakePlannerVM = PlannerViewModel(reportRepo)
-  AgriHealthAppTheme { PlannerScreen(userId = "vet1", plannerVM = fakePlannerVM) }
+  AgriHealthAppTheme { PlannerScreen(userId = "vet1", reportId = "2", plannerVM = fakePlannerVM) }
 }

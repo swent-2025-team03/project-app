@@ -1,6 +1,8 @@
 package com.android.agrihealth.ui.planner
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
@@ -12,8 +14,10 @@ import java.time.temporal.IsoFields
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 data class PlannerUIState(
+    val userId: String = "VET_456",
     val reports: Map<LocalDate?, List<Report>> = emptyMap(),
     val selectedDateReports: List<Report> = emptyList(),
 
@@ -27,6 +31,11 @@ data class PlannerUIState(
     val selectedWeek: List<LocalDate> =
         (0..6).map { selectedDate.with(DayOfWeek.MONDAY).plusDays(it.toLong()) },
     val selectedWeekNumber: Int = selectedDate.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR),
+
+    // Report for which we are setting the date
+    val setTime: LocalTime = LocalTime.now(),
+    val setDuration: LocalTime = LocalTime.of(1, 0),
+    val reportToSetTheDateFor: Report? = null,
 )
 
 class PlannerViewModel(
@@ -36,8 +45,11 @@ class PlannerViewModel(
   private val _uiState = MutableStateFlow(PlannerUIState())
   val uiState: StateFlow<PlannerUIState> = _uiState.asStateFlow()
 
-  suspend fun loadReports(userId: String) {
+  suspend fun loadReports() {
+    val userId = _uiState.value.userId
+    Log.d("PlannerViewModel", "Loading reports for userId: $userId")
     val reports = reportRepository.getAllReports(userId).groupBy { it.startTime?.toLocalDate() }
+    Log.d("PlannerViewModel", "Reports obtained for userId: $userId : $reports")
     _uiState.value =
         _uiState.value.copy(
             reports = reports,
@@ -54,5 +66,47 @@ class PlannerViewModel(
             selectedWeek = week,
             selectedWeekNumber = weekNumber,
             selectedDateReports = _uiState.value.reports[date] ?: emptyList())
+  }
+
+  fun setReportTime(time: LocalTime) {
+    _uiState.value = _uiState.value.copy(setTime = time)
+  }
+
+  fun setReportDuration(time: LocalTime) {
+    _uiState.value = _uiState.value.copy(setDuration = time)
+  }
+
+  fun setUserId(userId: String) {
+    _uiState.value = _uiState.value.copy(userId = userId)
+  }
+
+  fun editReportWithNewTime() {
+    val selectedDate = _uiState.value.selectedDate
+    val newDateTime = LocalDateTime.of(selectedDate, _uiState.value.setTime)
+    Log.d(
+        "PlannerViewModel",
+        "Editing report ${_uiState.value.reportToSetTheDateFor} with new datetime $newDateTime")
+    viewModelScope.launch {
+      reportRepository.editReport(
+          _uiState.value.reportToSetTheDateFor!!.id,
+          _uiState.value.reportToSetTheDateFor!!.copy(
+              startTime = newDateTime, duration = _uiState.value.setDuration))
+      val test = reportRepository.getReportById(_uiState.value.reportToSetTheDateFor!!.id)
+      Log.d("PlannerViewModel", "Edited report fetched from repository: $test")
+      loadReports()
+    }
+  }
+
+  fun setReportToSetTheDateFor(reportId: String?) {
+    if (reportId == null) {
+      _uiState.value = _uiState.value.copy(reportToSetTheDateFor = null)
+      return
+    }
+    Log.d("PlannerViewModel", "Setting report to set the date for: $reportId")
+    Log.d("PlannerViewModel", "Reports Map: ${_uiState.value.reports}")
+    val report = _uiState.value.reports.values.flatten().find { it.id == reportId }
+    Log.d("PlannerViewModel", "Report Found: $report")
+
+    _uiState.value = _uiState.value.copy(reportToSetTheDateFor = report)
   }
 }
