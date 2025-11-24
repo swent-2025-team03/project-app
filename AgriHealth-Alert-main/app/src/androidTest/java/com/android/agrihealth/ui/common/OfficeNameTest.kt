@@ -35,7 +35,7 @@ class OfficeNameTest() : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun showsNoneOffice_whenUidIsNull() {
+  fun showsNoneOfficeWhenUidIsNull() {
     composeRule.setContent { OfficeName(null) }
     composeRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
       composeRule.onNodeWithText("not assigned to an Office").isDisplayed()
@@ -43,7 +43,7 @@ class OfficeNameTest() : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun showsNameOnly_whenUserExists_andShowRoleFalse() {
+  fun showsOfficeNameWhenOfficeExists() {
     composeRule.setContent { OfficeName("office") }
     composeRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
       composeRule.onNodeWithText("name").isDisplayed()
@@ -51,7 +51,7 @@ class OfficeNameTest() : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun showsDeletedUser_whenUserMissing() {
+  fun showsDeletedOfficeWhenOfficeDoesNotExist() {
     composeRule.setContent { OfficeName("off1ce") }
     composeRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
       composeRule.onNodeWithText("deleted Office").isDisplayed()
