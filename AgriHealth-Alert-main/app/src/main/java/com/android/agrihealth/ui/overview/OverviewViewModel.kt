@@ -82,14 +82,13 @@ class OverviewViewModel(
     }
   }
 
-    override fun loadAlerts() {
-        viewModelScope.launch {
-            val alerts = alertRepository.getAlerts()
-            _uiState.value =
-                _uiState.value.copy(alerts = alerts)
-            Log.d("OverviewVM", "Loaded alerts: ${alerts.size}")
-        }
+  override fun loadAlerts() {
+    viewModelScope.launch {
+      val alerts = alertRepository.getAlerts()
+      _uiState.value = _uiState.value.copy(alerts = alerts)
+      Log.d("OverviewVM", "Loaded alerts: ${alerts.size}")
     }
+  }
 
   override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {
     val filtered = applyFilters(_uiState.value.reports, status, vetId, farmerId)

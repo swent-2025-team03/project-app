@@ -41,7 +41,7 @@ class FakeOverviewViewModel(initialState: OverviewUIState = OverviewUIState()) :
     _uiState.value = OverviewUIState(reports = dummyReports)
   }
 
-    override fun loadAlerts(){}
+  override fun loadAlerts() {}
 
   // updateFilters is not used for tests so it is remained empty
   override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {}

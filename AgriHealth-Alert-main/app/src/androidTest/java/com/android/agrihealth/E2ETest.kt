@@ -199,6 +199,41 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   @Test
+  fun testFarmer_OverviewAlertCards_DisplayAndArrowNavigation() {
+    composeTestRule.setContent { AgriHealthApp() }
+    composeTestRule.waitForIdle()
+
+    completeSignIn(user1.email, "12345678")
+    checkOverviewScreenIsDisplayed()
+
+    composeTestRule
+        .onAllNodesWithTag(OverviewScreenTestTags.ALERT_ITEM)
+        .onFirst()
+        .assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ALERT_ARROW_RIGHT).assertExists()
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ALERT_ARROW_LEFT).assertExists()
+
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ALERT_ARROW_RIGHT).performClick()
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onAllNodesWithTag(OverviewScreenTestTags.ALERT_ITEM)
+        .onFirst()
+        .assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ALERT_ARROW_LEFT).performClick()
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onAllNodesWithTag(OverviewScreenTestTags.ALERT_ITEM)
+        .onFirst()
+        .assertIsDisplayed()
+
+    signOutFromScreen()
+  }
+
+  @Test
   fun testVetFarmerLinkAndPasswordChange() {
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.waitForIdle()

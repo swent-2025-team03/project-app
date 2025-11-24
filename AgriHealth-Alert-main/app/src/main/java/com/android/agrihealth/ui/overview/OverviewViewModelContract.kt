@@ -9,7 +9,9 @@ interface OverviewViewModelContract {
   val uiState: StateFlow<OverviewUIState>
 
   fun loadReports(userRole: UserRole, userId: String)
+
   fun loadAlerts()
+
   fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?)
 
   fun signOut(credentialManager: CredentialManager)

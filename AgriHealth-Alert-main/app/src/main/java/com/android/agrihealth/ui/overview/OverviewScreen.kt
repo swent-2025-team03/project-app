@@ -1,7 +1,6 @@
 package com.android.agrihealth.ui.overview
 
 import android.R.attr.onClick
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,8 +8,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -42,7 +39,6 @@ import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
 import kotlinx.coroutines.launch
 
-
 // -- imports for preview --
 /*
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,7 +52,9 @@ object OverviewScreenTestTags {
   const val LOGOUT_BUTTON = "logoutButton"
   const val SCREEN = "OverviewScreen"
   const val REPORT_ITEM = "reportItem"
-    const val ALERT_ITEM = "AlertItem"
+  const val ALERT_ITEM = "AlertItem"
+  const val ALERT_ARROW_RIGHT = "AlertRightArrowButton"
+  const val ALERT_ARROW_LEFT = "AlertLeftArrowButton"
   const val PROFILE_BUTTON = "ProfileButton"
   const val STATUS_DROPDOWN = "StatusFilterDropdown"
   const val VET_ID_DROPDOWN = "VetIdFilterDropdown"
@@ -88,12 +86,12 @@ fun OverviewScreen(
   var lazySpace by remember { mutableStateOf(0.dp) }
   val minLazySpace = remember { 150.dp }
   val listState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
+  val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(userId) {
-        overviewViewModel.loadReports(userRole, userId)
-        overviewViewModel.loadAlerts()
-    }
+  LaunchedEffect(userId) {
+    overviewViewModel.loadReports(userRole, userId)
+    overviewViewModel.loadAlerts()
+  }
 
   Scaffold(
       // -- Top App Bar with logout icon --
@@ -140,15 +138,14 @@ fun OverviewScreen(
           val screen = this.maxHeight
           Column(
               modifier =
-                  Modifier
-                      .padding(paddingValues)
+                  Modifier.padding(paddingValues)
                       .padding(horizontal = 16.dp)
                       .onSizeChanged { size ->
-                          with(density) {
-                              lazySpace =
-                                  screen - size.height.toDp() - topPadding - bottomPadding +
-                                          maxOf(minLazySpace, lazySpace)
-                          }
+                        with(density) {
+                          lazySpace =
+                              screen - size.height.toDp() - topPadding - bottomPadding +
+                                  maxOf(minLazySpace, lazySpace)
+                        }
                       }
                       .testTag(OverviewScreenTestTags.SCREEN)
                       .verticalScroll(rememberScrollState())) {
@@ -157,50 +154,51 @@ fun OverviewScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-              val listState = rememberLazyListState()
-              val coroutineScope = rememberCoroutineScope()
+                val listState = rememberLazyListState()
+                val coroutineScope = rememberCoroutineScope()
 
-              Box(modifier = Modifier.fillMaxWidth(),
-                  contentAlignment = Alignment.Center
-              ) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                   LazyRow(
                       state = listState,
                       modifier = Modifier.align(Alignment.Center),
-                      contentPadding = PaddingValues(0.dp)
-                  ) {
-                      items(uiState.alerts) { alert ->
+                      contentPadding = PaddingValues(0.dp)) {
+                        items(uiState.alerts) { alert ->
                           AlertItem(
                               alert = alert,
                               onClick = {},
-                              modifier = Modifier
-                                  .fillMaxWidth()
-                                  .padding(horizontal = 0.dp))
-                      }
-                  }
-
-                      IconButton(
-                          onClick = {
-                              val prevIndex = (listState.firstVisibleItemIndex - 1).coerceAtLeast(0)
-                              coroutineScope.launch { listState.animateScrollToItem(prevIndex) }
-                          },
-                          modifier = Modifier.align(Alignment.CenterStart)
-                      ) {
-                          Icon(Icons.Default.ArrowBack, contentDescription = "Previous")
+                              modifier =
+                                  Modifier.fillMaxWidth()
+                                      .padding(horizontal = 0.dp)
+                                      .testTag(OverviewScreenTestTags.ALERT_ITEM))
+                        }
                       }
 
-                      IconButton(
-                          onClick = {
-                              val nextIndex = (listState.firstVisibleItemIndex + 1)
-                                  .coerceAtMost(uiState.alerts.size - 1)
-                              coroutineScope.launch { listState.animateScrollToItem(nextIndex) }
-                          },
-                          modifier = Modifier.align(Alignment.CenterEnd)
-                      ) {
-                          Icon(Icons.Default.ArrowForward, contentDescription = "Next")
+                  IconButton(
+                      onClick = {
+                        val prevIndex = (listState.firstVisibleItemIndex - 1).coerceAtLeast(0)
+                        coroutineScope.launch { listState.animateScrollToItem(prevIndex) }
+                      },
+                      modifier =
+                          Modifier.align(Alignment.CenterStart)
+                              .testTag(OverviewScreenTestTags.ALERT_ARROW_LEFT)) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Previous")
                       }
-              }
 
-              Spacer(modifier = Modifier.height(24.dp))
+                  IconButton(
+                      onClick = {
+                        val nextIndex =
+                            (listState.firstVisibleItemIndex + 1).coerceAtMost(
+                                uiState.alerts.size - 1)
+                        coroutineScope.launch { listState.animateScrollToItem(nextIndex) }
+                      },
+                      modifier =
+                          Modifier.align(Alignment.CenterEnd)
+                              .testTag(OverviewScreenTestTags.ALERT_ARROW_RIGHT)) {
+                        Icon(Icons.Default.ArrowForward, contentDescription = "Next")
+                      }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // -- Create a new report button --
                 // Display the button only if the user role is FARMER
@@ -208,8 +206,7 @@ fun OverviewScreen(
                   Button(
                       onClick = onAddReport,
                       modifier =
-                          Modifier
-                              .align(Alignment.CenterHorizontally)
+                          Modifier.align(Alignment.CenterHorizontally)
                               .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
                         Text("Create a new report")
                       }
@@ -285,30 +282,24 @@ fun OverviewScreen(
  */
 @Composable
 fun AlertItem(alert: Alert, onClick: (() -> Unit), modifier: Modifier = Modifier) {
-    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-    Card(
-        modifier = modifier
-            .width(screenWidth * 0.9f),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
+  val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+  Card(
+      modifier = modifier.width(screenWidth * 0.9f), elevation = CardDefaults.cardElevation(4.dp)) {
         Column(
             modifier = Modifier.padding(start = 40.dp, top = 12.dp, end = 12.dp, bottom = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            Text(alert.title, style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = alert.description.let { if (it.length > 50) it.take(50) + "..." else it },
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 2
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "${alert.region} • ${alert.outbreakDate}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-    }
+            verticalArrangement = Arrangement.spacedBy(2.dp)) {
+              Text(alert.title, style = MaterialTheme.typography.titleLarge)
+              Spacer(modifier = Modifier.height(4.dp))
+              Text(
+                  text = alert.description.let { if (it.length > 50) it.take(50) + "..." else it },
+                  style = MaterialTheme.typography.bodyMedium,
+                  maxLines = 2)
+              Spacer(modifier = Modifier.height(4.dp))
+              Text(
+                  text = "${alert.region} • ${alert.outbreakDate}",
+                  style = MaterialTheme.typography.bodyMedium)
+            }
+      }
 }
 
 /** Composable displaying a simple dropdown menu for filtering or selecting options. */
@@ -350,8 +341,7 @@ fun <T> DropdownMenuWrapper(
 fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
   Row(
       modifier =
-          Modifier
-              .fillMaxWidth()
+          Modifier.fillMaxWidth()
               .testTag(OverviewScreenTestTags.REPORT_ITEM)
               .clickable { onClick() }
               .padding(vertical = 8.dp),
