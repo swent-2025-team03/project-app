@@ -52,7 +52,7 @@ import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
-import com.android.agrihealth.data.repository.ReportRepositoryLocal
+import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -60,6 +60,8 @@ import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.max
 
@@ -68,33 +70,23 @@ import kotlin.math.max
 // Todo: implement task overlapping
 // Todo: implement task click to view Report
 // Todo: implement setting due date if seen from ViewReport screen
+// Todo: show a line for current hour
+// Todo: add set date button on ViewReport screen
+// Todo: handle screen if viewed from viewReport
+// Todo: Fix report title clipping onto background
 // Todo: remove Log
-val previewReport1 =
-    Report(
-        id = "1",
-        title = "Checkup with Farmer John",
-        description = "Regular health checkup for the cattle.",
-        questionForms = emptyList(),
-        photoUri = null,
-        farmerId = "farmer1",
-        vetId = "vet1",
-        status = ReportStatus.IN_PROGRESS,
-        answer = null,
-        location = Location(latitude = 12.34, longitude = 56.78, name = "Farmhouse A"),
-        startTime = 7f,
-        duration = 1.5f)
-
-val previewReport2 = previewReport1.copy(startTime = 2f, duration = null)
-val previewReport3 = previewReport1.copy(startTime = 5f, duration = 0.9f)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlannerScreen(
+    userId: String = "",
     navigationActions: NavigationActions? = null,
-    plannerVM: PlannerViewModel = viewModel()
+    plannerVM: PlannerViewModel = viewModel(),
 ) {
 
   val uiState by plannerVM.uiState.collectAsState()
+
+  LaunchedEffect(userId) { plannerVM.loadReports(userId) }
 
   Scaffold(
       topBar = {
@@ -142,13 +134,14 @@ fun PlannerScreen(
             }
             WeeklyPager(
                 onDateSelected = { date -> plannerVM.setSelectedDate(date) },
-                mondayOfStartingWeek = uiState.today.with(DayOfWeek.MONDAY))
+                mondayOfStartingWeek = uiState.today.with(DayOfWeek.MONDAY),
+                dayReportMap = uiState.reports)
             Row(modifier = Modifier.fillMaxWidth()) {
               Text(
                   uiState.selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM")),
                   style = MaterialTheme.typography.titleLarge)
             }
-            DailyScheduler(listOf(previewReport1, previewReport2, previewReport3)) { it ->
+            DailyScheduler(uiState.selectedDateReports) { it ->
               navigationActions?.navigateTo(Screen.ViewReport(it))
             }
           }
@@ -179,6 +172,7 @@ fun WeekHeader(start: LocalDate, end: LocalDate) {
 fun WeeklyPager(
     onDateSelected: (LocalDate) -> Unit,
     mondayOfStartingWeek: LocalDate,
+    dayReportMap: Map<LocalDate?, List<Report>> = emptyMap(),
 ) {
 
   val maxPages = 1000
@@ -205,13 +199,24 @@ fun WeeklyPager(
     val startOfWeek = mondayOfStartingWeek.plusWeeks(weekOffset.toLong())
     val week: List<LocalDate> = (0..6).map { startOfWeek.plusDays(it.toLong()) }
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-      week.forEach { day -> DayCard(Modifier.weight(1f), day, onClick = { onDateSelected(it) }) }
+      week.forEach { day ->
+        DayCard(
+            Modifier.weight(1f),
+            day,
+            dayReportMap.getOrDefault(day, emptyList()).map { it.status },
+            onClick = { onDateSelected(it) })
+      }
     }
   }
 }
 
 @Composable
-fun DayCard(modifier: Modifier = Modifier, day: LocalDate, onClick: (LocalDate) -> Unit = {}) {
+fun DayCard(
+    modifier: Modifier = Modifier,
+    day: LocalDate,
+    reportStatuses: List<ReportStatus>,
+    onClick: (LocalDate) -> Unit = {}
+) {
   Card(modifier = modifier.height(64.dp)) {
     Column(
         modifier = Modifier.fillMaxSize().clickable(onClick = { onClick(day) }).padding(4.dp),
@@ -221,19 +226,7 @@ fun DayCard(modifier: Modifier = Modifier, day: LocalDate, onClick: (LocalDate) 
               day.dayOfMonth.toString(),
               modifier = Modifier,
               style = MaterialTheme.typography.titleLarge)
-          DotGrid(
-              dots =
-                  listOf(
-                      ReportStatus.RESOLVED,
-                      ReportStatus.IN_PROGRESS,
-                      ReportStatus.IN_PROGRESS,
-                      ReportStatus.PENDING,
-                      ReportStatus.PENDING,
-                      ReportStatus.PENDING,
-                      ReportStatus.PENDING,
-                      ReportStatus.IN_PROGRESS,
-                      ReportStatus.IN_PROGRESS,
-                  ))
+          DotGrid(dots = reportStatuses)
         }
   }
 }
@@ -305,8 +298,14 @@ fun DailyTasks(
     reports
         .filter { it.startTime != null }
         .forEach { report ->
-          val topOffset = report.startTime!!.times(hourHeight.value)
-          val taskHeight = max(report.duration?.times(hourHeight.value) ?: 0f, 30f)
+          val topOffset = report.startTime!!.hour.times(hourHeight.value)
+          val taskHeight =
+              report.duration.let {
+                if (it == null) 30f
+                else {
+                  max((it.hour + (it.minute.div(60))).times(hourHeight.value), 30f)
+                }
+              }
 
           Column(
               modifier =
@@ -341,6 +340,82 @@ fun DailyTasks(
 @Preview
 @Composable
 fun PlannerScreenPreview() {
-  val fakeVM = PlannerViewModel(ReportRepositoryLocal())
-  AgriHealthAppTheme { PlannerScreen(plannerVM = fakeVM) }
+  val previewReport1 =
+      Report(
+          id = "1",
+          title = "Checkup with Farmer John",
+          description = "Regular health checkup for the cattle.",
+          questionForms = emptyList(),
+          photoUri = null,
+          farmerId = "farmer1",
+          vetId = "vet1",
+          status = ReportStatus.IN_PROGRESS,
+          answer = null,
+          location = Location(latitude = 12.34, longitude = 56.78, name = "Farmhouse A"),
+          startTime = LocalDate.now().atTime(0, 0),
+          duration = LocalTime.of(0, 0))
+
+  val previewReport2 =
+      previewReport1.copy(
+          startTime = LocalDateTime.now().plusHours(2), duration = LocalTime.of(1, 0))
+  val previewReport3 =
+      previewReport1.copy(
+          startTime = LocalDateTime.now().plusHours(4), duration = LocalTime.of(2, 0))
+
+  val reportRepo =
+      object : ReportRepository {
+        private val reports: MutableList<Report> =
+            mutableListOf(previewReport1, previewReport2, previewReport3)
+
+        private var nextId = 0
+
+        override fun getNewReportId(): String {
+          return (nextId++).toString()
+        }
+
+        override suspend fun getAllReports(userId: String): List<Report> {
+          return reports.filter { it.farmerId == userId || it.vetId == userId }
+        }
+
+        override suspend fun getReportsByFarmer(farmerId: String): List<Report> {
+          return reports.filter { it.farmerId == farmerId }
+        }
+
+        override suspend fun getReportsByVet(vetId: String): List<Report> {
+          return reports.filter { it.vetId == vetId }
+        }
+
+        override suspend fun getReportById(reportId: String): Report? {
+          return reports.find { it.id == reportId }
+              ?: throw NoSuchElementException("ReportRepositoryLocal: Report not found")
+        }
+
+        override suspend fun addReport(report: Report) {
+          try {
+            editReport(report.id, report)
+          } catch (e: Exception) {
+            reports.add(report)
+          }
+        }
+
+        override suspend fun editReport(reportId: String, newReport: Report) {
+          val index = reports.indexOfFirst { it.id == reportId }
+          if (index != -1) {
+            reports[index] = newReport
+          } else {
+            throw NoSuchElementException("ReportRepositoryLocal: Report not found")
+          }
+        }
+
+        override suspend fun deleteReport(reportId: String) {
+          val index = reports.indexOfFirst { it.id == reportId }
+          if (index != -1) {
+            reports.removeAt(index)
+          } else {
+            throw NoSuchElementException("ReportRepositoryLocal: Report not found")
+          }
+        }
+      }
+  val fakePlannerVM = PlannerViewModel(reportRepo)
+  AgriHealthAppTheme { PlannerScreen(userId = "vet1", plannerVM = fakePlannerVM) }
 }

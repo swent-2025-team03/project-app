@@ -14,7 +14,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 data class PlannerUIState(
-    val reports: List<Report> = emptyList(),
+    val reports: Map<LocalDate?, List<Report>> = emptyMap(),
+    val selectedDateReports: List<Report> = emptyList(),
 
     // Today info
     val now: LocalDateTime = LocalDateTime.now(),
@@ -35,12 +36,23 @@ class PlannerViewModel(
   private val _uiState = MutableStateFlow(PlannerUIState())
   val uiState: StateFlow<PlannerUIState> = _uiState.asStateFlow()
 
+  suspend fun loadReports(userId: String) {
+    val reports = reportRepository.getAllReports(userId).groupBy { it.startTime?.toLocalDate() }
+    _uiState.value =
+        _uiState.value.copy(
+            reports = reports,
+            selectedDateReports = reports[_uiState.value.selectedDate] ?: emptyList())
+  }
+
   fun setSelectedDate(date: LocalDate) {
     val week: List<LocalDate> = (0..6).map { date.with(DayOfWeek.MONDAY).plusDays(it.toLong()) }
     val weekNumber = date.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)
 
     _uiState.value =
         _uiState.value.copy(
-            selectedDate = date, selectedWeek = week, selectedWeekNumber = weekNumber)
+            selectedDate = date,
+            selectedWeek = week,
+            selectedWeekNumber = weekNumber,
+            selectedDateReports = _uiState.value.reports[date] ?: emptyList())
   }
 }
