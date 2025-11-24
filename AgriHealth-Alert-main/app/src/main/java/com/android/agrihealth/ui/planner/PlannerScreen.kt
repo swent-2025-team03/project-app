@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,21 +40,23 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.core.design.theme.onStatusColor
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.repository.ReportRepositoryLocal
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import kotlin.math.max
 
-// Todo: Implement real week days
-// Todo: Current date fetching
 // Todo: scroll to first task of the day
 // Todo: implement task overlapping
 // Todo: implement task click to view Report
@@ -79,7 +82,12 @@ val previewReport3 = previewReport1.copy(startTime = 5f, duration = 0.9f)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlannerScreen(navigationActions: NavigationActions? = null) {
+fun PlannerScreen(
+    navigationActions: NavigationActions? = null,
+    plannerVM: PlannerViewModel = viewModel()
+) {
+
+  val uiState by plannerVM.uiState.collectAsState()
 
   Scaffold(
       topBar = {
@@ -108,16 +116,18 @@ fun PlannerScreen(navigationActions: NavigationActions? = null) {
       },
       content = { pd ->
         Box(modifier = Modifier.padding(pd).padding(horizontal = 8.dp)) {
-          Column() {
+          Column {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-              Text("Week 46 ", style = MaterialTheme.typography.titleMedium)
-              Text("16 - 22 nov", style = MaterialTheme.typography.titleMedium)
+              Text(
+                  "Week ${uiState.selectedWeekNumber}",
+                  style = MaterialTheme.typography.titleMedium)
+              WeekHeader(uiState.selectedWeek[0], uiState.selectedWeek[6])
             }
             Row(modifier = Modifier.fillMaxWidth()) {
-              listOf("S", "M", "T", "W", "T", "F", "S").forEach { dayLetter ->
+              listOf("M", "T", "W", "T", "F", "S", "S").forEach { dayLetter ->
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                   Text(dayLetter)
                 }
@@ -126,12 +136,14 @@ fun PlannerScreen(navigationActions: NavigationActions? = null) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                  listOf("16", "17", "18", "19", "20", "21", "22").forEach { dayNumber ->
+                  uiState.selectedWeek.forEach { dayNumber ->
                     DayCard(Modifier.weight(1f), dayNumber)
                   }
                 }
             Row(modifier = Modifier.fillMaxWidth()) {
-              Text("17 Mon", style = MaterialTheme.typography.titleLarge)
+              Text(
+                  uiState.selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM")),
+                  style = MaterialTheme.typography.titleLarge)
             }
             DailyScheduler(listOf(previewReport1, previewReport2, previewReport3)) { it ->
               navigationActions?.navigateTo(Screen.ViewReport(it))
@@ -142,13 +154,34 @@ fun PlannerScreen(navigationActions: NavigationActions? = null) {
 }
 
 @Composable
-fun DayCard(modifier: Modifier = Modifier, day: String) {
+fun WeekHeader(start: LocalDate, end: LocalDate) {
+  val dayFormatter = remember { DateTimeFormatter.ofPattern("d") }
+  val monthFormatter = remember { DateTimeFormatter.ofPattern("MMM") }
+
+  val sameMonth = start.month == end.month
+
+  val text =
+      if (sameMonth) {
+        "${start.format(dayFormatter)} - ${end.format(dayFormatter)} ${start.format(monthFormatter)}"
+      } else {
+        "${start.format(dayFormatter)} ${start.format(monthFormatter)} - " +
+            "${end.format(dayFormatter)} ${end.format(monthFormatter)}"
+      }
+
+  Text(text)
+}
+
+@Composable
+fun DayCard(modifier: Modifier = Modifier, day: LocalDate) {
   Card(modifier = modifier.height(64.dp)) {
     Column(
         modifier = Modifier.fillMaxSize().padding(4.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally) {
-          Text(day, modifier = Modifier, style = MaterialTheme.typography.titleLarge)
+          Text(
+              day.dayOfMonth.toString(),
+              modifier = Modifier,
+              style = MaterialTheme.typography.titleLarge)
           DotGrid(
               dots =
                   listOf(
@@ -269,5 +302,6 @@ fun DailyTasks(
 @Preview
 @Composable
 fun PlannerScreenPreview() {
-  AgriHealthAppTheme { PlannerScreen() }
+  val fakeVM = PlannerViewModel(ReportRepositoryLocal())
+  AgriHealthAppTheme { PlannerScreen(plannerVM = fakeVM) }
 }
