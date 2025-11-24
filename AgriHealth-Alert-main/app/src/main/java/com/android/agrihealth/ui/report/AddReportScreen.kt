@@ -183,7 +183,7 @@ fun AddReportScreen(
                   { addReportViewModel.setTitle(it) },
                   "Title",
                   AddReportScreenTestTags.TITLE_FIELD)
-              Field(
+              MultilineField(
                   uiState.description,
                   { addReportViewModel.setDescription(it) },
                   "Description",
@@ -320,6 +320,27 @@ private fun Field(
       placeholder = { Text(placeholder) },
       singleLine = true,
       modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
+  )
+}
+
+@Composable
+private fun MultilineField(
+  value: String,
+  onValueChange: (String) -> Unit,
+  placeholder: String,
+  testTag: String,
+) {
+  OutlinedTextField(
+    value = value,
+    onValueChange = onValueChange,
+    placeholder = { Text(placeholder) },
+    singleLine = false,
+    minLines = 1,
+    maxLines = Int.MAX_VALUE,
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(vertical = 8.dp)
+      .testTag(testTag),
   )
 }
 
