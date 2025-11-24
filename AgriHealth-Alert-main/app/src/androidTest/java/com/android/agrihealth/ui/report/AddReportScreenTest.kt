@@ -289,32 +289,30 @@ class AddReportScreenTest {
     Assert.assertTrue(called)
   }
 
-
   // Helper function for the tests below
   private fun scrollToUploadSection() {
     composeRule
-      .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-      .performScrollToNode(hasTestTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON))
+        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+        .performScrollToNode(hasTestTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON))
   }
-
 
   @Test
   fun imagePreview_isNotShownWhenEmpty() {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-          userRole = UserRole.FARMER,
-          userId = "test_user",
-          onCreateReport = {},
-          addReportViewModel = FakeAddReportViewModel())
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = FakeAddReportViewModel())
       }
     }
     scrollToUploadSection()
     composeRule.waitForIdle()
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertDoesNotExist()
     composeRule
-      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-      .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
   }
 
   @Test
@@ -325,24 +323,24 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-          userRole = UserRole.FARMER,
-          userId = "test_user",
-          onCreateReport = {},
-          addReportViewModel = fakeViewModel)
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = fakeViewModel)
       }
     }
     scrollToUploadSection()
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
     composeRule
-      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-      .assertIsDisplayed()
-      .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
-      .performClick()
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertIsDisplayed()
+        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+        .performClick()
     composeRule.waitForIdle()
     composeRule
-      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-      .assertIsDisplayed()
-      .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertIsDisplayed()
+        .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertDoesNotExist()
   }
 
@@ -355,18 +353,18 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-          userRole = UserRole.FARMER,
-          userId = "test_user",
-          onCreateReport = {},
-          addReportViewModel = fakeViewModel)
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = fakeViewModel)
       }
     }
     scrollToUploadSection()
     composeRule.waitForIdle()
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
     composeRule
-      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-      .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
   }
 
   @Test
@@ -374,10 +372,10 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-          userRole = UserRole.FARMER,
-          userId = "test_user",
-          onCreateReport = {},
-          addReportViewModel = FakeAddReportViewModel())
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = FakeAddReportViewModel())
       }
     }
 
@@ -388,8 +386,8 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG).assertIsNotDisplayed()
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsNotDisplayed()
     composeRule
-      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-      .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
   }
 
   @Test
@@ -398,10 +396,10 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-          userRole = UserRole.FARMER,
-          userId = "test_user",
-          onCreateReport = {},
-          addReportViewModel = fakeViewModel)
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = fakeViewModel)
       }
     }
 
@@ -416,8 +414,8 @@ class AddReportScreenTest {
     composeRule.waitForIdle()
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
     composeRule
-      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-      .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
   }
 
   @Test
@@ -426,10 +424,10 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-          userRole = UserRole.FARMER,
-          userId = "test_user",
-          onCreateReport = {},
-          addReportViewModel = fakeViewModel)
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = fakeViewModel)
       }
     }
 
@@ -445,7 +443,7 @@ class AddReportScreenTest {
     composeRule.waitForIdle()
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
     composeRule
-      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-      .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
   }
 }

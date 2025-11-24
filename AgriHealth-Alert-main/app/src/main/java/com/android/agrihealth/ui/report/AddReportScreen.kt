@@ -325,22 +325,19 @@ private fun Field(
 
 @Composable
 private fun MultilineField(
-  value: String,
-  onValueChange: (String) -> Unit,
-  placeholder: String,
-  testTag: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    testTag: String,
 ) {
   OutlinedTextField(
-    value = value,
-    onValueChange = onValueChange,
-    placeholder = { Text(placeholder) },
-    singleLine = false,
-    minLines = 1,
-    maxLines = Int.MAX_VALUE,
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(vertical = 8.dp)
-      .testTag(testTag),
+      value = value,
+      onValueChange = onValueChange,
+      placeholder = { Text(placeholder) },
+      singleLine = false,
+      minLines = 1,
+      maxLines = Int.MAX_VALUE,
+      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
   )
 }
 
