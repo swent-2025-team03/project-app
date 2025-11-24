@@ -152,15 +152,13 @@ fun AgriHealthApp(
         )
       }
       composable(Screen.AddReport.route) {
-        val createReportViewModel = AddReportViewModel(userId = currentUserId)
+        val createReportViewModel = AddReportViewModel(userId = currentUserId)  // TODO CHange, see editprofilescreen
 
         AddReportScreen(
             onBack = { navigationActions.goBack() },
-            userRole = currentUserRole,
             userId = currentUserId,
             userViewModel = userViewModel,
             onCreateReport = { reloadReports = !reloadReports },
-            addReportViewModel = createReportViewModel,
         )
       }
       composable(

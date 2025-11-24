@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
@@ -38,6 +39,7 @@ import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.profile.ProfileViewModel
 import com.android.agrihealth.ui.user.UserViewModel
 import java.io.File
 import kotlinx.coroutines.launch
@@ -98,11 +100,27 @@ private const val FILE_PROVIDER = "fileprovider" // TODO: Maybe move this into i
 fun AddReportScreen(
     userViewModel: UserViewModel = viewModel(),
     onBack: () -> Unit = {},
-    userRole: UserRole,
     userId: String,
     onCreateReport: () -> Unit = {},
-    addReportViewModel: AddReportViewModelContract
 ) {
+
+//  val factory = remember {
+//    object : androidx.lifecycle.ViewModelProvider.Factory {
+//      override fun <T : ViewModel> create(modelClass: Class<T>): T {
+//        return ProfileViewModel(userViewModel) as T
+//      }
+//    }
+//  }
+//  val profileViewModel: ProfileViewModel = viewModel(factory = factory)
+
+  val factory = remember(userId) {
+    object : androidx.lifecycle.ViewModelProvider.Factory {
+      override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return AddReportViewModel(userId) as T
+      }
+    }
+  }
+  val addReportViewModel: AddReportViewModel = viewModel(factory = factory)
 
   val uiState by addReportViewModel.uiState.collectAsState()
   val user by userViewModel.user.collectAsState()
@@ -422,18 +440,20 @@ fun CreateReportButton(
       }
 }
 
-/**
- * Preview of the ReportViewScreen for both farmer and vet roles. Allows testing of layout and
- * colors directly in Android Studio.
- */
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-@Composable
-fun AddReportScreenPreview() {
-  AgriHealthAppTheme {
-    AddReportScreen(
-        userRole = UserRole.FARMER,
-        userId = "FARMER_001",
-        onCreateReport = {},
-        addReportViewModel = FakeAddReportViewModel())
-  }
-}
+
+// TODO: (OPTIONAL) Make this work again
+///**
+// * Preview of the ReportViewScreen for both farmer and vet roles. Allows testing of layout and
+// * colors directly in Android Studio.
+// */
+//@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+//@Composable
+//fun AddReportScreenPreview() {
+//  AgriHealthAppTheme {
+//    AddReportScreen(
+//        userRole = UserRole.FARMER,
+//        userId = "FARMER_001",
+//        onCreateReport = {},
+//        addReportViewModel = FakeAddReportViewModel())
+//  }
+//}
