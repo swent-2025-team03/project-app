@@ -60,6 +60,12 @@ sealed class Screen(
     }
   }
 
+  data class ViewUser(val uid: String) : Screen(route = "view_user/${uid}", name = "View User") {
+    companion object {
+      const val route = "view_user/{uid}"
+    }
+  }
+
   data class Map(val lat: Double? = null, val lng: Double? = null, val reportId: String? = null) :
       Screen(
           route = "map?lat=${lat}&lng=${lng}&reportId=${reportId}",

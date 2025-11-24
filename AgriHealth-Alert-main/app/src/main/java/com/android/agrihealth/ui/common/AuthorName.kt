@@ -1,11 +1,16 @@
 // AuthorNameViewModel.kt
 package com.android.agrihealth.ui.common
 
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -42,12 +47,18 @@ fun AuthorName(
     uid: String?,
     deletedText: String = "Deleted user",
     unassignedText: String = "Unassigned",
-    viewModel: AuthorNameViewModel = viewModel(key = uid)
+    viewModel: AuthorNameViewModel = viewModel(key = uid),
+    onClick: (() -> Unit)? = null
 ) {
   val label by viewModel.label.collectAsState()
 
   LaunchedEffect(uid, deletedText, unassignedText) {
     viewModel.load(uid, deletedText, unassignedText)
   }
-  Text(text = label)
+
+  Text(
+      text = label,
+      color = if (onClick != null) MaterialTheme.colorScheme.primary else LocalContentColor.current,
+      textDecoration = if (onClick != null) TextDecoration.Underline else TextDecoration.None,
+      modifier = if (onClick != null) Modifier.clickable { onClick() } else Modifier)
 }
