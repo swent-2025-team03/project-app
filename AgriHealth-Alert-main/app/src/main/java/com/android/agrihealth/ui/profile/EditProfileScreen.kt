@@ -29,6 +29,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.user.*
+import com.android.agrihealth.ui.common.AuthorNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
@@ -203,11 +204,28 @@ fun EditProfileScreen(
                         modifier = Modifier.padding(vertical = 4.dp))
                   }
 
+                  val vetNames = remember { mutableStateMapOf<String, String>() }
+
+                  // For each linked vet, load their name
+                  (user as Farmer).linkedVets.forEach { vetId ->
+                    val vm: AuthorNameViewModel = viewModel(key = vetId)
+                    val label by vm.label.collectAsState()
+
+                    LaunchedEffect(vetId) {
+                      vm.load(
+                          uid = vetId, deletedText = "Deleted vet", unassignedText = "Unknown vet")
+                    }
+
+                    vetNames[vetId] = label
+                  }
+
+                  val selectedVetName = vetNames[selectedDefaultVet] ?: "Unknown vet"
+
                   ExposedDropdownMenuBox(
                       expanded = expandedVetDropdown,
                       onExpandedChange = { expandedVetDropdown = !expandedVetDropdown }) {
                         OutlinedTextField(
-                            value = selectedDefaultVet,
+                            value = selectedVetName,
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("Default Vet") },
@@ -219,12 +237,15 @@ fun EditProfileScreen(
                                 Modifier.menuAnchor()
                                     .fillMaxWidth()
                                     .testTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN))
+
                         ExposedDropdownMenu(
                             expanded = expandedVetDropdown,
                             onDismissRequest = { expandedVetDropdown = false }) {
                               (user as Farmer).linkedVets.forEach { vetId ->
+                                val displayName = vetNames[vetId] ?: vetId
+
                                 DropdownMenuItem(
-                                    text = { Text("Vet $vetId") }, // Placeholder name display
+                                    text = { Text(displayName) },
                                     onClick = {
                                       selectedDefaultVet = vetId
                                       expandedVetDropdown = false

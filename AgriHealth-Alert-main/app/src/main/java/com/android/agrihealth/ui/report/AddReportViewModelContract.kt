@@ -1,6 +1,7 @@
 package com.android.agrihealth.ui.report
 
 import android.net.Uri
+import com.android.agrihealth.data.model.report.QuestionForm
 import kotlinx.coroutines.flow.StateFlow
 
 interface AddReportViewModelContract {
@@ -11,6 +12,8 @@ interface AddReportViewModelContract {
   fun setDescription(newDescription: String)
 
   fun setVet(vetId: String)
+
+  fun updateQuestion(index: Int, updated: QuestionForm)
 
   suspend fun createReport(): Boolean
 

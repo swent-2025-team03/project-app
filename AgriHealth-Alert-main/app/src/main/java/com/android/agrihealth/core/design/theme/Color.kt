@@ -21,7 +21,11 @@ data class StatusColors(
     val pending: Color = Color(0xFFBDBDBD),
     val inProgress: Color = Color(0xFFFFF59D),
     val resolved: Color = Color(0xFFA5D6A7),
-    val spam: Color = Color(0xFFEF9A9A)
+    val spam: Color = Color(0xFFEF9A9A),
+    val onPending: Color = TitleColor,
+    val onInProgress: Color = TitleColor,
+    val onResolved: Color = TitleColor,
+    val onSpam: Color = TitleColor,
 )
 
 val LocalStatusColors = staticCompositionLocalOf { StatusColors() }

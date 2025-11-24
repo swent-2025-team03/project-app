@@ -22,7 +22,9 @@ data class Report(
     val status: ReportStatus,
     val answer: String?,
     val location: Location?,
-    val createdAt: Instant = Instant.now() // Auto-set creation timestamp
+    val createdAt: Instant = Instant.now(), // Auto-set creation timestamp
+    val startTime: Float? = null,
+    val duration: Float? = null
 )
 
 fun ReportStatus.displayString(): String =

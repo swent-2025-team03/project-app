@@ -43,6 +43,7 @@ import com.android.agrihealth.ui.office.CreateOfficeScreen
 import com.android.agrihealth.ui.office.ManageOfficeScreen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
+import com.android.agrihealth.ui.planner.PlannerScreen
 import com.android.agrihealth.ui.profile.ChangePasswordScreen
 import com.android.agrihealth.ui.profile.ChangePasswordViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreen
@@ -52,6 +53,8 @@ import com.android.agrihealth.ui.report.AddReportViewModel
 import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.ViewUserScreen
+import com.android.agrihealth.ui.user.ViewUserViewModel
 import com.android.agrihealth.ui.user.defaultUser
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -155,10 +158,12 @@ fun AgriHealthApp(
         val createReportViewModel = AddReportViewModel(userId = currentUserId)  // TODO CHange, see editprofilescreen
 
         AddReportScreen(
-            onBack = { navigationActions.goBack() },
-            userId = currentUserId,
-            userViewModel = userViewModel,
-            onCreateReport = { reloadReports = !reloadReports },
+          onBack = { navigationActions.goBack() },
+          userRole = currentUserRole,
+          userId = currentUserId,
+          userViewModel = userViewModel,
+          onCreateReport = { reloadReports = !reloadReports },
+          addReportViewModel = createReportViewModel,
         )
       }
       composable(
@@ -175,6 +180,15 @@ fun AgriHealthApp(
                 userRole = currentUserRole,
                 viewModel = viewModel,
                 reportId = reportId)
+          }
+      composable(
+          route = Screen.ViewUser.route,
+          arguments = listOf(navArgument("uid") { type = NavType.StringType })) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("uid") ?: ""
+            val viewModel: ViewUserViewModel =
+                viewModel(factory = ViewUserViewModel.provideFactory(targetUserId = userId))
+
+            ViewUserScreen(viewModel = viewModel, onBack = { navigationActions.goBack() })
           }
     }
 
@@ -200,6 +214,7 @@ fun AgriHealthApp(
       }
       composable(Screen.ManageOffice.route) {
         ManageOfficeScreen(
+            navigationActions = navigationActions,
             userViewModel = userViewModel,
             onGoBack = { navigationActions.goBack() },
             onCreateOffice = { navigationActions.navigateTo(Screen.CreateOffice) },
@@ -280,6 +295,19 @@ fun AgriHealthApp(
               navigationActions = navigationActions,
               isViewedFromOverview = (sourceReport == null),
               startingPosition = location)
+        }
+
+    composable(
+        route = Screen.Planner.route,
+        arguments =
+            listOf(
+                navArgument("reportId") {
+                  type = NavType.StringType
+                  nullable = true
+                  defaultValue = null
+                })) { backStackEntry ->
+          val reportId = backStackEntry.arguments?.getString("reportId")
+          PlannerScreen(navigationActions)
         }
   }
 }

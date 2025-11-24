@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -31,6 +32,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
+import com.android.agrihealth.ui.common.AuthorNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.LOGOUT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
@@ -195,9 +197,18 @@ fun ProfileScreen(
 
               // Default Vet (Farmers only)
               if (user is Farmer) {
+                val authorNameVm: AuthorNameViewModel = viewModel(key = (user as Farmer).defaultVet)
+                val vetName by authorNameVm.label.collectAsState()
+                LaunchedEffect(user) {
+                  authorNameVm.load(
+                      uid = (user as Farmer).defaultVet,
+                      deletedText = "Deleted vet",
+                      unassignedText = "Unassigned")
+                }
+
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
-                    value = (user as Farmer).defaultVet ?: "",
+                    value = vetName,
                     onValueChange = {},
                     label = { Text("Default Vet") },
                     enabled = false,
