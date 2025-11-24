@@ -26,7 +26,7 @@ class LocationPickerTest {
 
   @Before
   fun setUp() {
-    locationRepository = mockk(relaxed = true)
+    locationRepository = mockk(relaxed = true) // TODO: Consider replacing with a fake repository
     LocationRepositoryProvider.repository = locationRepository
   }
 
@@ -46,9 +46,8 @@ class LocationPickerTest {
     composeTestRule.setContent {
       LocationPicker(
           mapViewModel = mapViewModel,
-          navigationActions = null,
           onLatLng = { lat, lng ->
-            val selectedPosition = Location(lat, lng, null)
+            val selectedPosition = Location(lat, lng)
             assertEquals(position, selectedPosition)
           },
           onAddress = { address ->

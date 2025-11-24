@@ -64,7 +64,7 @@ fun LocationPicker(
     mapViewModel: MapViewModel = viewModel(),
     navigationActions: NavigationActions? = null,
     onLatLng: (Double, Double) -> Unit = { _, _ -> },
-    onAddress: (String?) -> Unit
+    onAddress: (String?) -> Unit = {}
 ) {
   val context = LocalContext.current
 
@@ -79,7 +79,7 @@ fun LocationPicker(
             Modifier.padding(pd),
             mapViewModel,
             onLocationPicked = { lat, lng ->
-              // maybe loading goes here
+              // TODO: maybe loading goes here
               onLatLng(lat, lng)
               getAddressFromLatLng(
                   context,
@@ -92,7 +92,7 @@ fun LocationPicker(
             })
 
         if (showConfirmation)
-        // maybe loading here if address is null
+        // TODO: maybe loading here instead, if address is null
         AddressConfirmationPrompt(
                 address,
                 onConfirm = {
@@ -123,7 +123,6 @@ private fun LocationPickerScreen(
   // UI settings and theme
   val (googleMapUiSettings, googleMapMapProperties) = getUISettingsAndTheme()
 
-  Log.w("LocationPicker", "Picking a location")
   Box(modifier = modifier.fillMaxSize()) {
     GoogleMap(
         modifier = Modifier.testTag(LocationPickerTestTags.MAP_SCREEN),
@@ -161,7 +160,7 @@ private fun LocationPickerScreen(
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 /**
- * Convert geographical coordinates into a text address
+ * Converts geographical coordinates into a text address
  *
  * @param context Current composable context
  * @param lat Latitude to convert
@@ -176,9 +175,8 @@ fun getAddressFromLatLng(context: Context, lat: Double, lng: Double, onResult: (
     val addresses = geocoder.getFromLocation(lat, lng, 1)
     val result = addresses?.firstOrNull()?.getAddressLine(0)
     onResult(result)
-  } catch (e: Exception) {
-    e.printStackTrace()
-    null
+  } catch (_: Exception) {
+    onResult(null)
   }
 }
 
