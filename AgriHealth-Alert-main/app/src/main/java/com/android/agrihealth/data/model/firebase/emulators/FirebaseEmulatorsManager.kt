@@ -88,7 +88,16 @@ object FirebaseEmulatorsManager {
     val ports = listOf(FIRESTORE_PORT, AUTH_PORT, STORAGE_PORT)
     val testPort = ports.first()
 
+    val timeout = System.currentTimeMillis() + (90 * 1000)
     for (host in hosts) {
+      if (System.currentTimeMillis() > timeout)
+          throw Exception(
+              """Failed to scan the network for Firebase emulators. More details:
+                |
+                |If you are trying to run tests on a physical device, you can modify the FirebaseEmulatorsManager class to replace the local IP with the IP of the computer running the emulators and try again.
+                |
+                |If this sentence didn't make sense to you, contact Nils""".trimMargin())
+
       if (pingEmulator(host, testPort, timeoutMs = 100)) {
         // Found potential, need to check every port
         var found = true

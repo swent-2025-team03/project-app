@@ -31,7 +31,7 @@ class FirebaseEmulatorsManagerTest {
       FirebaseEmulatorsManager.linkEmulators(force = true)
       fail("Somehow found an emulator despite no internet connection")
     } catch (_: IllegalStateException) {
-      assertTrue(true)
+      return@runTest
     }
   }
 
