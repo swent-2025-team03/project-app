@@ -59,7 +59,7 @@ object EditProfileScreenTestTags {
 fun EditProfileScreen(
     userViewModel: UserViewModel = viewModel(),
     onGoBack: () -> Unit = {},
-    onSave: (User) -> Unit = { userViewModel.updateUser(it) },
+    onSave: suspend (User) -> Unit = { userViewModel.updateUser(it) },
     onPasswordChange: () -> Unit = {},
     showOnlyVetField: Boolean = false
 ) {
@@ -319,7 +319,7 @@ fun EditProfileScreen(
                                   address = user.address?.copy(name = address),
                                   description = updatedDescription)
                         }
-                    updatedUser?.let { onSave(it) }
+                    updatedUser?.let { scope.launch { onSave(it) } }
                   },
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.SAVE_BUTTON)) {

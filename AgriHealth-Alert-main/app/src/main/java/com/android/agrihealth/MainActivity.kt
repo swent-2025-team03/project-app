@@ -152,7 +152,7 @@ fun AgriHealthApp(
         OverviewScreen(
             credentialManager = credentialManager,
             userRole = currentUserRole,
-            userId = currentUserId,
+            user = currentUser,
             overviewViewModel = overviewViewModel,
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
             onReportClick = { reportId ->
@@ -162,7 +162,13 @@ fun AgriHealthApp(
         )
       }
       composable(Screen.AddReport.route) {
-        val createReportViewModel = AddReportViewModel(userId = currentUserId)
+        val createReportViewModel =
+            object : androidx.lifecycle.ViewModelProvider.Factory {
+              override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return AddReportViewModel(userId = currentUserId) as T
+              }
+            }
+        val vm: AddReportViewModel = viewModel(factory = createReportViewModel)
 
         AddReportScreen(
             onBack = { navigationActions.goBack() },
@@ -170,7 +176,7 @@ fun AgriHealthApp(
             userId = currentUserId,
             userViewModel = userViewModel,
             onCreateReport = { reloadReports = !reloadReports },
-            addReportViewModel = createReportViewModel,
+            addReportViewModel = vm,
         )
       }
       composable(

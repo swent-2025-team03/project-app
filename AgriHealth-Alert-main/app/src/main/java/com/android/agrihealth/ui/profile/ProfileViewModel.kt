@@ -6,11 +6,8 @@ import com.android.agrihealth.data.model.connection.ConnectionRepository
 import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.ui.user.UserViewModel
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import java.lang.IllegalStateException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,10 +24,6 @@ class ProfileViewModel(
   val vetClaimMessage: StateFlow<String?> = _vetClaimMessage
 
   val generatedCode: StateFlow<String?> = _generatedCode
-
-  fun updateUser(updatedUser: User) {
-    userViewModel.updateUser(updatedUser)
-  }
 
   fun generateVetCode() {
     val currentUser = userViewModel.user.value
@@ -70,20 +63,18 @@ class ProfileViewModel(
               }
               is Vet -> {
                 try {
-                    val updatedVet = user.copy(officeId = vetId)
-                    userViewModel.updateUser(updatedVet)
+                  val updatedVet = user.copy(officeId = vetId)
+                  userViewModel.updateUser(updatedVet)
                   val updatedOffice =
                       officeRepository.getOffice(vetId).fold({ office ->
-                        office.copy(vets = (office.vets + Firebase.auth.uid!!).distinct())
+                        office.copy(vets = (office.vets + user.uid))
                       }) {
                         _vetClaimMessage.value = "Office does not exist"
                         throw IllegalStateException()
                       }
                   officeRepository.updateOffice(updatedOffice)
                   _vetClaimMessage.value = "You successfully joined an office"
-                } catch (e: Exception) {
-                  _vetClaimMessage.value = "something went wrong somehow"
-                }
+                } catch (e: Exception) {}
               }
             }
           },

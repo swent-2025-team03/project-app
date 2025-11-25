@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,6 +32,7 @@ import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.ui.common.OfficeNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.user.UserViewModel
@@ -86,12 +88,24 @@ fun AddReportScreen(
 
   val uiState by addReportViewModel.uiState.collectAsState()
   val user by userViewModel.user.collectAsState()
-  val offices = (user as Farmer).linkedOffices
+
+  val offices = remember { mutableStateMapOf<String, String>() }
+
+  // For each linked vet, load their name
+  (user as Farmer).linkedOffices.forEach { officeId ->
+    val vm: OfficeNameViewModel = viewModel(key = officeId)
+    val label by vm.uiState.collectAsState()
+
+    LaunchedEffect(officeId) {
+      vm.loadOffice(uid = officeId, deletedOffice = "Deleted office", noneOffice = "Unknown office")
+    }
+
+    offices[officeId] = label
+  }
 
   // For the dropdown menu
   var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
   var selectedOption by remember { mutableStateOf((user as Farmer).defaultOffice ?: "") }
-  LaunchedEffect(selectedOption) { addReportViewModel.setVet(selectedOption) }
 
   // For the confirmation snackbar (i.e alter window)
   val snackbarHostState = remember { SnackbarHostState() }
@@ -189,10 +203,11 @@ fun AddReportScreen(
                 }
               }
 
+              val selectedOfficeName = offices[selectedOption] ?: ""
               ExposedDropdownMenuBox(
                   expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                     OutlinedTextField(
-                        value = selectedOption,
+                        value = selectedOfficeName,
                         onValueChange = {}, // No direct text editing
                         readOnly = true,
                         label = { Text("Choose an Office") },
@@ -206,11 +221,12 @@ fun AddReportScreen(
 
                     ExposedDropdownMenu(
                         expanded = expanded, onDismissRequest = { expanded = false }) {
-                          offices.forEach { option ->
+                          offices.keys.forEach { option ->
+                            val displayName = offices[option] ?: option
                             DropdownMenuItem(
-                                text = { Text(option) },
+                                text = { Text(displayName) },
                                 onClick = {
-                                  selectedOption = option
+                                  selectedOption = displayName
                                   addReportViewModel.setVet(option)
                                   expanded = false
                                 },

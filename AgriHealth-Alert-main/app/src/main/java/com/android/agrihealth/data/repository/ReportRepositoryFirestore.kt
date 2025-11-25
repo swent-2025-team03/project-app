@@ -39,8 +39,9 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
     return snapshot.documents.mapNotNull { docToReport(it) }
   }
 
-  override suspend fun getReportsByVet(vetId: String): List<Report> {
-    val snapshot = db.collection(REPORTS_COLLECTION_PATH).whereEqualTo("vetId", vetId).get().await()
+  override suspend fun getReportsByVet(officeId: String): List<Report> {
+    val snapshot =
+        db.collection(REPORTS_COLLECTION_PATH).whereEqualTo("officeId", officeId).get().await()
 
     return snapshot.documents.mapNotNull { docToReport(it) }
   }

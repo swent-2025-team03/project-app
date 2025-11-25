@@ -15,15 +15,15 @@ service cloud.firestore {
       // Read own document OR another user's doc if they work in an office related to you in some capacity.
       allow get: if (isSignedIn() && (userID == request.auth.uid || (
         (hasRole("Vet") && (
-            (request.resource.data.role == "Vet" && request.resource.data.officeId ==
-                get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId )
+            (resource.data.role == "Vet" && resource.data.officeId ==
+                get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId)
             ||
-            (request.resource.data.role == "Farmer" &&
+            (resource.data.role == "Farmer" &&
                 get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId
-                in request.data.linkedOffices)
+                in resource.data.linkedOffices)
         )) ||
-            (hasRole("Farmer") && request.resource.data.role == "Vet" &&
-                request.resource.data.officeId in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.linkedOffices))));
+            (hasRole("Farmer") && resource.data.role == "Vet" &&
+                resource.data.officeId in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.linkedOffices))));
 
       // Disallow listing to prevent user enumeration
       allow list: if false;
@@ -57,13 +57,13 @@ service cloud.firestore {
     match /reports/{reportID} {
       // Read and delete allowed only for the office or the farmer
       allow read, delete: if isSignedIn() &&
-        ((hasRole("Vet") && request.resource.data.officeId ==
+        ((hasRole("Vet") && resource.data.officeId ==
            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId) ||
          (hasRole("Farmer") && request.auth.uid == resource.data.farmerId));
 
       // Updates allowed for both, but they cannot change officeId/farmerId
       allow update: if isSignedIn() &&
-        ((hasRole("Vet") && request.resource.data.officeId ==
+        ((hasRole("Vet") && resource.data.officeId ==
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId) ||
         (hasRole("Farmer") && request.auth.uid == resource.data.farmerId)) &&
         !(request.resource.data.diff(resource.data).changedKeys().hasAny(['officeId','farmerId']));
@@ -78,8 +78,8 @@ service cloud.firestore {
 
       // Only vets in the office and farmers connected to the office can read.
       allow get: if ((hasRole("Vet") &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId == officeId) ||
-        (hasRole("Farmer") && officeId in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.linkedOffices));
+       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId == officeId) ||
+     (hasRole("Farmer") && officeId in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.linkedOffices));
 
       // Only vets can create an office, and only if they set themselves as owner
       allow create: if hasRole("Vet")
@@ -88,9 +88,9 @@ service cloud.firestore {
       // Owner may update their office (but cannot change the ownerId), vets can change member list to join and leave
       // Could be less flexible but good enough.
       allow update: if hasRole("Vet")
-                    && (resource.data.ownerId == request.auth.uid
+                    && ((resource.data.ownerId == request.auth.uid
                     && !(request.resource.data.diff(resource.data).changedKeys().hasAny(['ownerId']))) ||
-                    (request.resource.data.diff(resource.data).changedKeys().hasAny(['vets']));
+                    (request.resource.data.diff(resource.data).changedKeys().hasOnly(['vets'])));
 
       // No deletes for now
       allow delete: if false;

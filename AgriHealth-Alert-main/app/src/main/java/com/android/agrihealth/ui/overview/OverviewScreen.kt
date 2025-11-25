@@ -24,7 +24,9 @@ import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
+import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.common.OfficeName
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -64,7 +66,7 @@ object OverviewScreenTestTags {
 fun OverviewScreen(
     userRole: UserRole,
     credentialManager: CredentialManager = CredentialManager.create(LocalContext.current),
-    userId: String,
+    user: User,
     overviewViewModel: OverviewViewModelContract,
     onAddReport: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
@@ -76,7 +78,7 @@ fun OverviewScreen(
   var lazySpace by remember { mutableStateOf(0.dp) }
   val minLazySpace = remember { 150.dp }
 
-  LaunchedEffect(userId) { overviewViewModel.loadReports(userRole, userId) }
+  LaunchedEffect(user) { overviewViewModel.loadReports(userRole, user) }
 
   Scaffold(
       // -- Top App Bar with logout icon --
@@ -290,10 +292,11 @@ fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
       verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
           Text(report.title, style = MaterialTheme.typography.titleSmall)
-          val uid = if (userRole == UserRole.VET) report.farmerId else report.officeId
+
           Row(verticalAlignment = Alignment.CenterVertically) {
             // Show full name and role, no label
-            OfficeName(uid = uid)
+            if (userRole == UserRole.VET) AuthorName(uid = report.farmerId)
+            else OfficeName(uid = report.officeId)
           }
           Text(
               text = report.description.let { if (it.length > 50) it.take(50) + "..." else it },
