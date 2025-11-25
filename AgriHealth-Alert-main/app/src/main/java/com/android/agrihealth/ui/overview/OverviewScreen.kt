@@ -25,7 +25,7 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.ui.common.AuthorName
+import com.android.agrihealth.ui.common.OfficeName
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -293,7 +293,7 @@ fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
           val uid = if (userRole == UserRole.VET) report.farmerId else report.vetId
           Row(verticalAlignment = Alignment.CenterVertically) {
             // Show full name and role, no label
-            AuthorName(uid = uid)
+            OfficeName(uid = uid)
           }
           Text(
               text = report.description.let { if (it.length > 50) it.take(50) + "..." else it },

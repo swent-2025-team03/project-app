@@ -30,7 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.user.*
-import com.android.agrihealth.ui.common.AuthorNameViewModel
+import com.android.agrihealth.ui.common.OfficeNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
@@ -211,20 +211,20 @@ fun EditProfileScreen(
 
                   // For each linked vet, load their name
                   (user as Farmer).linkedOffices.forEach { officeId ->
-                    val vm: AuthorNameViewModel = viewModel(key = officeId)
-                    val label by vm.label.collectAsState()
+                    val vm: OfficeNameViewModel = viewModel(key = officeId)
+                    val label by vm.uiState.collectAsState()
 
                     LaunchedEffect(officeId) {
-                      vm.load(
+                      vm.loadOffice(
                           uid = officeId,
-                          deletedText = "Deleted vet",
-                          unassignedText = "Unknown vet")
+                          deletedOffice = "Deleted office",
+                          noneOffice = "Unknown office")
                     }
 
                     vetNames[officeId] = label
                   }
 
-                  val selectedVetName = vetNames[selectedDefaultOffice] ?: "Unknown vet"
+                  val selectedVetName = vetNames[selectedDefaultOffice] ?: "Unknown office"
 
                   ExposedDropdownMenuBox(
                       expanded = expandedVetDropdown,

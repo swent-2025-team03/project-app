@@ -26,6 +26,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
+import com.android.agrihealth.ui.common.OfficeName
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 
@@ -164,7 +165,7 @@ fun ReportViewScreen(
                           })
                     } else {
                       // Farmer views vet
-                      AuthorName(
+                      OfficeName(
                           uid = report.vetId,
                           onClick = { navigationActions.navigateTo(Screen.ViewUser(report.vetId)) })
                     }

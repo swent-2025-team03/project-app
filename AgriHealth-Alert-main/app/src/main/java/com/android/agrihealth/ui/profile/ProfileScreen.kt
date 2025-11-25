@@ -29,7 +29,7 @@ import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
-import com.android.agrihealth.ui.common.AuthorNameViewModel
+import com.android.agrihealth.ui.common.OfficeNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.LOGOUT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
@@ -192,19 +192,19 @@ fun ProfileScreen(
 
               // Default Vet (Farmers only)
               if (user is Farmer) {
-                val authorNameVm: AuthorNameViewModel =
+                val officeNameVm: OfficeNameViewModel =
                     viewModel(key = (user as Farmer).defaultOffice)
-                val vetName by authorNameVm.label.collectAsState()
+                val officeName by officeNameVm.uiState.collectAsState()
                 LaunchedEffect(user) {
-                  authorNameVm.load(
+                  officeNameVm.loadOffice(
                       uid = (user as Farmer).defaultOffice,
-                      deletedText = "Deleted vet",
-                      unassignedText = "Unassigned")
+                      deletedOffice = "Deleted vet",
+                      noneOffice = "Unassigned")
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
-                    value = vetName,
+                    value = officeName,
                     onValueChange = {},
                     label = { Text("Default Office") },
                     enabled = false,
