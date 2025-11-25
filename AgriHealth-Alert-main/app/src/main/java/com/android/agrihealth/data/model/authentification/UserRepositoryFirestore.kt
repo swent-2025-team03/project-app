@@ -69,8 +69,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     when (user) {
       is Farmer -> {
         base["address"] = user.address
-        base["linkedVets"] = user.linkedOffices
-        base["defaultVet"] = user.defaultOffice
+        base["linkedOffices"] = user.linkedOffices
+        base["defaultOffice"] = user.defaultOffice
       }
       is Vet -> {
         base["address"] = user.address
@@ -130,8 +130,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     when {
       old is Farmer && new is Farmer -> {
         if (old.address != new.address) changes["address"] = new.address
-        if (old.linkedOffices != new.linkedOffices) changes["linkedVets"] = new.linkedOffices
-        if (old.defaultOffice != new.defaultOffice) changes["defaultVet"] = new.defaultOffice
+        if (old.linkedOffices != new.linkedOffices) changes["linkedOffices"] = new.linkedOffices
+        if (old.defaultOffice != new.defaultOffice) changes["defaultOffice"] = new.defaultOffice
       }
       old is Vet && new is Vet -> {
         if (old.address != new.address) changes["address"] = new.address

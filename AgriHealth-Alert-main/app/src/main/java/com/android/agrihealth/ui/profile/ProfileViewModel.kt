@@ -70,6 +70,8 @@ class ProfileViewModel(
               }
               is Vet -> {
                 try {
+                    val updatedVet = user.copy(officeId = vetId)
+                    userViewModel.updateUser(updatedVet)
                   val updatedOffice =
                       officeRepository.getOffice(vetId).fold({ office ->
                         office.copy(vets = (office.vets + Firebase.auth.uid!!).distinct())
@@ -78,8 +80,6 @@ class ProfileViewModel(
                         throw IllegalStateException()
                       }
                   officeRepository.updateOffice(updatedOffice)
-                  val updatedVet = user.copy(officeId = vetId)
-                  userViewModel.updateUser(updatedVet)
                   _vetClaimMessage.value = "You successfully joined an office"
                 } catch (e: Exception) {
                   _vetClaimMessage.value = "something went wrong somehow"
