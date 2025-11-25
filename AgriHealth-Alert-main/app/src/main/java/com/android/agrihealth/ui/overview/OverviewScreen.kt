@@ -1,12 +1,13 @@
 package com.android.agrihealth.ui.overview
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -70,7 +71,7 @@ object OverviewScreenTestTags {
  * @param reports List of report to display kept only for backward compatibility and shouldn't be
  *   used
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun OverviewScreen(
     userRole: UserRole,
@@ -155,48 +156,51 @@ fun OverviewScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                val listState = rememberLazyListState()
+                val pagerState =
+                    rememberPagerState(initialPage = 0, pageCount = { uiState.alerts.size })
                 val coroutineScope = rememberCoroutineScope()
 
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                  LazyRow(
-                      state = listState,
-                      modifier = Modifier.align(Alignment.Center),
-                      contentPadding = PaddingValues(0.dp)) {
-                        itemsIndexed(uiState.alerts) { index, alert ->
-                          AlertItem(
-                              alert = alert,
-                              onClick = { /* TODO: Implement alert view screen navigation*/},
-                              modifier =
-                                  Modifier.fillMaxWidth()
-                                      .padding(horizontal = 0.dp)
-                                      .testTag("ALERT_ITEM_$index"))
+                  if (uiState.alerts.isEmpty()) {
+                    Text(
+                        text = "No alerts available",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(16.dp))
+                  } else {
+                    HorizontalPager(state = pagerState, modifier = Modifier.fillMaxWidth()) { page
+                      ->
+                      val alert = uiState.alerts[page]
+                      AlertItem(
+                          alert = alert,
+                          onClick = { /* TODO: Implement alert view screen navigation */},
+                          modifier = Modifier.fillMaxWidth().testTag("ALERT_ITEM_$page"))
+                    }
+                  }
+
+                  if (uiState.alerts.size > 1) {
+                    IconButton(
+                        onClick = {
+                          val prevPage = (pagerState.currentPage - 1).coerceAtLeast(0)
+                          coroutineScope.launch { pagerState.animateScrollToPage(prevPage) }
+                        },
+                        modifier =
+                            Modifier.align(Alignment.CenterStart)
+                                .testTag(OverviewScreenTestTags.ALERT_ARROW_LEFT)) {
+                          Icon(Icons.Default.ArrowBack, contentDescription = "Previous")
                         }
-                      }
 
-                  IconButton(
-                      onClick = {
-                        val prevIndex = (listState.firstVisibleItemIndex - 1).coerceAtLeast(0)
-                        coroutineScope.launch { listState.animateScrollToItem(prevIndex) }
-                      },
-                      modifier =
-                          Modifier.align(Alignment.CenterStart)
-                              .testTag(OverviewScreenTestTags.ALERT_ARROW_LEFT)) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Previous")
-                      }
-
-                  IconButton(
-                      onClick = {
-                        val nextIndex =
-                            (listState.firstVisibleItemIndex + 1).coerceAtMost(
-                                uiState.alerts.size - 1)
-                        coroutineScope.launch { listState.animateScrollToItem(nextIndex) }
-                      },
-                      modifier =
-                          Modifier.align(Alignment.CenterEnd)
-                              .testTag(OverviewScreenTestTags.ALERT_ARROW_RIGHT)) {
-                        Icon(Icons.Default.ArrowForward, contentDescription = "Next")
-                      }
+                    IconButton(
+                        onClick = {
+                          val nextPage =
+                              (pagerState.currentPage + 1).coerceAtMost(uiState.alerts.size - 1)
+                          coroutineScope.launch { pagerState.animateScrollToPage(nextPage) }
+                        },
+                        modifier =
+                            Modifier.align(Alignment.CenterEnd)
+                                .testTag(OverviewScreenTestTags.ALERT_ARROW_RIGHT)) {
+                          Icon(Icons.Default.ArrowForward, contentDescription = "Next")
+                        }
+                  }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -289,7 +293,7 @@ fun AlertItem(alert: Alert, onClick: (() -> Unit), modifier: Modifier = Modifier
       modifier = modifier.width(screenWidth * 0.9f),
       elevation = CardDefaults.cardElevation(4.dp)) {
         Column(
-            modifier = Modifier.padding(start = 40.dp, top = 12.dp, end = 12.dp, bottom = 12.dp),
+            modifier = Modifier.padding(start = 43.dp, top = 12.dp, end = 12.dp, bottom = 12.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp)) {
               Text(
                   text = alert.title,
