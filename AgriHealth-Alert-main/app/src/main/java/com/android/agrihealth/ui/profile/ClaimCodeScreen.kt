@@ -107,7 +107,7 @@ fun GenerateCode(
   Button(
       onClick = { profileViewModel.generateVetCode() },
       modifier = modifier.testTag(CODE_BUTTON_VET)) {
-        Text("Generate new Farmer's Code")
+        Text("Generate new Connection Code")
       }
 
   if (code != null) {
