@@ -199,26 +199,19 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun testFarmer_OverviewAlertCards_DisplayAndArrowNavigation() {
+  fun testFarmer_OverviewAlertCards_Navigation() {
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.waitForIdle()
 
     completeSignIn(user1.email, "12345678")
     checkOverviewScreenIsDisplayed()
 
-    composeTestRule.onNodeWithTag("ALERT_ITEM_0").assertIsDisplayed()
+      composeTestRule.onNodeWithTag("ALERT_ITEM_0").assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ALERT_ARROW_RIGHT).assertExists()
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ALERT_ARROW_LEFT).assertExists()
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.alertItemTag(1)).performClick()
+      composeTestRule.onNodeWithTag("ALERT_ITEM_1").assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ALERT_ARROW_RIGHT).performClick()
-    composeTestRule.waitForIdle()
-
-    composeTestRule.onNodeWithTag("ALERT_ITEM_1").assertIsDisplayed()
-
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ALERT_ARROW_LEFT).performClick()
-    composeTestRule.waitForIdle()
-
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.alertItemTag(0)).performClick()
     composeTestRule.onNodeWithTag("ALERT_ITEM_0").assertIsDisplayed()
 
     signOutFromScreen()

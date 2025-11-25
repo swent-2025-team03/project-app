@@ -12,8 +12,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -53,12 +51,12 @@ object OverviewScreenTestTags {
   const val LOGOUT_BUTTON = "logoutButton"
   const val SCREEN = "OverviewScreen"
   const val REPORT_ITEM = "reportItem"
-  const val ALERT_ARROW_RIGHT = "AlertRightArrowButton"
-  const val ALERT_ARROW_LEFT = "AlertLeftArrowButton"
   const val PROFILE_BUTTON = "ProfileButton"
   const val STATUS_DROPDOWN = "StatusFilterDropdown"
   const val VET_ID_DROPDOWN = "VetIdFilterDropdown"
   const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
+
+  fun alertItemTag(page: Int) = "ALERT_ITEM_$page"
 }
 
 /**
@@ -155,6 +153,7 @@ fun OverviewScreen(
                 val pagerState =
                     rememberPagerState(initialPage = 0, pageCount = { uiState.alerts.size })
                 val coroutineScope = rememberCoroutineScope()
+                val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                   if (uiState.alerts.isEmpty()) {
@@ -163,42 +162,25 @@ fun OverviewScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(16.dp))
                   } else {
-                    HorizontalPager(state = pagerState, modifier = Modifier.fillMaxWidth()) { page
-                      ->
-                      val alert = uiState.alerts[page]
-                      AlertItem(
-                          alert = alert,
-                          onClick = { /* TODO: Implement alert view screen navigation */},
-                          modifier = Modifier.fillMaxWidth().testTag("ALERT_ITEM_$page"))
-                    }
-                  }
-
-                  if (uiState.alerts.size > 1) {
-                    IconButton(
-                        onClick = {
-                          val prevPage = (pagerState.currentPage - 1).coerceAtLeast(0)
-                          coroutineScope.launch { pagerState.animateScrollToPage(prevPage) }
-                        },
-                        modifier =
-                            Modifier.align(Alignment.CenterStart)
-                                .testTag(OverviewScreenTestTags.ALERT_ARROW_LEFT)) {
-                          Icon(Icons.Default.ArrowBack, contentDescription = "Previous")
-                        }
-
-                    IconButton(
-                        onClick = {
-                          val nextPage =
-                              (pagerState.currentPage + 1).coerceAtMost(uiState.alerts.size - 1)
-                          coroutineScope.launch { pagerState.animateScrollToPage(nextPage) }
-                        },
-                        modifier =
-                            Modifier.align(Alignment.CenterEnd)
-                                .testTag(OverviewScreenTestTags.ALERT_ARROW_RIGHT)) {
-                          Icon(Icons.Default.ArrowForward, contentDescription = "Next")
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(horizontal = (screenWidth - 350.dp) / 2),
+                        pageSpacing = 16.dp) { page ->
+                          val alert = uiState.alerts[page]
+                          AlertItem(
+                              alert = alert,
+                              isCentered = pagerState.currentPage == page,
+                              onCenterClick = { /* TODO: Implement alert view screen navigation */},
+                              onNotCenterClick = {
+                                coroutineScope.launch { pagerState.animateScrollToPage(page) }
+                              },
+                              modifier =
+                                  Modifier.width(350.dp)
+                                      .testTag(OverviewScreenTestTags.alertItemTag(page)))
                         }
                   }
                 }
-
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // -- Create a new report button --
@@ -282,15 +264,25 @@ fun OverviewScreen(
  * implementation will fetch alerts.
  */
 @Composable
-fun AlertItem(alert: Alert, onClick: (() -> Unit), modifier: Modifier = Modifier) {
-  val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+fun AlertItem(
+    alert: Alert,
+    isCentered: Boolean,
+    onCenterClick: () -> Unit,
+    onNotCenterClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
   Card(
-      onClick = onClick,
-      modifier = modifier.width(screenWidth * 0.9f),
+      onClick = {
+        if (isCentered) {
+          onCenterClick()
+        } else {
+          onNotCenterClick()
+        }
+      },
+      modifier = modifier.width(350.dp),
       elevation = CardDefaults.cardElevation(4.dp)) {
         Column(
-            modifier = Modifier.padding(start = 43.dp, top = 12.dp, end = 12.dp, bottom = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
               Text(
                   text = alert.title,
                   style = MaterialTheme.typography.titleLarge,
