@@ -4,8 +4,12 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
+import java.net.Inet4Address
+import java.net.InetAddress
 import java.net.InetSocketAddress
+import java.net.NetworkInterface
 import java.net.Socket
+import java.nio.ByteBuffer
 
 data class FirebaseEnvironment(
     val host: String,
@@ -26,22 +30,21 @@ object FirebaseEmulatorsManager {
     private set
 
   /**
-   * Initializes Firebase emulators, prioritizing local emulators before falling back to the online
-   * one on okau.moe
+   * Initializes Firebase emulators, trying locally and scanning the network in case the Android
+   * device is on another machine (meaning, a physical device)
    */
-  fun linkEmulators() {
-    if (emulatorInitialized) return
+  fun linkEmulators(force: Boolean = false) {
+    if (emulatorInitialized && !force) return
 
-    val shouldUseLocal =
-        isLocalRunning(FIRESTORE_PORT) && isLocalRunning(AUTH_PORT) && isLocalRunning(STORAGE_PORT)
+    val emulatorHost = if (shouldUseLocal()) LOCAL_HOST else scanNetworkForEmulators()
 
-    check(shouldUseLocal) {
+    check(emulatorHost != null) {
       "Firebase emulators not running locally, run: firebase emulators:start"
     }
 
     environment =
         FirebaseEnvironment(
-            host = LOCAL_HOST,
+            host = emulatorHost,
             firestorePort = FIRESTORE_PORT,
             authPort = AUTH_PORT,
             storagePort = STORAGE_PORT)
@@ -55,14 +58,91 @@ object FirebaseEmulatorsManager {
     emulatorInitialized = true
   }
 
-  fun isLocalRunning(port: Int, timeoutMs: Int = 1000): Boolean {
+  fun pingEmulator(host: String, port: Int, timeoutMs: Int = 1000): Boolean {
     return try {
       Socket().use { socket ->
-        socket.connect(InetSocketAddress(LOCAL_HOST, port), timeoutMs)
+        socket.connect(InetSocketAddress(host, port), timeoutMs)
         true
       }
     } catch (_: Exception) {
       false
     }
   }
+
+  fun isLocalRunning(port: Int, timeoutMs: Int = 1000): Boolean {
+    return pingEmulator(LOCAL_HOST, port, timeoutMs)
+  }
+
+  fun shouldUseLocal(): Boolean {
+    return isLocalRunning(FIRESTORE_PORT) &&
+        isLocalRunning(AUTH_PORT) &&
+        isLocalRunning(STORAGE_PORT)
+  }
+
+  // Find emulator on the local network, this only runs once per "run all tests" so it's fine if it
+  // takes a while
+  private fun scanNetworkForEmulators(): String? {
+    val netInfo = getNetworkInfo() ?: return null // subnet ip + prefix
+    val hosts = getHostRange(netInfo.ip, netInfo.prefix) // list of i.e. 192.168.1.XXX
+
+    val ports = listOf(FIRESTORE_PORT, AUTH_PORT, STORAGE_PORT)
+    val testPort = ports.first()
+
+    val timeout = System.currentTimeMillis() + (90 * 1000)
+    for (host in hosts) {
+      if (System.currentTimeMillis() > timeout)
+          throw Exception(
+              """Failed to scan the network for Firebase emulators. More details:
+                |
+                |If you are trying to run tests on a physical device, you can modify the FirebaseEmulatorsManager class to replace the local IP with the IP of the computer running the emulators and try again.
+                |
+                |If this sentence didn't make sense to you, contact Nils"""
+                  .trimMargin())
+
+      if (pingEmulator(host, testPort, timeoutMs = 100)) {
+        // Found potential, need to check every port
+        var found = true
+        for (port in ports) found = found && (pingEmulator(host, port))
+        if (!found) continue
+
+        return host
+      }
+    }
+
+    return null
+  }
+}
+
+// --- Network stuff ---
+
+data class NetworkInfo(val ip: Inet4Address, val prefix: Short)
+
+// Get subnet IP and prefix
+private fun getNetworkInfo(): NetworkInfo? {
+  val interfaces = NetworkInterface.getNetworkInterfaces()
+  for (intf in interfaces) {
+    for (addr in intf.interfaceAddresses) {
+      val ip = addr.address
+      if (ip is Inet4Address && !ip.isLoopbackAddress) {
+        return NetworkInfo(ip, addr.networkPrefixLength)
+      }
+    }
+  }
+  return null
+}
+
+// Get a list of every possible host in the subnet
+private fun getHostRange(ip: Inet4Address, prefix: Short): List<String> {
+  val mask = -1 shl (32 - prefix)
+  val ipInt = ByteBuffer.wrap(ip.address).int
+
+  val network = ipInt and mask
+  val broadcast = network or mask.inv()
+
+  val hosts = mutableListOf<String>()
+  for (i in network + 1 until broadcast) { // skip network + broadcast
+    val hostIp = InetAddress.getByAddress(ByteBuffer.allocate(4).putInt(i).array()).hostAddress!!
+    hosts.add(hostIp)
+  }
+  return hosts
 }
