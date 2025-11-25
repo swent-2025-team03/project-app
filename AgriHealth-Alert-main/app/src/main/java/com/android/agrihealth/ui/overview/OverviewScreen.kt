@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -54,7 +53,6 @@ object OverviewScreenTestTags {
   const val LOGOUT_BUTTON = "logoutButton"
   const val SCREEN = "OverviewScreen"
   const val REPORT_ITEM = "reportItem"
-  const val ALERT_ITEM = "AlertItem"
   const val ALERT_ARROW_RIGHT = "AlertRightArrowButton"
   const val ALERT_ARROW_LEFT = "AlertLeftArrowButton"
   const val PROFILE_BUTTON = "ProfileButton"
@@ -87,8 +85,6 @@ fun OverviewScreen(
   val density = LocalDensity.current
   var lazySpace by remember { mutableStateOf(0.dp) }
   val minLazySpace = remember { 150.dp }
-  val listState = rememberLazyListState()
-  val coroutineScope = rememberCoroutineScope()
 
   LaunchedEffect(userId) {
     overviewViewModel.loadReports(userRole, userId)
