@@ -22,4 +22,6 @@ interface AddReportViewModelContract {
   fun setPhoto(uri: Uri?) // TODO: Change to "String?"
 
   fun removePhoto()
+
+  fun setUploadedImagePath(path: String?)
 }

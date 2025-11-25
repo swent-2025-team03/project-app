@@ -1,6 +1,5 @@
 package com.android.agrihealth.data.repository
 
-import android.net.Uri
 import android.util.Log
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.MCQ
@@ -98,7 +97,7 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
             else -> null
           }
         }
-    val photoUri = doc.getString("photoUri")
+    val photoURL = doc.getString("photoUri")
     val farmerId = doc.getString("farmerId") ?: return null
     val vetId = doc.getString("vetId") ?: return null
     val statusStr = doc.getString("status") ?: return null
@@ -121,7 +120,7 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
         id = id,
         title = title,
         description = description,
-        photoUri = photoUri as Uri?,
+        photoURL = photoURL,
         questionForms = questionForms,
         farmerId = farmerId,
         vetId = vetId,

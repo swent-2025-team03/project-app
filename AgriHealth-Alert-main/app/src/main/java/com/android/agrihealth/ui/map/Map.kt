@@ -464,7 +464,7 @@ fun PreviewReportInfo() {
           status = ReportStatus.IN_PROGRESS,
           answer = "answer to the report",
           location = null,
-          photoUri = null,
+          photoURL = null,
       )
   AgriHealthAppTheme {
     ShowReportInfo(

@@ -21,7 +21,7 @@ class ReportRepositoryLocalTest {
           title = "Test Report",
           description = "This is a test report",
           questionForms = emptyList(),
-          photoUri = null,
+          photoURL = null,
           farmerId = "farmer123",
           vetId = "vet456",
           status = ReportStatus.PENDING,
