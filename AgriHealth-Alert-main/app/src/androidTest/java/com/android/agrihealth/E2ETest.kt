@@ -206,10 +206,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     completeSignIn(user1.email, "12345678")
     checkOverviewScreenIsDisplayed()
 
-    composeTestRule
-        .onAllNodesWithTag(OverviewScreenTestTags.ALERT_ITEM)
-        .onFirst()
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag("ALERT_ITEM_0").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.ALERT_ARROW_RIGHT).assertExists()
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.ALERT_ARROW_LEFT).assertExists()
@@ -217,18 +214,12 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.ALERT_ARROW_RIGHT).performClick()
     composeTestRule.waitForIdle()
 
-    composeTestRule
-        .onAllNodesWithTag(OverviewScreenTestTags.ALERT_ITEM)
-        .onFirst()
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag("ALERT_ITEM_1").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.ALERT_ARROW_LEFT).performClick()
     composeTestRule.waitForIdle()
 
-    composeTestRule
-        .onAllNodesWithTag(OverviewScreenTestTags.ALERT_ITEM)
-        .onFirst()
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag("ALERT_ITEM_0").assertIsDisplayed()
 
     signOutFromScreen()
   }

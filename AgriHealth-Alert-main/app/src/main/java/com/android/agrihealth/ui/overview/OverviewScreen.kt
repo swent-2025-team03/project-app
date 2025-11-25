@@ -1,11 +1,11 @@
 package com.android.agrihealth.ui.overview
 
-import android.R.attr.onClick
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import com.android.agrihealth.core.design.theme.statusColor
@@ -162,14 +163,14 @@ fun OverviewScreen(
                       state = listState,
                       modifier = Modifier.align(Alignment.Center),
                       contentPadding = PaddingValues(0.dp)) {
-                        items(uiState.alerts) { alert ->
+                        itemsIndexed(uiState.alerts) { index, alert ->
                           AlertItem(
                               alert = alert,
-                              onClick = {},
+                              onClick = { /* TODO: Implement alert view screen navigation*/},
                               modifier =
                                   Modifier.fillMaxWidth()
                                       .padding(horizontal = 0.dp)
-                                      .testTag(OverviewScreenTestTags.ALERT_ITEM))
+                                      .testTag("ALERT_ITEM_$index"))
                         }
                       }
 
@@ -284,16 +285,23 @@ fun OverviewScreen(
 fun AlertItem(alert: Alert, onClick: (() -> Unit), modifier: Modifier = Modifier) {
   val screenWidth = LocalConfiguration.current.screenWidthDp.dp
   Card(
-      modifier = modifier.width(screenWidth * 0.9f), elevation = CardDefaults.cardElevation(4.dp)) {
+      onClick = onClick,
+      modifier = modifier.width(screenWidth * 0.9f),
+      elevation = CardDefaults.cardElevation(4.dp)) {
         Column(
             modifier = Modifier.padding(start = 40.dp, top = 12.dp, end = 12.dp, bottom = 12.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp)) {
-              Text(alert.title, style = MaterialTheme.typography.titleLarge)
+              Text(
+                  text = alert.title,
+                  style = MaterialTheme.typography.titleLarge,
+                  maxLines = 1,
+                  overflow = TextOverflow.Ellipsis)
               Spacer(modifier = Modifier.height(4.dp))
               Text(
-                  text = alert.description.let { if (it.length > 50) it.take(50) + "..." else it },
+                  text = alert.description,
                   style = MaterialTheme.typography.bodyMedium,
-                  maxLines = 2)
+                  maxLines = 2,
+                  overflow = TextOverflow.Ellipsis)
               Spacer(modifier = Modifier.height(4.dp))
               Text(
                   text = "${alert.region} • ${alert.outbreakDate}",
