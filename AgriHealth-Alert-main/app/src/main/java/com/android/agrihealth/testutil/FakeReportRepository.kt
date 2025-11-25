@@ -5,10 +5,10 @@ import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.ui.report.ReportViewUIState
 
 class FakeReportRepository : ReportRepository {
-  // Utilisé par ReportViewScreenTest pour vérifier qu'un save a eu lieu
+  // Used by ReportViewScreenTest to verify that a save occurred
   var editCalled = false
 
-  // Utilisé par AddReportViewModelTest pour vérifier le report créé
+  // Used by AddReportViewModelTest to verify the created report
   var lastAddedReport: Report? = null
   private val sample = ReportViewUIState().report
 
