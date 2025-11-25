@@ -69,7 +69,7 @@ class AddReportViewModel(
             questionForms = uiState.questionForms,
             photoUri = null, // currently unused
             farmerId = userId,
-            vetId = uiState.chosenVet,
+            officeId = uiState.chosenVet,
             status = ReportStatus.PENDING,
             answer = null,
             location = Location(46.7990813, 6.6259961) // null // optional until implemented

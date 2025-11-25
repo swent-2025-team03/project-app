@@ -30,7 +30,7 @@ data class ReportViewUIState(
             questionForms = emptyList(),
             photoUri = null, // Placeholder for now
             farmerId = "FARMER_123",
-            vetId = "VET_456",
+            officeId = "VET_456",
             status = ReportStatus.PENDING,
             answer = null,
             location = Location(46.5191, 6.5668, "Lausanne Farm")),

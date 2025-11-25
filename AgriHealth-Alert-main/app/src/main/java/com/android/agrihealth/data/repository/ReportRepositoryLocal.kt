@@ -13,7 +13,7 @@ class ReportRepositoryLocal : ReportRepository {
   }
 
   override suspend fun getAllReports(userId: String): List<Report> {
-    return reports.filter { it.farmerId == userId || it.vetId == userId }
+    return reports.filter { it.farmerId == userId || it.officeId == userId }
   }
 
   override suspend fun getReportsByFarmer(farmerId: String): List<Report> {
@@ -21,7 +21,7 @@ class ReportRepositoryLocal : ReportRepository {
   }
 
   override suspend fun getReportsByVet(vetId: String): List<Report> {
-    return reports.filter { it.vetId == vetId }
+    return reports.filter { it.officeId == vetId }
   }
 
   override suspend fun getReportById(reportId: String): Report? {

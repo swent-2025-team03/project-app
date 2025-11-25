@@ -290,7 +290,7 @@ fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
       verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
           Text(report.title, style = MaterialTheme.typography.titleSmall)
-          val uid = if (userRole == UserRole.VET) report.farmerId else report.vetId
+          val uid = if (userRole == UserRole.VET) report.farmerId else report.officeId
           Row(verticalAlignment = Alignment.CenterVertically) {
             // Show full name and role, no label
             OfficeName(uid = uid)

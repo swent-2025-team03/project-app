@@ -54,7 +54,7 @@ class OverviewViewModel(
               UserRole.FARMER -> reportRepository.getReportsByFarmer(userId)
               UserRole.VET -> reportRepository.getReportsByVet(userId)
             }.sortedByDescending { it.createdAt }
-        val vetOptions = reports.map { it.vetId }.distinct()
+        val vetOptions = reports.map { it.officeId }.distinct()
         val farmerOptions = reports.map { it.farmerId }.distinct()
         val filtered =
             applyFilters(
@@ -89,12 +89,12 @@ class OverviewViewModel(
   private fun applyFilters(
       reports: List<Report>,
       status: ReportStatus?,
-      vetId: String?,
+      officeId: String?,
       farmerId: String?
   ): List<Report> {
     return reports.filter { report ->
       (status == null || report.status == status) &&
-          (vetId == null || report.vetId == vetId) &&
+          (officeId == null || report.officeId == officeId) &&
           (farmerId == null || report.farmerId == farmerId)
     }
   }
