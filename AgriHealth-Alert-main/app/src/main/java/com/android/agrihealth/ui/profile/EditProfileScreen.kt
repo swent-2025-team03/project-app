@@ -196,7 +196,7 @@ fun EditProfileScreen(
 
                 if ((user as Farmer).linkedOffices.isEmpty()) {
                   Text(
-                      text = "You need to add vets before choosing your default one.",
+                      text = "You need to add offices before choosing your default one.",
                       style = MaterialTheme.typography.bodySmall,
                       color = MaterialTheme.colorScheme.onSurfaceVariant,
                       modifier = Modifier.padding(vertical = 4.dp))
