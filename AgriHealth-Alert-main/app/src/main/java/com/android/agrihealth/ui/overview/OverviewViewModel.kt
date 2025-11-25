@@ -4,6 +4,9 @@ import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.agrihealth.data.model.alert.Alert
+import com.android.agrihealth.data.model.alert.AlertRepository
+import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.report.Report
@@ -24,6 +27,7 @@ import kotlinx.coroutines.launch
  */
 data class OverviewUIState(
     val reports: List<Report> = emptyList(),
+    val alerts: List<Alert> = emptyList(),
     val selectedStatus: ReportStatus? = null,
     val selectedVet: String? = null,
     val selectedFarmer: String? = null,
@@ -38,6 +42,7 @@ data class OverviewUIState(
  */
 class OverviewViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
+    private val alertRepository: AlertRepository = AlertRepositoryProvider.repository
 ) : ViewModel(), OverviewViewModelContract {
 
   private val _uiState = MutableStateFlow(OverviewUIState())
@@ -73,6 +78,13 @@ class OverviewViewModel(
       } catch (e: Exception) {
         _uiState.value = OverviewUIState(reports = emptyList())
       }
+    }
+  }
+
+  override fun loadAlerts() {
+    viewModelScope.launch {
+      val alerts = alertRepository.getAlerts()
+      _uiState.value = _uiState.value.copy(alerts = alerts)
     }
   }
 
