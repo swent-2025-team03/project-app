@@ -96,7 +96,8 @@ object FirebaseEmulatorsManager {
                 |
                 |If you are trying to run tests on a physical device, you can modify the FirebaseEmulatorsManager class to replace the local IP with the IP of the computer running the emulators and try again.
                 |
-                |If this sentence didn't make sense to you, contact Nils""".trimMargin())
+                |If this sentence didn't make sense to you, contact Nils"""
+                  .trimMargin())
 
       if (pingEmulator(host, testPort, timeoutMs = 100)) {
         // Found potential, need to check every port
