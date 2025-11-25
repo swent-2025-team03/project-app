@@ -5,7 +5,11 @@ import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.ui.report.ReportViewUIState
 
 class FakeReportRepository : ReportRepository {
+  // Utilisé par ReportViewScreenTest pour vérifier qu'un save a eu lieu
   var editCalled = false
+
+  // Utilisé par AddReportViewModelTest pour vérifier le report créé
+  var lastAddedReport: Report? = null
   private val sample = ReportViewUIState().report
 
   override fun getNewReportId(): String = "NEW_ID"
@@ -19,7 +23,8 @@ class FakeReportRepository : ReportRepository {
   override suspend fun getReportById(reportId: String): Report? = sample.copy(id = reportId)
 
   override suspend fun addReport(report: Report) {
-    // no-op: not required in current tests.
+    // Store last added report for unit tests (AddReportViewModelTest)
+    lastAddedReport = report
   }
 
   override suspend fun editReport(reportId: String, newReport: Report) {
