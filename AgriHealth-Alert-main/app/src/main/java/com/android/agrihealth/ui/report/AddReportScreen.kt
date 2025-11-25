@@ -86,11 +86,11 @@ fun AddReportScreen(
 
   val uiState by addReportViewModel.uiState.collectAsState()
   val user by userViewModel.user.collectAsState()
-  val vets = (user as Farmer).linkedVets
+  val offices = (user as Farmer).linkedOffices
 
   // For the dropdown menu
   var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
-  var selectedOption by remember { mutableStateOf((user as Farmer).defaultVet ?: "") }
+  var selectedOption by remember { mutableStateOf((user as Farmer).defaultOffice ?: "") }
   LaunchedEffect(selectedOption) { addReportViewModel.setVet(selectedOption) }
 
   // For the confirmation snackbar (i.e alter window)
@@ -195,7 +195,7 @@ fun AddReportScreen(
                         value = selectedOption,
                         onValueChange = {}, // No direct text editing
                         readOnly = true,
-                        label = { Text("Choose a Vet") },
+                        label = { Text("Choose an Office") },
                         trailingIcon = {
                           ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                         },
@@ -206,7 +206,7 @@ fun AddReportScreen(
 
                     ExposedDropdownMenu(
                         expanded = expanded, onDismissRequest = { expanded = false }) {
-                          vets.forEach { option ->
+                          offices.forEach { option ->
                             DropdownMenuItem(
                                 text = { Text(option) },
                                 onClick = {

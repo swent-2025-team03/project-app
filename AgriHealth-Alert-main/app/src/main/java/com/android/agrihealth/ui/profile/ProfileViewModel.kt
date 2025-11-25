@@ -58,11 +58,12 @@ class ProfileViewModel(
       result.fold(
           onSuccess = { vetId ->
             when (user) {
-              is Farmer -> { // Update farmer: add vetId to linkedVets (avoid duplicates)
-                val updatedLinkedVets = (user.linkedVets + vetId).distinct()
-                val newDefaultVet = user.defaultVet ?: vetId
+              is Farmer -> { // Update farmer: add officeId to linkedOffices (avoid duplicates)
+                val updatedLinkedOffices = (user.linkedOffices + vetId).distinct()
+                val newDefaultOffice = user.defaultOffice ?: vetId
                 val updatedFarmer =
-                    user.copy(linkedVets = updatedLinkedVets, defaultVet = newDefaultVet)
+                    user.copy(
+                        linkedOffices = updatedLinkedOffices, defaultOffice = newDefaultOffice)
                 userViewModel.updateUser(updatedFarmer)
 
                 _vetClaimMessage.value = "Vet successfully added!"

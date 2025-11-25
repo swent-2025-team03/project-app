@@ -24,8 +24,8 @@ val defaultUser =
         lastname = "Doe",
         email = "",
         address = null,
-        linkedVets = emptyList(),
-        defaultVet = null,
+        linkedOffices = emptyList(),
+        defaultOffice = null,
         isGoogleAccount = false)
 
 /**

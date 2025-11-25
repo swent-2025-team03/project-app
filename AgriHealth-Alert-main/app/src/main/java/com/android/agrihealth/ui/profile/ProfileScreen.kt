@@ -192,11 +192,12 @@ fun ProfileScreen(
 
               // Default Vet (Farmers only)
               if (user is Farmer) {
-                val authorNameVm: AuthorNameViewModel = viewModel(key = (user as Farmer).defaultVet)
+                val authorNameVm: AuthorNameViewModel =
+                    viewModel(key = (user as Farmer).defaultOffice)
                 val vetName by authorNameVm.label.collectAsState()
                 LaunchedEffect(user) {
                   authorNameVm.load(
-                      uid = (user as Farmer).defaultVet,
+                      uid = (user as Farmer).defaultOffice,
                       deletedText = "Deleted vet",
                       unassignedText = "Unassigned")
                 }
@@ -205,7 +206,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = vetName,
                     onValueChange = {},
-                    label = { Text("Default Vet") },
+                    label = { Text("Default Office") },
                     enabled = false,
                     modifier = Modifier.fillMaxWidth().testTag(DEFAULT_VET_FIELD))
               }
@@ -217,7 +218,7 @@ fun ProfileScreen(
                     onClick = onCodeFarmer,
                     modifier =
                         Modifier.align(Alignment.CenterHorizontally).testTag(CODE_BUTTON_FARMER)) {
-                      Text("Add new Vet with Code")
+                      Text("Add new Office with Code")
                     }
               }
 

@@ -99,7 +99,7 @@ class ConnectionRepository(
           val officeId = snap.getString(FirestoreSchema.ConnectCodes.OFFICE_ID)
           if (officeId == null) throw IllegalArgumentException("Invalid office ID.")
 
-          linkUsers(tx, officeId, userId)
+          // linkUsers(tx, officeId, userId)
 
           tx.update(
               docRef,

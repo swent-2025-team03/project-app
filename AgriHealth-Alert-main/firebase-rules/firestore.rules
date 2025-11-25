@@ -4,20 +4,16 @@ service cloud.firestore {
 
     function isSignedIn() { return request.auth != null; }
 
-		function hasRole(role) {
+    function hasRole(role) {
       return request.auth != null
           && exists(/databases/$(database)/documents/users/$(request.auth.uid))
           && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
     }
 
-    function ownsOffice(officeId) {
-        return ;
-    }
-
     // ---- Users ----
     match /users/{userID} {
       // Read own document OR another user's doc if they work in an office related to you in some capacity.
-      allow get: if isSignedIn() && (userID == request.auth.uid || (
+      allow get: if (isSignedIn() && (userID == request.auth.uid || (
         (hasRole("Vet") && (
             (request.resource.data.role == "Vet" && request.resource.data.officeId ==
                 get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId )
@@ -27,7 +23,7 @@ service cloud.firestore {
                 in request.data.linkedOffices)
         )) ||
             (hasRole("Farmer") && request.resource.data.role == "Vet" &&
-                request.resource.data.officeId in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.linkedOffices)));
+                request.resource.data.officeId in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.linkedOffices))));
 
       // Disallow listing to prevent user enumeration
       allow list: if false;

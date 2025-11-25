@@ -90,7 +90,7 @@ fun EditProfileScreen(
   var address by remember { mutableStateOf(user.address?.toString() ?: "") }
 
   // Farmer-specific states
-  var selectedDefaultVet by remember { mutableStateOf((user as? Farmer)?.defaultVet ?: "") }
+  var selectedDefaultOffice by remember { mutableStateOf((user as? Farmer)?.defaultOffice ?: "") }
   var expandedVetDropdown by remember { mutableStateOf(false) }
   var vetCode by remember { mutableStateOf("") }
 
@@ -199,7 +199,7 @@ fun EditProfileScreen(
                 if (user is Farmer) {
                   Spacer(modifier = Modifier.height(12.dp))
 
-                  if ((user as Farmer).linkedVets.isEmpty()) {
+                  if ((user as Farmer).linkedOffices.isEmpty()) {
                     Text(
                         text = "You need to add vets before choosing your default one.",
                         style = MaterialTheme.typography.bodySmall,
@@ -210,19 +210,21 @@ fun EditProfileScreen(
                   val vetNames = remember { mutableStateMapOf<String, String>() }
 
                   // For each linked vet, load their name
-                  (user as Farmer).linkedVets.forEach { vetId ->
-                    val vm: AuthorNameViewModel = viewModel(key = vetId)
+                  (user as Farmer).linkedOffices.forEach { officeId ->
+                    val vm: AuthorNameViewModel = viewModel(key = officeId)
                     val label by vm.label.collectAsState()
 
-                    LaunchedEffect(vetId) {
+                    LaunchedEffect(officeId) {
                       vm.load(
-                          uid = vetId, deletedText = "Deleted vet", unassignedText = "Unknown vet")
+                          uid = officeId,
+                          deletedText = "Deleted vet",
+                          unassignedText = "Unknown vet")
                     }
 
-                    vetNames[vetId] = label
+                    vetNames[officeId] = label
                   }
 
-                  val selectedVetName = vetNames[selectedDefaultVet] ?: "Unknown vet"
+                  val selectedVetName = vetNames[selectedDefaultOffice] ?: "Unknown vet"
 
                   ExposedDropdownMenuBox(
                       expanded = expandedVetDropdown,
@@ -231,7 +233,7 @@ fun EditProfileScreen(
                             value = selectedVetName,
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text("Default Vet") },
+                            label = { Text("Default Office") },
                             trailingIcon = {
                               ExposedDropdownMenuDefaults.TrailingIcon(
                                   expanded = expandedVetDropdown)
@@ -244,13 +246,13 @@ fun EditProfileScreen(
                         ExposedDropdownMenu(
                             expanded = expandedVetDropdown,
                             onDismissRequest = { expandedVetDropdown = false }) {
-                              (user as Farmer).linkedVets.forEach { vetId ->
-                                val displayName = vetNames[vetId] ?: vetId
+                              (user as Farmer).linkedOffices.forEach { officeId ->
+                                val displayName = vetNames[officeId] ?: officeId
 
                                 DropdownMenuItem(
                                     text = { Text(displayName) },
                                     onClick = {
-                                      selectedDefaultVet = vetId
+                                      selectedDefaultOffice = officeId
                                       expandedVetDropdown = false
                                     })
                               }
@@ -308,7 +310,7 @@ fun EditProfileScreen(
                                   firstname = firstname,
                                   lastname = lastname,
                                   address = user.address?.copy(name = address),
-                                  defaultVet = selectedDefaultVet,
+                                  defaultOffice = selectedDefaultOffice,
                                   description = updatedDescription)
                           UserRole.VET ->
                               (user as? Vet)?.copy(
