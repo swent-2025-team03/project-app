@@ -60,8 +60,7 @@ fun EditProfileScreen(
     userViewModel: UserViewModel = viewModel(),
     onGoBack: () -> Unit = {},
     onSave: suspend (User) -> Unit = { userViewModel.updateUser(it) },
-    onPasswordChange: () -> Unit = {},
-    showOnlyVetField: Boolean = false
+    onPasswordChange: () -> Unit = {}
 ) {
   val user by userViewModel.user.collectAsState()
   val userRole = user.role
@@ -92,7 +91,6 @@ fun EditProfileScreen(
   // Farmer-specific states
   var selectedDefaultOffice by remember { mutableStateOf((user as? Farmer)?.defaultOffice ?: "") }
   var expandedVetDropdown by remember { mutableStateOf(false) }
-  var vetCode by remember { mutableStateOf("") }
 
   Scaffold(
       topBar = {
@@ -116,176 +114,141 @@ fun EditProfileScreen(
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
 
-              if (!showOnlyVetField) {
+              // Profile Image Placeholder
+              Icon(
+                  imageVector = Icons.Default.AccountCircle,
+                  contentDescription = "Profile Picture",
+                  modifier = Modifier.size(120.dp).clip(CircleShape).testTag(PROFILE_IMAGE),
+                  tint = MaterialTheme.colorScheme.primary)
 
-                // Profile Image Placeholder
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier.size(120.dp).clip(CircleShape).testTag(PROFILE_IMAGE),
-                    tint = MaterialTheme.colorScheme.primary)
+              Spacer(modifier = Modifier.height(24.dp))
 
-                Spacer(modifier = Modifier.height(24.dp))
+              // First name
+              OutlinedTextField(
+                  value = firstname,
+                  onValueChange = { firstname = it },
+                  label = { Text("First Name") },
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.FIRSTNAME_FIELD))
 
-                // First name
-                OutlinedTextField(
-                    value = firstname,
-                    onValueChange = { firstname = it },
-                    label = { Text("First Name") },
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.FIRSTNAME_FIELD))
+              Spacer(modifier = Modifier.height(12.dp))
 
+              // Last name
+              OutlinedTextField(
+                  value = lastname,
+                  onValueChange = { lastname = it },
+                  label = { Text("Last Name") },
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LASTNAME_FIELD))
+
+              Spacer(modifier = Modifier.height(12.dp))
+
+              // Description
+              OutlinedTextField(
+                  value = description,
+                  onValueChange = { description = it },
+                  label = { Text("Description") },
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.DESCRIPTION_FIELD))
+
+              if (!user.isGoogleAccount) {
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Last name
+                // Password
                 OutlinedTextField(
-                    value = lastname,
-                    onValueChange = { lastname = it },
-                    label = { Text("Last Name") },
+                    value = "********",
+                    onValueChange = {},
+                    label = { Text("Password") },
+                    enabled = true,
+                    readOnly = true,
                     modifier =
-                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LASTNAME_FIELD))
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Description
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text("Description") },
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .testTag(EditProfileScreenTestTags.DESCRIPTION_FIELD))
-
-                if (!user.isGoogleAccount) {
-                  Spacer(modifier = Modifier.height(12.dp))
-
-                  // Password
-                  OutlinedTextField(
-                      value = "********",
-                      onValueChange = {},
-                      label = { Text("Password") },
-                      enabled = true,
-                      readOnly = true,
-                      modifier =
-                          Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
-                      keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                      trailingIcon = {
-                        IconButton(
-                            onClick = { onPasswordChange() },
-                            modifier = Modifier.testTag(PASSWORD_BUTTON)) {
-                              Icon(Icons.Default.Edit, contentDescription = "Edit Password")
-                            }
-                      })
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Address
-                OutlinedTextField(
-                    value = address,
-                    onValueChange = { address = it },
-                    label = {
-                      when (userRole) {
-                        UserRole.FARMER -> Text("Farm Address")
-                        UserRole.VET -> Text("Clinic Address")
-                      }
-                    },
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
-                // TODO: right now addresses are displayed as Location(...), I think we will change
-                // this once we work on the implementation of Location in more details.
-
-                // Default Vet Selection and Code Input (Farmers only)
-                if (user is Farmer) {
-                  Spacer(modifier = Modifier.height(12.dp))
-
-                  if ((user as Farmer).linkedOffices.isEmpty()) {
-                    Text(
-                        text = "You need to add vets before choosing your default one.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(vertical = 4.dp))
-                  }
-
-                  val vetNames = remember { mutableStateMapOf<String, String>() }
-
-                  // For each linked vet, load their name
-                  (user as Farmer).linkedOffices.forEach { officeId ->
-                    val vm: OfficeNameViewModel = viewModel(key = officeId)
-                    val label by vm.uiState.collectAsState()
-
-                    LaunchedEffect(officeId) {
-                      vm.loadOffice(
-                          uid = officeId,
-                          deletedOffice = "Deleted office",
-                          noneOffice = "Unknown office")
-                    }
-
-                    vetNames[officeId] = label
-                  }
-
-                  val selectedVetName = vetNames[selectedDefaultOffice] ?: "Unknown office"
-
-                  ExposedDropdownMenuBox(
-                      expanded = expandedVetDropdown,
-                      onExpandedChange = { expandedVetDropdown = !expandedVetDropdown }) {
-                        OutlinedTextField(
-                            value = selectedVetName,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Default Office") },
-                            trailingIcon = {
-                              ExposedDropdownMenuDefaults.TrailingIcon(
-                                  expanded = expandedVetDropdown)
-                            },
-                            modifier =
-                                Modifier.menuAnchor()
-                                    .fillMaxWidth()
-                                    .testTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN))
-
-                        ExposedDropdownMenu(
-                            expanded = expandedVetDropdown,
-                            onDismissRequest = { expandedVetDropdown = false }) {
-                              (user as Farmer).linkedOffices.forEach { officeId ->
-                                val displayName = vetNames[officeId] ?: officeId
-
-                                DropdownMenuItem(
-                                    text = { Text(displayName) },
-                                    onClick = {
-                                      selectedDefaultOffice = officeId
-                                      expandedVetDropdown = false
-                                    })
-                              }
-                            }
-                      }
-                }
+                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    trailingIcon = {
+                      IconButton(
+                          onClick = { onPasswordChange() },
+                          modifier = Modifier.testTag(PASSWORD_BUTTON)) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit Password")
+                          }
+                    })
               }
 
+              Spacer(modifier = Modifier.height(12.dp))
+
+              // Address
+              OutlinedTextField(
+                  value = address,
+                  onValueChange = { address = it },
+                  label = {
+                    when (userRole) {
+                      UserRole.FARMER -> Text("Farm Address")
+                      UserRole.VET -> Text("Clinic Address")
+                    }
+                  },
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
+              // TODO: right now addresses are displayed as Location(...), I think we will change
+              // this once we work on the implementation of Location in more details.
+
+              // Default Vet Selection and Code Input (Farmers only)
               if (user is Farmer) {
+                Spacer(modifier = Modifier.height(12.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
+                if ((user as Farmer).linkedOffices.isEmpty()) {
+                  Text(
+                      text = "You need to add vets before choosing your default one.",
+                      style = MaterialTheme.typography.bodySmall,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
+                      modifier = Modifier.padding(vertical = 4.dp))
+                }
 
-                OutlinedTextField(
-                    value = vetCode,
-                    onValueChange = { vetCode = it },
-                    label = { Text("Enter Vet Code") },
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.CODE_FIELD))
+                val officeNames = remember { mutableStateMapOf<String, String>() }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                // For each linked vet, load their name
+                (user as Farmer).linkedOffices.forEach { officeId ->
+                  val vm: OfficeNameViewModel = viewModel(key = officeId)
+                  val uiState by vm.uiState.collectAsState()
 
-                Button(
-                    onClick = {
-                      if (vetCode.isBlank()) {
-                        scope.launch { snackbarHostState.showSnackbar("Please enter a code.") }
-                      } else {
-                        profileViewModel.claimVetCode(vetCode)
-                      }
-                    },
-                    modifier =
-                        Modifier.align(Alignment.CenterHorizontally)
-                            .testTag(EditProfileScreenTestTags.ADD_CODE_BUTTON)) {
-                      Text("Add Vet")
+                  LaunchedEffect(officeId) {
+                    vm.loadOffice(
+                        uid = officeId, deletedOffice = "Deleted office", noneOffice = "Unassigned")
+                  }
+
+                  officeNames[officeId] = uiState
+                }
+
+                val selectedOfficeName = officeNames[selectedDefaultOffice] ?: "Unassigned"
+
+                ExposedDropdownMenuBox(
+                    expanded = expandedVetDropdown,
+                    onExpandedChange = { expandedVetDropdown = !expandedVetDropdown }) {
+                      OutlinedTextField(
+                          value = selectedOfficeName,
+                          onValueChange = {},
+                          readOnly = true,
+                          label = { Text("Default Office") },
+                          trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVetDropdown)
+                          },
+                          modifier =
+                              Modifier.menuAnchor()
+                                  .fillMaxWidth()
+                                  .testTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN))
+
+                      ExposedDropdownMenu(
+                          expanded = expandedVetDropdown,
+                          onDismissRequest = { expandedVetDropdown = false }) {
+                            (user as Farmer).linkedOffices.forEach { officeId ->
+                              val displayName = officeNames[officeId] ?: officeId
+
+                              DropdownMenuItem(
+                                  text = { Text(displayName) },
+                                  onClick = {
+                                    selectedDefaultOffice = officeId
+                                    expandedVetDropdown = false
+                                  })
+                            }
+                          }
                     }
               }
 

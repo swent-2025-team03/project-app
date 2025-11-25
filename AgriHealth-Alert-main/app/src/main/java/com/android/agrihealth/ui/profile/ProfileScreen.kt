@@ -142,7 +142,7 @@ fun ProfileScreen(
               // Description
               Spacer(modifier = Modifier.height(12.dp))
               OutlinedTextField(
-                  value = user.description?.toString() ?: "",
+                  value = user.description ?: "",
                   onValueChange = {},
                   label = { Text("Description") },
                   enabled = false,

@@ -165,11 +165,7 @@ fun ReportViewScreen(
                           })
                     } else {
                       // Farmer views vet
-                      OfficeName(
-                          uid = report.officeId,
-                          onClick = {
-                            navigationActions.navigateTo(Screen.ViewUser(report.officeId))
-                          })
+                      OfficeName(uid = report.officeId, onClick = {})
                     }
                   }
 

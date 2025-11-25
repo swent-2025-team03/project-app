@@ -227,7 +227,7 @@ fun AddReportScreen(
                                 text = { Text(displayName) },
                                 onClick = {
                                   selectedOption = displayName
-                                  addReportViewModel.setVet(option)
+                                  addReportViewModel.setOffice(option)
                                   expanded = false
                                 },
                                 modifier =
