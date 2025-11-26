@@ -90,7 +90,6 @@ fun OverviewScreen(
     overviewViewModel.loadReports(userRole, user)
     overviewViewModel.loadAlerts()
   }
-
   Scaffold(
       // -- Top App Bar with logout icon --
       topBar = {
