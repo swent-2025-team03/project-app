@@ -1,6 +1,8 @@
 package com.android.agrihealth.ui.overview
 
+import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.FakeOverviewRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,7 +22,10 @@ class OverviewViewModelTest {
   private lateinit var repository: FakeOverviewRepository
   private lateinit var viewModel: OverviewViewModel
 
-  private val testDispatcher = StandardTestDispatcher()
+  private val farmer001 =
+      Farmer("FARMER_001", "john", "john", "john@john.john", null, defaultOffice = null)
+  private val vet001 =
+      Vet("VET_001", "john", "john", "john@john.john", null, officeId = "OFFICE_001")
 
   @Before
   fun setup() {
@@ -31,24 +36,24 @@ class OverviewViewModelTest {
 
   @Test
   fun `getReportsForUser returns farmer's own reports`() = runTest {
-    viewModel.loadReports(UserRole.FARMER, "FARMER_001")
+    viewModel.loadReports(UserRole.FARMER, farmer001)
     advanceUntilIdle()
-    val reports = viewModel.getReportsForUser(UserRole.FARMER, "FARMER_001")
-    Assert.assertTrue(reports.all { it.farmerId == "FARMER_001" })
+    val reports = viewModel.getReportsForUser(UserRole.FARMER, farmer001.uid)
+    Assert.assertTrue(reports.all { it.farmerId == farmer001.uid })
   }
 
   @Test
   fun `getReportsForUser returns all reports for vet`() = runTest {
-    viewModel.loadReports(UserRole.VET, "VET_001")
+    viewModel.loadReports(UserRole.VET, vet001)
     advanceUntilIdle()
-    val reports = viewModel.getReportsForUser(UserRole.VET, "VET_001")
-    Assert.assertTrue(reports.all { it.vetId == "VET_001" })
+    val reports = viewModel.getReportsForUser(UserRole.VET, vet001.uid)
+    Assert.assertTrue(reports.all { it.officeId == vet001.officeId })
   }
 
   @Test
   fun `loadReports handles repository exception safely`() = runTest {
     repository.throwOnGet = true
-    viewModel.loadReports(UserRole.FARMER, "FARMER_001")
+    viewModel.loadReports(UserRole.FARMER, farmer001)
     advanceUntilIdle()
     val state = viewModel.uiState.value
     Assert.assertTrue(state.reports.isEmpty())
@@ -68,7 +73,7 @@ class OverviewViewModelTest {
 
   @Test
   fun `updateFilters applies filters correctly`() = runTest {
-    viewModel.loadReports(UserRole.VET, "VET_001")
+    viewModel.loadReports(UserRole.VET, vet001)
     advanceUntilIdle()
 
     val vetId = viewModel.uiState.value.vetOptions.firstOrNull()
@@ -76,7 +81,7 @@ class OverviewViewModelTest {
     val state = viewModel.uiState.value
 
     Assert.assertEquals(vetId, state.selectedVet)
-    Assert.assertTrue(state.filteredReports.all { it.vetId == vetId })
+    Assert.assertTrue(state.filteredReports.all { it.officeId == vet001.officeId })
   }
 
   @After
