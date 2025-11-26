@@ -30,7 +30,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
           questionForms = listOf(openQuestion),
           photoUri = null,
           farmerId = user1.uid,
-          vetId = user3.uid,
+          officeId = user3.uid,
           status = ReportStatus.PENDING,
           answer = null,
           location = null,
@@ -44,7 +44,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
           questionForms = listOf(openQuestion),
           photoUri = "url to the photo",
           farmerId = user2.uid,
-          vetId = "Vet2",
+          officeId = "Vet2",
           status = ReportStatus.RESOLVED,
           answer = "this is the answer",
           location = Location(42.0, 6.7, "the nice farm were all the dogs go when they are old"),
@@ -112,15 +112,15 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     authRepository.signOut()
     authRepository.signUpWithEmailAndPassword(user3.email, password3, user3)
 
-    repository.addReport(report1.copy(farmerId = user3.uid, vetId = user3.uid))
+    repository.addReport(report1.copy(farmerId = user3.uid, officeId = user3.uid))
     repository.addReport(report2.copy(farmerId = user3.uid))
-    repository.addReport(report3.copy(farmerId = user3.uid, vetId = user3.uid))
+    repository.addReport(report3.copy(farmerId = user3.uid, officeId = user3.uid))
 
     var reports = repository.getReportsByVet(user3.uid)
     assertEquals(2, reports.size)
 
     reports.forEach {
-      assertEquals(user3.uid, it.vetId)
+      assertEquals(user3.uid, it.officeId)
       assertEquals(listOf(openQuestion), it.questionForms)
     }
 
@@ -128,7 +128,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
         reports.map {
           it.copy(
               farmerId = report1.farmerId,
-              vetId = report1.vetId,
+              officeId = report1.officeId,
               createdAt = now,
               questionForms = listOf(openQuestion))
         }

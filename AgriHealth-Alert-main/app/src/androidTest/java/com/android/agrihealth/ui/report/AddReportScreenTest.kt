@@ -37,8 +37,8 @@ private fun fakeFarmerViewModel(): UserViewModel =
             lastname = "Joe",
             email = "email@email.com",
             address = Location(0.0, 0.0, "123 Farm Lane"),
-            linkedVets = listOf("Best Vet Ever!", "Meh Vet", "Great Vet"),
-            defaultVet = null,
+            linkedOffices = listOf("Best Vet Ever!", "Meh Vet", "Great Vet"),
+            defaultOffice = null,
         ))
 
 class AddReportScreenTest {

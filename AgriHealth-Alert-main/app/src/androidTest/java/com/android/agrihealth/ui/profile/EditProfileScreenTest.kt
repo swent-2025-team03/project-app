@@ -28,8 +28,8 @@ class EditProfileScreenTest {
                   lastname = "Johnson",
                   email = "alice@farmmail.com",
                   address = Location(0.0, 0.0, "Farm Address"),
-                  linkedVets = listOf("vet123", "vet456"),
-                  defaultVet = "vet123"))
+                  linkedOffices = listOf("vet123", "vet456"),
+                  defaultOffice = "vet123"))
 
       override var user: StateFlow<User> = fakeUserFlow.asStateFlow()
     }

@@ -43,7 +43,7 @@ class AddReportViewModelTest {
     val state = viewModel.uiState.value
     assertEquals("", state.title)
     assertEquals("", state.description)
-    assertEquals("", state.chosenVet)
+    assertEquals("", state.chosenOffice)
   }
 
   @Test
@@ -62,8 +62,8 @@ class AddReportViewModelTest {
 
   @Test
   fun setVet_updatesVetOnly() {
-    viewModel.setVet("Vet")
-    assertEquals("Vet", viewModel.uiState.value.chosenVet)
+    viewModel.setOffice("Vet")
+    assertEquals("Vet", viewModel.uiState.value.chosenOffice)
   }
 
   @Test
@@ -96,7 +96,7 @@ class AddReportViewModelTest {
           }
         }
 
-        viewModel.setVet(AddReportConstants.vetOptions[0])
+        viewModel.setOffice(AddReportConstants.vetOptions[0])
         val result = viewModel.createReport()
         advanceUntilIdle() // To avoid errors of synchronization which would make this test
         // non-deterministic
@@ -105,7 +105,7 @@ class AddReportViewModelTest {
         val state = viewModel.uiState.value
         assertEquals("", state.title)
         assertEquals("", state.description)
-        assertEquals("", state.chosenVet)
+        assertEquals("", state.chosenOffice)
         // Report is saved
         assertNotNull(repository.lastAddedReport)
         val addedReport = repository.lastAddedReport!!
@@ -122,7 +122,7 @@ class AddReportViewModelTest {
             }
           }
         }
-        assertEquals(AddReportConstants.vetOptions[0], addedReport.vetId)
+        assertEquals(AddReportConstants.vetOptions[0], addedReport.officeId)
         assertEquals(ReportStatus.PENDING, addedReport.status)
       }
 
@@ -130,11 +130,11 @@ class AddReportViewModelTest {
   fun clearInputs_resetsAllFields() {
     viewModel.setTitle("T")
     viewModel.setDescription("D")
-    viewModel.setVet("V")
+    viewModel.setOffice("V")
     viewModel.clearInputs()
     val state = viewModel.uiState.value
     assertEquals("", state.title)
     assertEquals("", state.description)
-    assertEquals("", state.chosenVet)
+    assertEquals("", state.chosenOffice)
   }
 }

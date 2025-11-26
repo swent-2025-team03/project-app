@@ -11,6 +11,7 @@ import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.core.design.theme.Test
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
+import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.TestConstants
@@ -233,7 +234,8 @@ class E2ETest : FirebaseEmulatorsTest() {
             address = null,
             validCodes = emptyList())
     val userViewModel = UserViewModel(initialUser = vet)
-    val profileViewModel = ProfileViewModel(userViewModel)
+    val profileViewModel =
+        ProfileViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
     profileViewModel.generateVetCode()
     // Wait for the code to appear in StateFlow
     val vetCode = runBlocking { profileViewModel.generatedCode.first { it != null } }

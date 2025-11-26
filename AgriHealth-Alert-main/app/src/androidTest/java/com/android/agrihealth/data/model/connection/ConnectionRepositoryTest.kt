@@ -32,7 +32,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
     // Initialize Firestore and repository, and create test users for vet and farmers.
     super.setUp()
     db = FirebaseFirestore.getInstance()
-    repo = ConnectionRepository(db)
+    repo = ConnectionRepository(db, connectionType = "farmerToOffice")
     runTest {
       authRepository.signUpWithEmailAndPassword(user1.email, password1, user1)
       authRepository.signOut()

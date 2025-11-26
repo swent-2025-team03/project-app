@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.FakeOverviewViewModel
 import com.android.agrihealth.testutil.FakeReportRepository
 import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
@@ -282,12 +283,13 @@ class ReportViewScreenTest {
       val navController = rememberNavController()
       val navigation = NavigationActions(navController)
       val TEST_REPORT_ID = "RPT001"
+      val vet = Vet("mock_vet_id", "john", "john", "john@john.john", null)
 
       NavHost(navController = navController, startDestination = Screen.Overview.route) {
         composable(Screen.Overview.route) {
           OverviewScreen(
               userRole = UserRole.VET,
-              userId = "user_123",
+              user = vet,
               overviewViewModel = FakeOverviewViewModel(),
               onAddReport = {},
               onReportClick = {},

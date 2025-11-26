@@ -44,7 +44,7 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
   fun topBar_displaysCorrectly() {
     val vm =
         makeFakeViewModel(
-            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
+            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultOffice = null))
     setScreen(vm)
 
     composeTestRule.onNodeWithTag(TOP_BAR).assertExists()
@@ -77,7 +77,7 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
                 lastname = "Johnson",
                 email = "alice@farmmail.com",
                 address = null,
-                defaultVet = "vet123"))
+                defaultOffice = "vet123"))
     setScreen(vm)
 
     composeTestRule.onNodeWithTag(DEFAULT_VET_FIELD).assertExists()
@@ -103,7 +103,12 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
     val vm =
         makeFakeViewModel(
             Farmer(
-                "1", "Alice", "Johnson", "alice@farmmail.com", address = null, defaultVet = null))
+                "1",
+                "Alice",
+                "Johnson",
+                "alice@farmmail.com",
+                address = null,
+                defaultOffice = null))
     setScreen(vm)
 
     composeTestRule.onNodeWithTag(ADDRESS_FIELD).assertExists()
@@ -119,7 +124,7 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
                 lastname = "Johnson",
                 email = "alice@farmmail.com",
                 address = null,
-                defaultVet = null,
+                defaultOffice = null,
                 description = "Test description"))
     setScreen(vm)
 
@@ -130,7 +135,7 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
   fun emailAndPasswordFields_areDisplayed() {
     val vm =
         makeFakeViewModel(
-            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
+            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultOffice = null))
     setScreen(vm)
 
     composeTestRule.onNodeWithTag(EMAIL_FIELD).assertExists()
@@ -142,7 +147,7 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
     var clicked = false
     val vm =
         makeFakeViewModel(
-            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
+            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultOffice = null))
 
     composeTestRule.setContent {
       MaterialTheme { ProfileScreen(userViewModel = vm, onEditProfile = { clicked = true }) }
@@ -156,7 +161,7 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
   fun nullUser_safeFallbacks() {
     val vm =
         makeFakeViewModel(
-            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
+            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultOffice = null))
     setScreen(vm)
 
     composeTestRule.onNodeWithTag(NAME_TEXT).assertExists()
@@ -167,7 +172,7 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
   fun allAccessibleElements_haveTags() {
     val vm =
         makeFakeViewModel(
-            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
+            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultOffice = null))
     setScreen(vm)
 
     composeTestRule.onNodeWithTag(PROFILE_IMAGE).assertExists()
@@ -181,7 +186,7 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
     var clicked = false
     val vm =
         makeFakeViewModel(
-            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultVet = null))
+            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultOffice = null))
 
     composeTestRule.setContent {
       MaterialTheme { ProfileScreen(userViewModel = vm, onCodeFarmer = { clicked = true }) }
