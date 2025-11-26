@@ -57,7 +57,6 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
-import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
@@ -68,7 +67,22 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.max
 
-// Todo: show year if different from current year
+object PlannerScreenTestTags {
+  const val SCREEN = "plannerScreen"
+  const val WEEK_NUMBER = "weekNumber"
+  const val WEEK_HEADER = "weekHeader"
+  const val SELECTED_DATE = "selectedDate"
+  const val WEEKLY_PAGER = "weeklyPager"
+  const val DAILY_SCHEDULER = "dailyScheduler"
+  const val SET_REPORT_DATE_BOX = "setReportDateBox"
+  const val SET_REPORT_DATE_BUTTON = "setReportDateButton"
+
+  fun dayCardTag(day: LocalDate): String = "dayCard_${day}"
+
+  fun reportCardTag(reportId: String): String = "reportCard_$reportId"
+}
+
+// Todo: show year if different from current year (Report View and Planner)
 // Todo: scroll to first task of the day
 // Todo: implement task overlapping
 // Todo: show a line for current hour
@@ -124,7 +138,7 @@ fun PlannerScreen(
         }
       },
       content = { pd ->
-        Box(modifier = Modifier.padding(pd)) {
+        Box(modifier = Modifier.padding(pd).testTag(PlannerScreenTestTags.SCREEN)) {
           Column(modifier = Modifier.padding(horizontal = 8.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -132,7 +146,8 @@ fun PlannerScreen(
             ) {
               Text(
                   "Week ${uiState.selectedWeekNumber}",
-                  style = MaterialTheme.typography.titleMedium)
+                  style = MaterialTheme.typography.titleMedium,
+                  modifier = Modifier.testTag(PlannerScreenTestTags.WEEK_NUMBER))
               WeekHeader(uiState.selectedWeek[0], uiState.selectedWeek[6])
             }
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -149,7 +164,8 @@ fun PlannerScreen(
             Row(modifier = Modifier.fillMaxWidth()) {
               Text(
                   uiState.selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM")),
-                  style = MaterialTheme.typography.titleLarge)
+                  style = MaterialTheme.typography.titleLarge,
+                  modifier = Modifier.testTag(PlannerScreenTestTags.SELECTED_DATE))
             }
             DailyScheduler(uiState.selectedDateReports) { it -> reportClicked(it) }
           }
@@ -182,7 +198,7 @@ fun WeekHeader(start: LocalDate, end: LocalDate) {
             "${end.format(dayFormatter)} ${end.format(monthFormatter)}"
       }
 
-  Text(text)
+  Text(text, modifier = Modifier.testTag(PlannerScreenTestTags.WEEK_HEADER))
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -213,7 +229,7 @@ fun WeeklyPager(
 
   HorizontalPager(
       state = pagerState,
-      modifier = Modifier.fillMaxWidth(),
+      modifier = Modifier.fillMaxWidth().testTag(PlannerScreenTestTags.WEEKLY_PAGER),
       pageSpacing = 16.dp,
   ) { page ->
 
@@ -240,18 +256,20 @@ fun DayCard(
     reportStatuses: List<ReportStatus>,
     onClick: (LocalDate) -> Unit = {}
 ) {
-  Card(modifier = modifier.height(64.dp)) {
-    Column(
-        modifier = Modifier.fillMaxSize().clickable(onClick = { onClick(day) }).padding(4.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally) {
-          Text(
-              day.dayOfMonth.toString(),
-              modifier = Modifier,
-              style = MaterialTheme.typography.titleLarge)
-          DotGrid(dots = reportStatuses)
-        }
-  }
+  Card(
+      modifier = modifier.height(64.dp).testTag(PlannerScreenTestTags.dayCardTag(day)),
+      onClick = { onClick(day) }) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(4.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally) {
+              Text(
+                  day.dayOfMonth.toString(),
+                  modifier = Modifier,
+                  style = MaterialTheme.typography.titleLarge)
+              DotGrid(dots = reportStatuses)
+            }
+      }
 }
 
 @Composable
@@ -289,12 +307,17 @@ fun DailyScheduler(reports: List<Report>, navigateToReport: (String) -> Unit = {
   val scrollState = rememberScrollState(0)
 
   val hourHeight = 60.dp
-  Row(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-    HourScale(hourHeight = hourHeight)
-    Box(modifier = Modifier.weight(1f)) {
-      DailyTasks(reports = reports, hourHeight = hourHeight, navigateToReport = navigateToReport)
-    }
-  }
+  Row(
+      modifier =
+          Modifier.fillMaxSize()
+              .verticalScroll(scrollState)
+              .testTag(PlannerScreenTestTags.DAILY_SCHEDULER)) {
+        HourScale(hourHeight = hourHeight)
+        Box(modifier = Modifier.weight(1f)) {
+          DailyTasks(
+              reports = reports, hourHeight = hourHeight, navigateToReport = navigateToReport)
+        }
+      }
 }
 
 @Composable
@@ -339,7 +362,8 @@ fun DailyTasks(
                       .padding(horizontal = 0.dp)
                       .background(
                           color = statusColor(report.status), shape = MaterialTheme.shapes.medium)
-                      .clickable { navigateToReport(report.id) },
+                      .clickable { navigateToReport(report.id) }
+                      .testTag(PlannerScreenTestTags.reportCardTag(report.id)),
               verticalArrangement = Arrangement.Top) {
                 Text(
                     report.title,
@@ -378,7 +402,8 @@ fun SetReportDateBox(
               .background(
                   MaterialTheme.colorScheme.surfaceVariant,
               )
-              .padding(8.dp),
+              .padding(8.dp)
+              .testTag(PlannerScreenTestTags.SET_REPORT_DATE_BOX),
       contentAlignment = Alignment.CenterStart) {
         val date = selectedDate.format(DateTimeFormatter.ofPattern("dd MMM"))
         Column {
@@ -393,9 +418,12 @@ fun SetReportDateBox(
             Text("   Duration: ")
             TimePickerBox(initialTime = LocalTime.of(1, 0), onTimeSelected = onDurationSelected)
             Spacer(Modifier.weight(2f))
-            IconButton(onClick = onSetReportDateClick, modifier = Modifier.weight(1f)) {
-              Icon(Icons.Default.Add, contentDescription = "Set Report Date")
-            }
+            IconButton(
+                onClick = onSetReportDateClick,
+                modifier =
+                    Modifier.weight(1f).testTag(PlannerScreenTestTags.SET_REPORT_DATE_BUTTON)) {
+                  Icon(Icons.Default.Add, contentDescription = "Set Report Date")
+                }
           }
         }
       }
@@ -518,5 +546,5 @@ fun PlannerScreenPreview() {
         }
       }
   val fakePlannerVM = PlannerViewModel(reportRepo)
-  AgriHealthAppTheme { PlannerScreen(userId = "vet1", reportId = null, plannerVM = fakePlannerVM) }
+  AgriHealthAppTheme { PlannerScreen(userId = "vet1", reportId = "2", plannerVM = fakePlannerVM) }
 }
