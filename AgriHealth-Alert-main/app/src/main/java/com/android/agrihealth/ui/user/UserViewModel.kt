@@ -43,7 +43,7 @@ open class UserViewModel(
 ) : ViewModel() {
 
   // private val _userRole = MutableStateFlow<UserRole>(UserRole.FARMER)
-  private val _user = MutableStateFlow<User>(initialUser ?: defaultUser)
+  private val _user = MutableStateFlow(initialUser ?: defaultUser)
 
   // user id can be accessed using Firebase.auth.currentUser?.uid
 
@@ -97,8 +97,8 @@ open class UserViewModel(
   }
 
   /** Updating the officeId when creating or joining an office */
-  fun updateVetOfficeId(officeId: String?) {
-    viewModelScope.launch {
+  fun updateVetOfficeId(officeId: String?) : Deferred<Unit> {
+    return viewModelScope.async {
       val current = _user.value
 
       // Only vets should get an officeId

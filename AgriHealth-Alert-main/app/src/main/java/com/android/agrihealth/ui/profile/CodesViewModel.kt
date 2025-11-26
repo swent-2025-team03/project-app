@@ -49,11 +49,11 @@ class CodesViewModel(
     viewModelScope.launch {
       val result = connectionRepository.claimCode(code)
       result.fold(
-          onSuccess = { vetId ->
+          onSuccess = { officeId ->
             when (user) {
               is Farmer -> { // Update farmer: add officeId to linkedOffices (avoid duplicates)
-                val updatedLinkedOffices = (user.linkedOffices + vetId).distinct()
-                val newDefaultOffice = user.defaultOffice ?: vetId
+                val updatedLinkedOffices = (user.linkedOffices + officeId).distinct()
+                val newDefaultOffice = user.defaultOffice ?: officeId
                 val updatedFarmer =
                     user.copy(
                         linkedOffices = updatedLinkedOffices, defaultOffice = newDefaultOffice)
@@ -63,10 +63,9 @@ class CodesViewModel(
               }
               is Vet -> {
                 try {
-                  val updatedVet = user.copy(officeId = vetId)
-                  userViewModel.updateUser(updatedVet).await()
+                  userViewModel.updateVetOfficeId(officeId).await()
                   val updatedOffice =
-                      officeRepository.getOffice(vetId).fold({ office ->
+                      officeRepository.getOffice(officeId).fold({ office ->
                         office.copy(vets = (office.vets + user.uid))
                       }) {
                         _claimMessage.value = "Office does not exist"
