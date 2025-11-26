@@ -1,5 +1,7 @@
 package com.android.agrihealth.ui.report
 
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -8,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
@@ -15,7 +18,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.report.MCQ
@@ -41,6 +46,9 @@ object ReportViewScreenTestTags {
   const val VIEW_ON_MAP = "viewReportOnMap"
   const val SAVE_BUTTON = "SaveButton"
   const val SCROLL_CONTAINER = "ReportViewScrollContainer"
+  const val UNSAVED_ALERT_BOX = "UnsavedChangesAlertBox"
+  const val UNSAVED_ALERT_BOX_DISCARD = "UnsavedChangesAlertDiscardButton"
+  const val UNSAVED_ALERT_BOX_CANCEL = "UnsavedChangesAlertCancelButton"
 
   fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
 }
@@ -76,6 +84,7 @@ fun ReportViewScreen(
   val uiState by viewModel.uiState.collectAsState()
   // Observe save completion to navigate back on success
   val saveCompleted by viewModel.saveCompleted.collectAsState()
+  val unsavedChanges by viewModel.unsavedChanges.collectAsState()
 
   // --- Auto-change PENDING -> IN_PROGRESS for vets ---
   LaunchedEffect(userRole, uiState.report.status) {
@@ -97,6 +106,27 @@ fun ReportViewScreen(
   val selectedStatus = uiState.status
 
   var isSpamDialogOpen by remember { mutableStateOf(false) }
+  var isUnsavedAlertOpen by remember { mutableStateOf(false) }
+
+  fun handleGoBack(force: Boolean = false) {
+    if (unsavedChanges && !force) isUnsavedAlertOpen = true
+    else {
+      navigationActions.goBack()
+    }
+  }
+
+  BackHandler {
+    handleGoBack()
+  }
+
+  if (isUnsavedAlertOpen) UnsavedChangesAlert(
+    onStay = { isUnsavedAlertOpen = false },
+    onDiscard = {
+      viewModel.consumeUnsavedChanges()
+      isUnsavedAlertOpen = false
+      handleGoBack(force = true)
+    }
+  )
 
   Scaffold(
       topBar = {
@@ -130,7 +160,7 @@ fun ReportViewScreen(
             },
             navigationIcon = {
               IconButton(
-                  onClick = { navigationActions.goBack() },
+                  onClick = { handleGoBack() },
                   modifier =
                       Modifier.testTag(
                           com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON)) {
@@ -348,6 +378,33 @@ fun ReportViewScreen(
       }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UnsavedChangesAlert(
+  onDiscard: () -> Unit,
+  onStay: () -> Unit
+) {
+  AlertDialog(
+    modifier = Modifier.testTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX),
+    onDismissRequest = onStay,
+    title = { Text("Unsaved changes") },
+    text = { Text("You have unsaved changes. Go back anyway?") },
+    confirmButton = {
+      TextButton(
+        modifier = Modifier.testTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_DISCARD),
+        onClick = onDiscard) {
+        Text("Discard changes")
+      }
+    },
+    dismissButton = {
+      TextButton(
+        modifier = Modifier.testTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_CANCEL),
+        onClick = onStay) {
+        Text("Cancel")
+      }
+    })
+}
+
 /*  If you want to use the preview, just de-comment this block.
 @Preview(showBackground = true, name = "Farmer View")
 @Composable
@@ -362,13 +419,13 @@ fun PreviewReportViewFarmer() {
         reportId = "RPT001")
   }
 }
-
+*/
 @Preview(showBackground = true, name = "Vet View")
 @Composable
 fun PreviewReportViewVet() {
   MaterialTheme {
     val navController = rememberNavController()
-    val viewModel = ReportViewModel()
+    val viewModel = ReportViewViewModel()
     ReportViewScreen(
         navigationActions = NavigationActions(navController),
         userRole = UserRole.VET,
@@ -376,4 +433,4 @@ fun PreviewReportViewVet() {
         reportId = "RPT001")
   }
 }
-*/
+
