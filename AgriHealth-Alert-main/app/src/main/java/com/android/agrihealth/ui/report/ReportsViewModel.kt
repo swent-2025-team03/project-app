@@ -83,6 +83,7 @@ class ReportViewModel(
 
   fun onSpam() {
     _uiState.value = _uiState.value.copy(status = ReportStatus.SPAM)
+    onSave()
   }
 
   /** Saves the modified report, then triggers the saveCompleted flag on success. */
