@@ -50,6 +50,11 @@ class OverviewViewModel(
 
   private lateinit var authRepository: AuthRepository
 
+  fun onUserChanged(userRole: UserRole, userId: String) {
+    loadReports(userRole, userId)
+    loadAlerts()
+  }
+
   /** Loads reports based on user role and ID. */
   override fun loadReports(userRole: UserRole, userId: String) {
     viewModelScope.launch {
@@ -76,15 +81,19 @@ class OverviewViewModel(
                 farmerOptions = farmerOptions,
                 filteredReports = filtered)
       } catch (e: Exception) {
-        _uiState.value = OverviewUIState(reports = emptyList())
+        _uiState.value = _uiState.value.copy(reports = emptyList())
       }
     }
   }
 
   override fun loadAlerts() {
     viewModelScope.launch {
-      val alerts = alertRepository.getAlerts()
-      _uiState.value = _uiState.value.copy(alerts = alerts)
+      try {
+        val alerts = alertRepository.getAlerts()
+        _uiState.value = _uiState.value.copy(alerts = alerts)
+      } catch (e: Exception) {
+        _uiState.value = _uiState.value.copy(alerts = emptyList())
+      }
     }
   }
 
