@@ -46,14 +46,14 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   // Verifies that generateCode creates a 6-digit code and writes an OPEN document with expected
   // fields.
   fun generateCode_createsOpenDoc() = runTest {
-    val vetId = user3.uid
+    val officeId = user3.officeId!!
     val code = repo.generateCode().getOrThrow()
     assertTrue(code.matches(Regex("\\d{6}")))
 
-    val snap = db.collection("connect_codes").document(code).get().await()
+    val snap = db.collection("farmerToOfficeConnectCodes").document(code).get().await()
     assertTrue(snap.exists())
     assertEquals("OPEN", snap.getString("status"))
-    assertEquals(vetId, snap.getString("vetId"))
+    assertEquals(officeId, snap.getString("officeId"))
     assertNotNull(snap.getLong("ttlMinutes"))
     assertNotNull(snap.getTimestamp("createdAt"))
   }
@@ -62,24 +62,17 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   // Verifies that a farmer can claim a code, the repository returns vetId, code is marked USED, and
   // a connection document is created.
   fun claimCode_linksAndMarksUsed() = runTest {
-    val vetId = user3.uid
-    val farmerId = user1.uid
+    val officeId = user3.officeId!!
     val code = repo.generateCode().getOrThrow()
 
     authRepository.signOut()
     authRepository.signInWithEmailAndPassword(user1.email, password1)
 
     val returnedVet = repo.claimCode(code).getOrThrow()
-    assertEquals(vetId, returnedVet)
+    assertEquals(officeId, returnedVet)
 
-    val codeDoc = db.collection("connect_codes").document(code).get().await()
+    val codeDoc = db.collection("farmerToOfficeConnectCodes").document(code).get().await()
     assertEquals("USED", codeDoc.getString("status"))
-
-    val connId = listOf(vetId, farmerId).sorted().joinToString("__")
-    val connDoc = db.collection("connections").document(connId).get().await()
-    assertTrue(connDoc.exists())
-    assertEquals(vetId, connDoc.getString("vetId"))
-    assertEquals(farmerId, connDoc.getString("farmerId"))
   }
 
   @Test
@@ -154,26 +147,10 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  // Verifies that connectionId creation is symmetric and only one document is created for both
-  // orderings of vet and farmer IDs.
-  fun connectionId_isSymmetric_singleDoc() = runTest {
-    val vet = user3.uid
-    val farmer = user1.uid
-    val code = repo.generateCode().getOrThrow()
-
-    authRepository.signOut()
-    authRepository.signInWithEmailAndPassword(user1.email, password1)
-
-    repo.claimCode(code).getOrThrow()
-    val id = listOf(vet, farmer).sorted().joinToString("__")
-    assertTrue(db.collection("connections").document(id).get().await().exists())
-  }
-
-  @Test
   // Verifies that generateCode retries if a collision occurs on the first generated code.
   fun generateCode_collidesOnce_thenSucceeds() = runTest {
     val taken = "123456"
-    db.collection("connect_codes").document(taken).set(mapOf("any" to "x")).await()
+    db.collection("farmerToOfficeConnectCodes").document(taken).set(mapOf("any" to "x")).await()
 
     io.mockk.mockkObject(kotlin.random.Random)
     io.mockk.every { kotlin.random.Random.nextInt(100_000, 1_000_000) } returnsMany
@@ -189,11 +166,11 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   // Verifies that claimCode fails when createdAt is missing in the code document.
   fun claimCode_fails_whenMissingCreatedAt() = runTest {
     val code = "111222"
-    db.collection("connect_codes")
+    db.collection("farmerToOfficeConnectCodes")
         .document(code)
         .set(
             mapOf(
-                "code" to code, "vetId" to user3.uid, "status" to "OPEN", "ttlMinutes" to 10L
+                "code" to code, "officeId" to user3.uid, "status" to "OPEN", "ttlMinutes" to 10L
                 // createdAt ABSENT
                 ))
         .await()
@@ -215,12 +192,12 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   // Verifies that claimCode fails when ttlMinutes is missing in the code document.
   fun claimCode_fails_whenMissingTtl() = runTest {
     val code = "222333"
-    db.collection("connect_codes")
+    db.collection("farmerToOfficeConnectCodes")
         .document(code)
         .set(
             mapOf(
                 "code" to code,
-                "vetId" to user3.uid,
+                "officeId" to user3.uid,
                 "status" to "OPEN",
                 "createdAt" to Timestamp.now()
                 // ttlMinutes ABSENT
@@ -236,7 +213,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   // Verifies that claimCode fails when vetId is missing in the code document.
   fun claimCode_fails_whenMissingVetId() = runTest {
     val code = "333444"
-    db.collection("connect_codes")
+    db.collection("farmerToOfficeConnectCodes")
         .document(code)
         .set(
             mapOf(
@@ -250,49 +227,6 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
 
     val res = repo.claimCode(code)
     assertTrue(res.isFailure)
-    assertTrue(res.exceptionOrNull()!!.message!!.contains("Invalid vet ID"))
+    assertTrue(res.exceptionOrNull()!!.message!!.contains("Invalid office ID"))
   }
-
-  @Test
-  // Verifies that claimCode skips creating a duplicate connection if one already exists.
-  fun claimCode_skipsLink_whenConnectionAlreadyExists() = runTest {
-    val vet = user3.uid
-    val farmer = user1.uid
-    val connId = listOf(vet, farmer).sorted().joinToString("__")
-
-    db.collection("connections")
-        .document(connId)
-        .set(
-            mapOf(
-                "vetId" to vet,
-                "farmerId" to farmer,
-                "createdAt" to Timestamp.now(),
-                "active" to true))
-        .await()
-
-    val code = "444555"
-    db.collection("connect_codes")
-        .document(code)
-        .set(
-            mapOf(
-                "code" to code,
-                "vetId" to vet,
-                "status" to "OPEN",
-                "createdAt" to Timestamp.now(),
-                "ttlMinutes" to 60L))
-        .await()
-
-    // Should succeed and take the branch existing.exists()==true
-    authRepository.signOut()
-    authRepository.signInWithEmailAndPassword(user1.email, password1)
-
-    val res = repo.claimCode(code)
-    assertTrue(res.isSuccess)
-
-    // The connection still exists
-    val snap = db.collection("connections").document(connId).get().await()
-    assertTrue(snap.exists())
-  }
-
-  // TODO: Add a test for double click on generateCode after implementing the UI.
 }

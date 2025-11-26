@@ -112,15 +112,15 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     authRepository.signOut()
     authRepository.signUpWithEmailAndPassword(user3.email, password3, user3)
 
-    repository.addReport(report1.copy(farmerId = user3.uid, officeId = user3.uid))
+    repository.addReport(report1.copy(farmerId = user3.uid, officeId = user3.officeId!!))
     repository.addReport(report2.copy(farmerId = user3.uid))
-    repository.addReport(report3.copy(farmerId = user3.uid, officeId = user3.uid))
+    repository.addReport(report3.copy(farmerId = user3.uid, officeId = user3.officeId))
 
-    var reports = repository.getReportsByVet(user3.uid)
+    var reports = repository.getReportsByVet(user3.officeId)
     assertEquals(2, reports.size)
 
     reports.forEach {
-      assertEquals(user3.uid, it.officeId)
+      assertEquals(user3.officeId, it.officeId)
       assertEquals(listOf(openQuestion), it.questionForms)
     }
 
