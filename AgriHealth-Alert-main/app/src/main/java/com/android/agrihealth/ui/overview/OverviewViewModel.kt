@@ -50,11 +50,6 @@ class OverviewViewModel(
 
   private lateinit var authRepository: AuthRepository
 
-  fun onUserChanged(userRole: UserRole, userId: String) {
-    loadReports(userRole, userId)
-    loadAlerts()
-  }
-
   /** Loads reports based on user role and ID. */
   override fun loadReports(userRole: UserRole, userId: String) {
     viewModelScope.launch {
