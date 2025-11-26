@@ -42,7 +42,7 @@ data class ReportViewUIState(
  * ViewModel holding the state of a report being viewed. Currently uses mock data and local state
  * only.
  */
-class ReportViewModel(
+class ReportViewViewModel(
     private val repository: ReportRepository = ReportRepositoryProvider.repository
 ) : ViewModel() {
 

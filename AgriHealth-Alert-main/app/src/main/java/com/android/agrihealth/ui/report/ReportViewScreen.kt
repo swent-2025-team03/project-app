@@ -66,10 +66,10 @@ private fun QuestionItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportViewScreen(
-    navigationActions: NavigationActions,
-    userRole: UserRole,
-    viewModel: ReportViewModel,
-    reportId: String = ""
+  navigationActions: NavigationActions,
+  userRole: UserRole,
+  viewModel: ReportViewViewModel,
+  reportId: String = ""
 ) {
   LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
 
