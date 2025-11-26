@@ -16,9 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.report.MCQ
@@ -412,7 +410,7 @@ fun PreviewReportViewFarmer() {
         reportId = "RPT001")
   }
 }
-*/
+
 @Preview(showBackground = true, name = "Vet View")
 @Composable
 fun PreviewReportViewVet() {
@@ -426,3 +424,4 @@ fun PreviewReportViewVet() {
         reportId = "RPT001")
   }
 }
+*/
