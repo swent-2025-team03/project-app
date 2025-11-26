@@ -76,7 +76,10 @@ class ReportViewViewModel(
     }
   }
 
-  /** Called when something changed, to notify the user that they didn't save their changes if they try to leave the screen */
+  /**
+   * Called when something changed, to notify the user that they didn't save their changes if they
+   * try to leave the screen
+   */
   private fun flagChanges() {
     _unsavedChanges.value = true
   }

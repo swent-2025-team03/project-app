@@ -50,8 +50,8 @@ import com.android.agrihealth.ui.profile.EditProfileScreen
 import com.android.agrihealth.ui.profile.ProfileScreen
 import com.android.agrihealth.ui.report.AddReportScreen
 import com.android.agrihealth.ui.report.AddReportViewModel
-import com.android.agrihealth.ui.report.ReportViewViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
+import com.android.agrihealth.ui.report.ReportViewViewModel
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.ViewUserScreen
 import com.android.agrihealth.ui.user.ViewUserViewModel

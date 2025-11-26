@@ -41,8 +41,9 @@ class ReportViewScreenTest {
   }
 
   // --- Role-specific helpers (wrappers) ---
-  private fun setVetScreen(viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())) =
-      setReportViewScreen(UserRole.VET, viewModel)
+  private fun setVetScreen(
+      viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
+  ) = setReportViewScreen(UserRole.VET, viewModel)
 
   private fun setFarmerScreen(
       viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
@@ -353,13 +354,19 @@ class ReportViewScreenTest {
     // Try to go back and cancel
     backButton.performClick()
     alertBox.assertIsDisplayed()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_CANCEL).assertIsDisplayed().performClick()
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_CANCEL)
+        .assertIsDisplayed()
+        .performClick()
     alertBox.assertIsNotDisplayed()
 
     // Try to go back and discard
     backButton.performClick()
     alertBox.assertIsDisplayed()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_DISCARD).assertIsDisplayed().performClick()
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_DISCARD)
+        .assertIsDisplayed()
+        .performClick()
     alertBox.assertIsNotDisplayed()
 
     // Too lazy to add navigation, so check if the screen consumed the unsaved changes flag

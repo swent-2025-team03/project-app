@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.report
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -10,7 +9,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
@@ -74,10 +72,10 @@ private fun QuestionItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportViewScreen(
-  navigationActions: NavigationActions,
-  userRole: UserRole,
-  viewModel: ReportViewViewModel,
-  reportId: String = ""
+    navigationActions: NavigationActions,
+    userRole: UserRole,
+    viewModel: ReportViewViewModel,
+    reportId: String = ""
 ) {
   LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
 
@@ -115,18 +113,16 @@ fun ReportViewScreen(
     }
   }
 
-  BackHandler {
-    handleGoBack()
-  }
+  BackHandler { handleGoBack() }
 
-  if (isUnsavedAlertOpen) UnsavedChangesAlert(
-    onStay = { isUnsavedAlertOpen = false },
-    onDiscard = {
-      viewModel.consumeUnsavedChanges()
-      isUnsavedAlertOpen = false
-      handleGoBack(force = true)
-    }
-  )
+  if (isUnsavedAlertOpen)
+      UnsavedChangesAlert(
+          onStay = { isUnsavedAlertOpen = false },
+          onDiscard = {
+            viewModel.consumeUnsavedChanges()
+            isUnsavedAlertOpen = false
+            handleGoBack(force = true)
+          })
 
   Scaffold(
       topBar = {
@@ -380,29 +376,26 @@ fun ReportViewScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UnsavedChangesAlert(
-  onDiscard: () -> Unit,
-  onStay: () -> Unit
-) {
+fun UnsavedChangesAlert(onDiscard: () -> Unit, onStay: () -> Unit) {
   AlertDialog(
-    modifier = Modifier.testTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX),
-    onDismissRequest = onStay,
-    title = { Text("Unsaved changes") },
-    text = { Text("You have unsaved changes. Go back anyway?") },
-    confirmButton = {
-      TextButton(
-        modifier = Modifier.testTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_DISCARD),
-        onClick = onDiscard) {
-        Text("Discard changes")
-      }
-    },
-    dismissButton = {
-      TextButton(
-        modifier = Modifier.testTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_CANCEL),
-        onClick = onStay) {
-        Text("Cancel")
-      }
-    })
+      modifier = Modifier.testTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX),
+      onDismissRequest = onStay,
+      title = { Text("Unsaved changes") },
+      text = { Text("You have unsaved changes. Go back anyway?") },
+      confirmButton = {
+        TextButton(
+            modifier = Modifier.testTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_DISCARD),
+            onClick = onDiscard) {
+              Text("Discard changes")
+            }
+      },
+      dismissButton = {
+        TextButton(
+            modifier = Modifier.testTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_CANCEL),
+            onClick = onStay) {
+              Text("Cancel")
+            }
+      })
 }
 
 /*  If you want to use the preview, just de-comment this block.
@@ -433,4 +426,3 @@ fun PreviewReportViewVet() {
         reportId = "RPT001")
   }
 }
-
