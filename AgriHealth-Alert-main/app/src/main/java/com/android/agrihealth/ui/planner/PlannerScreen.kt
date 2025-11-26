@@ -79,7 +79,9 @@ import kotlin.math.max
 fun PlannerScreen(
     userId: String = "",
     reportId: String? = null,
-    navigationActions: NavigationActions? = null,
+    goBack: () -> Unit = {},
+    tabClicked: (Screen) -> Unit = {},
+    reportClicked: (String) -> Unit = {},
     plannerVM: PlannerViewModel = viewModel(),
 ) {
 
@@ -105,7 +107,7 @@ fun PlannerScreen(
             },
             navigationIcon = {
               IconButton(
-                  onClick = { navigationActions?.goBack() },
+                  onClick = { goBack() },
                   modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -117,7 +119,7 @@ fun PlannerScreen(
         if (reportId == null) {
           BottomNavigationMenu(
               selectedTab = Tab.Planner,
-              onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
+              onTabSelected = { tab -> tabClicked(tab.destination) },
               modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
         }
       },
@@ -149,9 +151,7 @@ fun PlannerScreen(
                   uiState.selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM")),
                   style = MaterialTheme.typography.titleLarge)
             }
-            DailyScheduler(uiState.selectedDateReports) { it ->
-              navigationActions?.navigateTo(Screen.ViewReport(it))
-            }
+            DailyScheduler(uiState.selectedDateReports) { it -> reportClicked(it) }
           }
           if (reportId != null) {
 
