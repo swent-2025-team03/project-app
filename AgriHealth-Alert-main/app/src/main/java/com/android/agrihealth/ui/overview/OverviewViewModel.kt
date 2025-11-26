@@ -11,6 +11,7 @@ import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
@@ -53,13 +54,13 @@ class OverviewViewModel(
   private lateinit var authRepository: AuthRepository
 
   /** Loads reports based on user role and ID. */
-  override fun loadReports(userRole: UserRole, user: User) {
+  override fun loadReports(user: User) {
     viewModelScope.launch {
       try {
         val reports =
-            when (userRole) {
-              UserRole.FARMER -> reportRepository.getReportsByFarmer(user.uid)
-              UserRole.VET -> reportRepository.getReportsByOffice((user as Vet).officeId ?: "")
+            when (user) {
+              is Farmer -> reportRepository.getReportsByFarmer(user.uid)
+              is Vet -> reportRepository.getReportsByOffice(user.officeId ?: "")
             }.sortedByDescending { it.createdAt }
         val officeOptions = reports.map { it.officeId }.distinct()
         val farmerOptions = reports.map { it.farmerId }.distinct()

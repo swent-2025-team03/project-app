@@ -25,7 +25,7 @@ class FakeOverviewViewModel(initialState: OverviewUIState = OverviewUIState()) :
 
   private lateinit var authRepository: AuthRepository
 
-  override fun loadReports(userRole: UserRole, user: User) {
+  override fun loadReports(user: User) {
     val dummyReports =
         listOf(
             Report(

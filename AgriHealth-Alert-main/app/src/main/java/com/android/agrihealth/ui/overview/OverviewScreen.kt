@@ -87,7 +87,7 @@ fun OverviewScreen(
   val minLazySpace = remember { 150.dp }
 
   LaunchedEffect(user) {
-    overviewViewModel.loadReports(userRole, user)
+    overviewViewModel.loadReports(user)
     overviewViewModel.loadAlerts()
   }
   Scaffold(
@@ -217,14 +217,14 @@ fun OverviewScreen(
                           labelProvider = { status -> status?.displayString() ?: "-" })
                       Spacer(modifier = Modifier.width(8.dp))
                       if (userRole == UserRole.FARMER) {
-                        // -- VetId filter (only for farmer) --
+                        // -- OfficeId filter (only for farmer) --
                         DropdownMenuWrapper(
                             options = listOf(null) + uiState.officeOptions,
                             selectedOption = uiState.selectedOffice,
                             onOptionSelected = {
                               overviewViewModel.updateFilters(
                                   status = uiState.selectedStatus,
-                                  vetId = it,
+                                  officeId = it,
                                   farmerId = uiState.selectedFarmer)
                             },
                             modifier = Modifier.testTag(OverviewScreenTestTags.VET_ID_DROPDOWN),
@@ -237,7 +237,7 @@ fun OverviewScreen(
                             onOptionSelected = {
                               overviewViewModel.updateFilters(
                                   status = uiState.selectedStatus,
-                                  vetId = uiState.selectedOffice,
+                                  officeId = uiState.selectedOffice,
                                   farmerId = it)
                             },
                             modifier = Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN),

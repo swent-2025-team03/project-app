@@ -36,7 +36,7 @@ class OverviewViewModelTest {
 
   @Test
   fun `getReportsForUser returns farmer's own reports`() = runTest {
-    viewModel.loadReports(UserRole.FARMER, farmer001)
+    viewModel.loadReports( farmer001)
     advanceUntilIdle()
     val reports = viewModel.getReportsForUser(UserRole.FARMER, farmer001.uid)
     Assert.assertTrue(reports.all { it.farmerId == farmer001.uid })
@@ -44,7 +44,7 @@ class OverviewViewModelTest {
 
   @Test
   fun `getReportsForUser returns all reports for vet`() = runTest {
-    viewModel.loadReports(UserRole.VET, vet001)
+    viewModel.loadReports(vet001)
     advanceUntilIdle()
     val reports = viewModel.getReportsForUser(UserRole.VET, vet001.uid)
     Assert.assertTrue(reports.all { it.officeId == vet001.officeId })
@@ -53,7 +53,7 @@ class OverviewViewModelTest {
   @Test
   fun `loadReports handles repository exception safely`() = runTest {
     repository.throwOnGet = true
-    viewModel.loadReports(UserRole.FARMER, farmer001)
+    viewModel.loadReports(farmer001)
     advanceUntilIdle()
     val state = viewModel.uiState.value
     Assert.assertTrue(state.reports.isEmpty())
@@ -73,7 +73,7 @@ class OverviewViewModelTest {
 
   @Test
   fun `updateFilters applies filters correctly`() = runTest {
-    viewModel.loadReports(UserRole.VET, vet001)
+    viewModel.loadReports(vet001)
     advanceUntilIdle()
 
     val officeId = viewModel.uiState.value.officeOptions.firstOrNull()
