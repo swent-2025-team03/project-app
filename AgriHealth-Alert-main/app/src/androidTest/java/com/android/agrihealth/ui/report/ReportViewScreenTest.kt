@@ -177,7 +177,7 @@ class ReportViewScreenTest {
                   .and(
                       hasAnyDescendant(
                           hasText("Vet", substring = true)
-                              .or(hasText("Deleted user"))
+                              .or(hasText("Deleted office"))
                               .or(hasText("Unassigned")))),
               useUnmergedTree = true)
           .fetchSemanticsNodes()
@@ -190,7 +190,7 @@ class ReportViewScreenTest {
                 .and(
                     hasAnyDescendant(
                         hasText("Vet", substring = true)
-                            .or(hasText("Deleted user"))
+                            .or(hasText("Deleted office"))
                             .or(hasText("Unassigned")))),
             useUnmergedTree = true)
         .assertExists()

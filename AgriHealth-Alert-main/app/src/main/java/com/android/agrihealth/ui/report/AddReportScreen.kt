@@ -31,7 +31,6 @@ import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.OfficeNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
@@ -80,8 +79,6 @@ object AddReportConstants {
 fun AddReportScreen(
     userViewModel: UserViewModel = viewModel(),
     onBack: () -> Unit = {},
-    userRole: UserRole,
-    userId: String,
     onCreateReport: () -> Unit = {},
     addReportViewModel: AddReportViewModelContract
 ) {
@@ -203,7 +200,7 @@ fun AddReportScreen(
                 }
               }
 
-              val selectedOfficeName = offices[selectedOption] ?: ""
+              var selectedOfficeName = offices[selectedOption] ?: selectedOption
               ExposedDropdownMenuBox(
                   expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                     OutlinedTextField(
@@ -226,7 +223,7 @@ fun AddReportScreen(
                             DropdownMenuItem(
                                 text = { Text(displayName) },
                                 onClick = {
-                                  selectedOption = displayName
+                                  selectedOfficeName = displayName
                                   addReportViewModel.setOffice(option)
                                   expanded = false
                                 },

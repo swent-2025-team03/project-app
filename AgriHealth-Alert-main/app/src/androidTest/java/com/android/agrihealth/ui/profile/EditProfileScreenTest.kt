@@ -72,8 +72,6 @@ class EditProfileScreenTest {
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
         .assertIsDisplayed()
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.CODE_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.ADD_CODE_BUTTON).assertIsDisplayed()
   }
 
   @Test

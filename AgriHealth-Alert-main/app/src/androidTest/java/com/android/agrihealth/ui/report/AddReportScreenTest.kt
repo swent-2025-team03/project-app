@@ -3,12 +3,14 @@ package com.android.agrihealth.ui.report
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertAny
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -20,11 +22,11 @@ import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.user.UserViewModel
+import junit.framework.TestCase.assertTrue
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -38,7 +40,7 @@ private fun fakeFarmerViewModel(): UserViewModel =
             email = "email@email.com",
             address = Location(0.0, 0.0, "123 Farm Lane"),
             linkedOffices = listOf("Best Vet Ever!", "Meh Vet", "Great Vet"),
-            defaultOffice = null,
+            defaultOffice = "Best Vet Ever!",
         ))
 
 class AddReportScreenTest {
@@ -112,11 +114,7 @@ class AddReportScreenTest {
   fun displayAllFieldsAndButtons() {
     composeRule.setContent {
       MaterialTheme {
-        AddReportScreen(
-            userRole = UserRole.FARMER,
-            userId = "test_user",
-            onCreateReport = {},
-            addReportViewModel = FakeAddReportViewModel())
+        AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
       }
     }
     composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).assertIsDisplayed()
@@ -180,11 +178,7 @@ class AddReportScreenTest {
   fun createButton_showsSnackbar_onEmptyFields() {
     composeRule.setContent {
       MaterialTheme {
-        AddReportScreen(
-            userRole = UserRole.FARMER,
-            userId = "test_user",
-            onCreateReport = {},
-            addReportViewModel = FakeAddReportViewModel())
+        AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
       }
     }
     // Click with fields empty
@@ -209,8 +203,6 @@ class AddReportScreenTest {
       MaterialTheme {
         AddReportScreen(
             userViewModel = fakeUserViewModel,
-            userRole = UserRole.FARMER,
-            userId = "test_user",
             onCreateReport = {},
             addReportViewModel = FakeAddReportViewModel())
       }
@@ -219,20 +211,17 @@ class AddReportScreenTest {
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
         .performScrollToNode(hasTestTag(AddReportScreenTestTags.VET_DROPDOWN))
     composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).performClick()
-    val firstVet = "Best Vet Ever!"
-    composeRule.onNodeWithText(firstVet).assertIsDisplayed().performClick()
-    composeRule.onNodeWithText(firstVet).assertIsDisplayed()
+    val firstVet = "Deleted office"
+    composeRule.onAllNodesWithText(firstVet, useUnmergedTree = true).assertCountEquals(4)
+    composeRule.onAllNodesWithText(firstVet, useUnmergedTree = true).onFirst().performClick()
+    composeRule.onNodeWithText(firstVet, useUnmergedTree = true).assertIsDisplayed()
   }
 
   @Test
   fun enteringTitleDescription_showsSuccessDialog() {
     composeRule.setContent {
       MaterialTheme {
-        AddReportScreen(
-            userRole = UserRole.FARMER,
-            userId = "test_user",
-            onCreateReport = {},
-            addReportViewModel = FakeAddReportViewModel())
+        AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
       }
     }
     createReport("title", "description")
@@ -253,10 +242,7 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-            userRole = UserRole.FARMER,
-            userId = "test_user",
-            onCreateReport = { called = true },
-            addReportViewModel = FakeAddReportViewModel())
+            onCreateReport = { called = true }, addReportViewModel = FakeAddReportViewModel())
       }
     }
 

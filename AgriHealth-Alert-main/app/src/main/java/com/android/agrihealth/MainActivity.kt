@@ -172,8 +172,6 @@ fun AgriHealthApp(
 
         AddReportScreen(
             onBack = { navigationActions.goBack() },
-            userRole = currentUserRole,
-            userId = currentUserId,
             userViewModel = userViewModel,
             onCreateReport = { reloadReports = !reloadReports },
             addReportViewModel = vm,
