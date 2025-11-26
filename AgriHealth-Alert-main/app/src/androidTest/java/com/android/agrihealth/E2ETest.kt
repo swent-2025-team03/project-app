@@ -9,6 +9,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.core.design.theme.Test
+import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
@@ -25,6 +26,7 @@ import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.android.agrihealth.ui.profile.ChangePasswordScreenTestTags
+import com.android.agrihealth.ui.profile.ClaimCodeScreenTestTags
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags
 import com.android.agrihealth.ui.profile.ProfileViewModel
@@ -141,7 +143,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     goBack()
     goBack()
     checkOverviewScreenIsDisplayed()
-    createReport("Report title", "Report description", "Best Vet Ever!")
+    createReport("Report title", "Report description")
     clickFirstReportItem()
     reportViewClickViewOnMap()
     mapClickViewReport()
@@ -154,13 +156,13 @@ class E2ETest : FirebaseEmulatorsTest() {
 
   @Test
   fun testFarmer_OverviewFilters_WorkCorrectly() {
-    val vet1 = "Best Vet Ever!"
+    val vet1 = "Best Office Ever!"
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.waitForIdle()
     completeSignIn(user1.email, "12345678")
     checkOverviewScreenIsDisplayed()
-    createReport("Report 1", "Description 1", "Best Vet Ever!")
-    createReport("Report 2", "Description 2", "Meh Vet")
+    createReport("Report 1", "Description 1")
+    createReport("Report 2", "Description 2")
 
     // Report 1 appears when filtering for "Pending"
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN).performClick()
@@ -181,7 +183,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN).performClick()
     composeTestRule.onNodeWithTag("OPTION_All").performClick()
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.VET_ID_DROPDOWN).performClick()
-    composeTestRule.onNodeWithTag("OPTION_$vet1").performClick()
+    composeTestRule.onNodeWithText(vet1).performClick()
     composeTestRule
         .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
         .assertAny(hasText("Report 1"))
@@ -232,8 +234,12 @@ class E2ETest : FirebaseEmulatorsTest() {
             lastname = "Vet",
             email = "vet@test.com",
             address = null,
-            validCodes = emptyList())
+            validCodes = emptyList(),
+            officeId = "off1")
     val userViewModel = UserViewModel(initialUser = vet)
+    runTest {
+      AuthRepositoryProvider.repository.signUpWithEmailAndPassword(vet.email, "123456", vet)
+    }
     val profileViewModel =
         ProfileViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
     profileViewModel.generateVetCode()
@@ -242,6 +248,7 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     completeSignUp(farmerEmail, password, isVet = false)
     checkEditProfileScreenIsDisplayed()
+    goBack()
     useCode(vetCode)
     checkLinkedVetIsNotEmpty()
     clickChangePassword()
@@ -292,11 +299,19 @@ class E2ETest : FirebaseEmulatorsTest() {
 
   private fun useCode(vetCode: String?) {
     composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.CODE_FIELD)
+        .onNodeWithTag(ProfileScreenTestTags.CODE_BUTTON_FARMER)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule
+        .onNodeWithTag(ClaimCodeScreenTestTags.CODE_FIELD)
         .assertIsDisplayed()
         .performTextInput((vetCode)!!)
     composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.ADD_CODE_BUTTON)
+        .onNodeWithTag(ClaimCodeScreenTestTags.ADD_CODE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule
+        .onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
         .assertIsDisplayed()
         .performClick()
   }
@@ -356,6 +371,8 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun checkLinkedVetIsNotEmpty() {
+    waitUntilTestTag(ProfileScreenTestTags.EDIT_BUTTON)
+    composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule
           .onAllNodesWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
@@ -438,6 +455,8 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
+    composeTestRule.mainClock.advanceTimeByFrame()
+    composeTestRule.waitForIdle()
     waitUntilTestTag(ProfileScreenTestTags.PROFILE_IMAGE)
   }
 
@@ -455,7 +474,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     waitUntilTestTag(SignInScreenTestTags.SCREEN)
   }
 
-  private fun createReport(title: String, description: String, vetId: String) {
+  private fun createReport(title: String, description: String) {
     composeTestRule
         .onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)
         .assertIsDisplayed()
@@ -539,7 +558,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN)
         .assertIsDisplayed()
         .performClick()
-    composeTestRule.onNodeWithText(vetId).assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithText("Deleted office").assertIsDisplayed().performClick()
 
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
@@ -606,7 +625,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.CODE_FIELD).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(ClaimCodeScreenTestTags.CODE_FIELD).assertIsDisplayed()
   }
 
   private fun clickEditProfile() {

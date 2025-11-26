@@ -38,10 +38,10 @@ open class FirebaseEmulatorsTest() {
           "Uruha",
           "email1@thing.com",
           null,
-          listOf("Best Vet Ever!", "Meh Vet"),
+          listOf("Best Office Ever!"),
           "Test?")
   val user2 = Farmer("def456", "mike", "neko", "email2@aaaaa.balls", null, emptyList(), null)
-  val user3 = Vet("ghi789", "Nazuna", "Amemiya", "email3@kms.josh", null)
+  val user3 = Vet("ghi789", "Nazuna", "Amemiya", "email3@kms.josh", null, officeId = "off1")
   val user4 = Farmer("jklABC", "John", "Fake", "fakeUser.glorp", null, emptyList(), null)
 
   val password1 = "Password123"

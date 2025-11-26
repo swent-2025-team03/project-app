@@ -11,6 +11,8 @@ import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -78,12 +80,14 @@ open class UserViewModel(
   }
 
   /** Update user data (needed in profile screen) */
-  suspend fun updateUser(user: User) {
-    try {
-      userRepository.updateUser(user)
-      _user.value = user // update local state
-    } catch (e: Exception) {
-      Log.e("UserViewModel", "Failed to update user", e)
+  fun updateUser(user: User): Deferred<Unit> {
+    return viewModelScope.async {
+      try {
+        userRepository.updateUser(user)
+        _user.value = user // update local state
+      } catch (e: Exception) {
+        Log.e("UserViewModel", "Failed to update user", e)
+      }
     }
   }
 

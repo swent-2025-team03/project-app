@@ -36,7 +36,6 @@ import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
-import kotlinx.coroutines.launch
 
 object EditProfileScreenTestTags {
   const val FIRSTNAME_FIELD = "FirstNameField"
@@ -59,7 +58,7 @@ object EditProfileScreenTestTags {
 fun EditProfileScreen(
     userViewModel: UserViewModel = viewModel(),
     onGoBack: () -> Unit = {},
-    onSave: suspend (User) -> Unit = { userViewModel.updateUser(it) },
+    onSave: (User) -> Unit = { userViewModel.updateUser(it) },
     onPasswordChange: () -> Unit = {}
 ) {
   val user by userViewModel.user.collectAsState()
@@ -282,7 +281,7 @@ fun EditProfileScreen(
                                   address = user.address?.copy(name = address),
                                   description = updatedDescription)
                         }
-                    updatedUser?.let { scope.launch { onSave(it) } }
+                    updatedUser?.let { onSave(it) }
                   },
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.SAVE_BUTTON)) {

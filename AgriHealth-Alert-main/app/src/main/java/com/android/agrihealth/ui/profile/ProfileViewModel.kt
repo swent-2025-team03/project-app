@@ -64,7 +64,7 @@ class ProfileViewModel(
               is Vet -> {
                 try {
                   val updatedVet = user.copy(officeId = vetId)
-                  userViewModel.updateUser(updatedVet)
+                  userViewModel.updateUser(updatedVet).await()
                   val updatedOffice =
                       officeRepository.getOffice(vetId).fold({ office ->
                         office.copy(vets = (office.vets + user.uid))
