@@ -88,6 +88,16 @@ object PlannerScreenTestTags {
 // Todo: show a line for current hour
 // Todo: Fix report title clipping onto background
 
+/**
+ * Planner Screen lets the user see their Reports ordered by dates.
+ *
+ * @param userId the id of the user currently using the app, used to fetch the reports
+ * @param reportId the id of the report that the user is currently setting a date for
+ * @param goBack function called when top left back arrow is clicked
+ * @param tabClicked called with tab.destination when a tab of the bottom bar is clicked
+ * @param reportClicked called with reportId when a report card is clicked
+ * @param plannerVM the PlannerViewModel instance used in the Screen
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlannerScreen(
@@ -249,6 +259,14 @@ fun WeeklyPager(
   }
 }
 
+/**
+ * Represent a day in the week and shows a list of point representing the tasks
+ *
+ * @param modifier the outside composable modifier
+ * @param day the LocalDate this Card represents
+ * @param reportStatuses list of ReportStatus to show on the card as dots
+ * @param onClick called when a card is clicked, meant to be used to change the date to LocalDate
+ */
 @Composable
 fun DayCard(
     modifier: Modifier = Modifier,
@@ -272,6 +290,12 @@ fun DayCard(
       }
 }
 
+/**
+ * The Grid of dots shown in the DayCard
+ *
+ * @param dots list of ReportStatus to show on the card as dots
+ * @param dotSize the size of each dot
+ */
 @Composable
 fun DotGrid(
     dots: List<ReportStatus>,
@@ -302,6 +326,12 @@ fun DotGrid(
       }
 }
 
+/**
+ * The Scheduler containing the hour Scale and the Daily task representing the Reports
+ *
+ * @param reports the list of reports to show on the Scheduler
+ * @param navigateToReport called when a report is clicked with the report.id
+ */
 @Composable
 fun DailyScheduler(reports: List<Report>, navigateToReport: (String) -> Unit = {}) {
   val scrollState = rememberScrollState(0)
@@ -320,6 +350,11 @@ fun DailyScheduler(reports: List<Report>, navigateToReport: (String) -> Unit = {
       }
 }
 
+/**
+ * Line of hour shown on the left of the screen
+ *
+ * @param hourHeight how much height used to represent each hours
+ */
 @Composable
 fun HourScale(hourHeight: Dp = 60.dp) {
   Column {
@@ -335,6 +370,14 @@ fun HourScale(hourHeight: Dp = 60.dp) {
   }
 }
 
+/**
+ * The Task list part of the Scheduler, shows tasks based on their startTime with height depending
+ * on their durations
+ *
+ * @param reports the reports to show on the scheduler
+ * @param hourHeight the height attributed to each hours
+ * @param navigateToReport called with report.id when a report is clicked
+ */
 @Composable
 fun DailyTasks(
     reports: List<Report>,
@@ -385,6 +428,19 @@ fun DailyTasks(
   }
 }
 
+/**
+ * Box shown at the bottom of the screen when the Planner is called to set the date of a report
+ *
+ * @param modifier the modifier of the outside Box
+ * @param report The report whose date is being set
+ * @param selectedDate the date selected using the WeeklyPager
+ * @param onSetReportDateClick called when the user clicks the + icon, meant to be called once the
+ *   user hase chosen a date and duration
+ * @param onTimeSelected called when the user is done with the time picker for the startTime with
+ *   the time chosen
+ * @param onDurationSelected called when the user is done with the time picker for the duration with
+ *   the time chosen
+ */
 @Composable
 fun SetReportDateBox(
     modifier: Modifier = Modifier,
@@ -429,6 +485,13 @@ fun SetReportDateBox(
       }
 }
 
+/**
+ * Box represented as a button with the selected time as text, opens a TimePicker Dialog when
+ * clicked
+ *
+ * @param initialTime the time initially shown on the button
+ * @param onTimeSelected called when the user selects a time, with the selected time as parameter
+ */
 @Composable
 fun TimePickerBox(
     initialTime: LocalTime = LocalTime.now(),
@@ -546,5 +609,5 @@ fun PlannerScreenPreview() {
         }
       }
   val fakePlannerVM = PlannerViewModel(reportRepo)
-  AgriHealthAppTheme { PlannerScreen(userId = "vet1", reportId = "2", plannerVM = fakePlannerVM) }
+  AgriHealthAppTheme { PlannerScreen(userId = "vet1", reportId = null, plannerVM = fakePlannerVM) }
 }
