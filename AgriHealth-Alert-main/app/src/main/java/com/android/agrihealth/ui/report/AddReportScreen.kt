@@ -34,6 +34,7 @@ import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.UserViewModelContract
 import kotlinx.coroutines.launch
 
 // -- imports for preview --
@@ -76,7 +77,7 @@ object AddReportConstants {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddReportScreen(
-    userViewModel: UserViewModel = viewModel(),
+    userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
     onBack: () -> Unit = {},
     userRole: UserRole,
     userId: String,

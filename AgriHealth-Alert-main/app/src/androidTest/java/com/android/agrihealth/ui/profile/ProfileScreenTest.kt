@@ -1,10 +1,11 @@
 package com.android.agrihealth.ui.profile
 
+import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createComposeRule
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import com.android.agrihealth.data.model.user.*
+import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
@@ -16,21 +17,20 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
-import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.UserViewModelContract
 import org.junit.Rule
 import org.junit.Test
 
-class ProfileScreenTest : FirebaseEmulatorsTest() {
+class ProfileScreenTest {
 
-  @get:Rule val composeTestRule = createComposeRule()
-
+  @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
   // Some Helpers
 
-  private fun makeFakeViewModel(user: User?): UserViewModel {
-    return UserViewModel(initialUser = user)
+  private fun makeFakeViewModel(user: User): FakeUserViewModel {
+    return FakeUserViewModel(user)
   }
 
-  private fun setScreen(vm: UserViewModel) {
+  private fun setScreen(vm: UserViewModelContract) {
     composeTestRule.setContent {
       MaterialTheme {
         ProfileScreen(userViewModel = vm, onGoBack = {}, onLogout = {}, onEditProfile = {})

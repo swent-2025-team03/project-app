@@ -6,13 +6,13 @@ import com.android.agrihealth.data.model.connection.ConnectionRepository
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.UserViewModelContract
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
-    private val userViewModel: UserViewModel,
+    private val userViewModel: UserViewModelContract,
     private val connectionRepository: ConnectionRepository = ConnectionRepository()
 ) : ViewModel() {
 

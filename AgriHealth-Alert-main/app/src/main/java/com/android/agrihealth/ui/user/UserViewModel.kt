@@ -38,7 +38,7 @@ open class UserViewModel(
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
     private val auth: FirebaseAuth = Firebase.auth,
     initialUser: User? = null
-) : ViewModel() {
+) : ViewModel(), UserViewModelContract {
 
   // private val _userRole = MutableStateFlow<UserRole>(UserRole.FARMER)
   private val _user = MutableStateFlow<User>(initialUser ?: defaultUser)
@@ -47,7 +47,7 @@ open class UserViewModel(
 
   /** The current user's role as a state flow. */
   // val userRole: StateFlow<UserRole> = _userRole.asStateFlow()
-  open var user: StateFlow<User> = _user.asStateFlow()
+  override var user: StateFlow<User> = _user.asStateFlow()
 
   init {
     val currentUser = auth.currentUser
@@ -78,7 +78,7 @@ open class UserViewModel(
   }
 
   /** Update user data (needed in profile screen) */
-  fun updateUser(user: User) {
+  override fun updateUser(user: User) {
     viewModelScope.launch {
       try {
         userRepository.updateUser(user)
@@ -90,7 +90,7 @@ open class UserViewModel(
   }
 
   /** Sets the current user. */
-  fun setUser(user: User) {
+  override fun setUser(user: User) {
     _user.value = user
   }
 

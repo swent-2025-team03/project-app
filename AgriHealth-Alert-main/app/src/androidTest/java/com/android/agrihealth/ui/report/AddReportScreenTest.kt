@@ -24,12 +24,12 @@ import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.testutil.TestConstants
-import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.UserViewModelContract
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 
-private fun fakeFarmerViewModel(): UserViewModel =
+private fun fakeFarmerViewModel(): UserViewModelContract =
     FakeUserViewModel(
         Farmer(
             uid = "test_user",
