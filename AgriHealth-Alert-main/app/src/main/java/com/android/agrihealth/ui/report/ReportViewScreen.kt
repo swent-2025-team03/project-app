@@ -272,9 +272,9 @@ fun ReportViewScreen(
                       fontWeight = FontWeight.SemiBold)
                   Text(
                       text =
-                          report.startTime
-                              ?.toLocalDate()
-                              ?.format(DateTimeFormatter.ofPattern("dd MMM yyyy")) ?: "  Not set",
+                          report.startTime?.format(
+                              DateTimeFormatter.ofPattern("HH:mm ' on ' dd MMM yyyy"))
+                              ?: "  Not set",
                       style = MaterialTheme.typography.bodyLarge,
                       color = MaterialTheme.colorScheme.primaryContainer,
                       modifier =
