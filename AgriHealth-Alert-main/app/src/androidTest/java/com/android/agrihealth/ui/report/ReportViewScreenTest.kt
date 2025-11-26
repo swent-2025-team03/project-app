@@ -11,6 +11,7 @@ import com.android.agrihealth.testutil.FakeOverviewViewModel
 import com.android.agrihealth.testutil.FakeReportRepository
 import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
 import com.android.agrihealth.ui.navigation.NavigationActions
+import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
@@ -337,5 +338,32 @@ class ReportViewScreenTest {
     }
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).assertIsDisplayed()
     assertTrue(fakeRepo.editCalled)
+  }
+
+  @Test
+  fun vet_unsavedChanges() {
+    setVetScreen()
+
+    val alertBox = composeTestRule.onNodeWithTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX)
+    val backButton = composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
+
+    // Change something
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.ANSWER_FIELD).performTextInput("wsh")
+
+    // Try to go back and cancel
+    backButton.performClick()
+    alertBox.assertIsDisplayed()
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_CANCEL).assertIsDisplayed().performClick()
+    alertBox.assertIsNotDisplayed()
+
+    // Try to go back and discard
+    backButton.performClick()
+    alertBox.assertIsDisplayed()
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_DISCARD).assertIsDisplayed().performClick()
+    alertBox.assertIsNotDisplayed()
+
+    // Too lazy to add navigation, so check if the screen consumed the unsaved changes flag
+    backButton.performClick()
+    alertBox.assertIsNotDisplayed()
   }
 }
