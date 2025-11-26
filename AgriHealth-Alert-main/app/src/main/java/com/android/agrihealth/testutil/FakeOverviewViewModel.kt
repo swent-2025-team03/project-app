@@ -9,7 +9,6 @@ import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.User
-import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.overview.OverviewUIState
 import com.android.agrihealth.ui.overview.OverviewViewModelContract
 import kotlinx.coroutines.flow.MutableStateFlow

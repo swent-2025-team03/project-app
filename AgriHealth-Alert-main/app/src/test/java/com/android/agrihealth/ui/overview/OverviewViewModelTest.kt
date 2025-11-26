@@ -36,7 +36,7 @@ class OverviewViewModelTest {
 
   @Test
   fun `getReportsForUser returns farmer's own reports`() = runTest {
-    viewModel.loadReports( farmer001)
+    viewModel.loadReports(farmer001)
     advanceUntilIdle()
     val reports = viewModel.getReportsForUser(UserRole.FARMER, farmer001.uid)
     Assert.assertTrue(reports.all { it.farmerId == farmer001.uid })

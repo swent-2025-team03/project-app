@@ -97,7 +97,7 @@ open class UserViewModel(
   }
 
   /** Updating the officeId when creating or joining an office */
-  fun updateVetOfficeId(officeId: String?) : Deferred<Unit> {
+  fun updateVetOfficeId(officeId: String?): Deferred<Unit> {
     return viewModelScope.async {
       val current = _user.value
 
