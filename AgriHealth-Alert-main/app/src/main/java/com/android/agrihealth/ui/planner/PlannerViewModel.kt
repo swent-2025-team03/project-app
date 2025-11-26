@@ -19,6 +19,7 @@ data class PlannerUIState(
     val userId: String = "VET_456",
     val reports: Map<LocalDate?, List<Report>> = emptyMap(),
     val selectedDateReports: List<Report> = emptyList(),
+    val originalDate: LocalDate = LocalDate.now(),
 
     // Selected date info
     val selectedDate: LocalDate = LocalDate.now(),
@@ -58,6 +59,10 @@ class PlannerViewModel(
             selectedWeek = week,
             selectedWeekNumber = weekNumber,
             selectedDateReports = _uiState.value.reports[date] ?: emptyList())
+  }
+
+  fun setOriginalDate(date: LocalDate) {
+    _uiState.value = _uiState.value.copy(originalDate = date)
   }
 
   fun setReportTime(time: LocalTime) {

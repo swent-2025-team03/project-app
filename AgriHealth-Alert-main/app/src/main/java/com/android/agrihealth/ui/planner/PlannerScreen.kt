@@ -91,6 +91,7 @@ fun PlannerScreen(
     val report = plannerVM.setReportToSetTheDateFor(reportId)
     val date = report?.startTime?.toLocalDate() ?: LocalDate.now()
     plannerVM.setSelectedDate(date)
+    plannerVM.setOriginalDate(date)
   }
 
   Scaffold(
@@ -141,7 +142,7 @@ fun PlannerScreen(
             }
             WeeklyPager(
                 onDateSelected = { date -> plannerVM.setSelectedDate(date) },
-                mondayOfStartingWeek = uiState.selectedDate.with(DayOfWeek.MONDAY),
+                startingDate = uiState.originalDate,
                 dayReportMap = uiState.reports)
             Row(modifier = Modifier.fillMaxWidth()) {
               Text(
@@ -188,20 +189,26 @@ fun WeekHeader(start: LocalDate, end: LocalDate) {
 @Composable
 fun WeeklyPager(
     onDateSelected: (LocalDate) -> Unit,
-    mondayOfStartingWeek: LocalDate,
+    startingDate: LocalDate,
     dayReportMap: Map<LocalDate?, List<Report>> = emptyMap(),
 ) {
+  val mondayOfStartingWeek: LocalDate = startingDate.with(DayOfWeek.MONDAY)
 
   val maxPages = 1000
+
   val initialPage = maxPages / 2
   val pagerState =
       rememberPagerState(
           initialPage = initialPage, initialPageOffsetFraction = 0f, pageCount = { maxPages })
 
   LaunchedEffect(pagerState.currentPage) {
-    val weekOffset = pagerState.currentPage - initialPage
-    val startOfWeek = mondayOfStartingWeek.plusWeeks(weekOffset.toLong())
-    onDateSelected(startOfWeek)
+    val date =
+        if (pagerState.currentPage == initialPage) startingDate
+        else {
+          val weekOffset = pagerState.currentPage - initialPage
+          mondayOfStartingWeek.plusWeeks(weekOffset.toLong())
+        }
+    onDateSelected(date)
   }
 
   HorizontalPager(
