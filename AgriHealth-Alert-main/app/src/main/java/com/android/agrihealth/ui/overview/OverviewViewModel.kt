@@ -31,9 +31,9 @@ data class OverviewUIState(
     val reports: List<Report> = emptyList(),
     val alerts: List<Alert> = emptyList(),
     val selectedStatus: ReportStatus? = null,
-    val selectedVet: String? = null,
+    val selectedOffice: String? = null,
     val selectedFarmer: String? = null,
-    val vetOptions: List<String> = emptyList(),
+    val officeOptions: List<String> = emptyList(),
     val farmerOptions: List<String> = emptyList(),
     val filteredReports: List<Report> = emptyList()
 )
@@ -61,20 +61,20 @@ class OverviewViewModel(
               UserRole.FARMER -> reportRepository.getReportsByFarmer(user.uid)
               UserRole.VET -> reportRepository.getReportsByVet((user as Vet).officeId ?: "")
             }.sortedByDescending { it.createdAt }
-        val vetOptions = reports.map { it.officeId }.distinct()
+        val officeOptions = reports.map { it.officeId }.distinct()
         val farmerOptions = reports.map { it.farmerId }.distinct()
         val filtered =
             applyFilters(
                 reports,
                 _uiState.value.selectedStatus,
-                _uiState.value.selectedVet,
+                _uiState.value.selectedOffice,
                 _uiState.value.selectedFarmer,
             )
 
         _uiState.value =
             _uiState.value.copy(
                 reports = reports,
-                vetOptions = vetOptions,
+                officeOptions = officeOptions,
                 farmerOptions = farmerOptions,
                 filteredReports = filtered)
       } catch (e: Exception) {
@@ -90,12 +90,12 @@ class OverviewViewModel(
     }
   }
 
-  override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {
-    val filtered = applyFilters(_uiState.value.reports, status, vetId, farmerId)
+  override fun updateFilters(status: ReportStatus?, officeId: String?, farmerId: String?) {
+    val filtered = applyFilters(_uiState.value.reports, status, officeId, farmerId)
     _uiState.value =
         _uiState.value.copy(
             selectedStatus = status,
-            selectedVet = vetId,
+            selectedOffice = officeId,
             selectedFarmer = farmerId,
             filteredReports = filtered)
   }

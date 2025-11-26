@@ -76,11 +76,11 @@ class OverviewViewModelTest {
     viewModel.loadReports(UserRole.VET, vet001)
     advanceUntilIdle()
 
-    val vetId = viewModel.uiState.value.vetOptions.firstOrNull()
-    viewModel.updateFilters(status = null, vetId = vetId, farmerId = null)
+    val officeId = viewModel.uiState.value.officeOptions.firstOrNull()
+    viewModel.updateFilters(status = null, officeId = officeId, farmerId = null)
     val state = viewModel.uiState.value
 
-    Assert.assertEquals(vetId, state.selectedVet)
+    Assert.assertEquals(officeId, state.selectedOffice)
     Assert.assertTrue(state.filteredReports.all { it.officeId == vet001.officeId })
   }
 

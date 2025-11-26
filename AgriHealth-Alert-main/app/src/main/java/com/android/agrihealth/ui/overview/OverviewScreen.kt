@@ -211,7 +211,7 @@ fun OverviewScreen(
                           selectedOption = uiState.selectedStatus,
                           onOptionSelected = {
                             overviewViewModel.updateFilters(
-                                it, uiState.selectedVet, uiState.selectedFarmer)
+                                it, uiState.selectedOffice, uiState.selectedFarmer)
                           },
                           modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN),
                           placeholder = "Filter by status",
@@ -220,8 +220,8 @@ fun OverviewScreen(
                       if (userRole == UserRole.FARMER) {
                         // -- VetId filter (only for farmer) --
                         DropdownMenuWrapper(
-                            options = listOf(null) + uiState.vetOptions,
-                            selectedOption = uiState.selectedVet,
+                            options = listOf(null) + uiState.officeOptions,
+                            selectedOption = uiState.selectedOffice,
                             onOptionSelected = {
                               overviewViewModel.updateFilters(
                                   status = uiState.selectedStatus,
@@ -229,7 +229,7 @@ fun OverviewScreen(
                                   farmerId = uiState.selectedFarmer)
                             },
                             modifier = Modifier.testTag(OverviewScreenTestTags.VET_ID_DROPDOWN),
-                            placeholder = "Filter by vets")
+                            placeholder = "Filter by offices")
                       } else if (userRole == UserRole.VET) {
                         // -- FarmerId filter (only for vet) --
                         DropdownMenuWrapper(
@@ -238,7 +238,7 @@ fun OverviewScreen(
                             onOptionSelected = {
                               overviewViewModel.updateFilters(
                                   status = uiState.selectedStatus,
-                                  vetId = uiState.selectedVet,
+                                  vetId = uiState.selectedOffice,
                                   farmerId = it)
                             },
                             modifier = Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN),
