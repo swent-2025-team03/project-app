@@ -91,7 +91,9 @@ fun PlannerScreen(
   LaunchedEffect(userId, reportId) {
     plannerVM.setUserId(userId)
     plannerVM.loadReports()
-    plannerVM.setReportToSetTheDateFor(reportId)
+    val report = plannerVM.setReportToSetTheDateFor(reportId)
+    val date = report?.startTime?.toLocalDate() ?: LocalDate.now()
+    plannerVM.setSelectedDate(date)
   }
 
   Scaffold(
@@ -142,7 +144,7 @@ fun PlannerScreen(
             }
             WeeklyPager(
                 onDateSelected = { date -> plannerVM.setSelectedDate(date) },
-                mondayOfStartingWeek = uiState.today.with(DayOfWeek.MONDAY),
+                mondayOfStartingWeek = uiState.selectedDate.with(DayOfWeek.MONDAY),
                 dayReportMap = uiState.reports)
             Row(modifier = Modifier.fillMaxWidth()) {
               Text(
@@ -513,5 +515,5 @@ fun PlannerScreenPreview() {
         }
       }
   val fakePlannerVM = PlannerViewModel(reportRepo)
-  AgriHealthAppTheme { PlannerScreen(userId = "vet1", reportId = "2", plannerVM = fakePlannerVM) }
+  AgriHealthAppTheme { PlannerScreen(userId = "vet1", reportId = null, plannerVM = fakePlannerVM) }
 }

@@ -21,13 +21,8 @@ data class PlannerUIState(
     val reports: Map<LocalDate?, List<Report>> = emptyMap(),
     val selectedDateReports: List<Report> = emptyList(),
 
-    // Today info
-    val now: LocalDateTime = LocalDateTime.now(),
-    val today: LocalDate = LocalDate.now(),
-    val currentTime: LocalTime = LocalTime.now(),
-
     // Selected date info
-    val selectedDate: LocalDate = today,
+    val selectedDate: LocalDate = LocalDate.now(),
     val selectedWeek: List<LocalDate> =
         (0..6).map { selectedDate.with(DayOfWeek.MONDAY).plusDays(it.toLong()) },
     val selectedWeekNumber: Int = selectedDate.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR),
@@ -97,10 +92,10 @@ class PlannerViewModel(
     }
   }
 
-  fun setReportToSetTheDateFor(reportId: String?) {
+  fun setReportToSetTheDateFor(reportId: String?): Report? {
     if (reportId == null) {
       _uiState.value = _uiState.value.copy(reportToSetTheDateFor = null)
-      return
+      return null
     }
     Log.d("PlannerViewModel", "Setting report to set the date for: $reportId")
     Log.d("PlannerViewModel", "Reports Map: ${_uiState.value.reports}")
@@ -108,5 +103,6 @@ class PlannerViewModel(
     Log.d("PlannerViewModel", "Report Found: $report")
 
     _uiState.value = _uiState.value.copy(reportToSetTheDateFor = report)
+    return report
   }
 }
