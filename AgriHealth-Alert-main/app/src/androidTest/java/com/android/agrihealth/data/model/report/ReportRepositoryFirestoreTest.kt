@@ -116,7 +116,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     repository.addReport(report2.copy(farmerId = user3.uid))
     repository.addReport(report3.copy(farmerId = user3.uid, officeId = user3.officeId))
 
-    var reports = repository.getReportsByVet(user3.officeId)
+    var reports = repository.getReportsByOffice(user3.officeId)
     assertEquals(2, reports.size)
 
     reports.forEach {

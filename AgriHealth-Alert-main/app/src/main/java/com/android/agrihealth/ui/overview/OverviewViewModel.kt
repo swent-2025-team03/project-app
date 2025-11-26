@@ -59,7 +59,7 @@ class OverviewViewModel(
         val reports =
             when (userRole) {
               UserRole.FARMER -> reportRepository.getReportsByFarmer(user.uid)
-              UserRole.VET -> reportRepository.getReportsByVet((user as Vet).officeId ?: "")
+              UserRole.VET -> reportRepository.getReportsByOffice((user as Vet).officeId ?: "")
             }.sortedByDescending { it.createdAt }
         val officeOptions = reports.map { it.officeId }.distinct()
         val farmerOptions = reports.map { it.farmerId }.distinct()

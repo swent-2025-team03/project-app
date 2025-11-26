@@ -47,7 +47,7 @@ class FakeOverviewRepository : ReportRepository {
     // no-op for test
   }
 
-  override suspend fun getReportsByVet(vetId: String): List<Report> {
+  override suspend fun getReportsByOffice(officeId: String): List<Report> {
     return emptyList()
   }
 

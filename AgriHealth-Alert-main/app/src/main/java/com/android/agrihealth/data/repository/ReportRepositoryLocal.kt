@@ -20,7 +20,7 @@ class ReportRepositoryLocal : ReportRepository {
     return reports.filter { it.farmerId == farmerId }
   }
 
-  override suspend fun getReportsByVet(officeId: String): List<Report> {
+  override suspend fun getReportsByOffice(officeId: String): List<Report> {
     return reports.filter { it.officeId == officeId }
   }
 

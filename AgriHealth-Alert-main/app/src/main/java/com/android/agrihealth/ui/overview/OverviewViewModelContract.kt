@@ -13,7 +13,7 @@ interface OverviewViewModelContract {
 
   fun loadAlerts()
 
-  fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?)
+  fun updateFilters(status: ReportStatus?, officeId: String?, farmerId: String?)
 
   fun signOut(credentialManager: CredentialManager)
 }

@@ -24,8 +24,8 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
 
   override suspend fun getAllReports(userId: String): List<Report> {
 
-    // Build an OR filter: (vetId == userId) OR (farmerId == userId)
-    val filter = Filter.or(Filter.equalTo("vetId", userId), Filter.equalTo("farmerId", userId))
+    // Build an OR filter: (officeId == userId) OR (farmerId == userId)
+    val filter = Filter.or(Filter.equalTo("officeId", userId), Filter.equalTo("farmerId", userId))
 
     val snapshot = db.collection(REPORTS_COLLECTION_PATH).where(filter).get().await()
 
@@ -39,7 +39,7 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
     return snapshot.documents.mapNotNull { docToReport(it) }
   }
 
-  override suspend fun getReportsByVet(officeId: String): List<Report> {
+  override suspend fun getReportsByOffice(officeId: String): List<Report> {
     val snapshot =
         db.collection(REPORTS_COLLECTION_PATH).whereEqualTo("officeId", officeId).get().await()
 

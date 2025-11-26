@@ -25,18 +25,22 @@ class ConnectionRepository(
     private const val STATUS_USED = FirestoreSchema.Status.USED
   }
 
+  private fun getCurrentUserId(): String {
+    return Firebase.auth.currentUser?.uid
+        ?: throw java.lang.IllegalStateException("User not logged in")
+  }
+
   private suspend fun getCurrentUserOfficeId(): String {
-    val currentUid =
-        Firebase.auth.currentUser?.uid
-            ?: throw java.lang.IllegalStateException("User not logged in")
+    val currentUid = getCurrentUserId()
     return userRepository.getUserFromId(currentUid).fold({ user ->
-      (user as Vet).officeId ?: throw IllegalStateException("You need to join an office")
-    }) {
-      throw IllegalStateException()
+      (user as Vet).officeId
+          ?: throw IllegalStateException("You need to join an office before generating a code")
+    }) { throwable ->
+      throw throwable
     }
   }
 
-  // Generates a unique connection code for a vet, valid for a limited time (ttlMinutes).
+  // Generates a unique connection code for an office, valid for a limited time (ttlMinutes).
   // Returns: Result<String> containing the generated code, or an exception if failed.
   suspend fun generateCode(ttlMinutes: Long = 10): Result<String> = runCatching {
     val officeId = getCurrentUserOfficeId()
@@ -88,7 +92,7 @@ class ConnectionRepository(
   // Claims a connection code for a farmer, and marks the code as used.
   // Returns: Result<String> containing the vetId if successful, or an exception if failed.
   suspend fun claimCode(code: String): Result<String> = runCatching {
-    val userId = Firebase.auth.uid!!
+    val userId = getCurrentUserId()
     val docRef = db.collection(connectionType + CODES_COLLECTION).document(code)
     db.runTransaction { tx ->
           val snap = tx.get(docRef)

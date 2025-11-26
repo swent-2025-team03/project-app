@@ -61,7 +61,7 @@ fun ManageOfficeScreen(
     onJoinOffice: () -> Unit = {},
 ) {
   val snackbarHostState = remember { SnackbarHostState() }
-  val vm: ManageOfficeViewModel =
+  val manageOfficeVm: ManageOfficeViewModel =
       viewModel(
           factory =
               object : ViewModelProvider.Factory {
@@ -80,13 +80,13 @@ fun ManageOfficeScreen(
                 }
               })
 
-  val uiState by vm.uiState.collectAsState()
+  val uiState by manageOfficeVm.uiState.collectAsState()
 
   var showLeaveDialog by remember { mutableStateOf(false) }
 
   val isOwner = uiState.office?.ownerId == userViewModel.user.value.uid
 
-  LaunchedEffect(userViewModel.user.value) { vm.loadOffice() }
+  LaunchedEffect(userViewModel.user.value) { manageOfficeVm.loadOffice() }
 
   Scaffold(
       topBar = {
@@ -119,7 +119,7 @@ fun ManageOfficeScreen(
               } else {
                 OutlinedTextField(
                     value = if (isOwner) uiState.editableName else uiState.office!!.name,
-                    onValueChange = { if (isOwner) vm.onNameChange(it) },
+                    onValueChange = { if (isOwner) manageOfficeVm.onNameChange(it) },
                     label = { Text("Office Name") },
                     enabled = isOwner,
                     modifier = Modifier.fillMaxWidth().testTag(OFFICE_NAME))
@@ -128,7 +128,7 @@ fun ManageOfficeScreen(
                     value =
                         if (isOwner) uiState.editableDescription
                         else (uiState.office!!.description ?: ""),
-                    onValueChange = { if (isOwner) vm.onDescriptionChange(it) },
+                    onValueChange = { if (isOwner) manageOfficeVm.onDescriptionChange(it) },
                     label = { Text("Description") },
                     enabled = isOwner,
                     modifier = Modifier.fillMaxWidth().testTag(OFFICE_DESCRIPTION))
@@ -137,7 +137,7 @@ fun ManageOfficeScreen(
                     value =
                         if (isOwner) uiState.editableAddress
                         else uiState.office!!.address?.toString() ?: "",
-                    onValueChange = { if (isOwner) vm.onAddressChange(it) },
+                    onValueChange = { if (isOwner) manageOfficeVm.onAddressChange(it) },
                     label = { Text("Address") },
                     enabled = isOwner,
                     modifier = Modifier.fillMaxWidth().testTag(OFFICE_ADDRESS))
@@ -157,7 +157,7 @@ fun ManageOfficeScreen(
                 if (isOwner) {
                   GenerateCode(codesViewModel = connectionVm, snackbarHostState = snackbarHostState)
                   Button(
-                      onClick = { vm.updateOffice() },
+                      onClick = { manageOfficeVm.updateOffice() },
                       modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),
                   ) {
                     Text("Save Changes")
@@ -183,7 +183,7 @@ fun ManageOfficeScreen(
                         TextButton(
                             onClick = {
                               showLeaveDialog = false
-                              vm.leaveOffice(onSuccess = onGoBack)
+                              manageOfficeVm.leaveOffice(onSuccess = onGoBack)
                             },
                             modifier = Modifier.testTag(CONFIRM_LEAVE)) {
                               Text("Leave")
