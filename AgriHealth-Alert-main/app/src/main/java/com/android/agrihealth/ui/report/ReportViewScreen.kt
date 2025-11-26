@@ -105,12 +105,10 @@ fun ReportViewScreen(
   var isUnsavedAlertOpen by remember { mutableStateOf(false) }
 
   fun handleGoBack(force: Boolean = false) {
-    if (unsavedChanges && !force) isUnsavedAlertOpen = true
-    else {
-      navigationActions.goBack()
-    }
+    if (unsavedChanges && !force) isUnsavedAlertOpen = true else navigationActions.goBack()
   }
 
+  // Overrides behavior of Android system back button
   BackHandler { handleGoBack() }
 
   if (isUnsavedAlertOpen)
