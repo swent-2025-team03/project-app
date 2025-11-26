@@ -11,7 +11,7 @@ import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.LOGOUT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_FARMER
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_VET_FIELD
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_OFFICE_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
@@ -80,7 +80,7 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
                 defaultOffice = "vet123"))
     setScreen(vm)
 
-    composeTestRule.onNodeWithTag(DEFAULT_VET_FIELD).assertExists()
+    composeTestRule.onNodeWithTag(DEFAULT_OFFICE_FIELD).assertExists()
   }
 
   @Test
@@ -95,7 +95,7 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
                 address = null))
     setScreen(vm)
 
-    composeTestRule.onAllNodesWithTag(DEFAULT_VET_FIELD).assertCountEquals(0)
+    composeTestRule.onAllNodesWithTag(DEFAULT_OFFICE_FIELD).assertCountEquals(0)
   }
 
   @Test

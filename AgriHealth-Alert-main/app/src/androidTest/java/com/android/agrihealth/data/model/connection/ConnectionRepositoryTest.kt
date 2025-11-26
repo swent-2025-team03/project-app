@@ -1,5 +1,7 @@
 package com.android.agrihealth.data.model.connection
 
+import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.CONNECT_CODES
+import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.FARMER_TO_OFFICE
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
@@ -32,7 +34,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
     // Initialize Firestore and repository, and create test users for vet and farmers.
     super.setUp()
     db = FirebaseFirestore.getInstance()
-    repo = ConnectionRepository(db, connectionType = "farmerToOffice")
+    repo = ConnectionRepository(db, connectionType = FARMER_TO_OFFICE)
     runTest {
       authRepository.signUpWithEmailAndPassword(user1.email, password1, user1)
       authRepository.signOut()
@@ -50,7 +52,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
     val code = repo.generateCode().getOrThrow()
     assertTrue(code.matches(Regex("\\d{6}")))
 
-    val snap = db.collection("farmerToOfficeConnectCodes").document(code).get().await()
+    val snap = db.collection(FARMER_TO_OFFICE + CONNECT_CODES).document(code).get().await()
     assertTrue(snap.exists())
     assertEquals("OPEN", snap.getString("status"))
     assertEquals(officeId, snap.getString("officeId"))
@@ -59,9 +61,9 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  // Verifies that a farmer can claim a code, the repository returns vetId, code is marked USED, and
-  // a connection document is created.
-  fun claimCode_linksAndMarksUsed() = runTest {
+  // Verifies that a farmer can claim a code, the repository returns officeId and code is marked
+  // USED.
+  fun claimCodeAndMarksUsed() = runTest {
     val officeId = user3.officeId!!
     val code = repo.generateCode().getOrThrow()
 
@@ -71,7 +73,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
     val returnedVet = repo.claimCode(code).getOrThrow()
     assertEquals(officeId, returnedVet)
 
-    val codeDoc = db.collection("farmerToOfficeConnectCodes").document(code).get().await()
+    val codeDoc = db.collection(FARMER_TO_OFFICE + CONNECT_CODES).document(code).get().await()
     assertEquals("USED", codeDoc.getString("status"))
   }
 
@@ -150,7 +152,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   // Verifies that generateCode retries if a collision occurs on the first generated code.
   fun generateCode_collidesOnce_thenSucceeds() = runTest {
     val taken = "123456"
-    db.collection("farmerToOfficeConnectCodes").document(taken).set(mapOf("any" to "x")).await()
+    db.collection(FARMER_TO_OFFICE + CONNECT_CODES).document(taken).set(mapOf("any" to "x")).await()
 
     io.mockk.mockkObject(kotlin.random.Random)
     io.mockk.every { kotlin.random.Random.nextInt(100_000, 1_000_000) } returnsMany
@@ -166,7 +168,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   // Verifies that claimCode fails when createdAt is missing in the code document.
   fun claimCode_fails_whenMissingCreatedAt() = runTest {
     val code = "111222"
-    db.collection("farmerToOfficeConnectCodes")
+    db.collection(FARMER_TO_OFFICE + CONNECT_CODES)
         .document(code)
         .set(
             mapOf(
@@ -192,7 +194,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   // Verifies that claimCode fails when ttlMinutes is missing in the code document.
   fun claimCode_fails_whenMissingTtl() = runTest {
     val code = "222333"
-    db.collection("farmerToOfficeConnectCodes")
+    db.collection(FARMER_TO_OFFICE + CONNECT_CODES)
         .document(code)
         .set(
             mapOf(
@@ -210,10 +212,10 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  // Verifies that claimCode fails when vetId is missing in the code document.
-  fun claimCode_fails_whenMissingVetId() = runTest {
+  // Verifies that claimCode fails when officeId is missing in the code document.
+  fun claimCode_fails_whenMissingOfficeId() = runTest {
     val code = "333444"
-    db.collection("farmerToOfficeConnectCodes")
+    db.collection(FARMER_TO_OFFICE + CONNECT_CODES)
         .document(code)
         .set(
             mapOf(
@@ -221,7 +223,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
                 "status" to "OPEN",
                 "createdAt" to Timestamp.now(),
                 "ttlMinutes" to 60L
-                // vetId ABSENT
+                // officeId MISSING
                 ))
         .await()
 

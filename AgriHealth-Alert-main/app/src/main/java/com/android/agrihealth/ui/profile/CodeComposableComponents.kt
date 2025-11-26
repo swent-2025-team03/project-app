@@ -16,30 +16,31 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_VET
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.GENERATED_CODE_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import kotlinx.coroutines.launch
 
-object ClaimCodeScreenTestTags {
+object CodeComposableComponentsTestTags {
   const val CODE_FIELD = "OfficeCodeField"
   const val ADD_CODE_BUTTON = "AddOfficeButton"
+  const val GENERATE_BUTTON = "GenerateButton"
+  const val GENERATE_FIELD = "GenerateField"
+  const val SAVE_BUTTON = "SaveButton"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClaimCodeScreen(
-    profileViewModel: ProfileViewModel,
+    codesViewModel: CodesViewModel,
     onGoBack: () -> Unit = {},
 ) {
 
   val scope = rememberCoroutineScope()
   val snackbarHostState = remember { SnackbarHostState() }
 
-  val vetClaimMessage by profileViewModel.vetClaimMessage.collectAsState()
-  LaunchedEffect(vetClaimMessage) { vetClaimMessage?.let { snackbarHostState.showSnackbar(it) } }
+  val claimMessage by codesViewModel.claimMessage.collectAsState()
+  LaunchedEffect(claimMessage) { claimMessage?.let { snackbarHostState.showSnackbar(it) } }
 
-  var vetCode by remember { mutableStateOf("") }
+  var code by remember { mutableStateOf("") }
 
   Scaffold(
       topBar = {
@@ -66,31 +67,33 @@ fun ClaimCodeScreen(
               Spacer(modifier = Modifier.height(16.dp))
 
               OutlinedTextField(
-                  value = vetCode,
-                  onValueChange = { vetCode = it },
+                  value = code,
+                  onValueChange = { code = it },
                   label = { Text("Enter Office Code") },
-                  modifier = Modifier.fillMaxWidth().testTag(ClaimCodeScreenTestTags.CODE_FIELD))
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(CodeComposableComponentsTestTags.CODE_FIELD))
 
               Spacer(modifier = Modifier.height(8.dp))
 
               Button(
                   onClick = {
-                    if (vetCode.isBlank()) {
+                    if (code.isBlank()) {
                       scope.launch { snackbarHostState.showSnackbar("Please enter a code.") }
                     } else {
-                      profileViewModel.claimVetCode(vetCode)
+                      codesViewModel.claimCode(code)
                     }
                   },
                   modifier =
                       Modifier.align(Alignment.CenterHorizontally)
-                          .testTag(ClaimCodeScreenTestTags.ADD_CODE_BUTTON)) {
+                          .testTag(CodeComposableComponentsTestTags.ADD_CODE_BUTTON)) {
                     Text("claim Code")
                   }
               Spacer(modifier = Modifier.weight(1f))
               Button(
                   onClick = onGoBack,
                   modifier =
-                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.SAVE_BUTTON)) {
+                      Modifier.fillMaxWidth()
+                          .testTag(CodeComposableComponentsTestTags.SAVE_BUTTON)) {
                     Text("Save Changes")
                   }
             }
@@ -99,14 +102,14 @@ fun ClaimCodeScreen(
 
 @Composable
 fun GenerateCode(
-    profileViewModel: ProfileViewModel,
+    codesViewModel: CodesViewModel,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
 ) {
-  val code by profileViewModel.generatedCode.collectAsState()
+  val code by codesViewModel.generatedCode.collectAsState()
   Button(
-      onClick = { profileViewModel.generateVetCode() },
-      modifier = modifier.testTag(CODE_BUTTON_VET)) {
+      onClick = { codesViewModel.generateCode() },
+      modifier = modifier.testTag(CodeComposableComponentsTestTags.GENERATE_BUTTON)) {
         Text("Generate new Connection Code")
       }
 
@@ -120,7 +123,10 @@ fun GenerateCode(
           Text(
               "Generated Code: $code",
               style = MaterialTheme.typography.bodyLarge,
-              modifier = modifier.padding(end = 8.dp).testTag(GENERATED_CODE_TEXT))
+              modifier =
+                  modifier
+                      .padding(end = 8.dp)
+                      .testTag(CodeComposableComponentsTestTags.GENERATE_FIELD))
           IconButton(
               onClick = {
                 clipboard.setText(AnnotatedString(code!!))

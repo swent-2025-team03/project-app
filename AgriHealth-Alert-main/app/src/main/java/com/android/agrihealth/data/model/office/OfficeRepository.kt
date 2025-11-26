@@ -26,7 +26,8 @@ interface OfficeRepository {
   /**
    * Updates an existing office.
    *
-   * Only the Owner of the Office (Vet) can update the Office, right now Vets cannot leave an Office
+   * Only the Owner of the Office (Vet) can update the Office, except the vet list that can be
+   * updated by any Vet
    */
   suspend fun updateOffice(office: Office)
 
@@ -40,7 +41,7 @@ interface OfficeRepository {
   /**
    * Reads an office by ID.
    *
-   * Only Members of an Office can retrieve its data
+   * Only Members of an Office and Farmers who send reports to said Office can retrieve its data
    *
    * Always returns a Result, never throws.
    */

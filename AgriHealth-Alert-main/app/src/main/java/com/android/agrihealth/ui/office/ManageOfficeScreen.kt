@@ -33,9 +33,9 @@ import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_DESCRI
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_NAME
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_VET_LIST
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
+import com.android.agrihealth.ui.profile.CodesViewModel
 import com.android.agrihealth.ui.profile.GenerateCode
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
-import com.android.agrihealth.ui.profile.ProfileViewModel
 import com.android.agrihealth.ui.user.UserViewModel
 
 object ManageOfficeScreenTestTags {
@@ -69,12 +69,12 @@ fun ManageOfficeScreen(
                   return ManageOfficeViewModel(userViewModel, OfficeRepositoryFirestore()) as T
                 }
               })
-  val connectionVm: ProfileViewModel =
+  val connectionVm: CodesViewModel =
       viewModel(
           factory =
               object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                  return ProfileViewModel(
+                  return CodesViewModel(
                       userViewModel, ConnectionRepositoryProvider.vetToOfficeRepository)
                       as T
                 }
@@ -155,8 +155,7 @@ fun ManageOfficeScreen(
                     }
 
                 if (isOwner) {
-                  GenerateCode(
-                      profileViewModel = connectionVm, snackbarHostState = snackbarHostState)
+                  GenerateCode(codesViewModel = connectionVm, snackbarHostState = snackbarHostState)
                   Button(
                       onClick = { vm.updateOffice() },
                       modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),

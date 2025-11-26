@@ -8,7 +8,6 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Transaction
 import com.google.firebase.firestore.firestore
 import java.time.Instant
 import kotlin.random.Random
@@ -22,7 +21,6 @@ class ConnectionRepository(
 ) {
   private companion object {
     private const val CODES_COLLECTION = FirestoreSchema.Collections.CONNECT_CODES
-    private const val CONNECTIONS_COLLECTION = FirestoreSchema.Collections.CONNECTIONS
     private const val STATUS_OPEN = FirestoreSchema.Status.OPEN
     private const val STATUS_USED = FirestoreSchema.Status.USED
   }
@@ -78,16 +76,16 @@ class ConnectionRepository(
     if (status != STATUS_OPEN) throw IllegalStateException("Code already used.")
 
     val createdAt = snap.getTimestamp(FirestoreSchema.ConnectCodes.CREATED_AT)
-    if (createdAt == null) throw IllegalArgumentException("Missing createdAt")
+    requireNotNull(createdAt) { "Missing createdAt" }
 
     val ttlMinutes = snap.getLong(FirestoreSchema.ConnectCodes.TTL_MINUTES)
-    if (ttlMinutes == null) throw IllegalArgumentException("Missing TTL value")
+    requireNotNull(ttlMinutes) { "Missing TTL value" }
 
     val expiresAtMs = createdAt.toDate().time + ttlMinutes * 60_000
     if (Instant.now().toEpochMilli() > expiresAtMs) throw IllegalStateException("Code expired.")
   }
 
-  // Claims a connection code for a farmer, links the vet and farmer, and marks the code as used.
+  // Claims a connection code for a farmer, and marks the code as used.
   // Returns: Result<String> containing the vetId if successful, or an exception if failed.
   suspend fun claimCode(code: String): Result<String> = runCatching {
     val userId = Firebase.auth.uid!!
@@ -97,9 +95,7 @@ class ConnectionRepository(
           checkCodeValidity(snap)
 
           val officeId = snap.getString(FirestoreSchema.ConnectCodes.OFFICE_ID)
-          if (officeId == null) throw IllegalArgumentException("Invalid office ID.")
-
-          // linkUsers(tx, officeId, userId)
+          requireNotNull(officeId) { "Invalid office ID." }
 
           tx.update(
               docRef,
@@ -112,28 +108,4 @@ class ConnectionRepository(
         }
         .await()
   }
-
-  // Creates a connection document between vet and farmer if it does not already exist.
-  // Returns: Unit. No value is returned.
-  private fun linkUsers(tx: Transaction, officeId: String, userId: String) {
-    val connId = connectionId(officeId, userId)
-    val ref = db.collection(connectionType + CONNECTIONS_COLLECTION).document(connId)
-    // Assume the connection doesn't exist. If not, only the timestamp changes, is it really that
-    // bad?
-    tx.set(
-        ref,
-        mapOf(
-            FirestoreSchema.Connections.OFFICE_ID to officeId,
-            FirestoreSchema.Connections.USER_ID to userId,
-            FirestoreSchema.Connections.CREATED_AT to FieldValue.serverTimestamp(),
-            FirestoreSchema.Connections.ACTIVE to true)) // this line NEEDS to be here or tests fail
-  }
-
-  // Generates a unique connection ID by sorting and joining vet and farmer IDs.
-  // Returns: String representing the connection ID.
-  // Rationale: sorting the two IDs before joining ensures the produced ID is symmetric
-  // and order-independent. This guarantees that connectionId(vet, farmer) ==
-  // connectionId(farmer, vet) so the same Firestore document is used for a pair
-  // of users regardless of call order, avoiding duplicate connection documents.
-  private fun connectionId(a: String, b: String): String = listOf(a, b).sorted().joinToString("__")
 }

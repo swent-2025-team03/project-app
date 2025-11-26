@@ -27,10 +27,10 @@ interface ReportRepository {
   /**
    * Retrieves reports assigned to a specific veterinarian.
    *
-   * @param vetId The ID of the veterinarian.
+   * @param officeId The ID of the working office of the current vet.
    * @return List of reports assigned to the specified vet.
    */
-  suspend fun getReportsByVet(vetId: String): List<Report>
+  suspend fun getReportsByVet(officeId: String): List<Report>
 
   /**
    * Retrieves a report by its unique ID.

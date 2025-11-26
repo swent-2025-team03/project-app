@@ -34,7 +34,7 @@ import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.LOGOUT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_FARMER
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_VET_FIELD
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_OFFICE_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DESCRIPTION_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.MANAGE_OFFICE_BUTTON
@@ -51,10 +51,8 @@ object ProfileScreenTestTags {
   const val EDIT_BUTTON = "EditButton"
   const val DESCRIPTION_FIELD = "DescriptionField"
   const val ADDRESS_FIELD = "AddressField"
-  const val DEFAULT_VET_FIELD = "DefaultVetField"
+  const val DEFAULT_OFFICE_FIELD = "DefaultOfficeField"
   const val CODE_BUTTON_FARMER = "CodeButtonFarmer"
-  const val CODE_BUTTON_VET = "CodeButtonVet"
-  const val GENERATED_CODE_TEXT = "GeneratedCodeText"
   const val MANAGE_OFFICE_BUTTON = "ManageOfficeButton"
 }
 
@@ -75,13 +73,12 @@ fun ProfileScreen(
   val factory = remember {
     object : androidx.lifecycle.ViewModelProvider.Factory {
       override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return ProfileViewModel(
-            userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
+        return CodesViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
             as T
       }
     }
   }
-  val profileViewModel: ProfileViewModel = viewModel(factory = factory)
+  val codesViewModel: CodesViewModel = viewModel(factory = factory)
 
   val snackbarHostState = remember { SnackbarHostState() }
 
@@ -208,7 +205,7 @@ fun ProfileScreen(
                     onValueChange = {},
                     label = { Text("Default Office") },
                     enabled = false,
-                    modifier = Modifier.fillMaxWidth().testTag(DEFAULT_VET_FIELD))
+                    modifier = Modifier.fillMaxWidth().testTag(DEFAULT_OFFICE_FIELD))
               }
 
               Spacer(modifier = Modifier.height(24.dp))
@@ -224,9 +221,7 @@ fun ProfileScreen(
 
               if (user is Vet) {
                 GenerateCode(
-                    profileViewModel,
-                    snackbarHostState,
-                    Modifier.align(Alignment.CenterHorizontally))
+                    codesViewModel, snackbarHostState, Modifier.align(Alignment.CenterHorizontally))
 
                 Spacer(modifier = Modifier.height(12.dp))
 

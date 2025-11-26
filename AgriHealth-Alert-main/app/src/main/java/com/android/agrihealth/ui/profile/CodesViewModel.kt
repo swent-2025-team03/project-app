@@ -13,19 +13,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class ProfileViewModel(
+class CodesViewModel(
     private val userViewModel: UserViewModel,
     private val connectionRepository: ConnectionRepository,
     private val officeRepository: OfficeRepository = OfficeRepositoryProvider.get()
 ) : ViewModel() {
 
   private val _generatedCode = MutableStateFlow<String?>(null)
-  private val _vetClaimMessage = MutableStateFlow<String?>(null)
-  val vetClaimMessage: StateFlow<String?> = _vetClaimMessage
+  private val _claimMessage = MutableStateFlow<String?>(null)
+  val claimMessage: StateFlow<String?> = _claimMessage
 
   val generatedCode: StateFlow<String?> = _generatedCode
 
-  fun generateVetCode() {
+  fun generateCode() {
     val currentUser = userViewModel.user.value
     val vet = currentUser as? Vet ?: return
 
@@ -44,7 +44,7 @@ class ProfileViewModel(
     }
   }
 
-  fun claimVetCode(code: String) {
+  fun claimCode(code: String) {
     val user = userViewModel.user.value
     viewModelScope.launch {
       val result = connectionRepository.claimCode(code)
@@ -59,7 +59,7 @@ class ProfileViewModel(
                         linkedOffices = updatedLinkedOffices, defaultOffice = newDefaultOffice)
                 userViewModel.updateUser(updatedFarmer)
 
-                _vetClaimMessage.value = "Vet successfully added!"
+                _claimMessage.value = "Office successfully added!"
               }
               is Vet -> {
                 try {
@@ -69,12 +69,14 @@ class ProfileViewModel(
                       officeRepository.getOffice(vetId).fold({ office ->
                         office.copy(vets = (office.vets + user.uid))
                       }) {
-                        _vetClaimMessage.value = "Office does not exist"
+                        _claimMessage.value = "Office does not exist"
                         throw IllegalStateException()
                       }
                   officeRepository.updateOffice(updatedOffice)
-                  _vetClaimMessage.value = "You successfully joined an office"
-                } catch (e: Exception) {}
+                  _claimMessage.value = "You successfully joined an office"
+                } catch (_: Exception) {
+                  "Something went wrong somehow :("
+                }
               }
             }
           },
@@ -85,9 +87,9 @@ class ProfileViewModel(
                   e.message?.contains("expired", true) == true -> "Code expired."
                   e.message?.contains("used", true) == true -> "Code already used."
                   e.message?.contains("not found", true) == true -> "Invalid code."
-                  else -> "Could not add vet: ${e.message}"
+                  else -> "Could not use code: ${e.message}"
                 }
-            _vetClaimMessage.value = msg
+            _claimMessage.value = msg
           })
     }
   }

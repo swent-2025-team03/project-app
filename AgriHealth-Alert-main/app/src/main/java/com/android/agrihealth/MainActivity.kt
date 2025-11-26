@@ -52,9 +52,9 @@ import com.android.agrihealth.ui.planner.PlannerScreen
 import com.android.agrihealth.ui.profile.ChangePasswordScreen
 import com.android.agrihealth.ui.profile.ChangePasswordViewModel
 import com.android.agrihealth.ui.profile.ClaimCodeScreen
+import com.android.agrihealth.ui.profile.CodesViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreen
 import com.android.agrihealth.ui.profile.ProfileScreen
-import com.android.agrihealth.ui.profile.ProfileViewModel
 import com.android.agrihealth.ui.report.AddReportScreen
 import com.android.agrihealth.ui.report.AddReportViewModel
 import com.android.agrihealth.ui.report.ReportViewModel
@@ -168,13 +168,13 @@ fun AgriHealthApp(
                 return AddReportViewModel(userId = currentUserId) as T
               }
             }
-        val vm: AddReportViewModel = viewModel(factory = createReportViewModel)
+        val addReportViewModel: AddReportViewModel = viewModel(factory = createReportViewModel)
 
         AddReportScreen(
             onBack = { navigationActions.goBack() },
             userViewModel = userViewModel,
             onCreateReport = { reloadReports = !reloadReports },
-            addReportViewModel = vm,
+            addReportViewModel = addReportViewModel,
         )
       }
       composable(
@@ -333,11 +333,11 @@ fun AgriHealthApp(
           val profileFactory =
               object : androidx.lifecycle.ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                  return ProfileViewModel(userViewModel, connectionRepository) as T
+                  return CodesViewModel(userViewModel, connectionRepository) as T
                 }
               }
           ClaimCodeScreen(
-              profileViewModel =
+              codesViewModel =
                   viewModel(
                       factory = profileFactory,
                       key = backStackEntry.arguments?.getString("connectionRepo")),

@@ -168,7 +168,7 @@ class ReportViewScreenTest {
   }
 
   @Test
-  fun farmer_roleInfoLine_showsVetRole_orIdentifier() {
+  fun farmer_roleInfoLine_showsOfficeName() {
     setFarmerScreen()
     composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule

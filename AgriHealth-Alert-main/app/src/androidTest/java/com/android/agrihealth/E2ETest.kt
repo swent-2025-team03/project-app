@@ -8,7 +8,6 @@ import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
-import com.android.agrihealth.core.design.theme.Test
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
@@ -26,10 +25,10 @@ import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.android.agrihealth.ui.profile.ChangePasswordScreenTestTags
-import com.android.agrihealth.ui.profile.ClaimCodeScreenTestTags
+import com.android.agrihealth.ui.profile.CodeComposableComponentsTestTags
+import com.android.agrihealth.ui.profile.CodesViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags
-import com.android.agrihealth.ui.profile.ProfileViewModel
 import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags
@@ -240,11 +239,11 @@ class E2ETest : FirebaseEmulatorsTest() {
     runTest {
       AuthRepositoryProvider.repository.signUpWithEmailAndPassword(vet.email, "123456", vet)
     }
-    val profileViewModel =
-        ProfileViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
-    profileViewModel.generateVetCode()
+    val codesViewModel =
+        CodesViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
+    codesViewModel.generateCode()
     // Wait for the code to appear in StateFlow
-    val vetCode = runBlocking { profileViewModel.generatedCode.first { it != null } }
+    val vetCode = runBlocking { codesViewModel.generatedCode.first { it != null } }
 
     completeSignUp(farmerEmail, password, isVet = false)
     checkEditProfileScreenIsDisplayed()
@@ -303,11 +302,11 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
     composeTestRule
-        .onNodeWithTag(ClaimCodeScreenTestTags.CODE_FIELD)
+        .onNodeWithTag(CodeComposableComponentsTestTags.CODE_FIELD)
         .assertIsDisplayed()
         .performTextInput((vetCode)!!)
     composeTestRule
-        .onNodeWithTag(ClaimCodeScreenTestTags.ADD_CODE_BUTTON)
+        .onNodeWithTag(CodeComposableComponentsTestTags.ADD_CODE_BUTTON)
         .assertIsDisplayed()
         .performClick()
     composeTestRule
@@ -558,7 +557,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN)
         .assertIsDisplayed()
         .performClick()
-    composeTestRule.onNodeWithText("Deleted office").assertIsDisplayed().performClick()
+    composeTestRule.onAllNodesWithText("Deleted office").onFirst().performClick()
 
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
@@ -625,7 +624,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag(ClaimCodeScreenTestTags.CODE_FIELD).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.CODE_FIELD).assertIsDisplayed()
   }
 
   private fun clickEditProfile() {

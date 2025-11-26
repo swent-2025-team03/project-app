@@ -10,8 +10,9 @@ data class Farmer(
     override val address:
         Location?, // This should be the farm location, set just after creating an account.
     val linkedOffices: List<String> =
-        emptyList<String>(), // List of vet IDs associated with the farmer
-    var defaultOffice: String?, // Default vet ID for quick access, can be changed in profile screen
+        emptyList<String>(), // List of office IDs associated with the farmer
+    var defaultOffice:
+        String?, // Default office ID for quick access, can be changed in profile screen
     override val isGoogleAccount: Boolean = false,
     override val description: String? = null
 ) : User(uid, firstname, lastname, UserRole.FARMER, email, address, isGoogleAccount, description)

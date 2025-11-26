@@ -44,7 +44,6 @@ object EditProfileScreenTestTags {
   const val PASSWORD_FIELD = "PasswordField"
   const val ADDRESS_FIELD = "EditAddressField"
   const val DEFAULT_VET_DROPDOWN = "DefaultVetDropdown"
-  const val CODE_FIELD = "VetCodeField"
   const val ADD_CODE_BUTTON = "AddVetButton"
   const val SAVE_BUTTON = "SaveButton"
   const val PASSWORD_BUTTON = "PasswordButton"
@@ -67,18 +66,16 @@ fun EditProfileScreen(
   val factory = remember {
     object : androidx.lifecycle.ViewModelProvider.Factory {
       override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return ProfileViewModel(
-            userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
+        return CodesViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
             as T
       }
     }
   }
-  val profileViewModel: ProfileViewModel = viewModel(factory = factory)
+  val codesViewModel: CodesViewModel = viewModel(factory = factory)
 
-  val scope = rememberCoroutineScope()
   val snackbarHostState = remember { SnackbarHostState() }
 
-  val vetClaimMessage by profileViewModel.vetClaimMessage.collectAsState()
+  val vetClaimMessage by codesViewModel.claimMessage.collectAsState()
   LaunchedEffect(vetClaimMessage) { vetClaimMessage?.let { snackbarHostState.showSnackbar(it) } }
 
   // Local mutable states
