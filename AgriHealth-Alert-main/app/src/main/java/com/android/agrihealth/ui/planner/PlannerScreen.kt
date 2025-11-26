@@ -1,7 +1,6 @@
 package com.android.agrihealth.ui.planner
 
 import android.app.TimePickerDialog
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -72,10 +71,8 @@ import kotlin.math.max
 // Todo: show year if different from current year
 // Todo: scroll to first task of the day
 // Todo: implement task overlapping
-// Todo: implement setting due date if seen from ViewReport screen
 // Todo: show a line for current hour
 // Todo: Fix report title clipping onto background
-// Todo: remove Log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -212,7 +209,6 @@ fun WeeklyPager(
       modifier = Modifier.fillMaxWidth(),
       pageSpacing = 16.dp,
   ) { page ->
-    Log.d("PlannerScreen", "Rendering page: $page")
 
     // Calculate week offset relative to the center
     val weekOffset = page - (initialPage)
