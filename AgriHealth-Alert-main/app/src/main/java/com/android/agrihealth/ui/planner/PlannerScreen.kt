@@ -266,7 +266,8 @@ fun DotGrid(
             }
           },
       verticalArrangement = Arrangement.SpaceEvenly) {
-        dots.chunked((dayTagWidth / (dotSize + 2.dp)).toInt()).forEach { rowDots ->
+        val columnNumber = (dayTagWidth / (dotSize + 2.dp)).toInt().coerceAtLeast(1)
+        dots.chunked(columnNumber).forEach { rowDots ->
           Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             rowDots.forEach { status ->
               Box(
