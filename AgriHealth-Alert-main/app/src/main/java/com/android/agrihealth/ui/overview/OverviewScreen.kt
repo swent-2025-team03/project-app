@@ -1,26 +1,31 @@
 package com.android.agrihealth.ui.overview
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import com.android.agrihealth.core.design.theme.statusColor
+import com.android.agrihealth.data.model.alert.Alert
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
@@ -33,6 +38,7 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
+import kotlinx.coroutines.launch
 
 // -- imports for preview --
 /*
@@ -51,6 +57,8 @@ object OverviewScreenTestTags {
   const val STATUS_DROPDOWN = "StatusFilterDropdown"
   const val VET_ID_DROPDOWN = "VetIdFilterDropdown"
   const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
+
+  fun alertItemTag(page: Int) = "ALERT_ITEM_$page"
 }
 
 /**
@@ -61,7 +69,7 @@ object OverviewScreenTestTags {
  * @param reports List of report to display kept only for backward compatibility and shouldn't be
  *   used
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun OverviewScreen(
     userRole: UserRole,
@@ -78,7 +86,12 @@ fun OverviewScreen(
   var lazySpace by remember { mutableStateOf(0.dp) }
   val minLazySpace = remember { 150.dp }
 
-  LaunchedEffect(user) { overviewViewModel.loadReports(userRole, user) }
+
+LaunchedEffect(user) {
+    overviewViewModel.loadReports(userRole, user)
+    overviewViewModel.loadAlerts()
+  }
+
 
   Scaffold(
       // -- Top App Bar with logout icon --
@@ -140,11 +153,41 @@ fun OverviewScreen(
                 Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
 
                 Spacer(modifier = Modifier.height(12.dp))
-                LatestAlertCard()
 
+                val pagerState =
+                    rememberPagerState(initialPage = 0, pageCount = { uiState.alerts.size })
+                val coroutineScope = rememberCoroutineScope()
+                val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                  if (uiState.alerts.isEmpty()) {
+                    Text(
+                        text = "No alerts available",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(16.dp))
+                  } else {
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(horizontal = (screenWidth - 350.dp) / 2),
+                        pageSpacing = 16.dp) { page ->
+                          val alert = uiState.alerts[page]
+                          AlertItem(
+                              alert = alert,
+                              isCentered = pagerState.currentPage == page,
+                              onCenterClick = { /* TODO: Implement alert view screen navigation */},
+                              onNotCenterClick = {
+                                coroutineScope.launch { pagerState.animateScrollToPage(page) }
+                              },
+                              modifier =
+                                  Modifier.width(350.dp)
+                                      .testTag(OverviewScreenTestTags.alertItemTag(page)))
+                        }
+                  }
+                }
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // -- Create a new report buton --
+                // -- Create a new report button --
                 // Display the button only if the user role is FARMER
                 if (userRole == UserRole.FARMER) {
                   Button(
@@ -225,25 +268,42 @@ fun OverviewScreen(
  * implementation will fetch alerts.
  */
 @Composable
-fun LatestAlertCard() {
-  Card(modifier = Modifier.fillMaxWidth()) {
-    Column(modifier = Modifier.padding(16.dp)) {
-      // Using mock data for now, will implement the logics for LatestAlert later
-      Text("Influenza Detected", style = MaterialTheme.typography.titleMedium)
-      Text("Outbreak: 08/10/2025", style = MaterialTheme.typography.bodyMedium)
-      Text(
-          "Symptoms: Sudden drop in egg production, respiratory distress",
-          style = MaterialTheme.typography.bodyMedium)
-      Text("Region: Vaud, Switzerland", style = MaterialTheme.typography.bodyMedium)
-      Spacer(modifier = Modifier.height(8.dp))
-      // Will need to put outbreak photo
-      /*Image(
-      *    painter = painterResource(id = R.drawable.placeholder),
-      *    contentDescription = "Outbreak photo",
-      *    modifier = Modifier.height(120.dp).fillMaxWidth()
-      )*/
-    }
-  }
+fun AlertItem(
+    alert: Alert,
+    isCentered: Boolean,
+    onCenterClick: () -> Unit,
+    onNotCenterClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+  Card(
+      onClick = {
+        if (isCentered) {
+          onCenterClick()
+        } else {
+          onNotCenterClick()
+        }
+      },
+      modifier = modifier.width(350.dp),
+      elevation = CardDefaults.cardElevation(4.dp)) {
+        Column(
+            modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+              Text(
+                  text = alert.title,
+                  style = MaterialTheme.typography.titleLarge,
+                  maxLines = 1,
+                  overflow = TextOverflow.Ellipsis)
+              Spacer(modifier = Modifier.height(4.dp))
+              Text(
+                  text = alert.description,
+                  style = MaterialTheme.typography.bodyMedium,
+                  maxLines = 2,
+                  overflow = TextOverflow.Ellipsis)
+              Spacer(modifier = Modifier.height(4.dp))
+              Text(
+                  text = "${alert.region} • ${alert.outbreakDate}",
+                  style = MaterialTheme.typography.bodyMedium)
+            }
+      }
 }
 
 /** Composable displaying a simple dropdown menu for filtering or selecting options. */
