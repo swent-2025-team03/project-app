@@ -294,7 +294,7 @@ fun AlertItem(
               Text(
                   text = alert.description,
                   style = MaterialTheme.typography.bodyMedium,
-                  maxLines = 2,
+                  maxLines = 1,
                   overflow = TextOverflow.Ellipsis)
               Spacer(modifier = Modifier.height(4.dp))
               Text(

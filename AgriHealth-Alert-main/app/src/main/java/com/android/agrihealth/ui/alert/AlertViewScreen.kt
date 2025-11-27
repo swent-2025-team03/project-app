@@ -15,6 +15,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags
@@ -41,7 +43,13 @@ fun AlertViewScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(alert.title) },
+                title = { Text(
+                    text = alert.title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                ) },
                 navigationIcon = {
                     IconButton(onClick = { navigationActions.goBack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -63,7 +71,16 @@ fun AlertViewScreen(
                     .testTag(AlertViewScreenTestTags.SCREEN_CONTAINER),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // --- Alert details ---
+                // --- Full title (only if too long) ---
+                val maxTitleChars = 30 //Number of characters that will fit in the topappbar
+                val showFullTitleInBody = alert.title.length > maxTitleChars
+                if (showFullTitleInBody) {
+                    Text(
+                        text = "Title: ${alert.title}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
                 Text(
                     text = "Description: ${alert.description}",
                     style = MaterialTheme.typography.bodyLarge
@@ -76,14 +93,15 @@ fun AlertViewScreen(
                     text = "Region: ${alert.region}",
                     style = MaterialTheme.typography.bodyLarge
                 )
-            }
-            // --- View on Map Button ---
-            OutlinedButton(
-                modifier =
-                    Modifier.fillMaxWidth().testTag(ReportViewScreenTestTags.VIEW_ON_MAP),
-                onClick = { /*TODO: implement View on Map using polygon when available */ }
-            ) {
-                Text("View on Map")
+                Spacer(modifier = Modifier.height(32.dp))
+                // --- View on Map Button ---
+                OutlinedButton(
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(ReportViewScreenTestTags.VIEW_ON_MAP),
+                    onClick = { /*TODO: implement View on Map using polygon when available */ }
+                ) {
+                    Text("View on Map")
+                }
             }
             // --- Navigation arrows (previous / next) ---
                 Row(
