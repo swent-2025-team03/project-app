@@ -30,4 +30,15 @@ class FakeAlertRepository : AlertRepository {
     override suspend fun getAlertById(alertId: String): Alert? {
         return alerts.find { it.id == alertId }
     }
+
+    override fun getPreviousAlert(currentId: String): Alert? {
+        val index = alerts.indexOfFirst { it.id == currentId }
+        return if (index > 0) alerts[index - 1] else null
+    }
+
+    override fun getNextAlert(currentId: String): Alert? {
+        val index = alerts.indexOfFirst { it.id == currentId }
+        return if (index < alerts.size - 1) alerts[index + 1] else null
+    }
+
 }

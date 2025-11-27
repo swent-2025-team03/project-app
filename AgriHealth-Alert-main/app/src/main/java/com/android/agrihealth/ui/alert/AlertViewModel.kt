@@ -44,4 +44,17 @@ class AlertViewModel(
             }
         }
     }
+    fun loadPreviousAlert(currentId: String) {
+        val previous = repository.getPreviousAlert(currentId)
+        previous?.let { loadAlert(it.id) }
+    }
+
+    fun loadNextAlert(currentId: String) {
+        val next = repository.getNextAlert(currentId)
+        next?.let { loadAlert(it.id) }
+    }
+
+    fun hasPrevious(currentId: String) = repository.getPreviousAlert(currentId) != null
+    fun hasNext(currentId: String) = repository.getNextAlert(currentId) != null
+
 }
