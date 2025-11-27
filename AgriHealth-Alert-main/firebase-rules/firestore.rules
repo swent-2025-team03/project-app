@@ -46,7 +46,7 @@ service cloud.firestore {
     }
 
     match /vetToOfficeConnectCodes/{code} {
-        allow create: hasRole("Vet")
+        allow create: if hasRole("Vet")
           && get(/databases/$(database)/documents/offices/$(request.resource.data.officeId)).data.ownerId
           == request.auth.uid;
         allow update: if hasRole("Vet");
