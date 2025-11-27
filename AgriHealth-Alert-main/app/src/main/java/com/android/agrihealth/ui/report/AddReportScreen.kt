@@ -41,8 +41,19 @@ import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.user.UserViewModel
+import io.github.ismoy.imagepickerkmp.CameraPhotoHandler
+import io.github.ismoy.imagepickerkmp.GalleryPhotoHandler
+import io.github.ismoy.imagepickerkmp.GalleryPickerLauncher
+import io.github.ismoy.imagepickerkmp.ImagePickerConfig
+import io.github.ismoy.imagepickerkmp.ImagePickerLauncher
+import io.github.ismoy.imagepickerkmp.domain.config.ImagePickerConfig
+import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
+import io.github.ismoy.imagepickerkmp.domain.models.PhotoResult
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.ImagePickerLauncher
 import java.io.File
 import kotlinx.coroutines.launch
+import androidx.core.net.toUri
 
 // -- imports for preview --
 /*
@@ -129,6 +140,10 @@ fun AddReportScreen(
   val uiState by addReportViewModel.uiState.collectAsState()
   val user by userViewModel.user.collectAsState()
   val vets = (user as Farmer).linkedVets
+
+  // For gallery/camera photo picking
+  var showCamera by remember { mutableStateOf(false) }
+  var showGallery by remember { mutableStateOf(false) }
 
   // For the dropdown menu
   var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
@@ -351,38 +366,38 @@ private fun MultilineField(
  */
 @Composable
 fun UploadRemovePhotoButton(
-    photoAlreadyPicked: Boolean,
-    onImagePicked: (Uri?) -> Unit,
-    onImageRemoved: () -> Unit,
+  photoAlreadyPicked: Boolean,
+  onImagePicked: (Uri?) -> Unit,
+  onImageRemoved: () -> Unit
 ) {
-  var showDialog by remember { mutableStateOf(false) }
-  val context = LocalContext.current
+  var showCamera by remember { mutableStateOf(false) }
+  var showGallery by remember { mutableStateOf(false) }
 
-  // Gallery picker launcher
-  val galleryLauncher =
-      rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri?
-        ->
-        showDialog = false
-        onImagePicked(uri)
-      }
-
-  // Camera picker launcher
-  val cameraImageUri = remember { mutableStateOf<Uri?>(null) }
-  val cameraLauncher =
-      rememberLauncherForActivityResult(contract = ActivityResultContracts.TakePicture()) { success
-        ->
-        showDialog = false
-        if (success) {
-          onImagePicked(cameraImageUri.value)
-        }
-      }
-
-  fun launchCamera() {
-    val file = File(context.cacheDir, "temp_${System.currentTimeMillis()}.jpg")
-    cameraImageUri.value =
-        FileProvider.getUriForFile(context, "${context.packageName}.$FILE_PROVIDER", file)
-    cameraLauncher.launch(cameraImageUri.value)
+  if (showCamera) {
+    ImagePickerLauncher(
+      config = ImagePickerConfig(
+        onPhotoCaptured = { result ->
+          onImagePicked(result.uri.toUri())
+          showCamera = false
+        },
+        onError = { showCamera = false },
+        onDismiss = { showCamera = false }
+      )
+    )
   }
+
+  if (showGallery) {
+    GalleryPickerLauncher(
+      onPhotosSelected = { photos ->
+        onImagePicked(photos.firstOrNull().uri.toUri())
+        showGallery = false
+      },
+      onError = { showGallery = false },
+      onDismiss = { showGallery = false },
+      allowMultiple = true
+    )
+  }
+
 
   Button(
       onClick = {
@@ -418,7 +433,7 @@ fun UploadRemovePhotoButton(
                 modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_GALLERY),
                 onClick = {
                   showDialog = false
-                  galleryLauncher.launch("image/*")
+                  onImagePicked()
                 },
                 colors =
                     ButtonDefaults.textButtonColors(
@@ -429,7 +444,7 @@ fun UploadRemovePhotoButton(
                 modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CAMERA),
                 onClick = {
                   showDialog = false
-                  launchCamera()
+                  onTakePhotoClick()
                 },
                 colors =
                     ButtonDefaults.textButtonColors(
