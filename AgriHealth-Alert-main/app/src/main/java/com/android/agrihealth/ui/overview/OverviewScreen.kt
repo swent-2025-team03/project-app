@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.overview
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -76,6 +77,7 @@ fun OverviewScreen(
     overviewViewModel: OverviewViewModelContract,
     onAddReport: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
+    onAlertClick: (String) -> Unit = {},
     navigationActions: NavigationActions? = null
 ) {
 
@@ -170,7 +172,7 @@ fun OverviewScreen(
                           AlertItem(
                               alert = alert,
                               isCentered = pagerState.currentPage == page,
-                              onCenterClick = { /* TODO: Implement alert view screen navigation */},
+                              onCenterClick = { onAlertClick(alert.id) },
                               onNotCenterClick = {
                                 coroutineScope.launch { pagerState.animateScrollToPage(page) }
                               },
@@ -274,6 +276,7 @@ fun AlertItem(
       onClick = {
         if (isCentered) {
           onCenterClick()
+            Log.d("Overview","Clicked on center!")
         } else {
           onNotCenterClick()
         }

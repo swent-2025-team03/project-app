@@ -3,8 +3,8 @@ package com.android.agrihealth.data.model.alert
 import java.time.LocalDate
 
 class FakeAlertRepository : AlertRepository {
-  override suspend fun getAlerts(): List<Alert> {
-    return listOf(
+
+    private val alerts = listOf(
         Alert(
             "1",
             "Heatwave Warning",
@@ -22,6 +22,12 @@ class FakeAlertRepository : AlertRepository {
             "Pest Outbreak",
             "Caterpillar infestation possible",
             LocalDate.of(2025, 11, 22),
-            "Vaud, Switzerland"))
-  }
+            "Vaud, Switzerland")
+    )
+
+    override suspend fun getAlerts(): List<Alert> = alerts
+
+    override suspend fun getAlertById(alertId: String): Alert? {
+        return alerts.find { it.id == alertId }
+    }
 }
