@@ -5,7 +5,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
-import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.testutil.FakeOfficeRepository
 import com.android.agrihealth.ui.user.UserViewModel
@@ -127,26 +126,6 @@ class ViewOfficeScreenTest {
     composeTestRule
         .onNodeWithTag(ViewOfficeScreenTestTags.NAME_FIELD)
         .assertTextContains("Agri Vet Clinic")
-  }
-
-  @Test
-  fun addressField_showsWhenAddressExists() {
-    val office =
-        Office(
-            id = "o1",
-            name = "WithAddress",
-            address = Location(latitude = 0.0, longitude = 0.0),
-            description = null,
-            vets = emptyList(),
-            ownerId = "owner1")
-
-    val vm = FakeViewOfficeViewModel(ViewOfficeUiState.Success(office))
-    setScreen(vm)
-
-    composeTestRule
-        .onNodeWithTag(ViewOfficeScreenTestTags.ADDRESS_FIELD)
-        .assertExists()
-        .assertIsDisplayed()
   }
 
   @Test

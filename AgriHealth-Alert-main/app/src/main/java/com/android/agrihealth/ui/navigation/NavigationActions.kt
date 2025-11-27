@@ -66,6 +66,13 @@ sealed class Screen(
     }
   }
 
+  data class ViewOffice(val officeId: String) :
+      Screen(route = "view_office/${officeId}", name = "View Office") {
+    companion object {
+      const val route = "view_office/{officeId}"
+    }
+  }
+
   data class Map(val lat: Double? = null, val lng: Double? = null, val reportId: String? = null) :
       Screen(
           route = "map?lat=${lat}&lng=${lng}&reportId=${reportId}",
