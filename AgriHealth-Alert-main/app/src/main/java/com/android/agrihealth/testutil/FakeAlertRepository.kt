@@ -1,5 +1,7 @@
-package com.android.agrihealth.data.model.alert
+package com.android.agrihealth.testutil
 
+import com.android.agrihealth.data.model.alert.Alert
+import com.android.agrihealth.data.model.alert.AlertRepository
 import java.time.LocalDate
 
 class FakeAlertRepository : AlertRepository {
@@ -30,6 +32,9 @@ class FakeAlertRepository : AlertRepository {
               "So I have to write a really long description here... blah blah mousudeni netagire de nanikakebaiika wakaranai kara toriaezu nihongo ni sureba meccha mojisuu kasegerukigasuru waai, unn motto kakuhituyouga arisoudesu! doushiyo, nanikakoukana, kyouha ohiru nanitabeyoukana- hisashiburi ni indian no toko ikitaina- saikinn channtoshita shokuji amari tottenaikara channto yasai to gohan wo tabeyou!",
               LocalDate.of(2025, 11, 27),
               "Vaud, Switzerland"))
+
+  val allAlerts: List<Alert>
+    get() = alerts
 
   override suspend fun getAlerts(): List<Alert> = alerts
 

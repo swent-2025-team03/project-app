@@ -20,11 +20,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
-import com.android.agrihealth.ui.report.ReportViewScreenTestTags
 
 object AlertViewScreenTestTags {
+  const val ALERT_FULL_TITLE = "alertFullTitle"
+  const val ALERT_DESCRIPTION = "alertDescription"
+  const val ALERT_DATE = "alertDate"
+  const val ALERT_REGION = "alertRegion"
   const val PREVIOUS_ALERT_ARROW = "previousAlertArrow"
   const val NEXT_ALERT_ARROW = "nextAlertArrow"
+  const val VIEW_ON_MAP = "viewOnMapButton"
 
   fun containerTag(index: Int) = "SCREEN_CONTAINER_$index"
 }
@@ -72,6 +76,7 @@ fun AlertViewScreen(
                       .fillMaxSize()
                       .testTag(AlertViewScreenTestTags.containerTag(alertIndex)),
               verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
                 // --- Full title (only if too long) ---
                 val maxTitleChars = 30 // Number of characters that will fit in the topappbar
                 val showFullTitleInBody = alert.title.length > maxTitleChars
@@ -79,20 +84,27 @@ fun AlertViewScreen(
                   Text(
                       text = "Title: ${alert.title}",
                       style = MaterialTheme.typography.titleMedium,
-                      fontWeight = FontWeight.Bold)
+                      fontWeight = FontWeight.Bold,
+                      modifier = Modifier.testTag(AlertViewScreenTestTags.ALERT_FULL_TITLE))
                 }
                 Text(
                     text = "Description: ${alert.description}",
-                    style = MaterialTheme.typography.bodyLarge)
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.testTag(AlertViewScreenTestTags.ALERT_DESCRIPTION))
                 Text(
                     text = "Date: ${alert.outbreakDate}",
-                    style = MaterialTheme.typography.bodyLarge)
-                Text(text = "Region: ${alert.region}", style = MaterialTheme.typography.bodyLarge)
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.testTag(AlertViewScreenTestTags.ALERT_DATE))
+                Text(
+                    text = "Region: ${alert.region}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.testTag(AlertViewScreenTestTags.ALERT_REGION))
+
                 Spacer(modifier = Modifier.height(32.dp))
+
                 // --- View on Map Button ---
                 OutlinedButton(
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(ReportViewScreenTestTags.VIEW_ON_MAP),
+                    modifier = Modifier.fillMaxWidth().testTag(AlertViewScreenTestTags.VIEW_ON_MAP),
                     onClick = { /*TODO: implement View on Map using polygon when available */}) {
                       Text("View on Map")
                     }
