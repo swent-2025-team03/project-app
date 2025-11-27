@@ -1,6 +1,10 @@
 package com.android.agrihealth.ui.map
 
+import android.content.Context
+import android.location.Geocoder
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.authentification.UserRepository
@@ -13,6 +17,8 @@ import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import java.util.Locale
+import kotlin.collections.firstOrNull
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +30,8 @@ import kotlinx.coroutines.withTimeoutOrNull
 
 data class MapUIState(
     val reports: List<Report> = emptyList(),
-    val locationPermission: Boolean = false
+    val locationPermission: Boolean = false,
+    val geocodedAddress: String? = null
 )
 
 class MapViewModel(
@@ -39,7 +46,7 @@ class MapViewModel(
   val uiState: StateFlow<MapUIState> = _uiState.asStateFlow()
 
   private val _startingLocation =
-      MutableStateFlow(startingPosition ?: Location(46.9481, 7.4474, null)) // Bern
+      MutableStateFlow(startingPosition ?: Location(46.9481, 7.4474)) // Bern
   val startingLocation = _startingLocation.asStateFlow()
   private val _zoom = MutableStateFlow(10f)
   val zoom = _zoom.asStateFlow()
@@ -129,6 +136,27 @@ class MapViewModel(
     val uid = Firebase.auth.currentUser?.uid ?: return null
     val user = userRepository.getUserFromId(uid)
     return user.getOrNull()?.address
+  }
+
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  /**
+   * Converts geographical coordinates into a text address
+   *
+   * @param context Current composable context
+   * @param lat Latitude to convert
+   * @param lng Longitude to convert
+   */
+  fun getAddressFromLatLng(context: Context, lat: Double, lng: Double) {
+    val geocoder = Geocoder(context, Locale.getDefault())
+
+    try {
+      // Deprecated but I can't use the new function for some reason
+      val addresses = geocoder.getFromLocation(lat, lng, 1)
+      val result = addresses?.firstOrNull()?.getAddressLine(0)
+      _uiState.value = _uiState.value.copy(geocodedAddress = result)
+    } catch (_: Exception) {
+      _uiState.value = _uiState.value.copy(geocodedAddress = null)
+    }
   }
 
   fun refreshCameraPosition() {

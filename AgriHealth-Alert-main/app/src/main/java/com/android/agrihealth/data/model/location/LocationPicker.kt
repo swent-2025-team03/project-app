@@ -1,9 +1,6 @@
 package com.android.agrihealth.data.model.location
 
-import android.content.Context
-import android.location.Geocoder
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,7 +37,6 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.rememberCameraPositionState
-import java.util.Locale
 
 object LocationPickerTestTags {
   const val MAP_SCREEN = "googleMapScreen"
@@ -69,7 +65,8 @@ fun LocationPicker(
   val context = LocalContext.current
 
   var showConfirmation by remember { mutableStateOf(false) }
-  var address by remember { mutableStateOf<String?>(null) }
+  val uiState by mapViewModel.uiState.collectAsState()
+  val address = uiState.geocodedAddress
 
   Scaffold(
       topBar = { MapTopBar(onBack = { navigationActions?.goBack() }, title = "Select a location") },
@@ -81,14 +78,8 @@ fun LocationPicker(
             onLocationPicked = { lat, lng ->
               // TODO: maybe loading goes here
               onLatLng(lat, lng)
-              getAddressFromLatLng(
-                  context,
-                  lat,
-                  lng,
-                  onResult = { result ->
-                    showConfirmation = true
-                    address = result
-                  })
+              showConfirmation = true
+              mapViewModel.getAddressFromLatLng(context, lat, lng)
             })
 
         if (showConfirmation)
@@ -158,28 +149,6 @@ private fun LocationPickerScreen(
   }
 }
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-/**
- * Converts geographical coordinates into a text address
- *
- * @param context Current composable context
- * @param lat Latitude to convert
- * @param lng Longitude to convert
- * @param onResult Action to take with the converted address. May be null if conversion failed
- */
-fun getAddressFromLatLng(context: Context, lat: Double, lng: Double, onResult: (String?) -> Unit) {
-  val geocoder = Geocoder(context, Locale.getDefault())
-
-  try {
-    // Deprecated but I can't use the new function for some reason
-    val addresses = geocoder.getFromLocation(lat, lng, 1)
-    val result = addresses?.firstOrNull()?.getAddressLine(0)
-    onResult(result)
-  } catch (_: Exception) {
-    onResult(null)
-  }
-}
-
 @Composable
 private fun AddressConfirmationPrompt(
     address: String?,
@@ -192,23 +161,23 @@ private fun AddressConfirmationPrompt(
       modifier = Modifier.testTag(LocationPickerTestTags.CONFIRMATION_PROMPT),
       onDismissRequest = onDismiss,
       title = { Text("Confirm address") },
+      containerColor = MaterialTheme.colorScheme.surface,
       text = { Text(text) },
       confirmButton = {
         TextButton(
             modifier = Modifier.testTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON),
             onClick = onConfirm) {
-              Text("Confirm")
+              Text("Confirm", color = MaterialTheme.colorScheme.onSurface)
             }
       },
       dismissButton = {
         TextButton(
             modifier = Modifier.testTag(LocationPickerTestTags.PROMPT_CANCEL_BUTTON),
             onClick = onDismiss) {
-              Text("Cancel")
+              Text("Cancel", color = MaterialTheme.colorScheme.onSurface)
             }
       })
 }
-
 /*
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
