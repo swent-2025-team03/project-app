@@ -71,7 +71,7 @@ private fun QuestionItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportViewScreen(
-    navigationActions: NavigationActions,
+    navigationActions: NavigationActions? = null,
     userRole: UserRole,
     viewModel: ReportViewViewModel,
     reportId: String = ""
@@ -93,7 +93,7 @@ fun ReportViewScreen(
   // Navigate back when save is completed, then consume the flag to avoid re-trigger
   LaunchedEffect(saveCompleted) {
     if (saveCompleted) {
-      navigationActions.goBack()
+      navigationActions?.goBack()
       viewModel.consumeSaveCompleted()
     }
   }
@@ -106,7 +106,7 @@ fun ReportViewScreen(
   var isUnsavedAlertOpen by remember { mutableStateOf(false) }
 
   fun handleGoBack(force: Boolean = false) {
-    if (unsavedChanges && !force) isUnsavedAlertOpen = true else navigationActions.goBack()
+    if (unsavedChanges && !force) isUnsavedAlertOpen = true else navigationActions?.goBack()
   }
 
   // Overrides behavior of Android system back button
@@ -183,11 +183,15 @@ fun ReportViewScreen(
                       AuthorName(
                           uid = report.farmerId,
                           onClick = {
-                            navigationActions.navigateTo(Screen.ViewUser(report.farmerId))
+                            navigationActions?.navigateTo(Screen.ViewUser(report.farmerId))
                           })
                     } else {
                       // Farmer views office
-                      OfficeName(uid = report.officeId, onClick = { /* TODO("add ViewOffice") */})
+                      OfficeName(
+                          uid = report.officeId,
+                          onClick = {
+                            navigationActions?.navigateTo(Screen.ViewOffice(report.officeId))
+                          })
                     }
                   }
 
@@ -290,7 +294,7 @@ fun ReportViewScreen(
                               modifier =
                                   Modifier.weight(1f).testTag(ReportViewScreenTestTags.VIEW_ON_MAP),
                               onClick = {
-                                navigationActions.navigateTo(
+                                navigationActions?.navigateTo(
                                     Screen.Map(
                                         report.location?.latitude,
                                         report.location?.longitude,

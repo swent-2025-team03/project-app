@@ -251,7 +251,7 @@ fun OverviewScreen(
                         userRole = userRole,
                         report = report,
                         onClick = { onReportClick(report.id) },
-                    )
+                        navigationActions = navigationActions)
                     HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                   }
                 }
@@ -339,7 +339,12 @@ fun <T> DropdownMenuWrapper(
  * description, and status tag.
  */
 @Composable
-fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
+fun ReportItem(
+    report: Report,
+    onClick: () -> Unit,
+    userRole: UserRole,
+    navigationActions: NavigationActions? = null
+) {
   Row(
       modifier =
           Modifier.fillMaxWidth()
@@ -353,7 +358,10 @@ fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
           Row(verticalAlignment = Alignment.CenterVertically) {
             // Show full name and role, no label
             if (userRole == UserRole.VET) AuthorName(uid = report.farmerId)
-            else OfficeName(uid = report.officeId, onClick = { /* TODO("add ViewOffice") */})
+            else
+                OfficeName(
+                    uid = report.officeId,
+                    onClick = { navigationActions?.navigateTo(Screen.ViewOffice(report.officeId)) })
           }
           Text(
               text = report.description.let { if (it.length > 50) it.take(50) + "..." else it },

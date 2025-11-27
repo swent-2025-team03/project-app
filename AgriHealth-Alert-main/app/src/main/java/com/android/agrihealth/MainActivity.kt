@@ -46,6 +46,8 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.office.CreateOfficeScreen
 import com.android.agrihealth.ui.office.ManageOfficeScreen
+import com.android.agrihealth.ui.office.ViewOfficeScreen
+import com.android.agrihealth.ui.office.ViewOfficeViewModel
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
 import com.android.agrihealth.ui.planner.PlannerScreen
@@ -200,6 +202,20 @@ fun AgriHealthApp(
                 viewModel(factory = ViewUserViewModel.provideFactory(targetUserId = userId))
 
             ViewUserScreen(viewModel = viewModel, onBack = { navigationActions.goBack() })
+          }
+      composable(
+          route = Screen.ViewOffice.route,
+          arguments = listOf(navArgument("officeId") { type = NavType.StringType })) {
+              backStackEntry ->
+            val officeId = backStackEntry.arguments?.getString("officeId") ?: ""
+            val viewModel: ViewOfficeViewModel =
+                viewModel(factory = ViewOfficeViewModel.provideFactory(officeId))
+
+            ViewOfficeScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+                userViewModel = userViewModel,
+                onOpenUser = { uid -> navigationActions.navigateTo(Screen.ViewUser(uid)) })
           }
     }
 
