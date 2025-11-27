@@ -9,11 +9,11 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
+import com.android.agrihealth.testhelpers.NetworkTestUtils.setNetworkEnabled
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
 import org.junit.After
@@ -40,13 +40,6 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
         .onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON)
         .assertIsDisplayed()
         .performClick()
-  }
-
-  private fun setNetworkEnabled(enabled: Boolean) {
-    val state = if (enabled) "enable" else "disable"
-    val uiAutomation = InstrumentationRegistry.getInstrumentation().uiAutomation
-    uiAutomation.executeShellCommand("svc wifi $state").close()
-    uiAutomation.executeShellCommand("svc data $state").close()
   }
 
   @Before

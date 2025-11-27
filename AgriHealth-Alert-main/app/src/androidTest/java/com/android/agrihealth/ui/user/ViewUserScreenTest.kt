@@ -5,20 +5,20 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
-import com.android.agrihealth.data.model.authentification.UserRepositoryFirestore
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testutil.FakeOfficeRepository
+import com.android.agrihealth.testutil.FakeUserRepository
 import org.junit.Rule
 import org.junit.Test
 
 class FakeViewUserViewModel(initial: ViewUserUiState) :
     ViewUserViewModel(
         targetUserId = "fake",
-        userRepository = UserRepositoryFirestore(),
-        officeRepository = OfficeRepositoryFirestore()) {
+        userRepository = FakeUserRepository(),
+        officeRepository = FakeOfficeRepository()) {
 
   private val _state: MutableState<ViewUserUiState> = mutableStateOf(initial)
 
@@ -45,8 +45,8 @@ class ViewUserScreenTest {
               lastname = "User",
               email = "cur@x.com",
               address = null,
-              linkedVets = emptyList(),
-              defaultVet = null)
+              linkedOffices = emptyList(),
+              defaultOffice = null)
   ) {
     val userVm = UserViewModel(initialUser = currentUser)
 
@@ -95,8 +95,8 @@ class ViewUserScreenTest {
             lastname = "Bateman",
             email = "mail@mail.com",
             address = null,
-            linkedVets = emptyList(),
-            defaultVet = null,
+            linkedOffices = emptyList(),
+            defaultOffice = null,
             isGoogleAccount = false,
             description = null)
 
@@ -118,8 +118,8 @@ class ViewUserScreenTest {
             lastname = "Wayne",
             email = "mail@mail.com",
             address = null,
-            linkedVets = emptyList(),
-            defaultVet = null)
+            linkedOffices = emptyList(),
+            defaultOffice = null)
     val vm = FakeViewUserViewModel(ViewUserUiState.Success(user))
     setScreen(vm)
 
@@ -138,8 +138,8 @@ class ViewUserScreenTest {
             lastname = "Miles",
             email = "mail@mail.com",
             address = null,
-            linkedVets = emptyList(),
-            defaultVet = null)
+            linkedOffices = emptyList(),
+            defaultOffice = null)
     val vm = FakeViewUserViewModel(ViewUserUiState.Success(user))
     setScreen(vm)
 
@@ -155,8 +155,8 @@ class ViewUserScreenTest {
             lastname = "Reznik",
             email = "mail@mail.com",
             address = null,
-            linkedVets = emptyList(),
-            defaultVet = null)
+            linkedOffices = emptyList(),
+            defaultOffice = null)
     val vm = FakeViewUserViewModel(ViewUserUiState.Success(user))
     setScreen(vm)
 
@@ -195,8 +195,8 @@ class ViewUserScreenTest {
             lastname = "Bale",
             email = "mail@mail.com",
             address = null,
-            linkedVets = emptyList(),
-            defaultVet = null)
+            linkedOffices = emptyList(),
+            defaultOffice = null)
 
     val vm = FakeViewUserViewModel(ViewUserUiState.Success(user))
     setScreen(vm)
@@ -213,8 +213,8 @@ class ViewUserScreenTest {
             lastname = "Anymore",
             email = "mail@mail.com",
             address = Location(latitude = 0.0, longitude = 0.0),
-            linkedVets = emptyList(),
-            defaultVet = null)
+            linkedOffices = emptyList(),
+            defaultOffice = null)
 
     val vm = FakeViewUserViewModel(ViewUserUiState.Success(farmer))
     setScreen(vm)
@@ -234,8 +234,8 @@ class ViewUserScreenTest {
             lastname = "Smith",
             email = "alice@mail.com",
             address = null,
-            linkedVets = emptyList(),
-            defaultVet = null,
+            linkedOffices = emptyList(),
+            defaultOffice = null,
             description = "Test description")
 
     val vm = FakeViewUserViewModel(ViewUserUiState.Success(user))
@@ -256,8 +256,8 @@ class ViewUserScreenTest {
             lastname = "Smith",
             email = "alice@mail.com",
             address = null,
-            linkedVets = emptyList(),
-            defaultVet = null)
+            linkedOffices = emptyList(),
+            defaultOffice = null)
 
     val vm = FakeViewUserViewModel(ViewUserUiState.Success(user))
     setScreen(vm)

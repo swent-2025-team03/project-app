@@ -11,7 +11,7 @@ interface AddReportViewModelContract {
 
   fun setDescription(newDescription: String)
 
-  fun setVet(vetId: String)
+  fun setOffice(officeId: String)
 
   fun updateQuestion(index: Int, updated: QuestionForm)
 

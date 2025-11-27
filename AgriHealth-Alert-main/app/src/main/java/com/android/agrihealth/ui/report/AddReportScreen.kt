@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -41,10 +42,11 @@ import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.ui.common.OfficeNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.UserViewModelContract
 import java.io.File
 import kotlinx.coroutines.launch
 
@@ -59,7 +61,7 @@ import com.android.agrihealth.testutil.FakeAddReportViewModel
 object AddReportScreenTestTags {
   const val TITLE_FIELD = "titleField"
   const val DESCRIPTION_FIELD = "descriptionField"
-  const val VET_DROPDOWN = "vetDropDown"
+  const val OFFICE_DROPDOWN = "officeDropDown"
   const val CREATE_BUTTON = "createButton"
   const val UPLOAD_IMAGE_BUTTON = "uploadImageButton"
   const val UPLOAD_IMAGE_DIALOG = "uploadImageDialog"
@@ -70,7 +72,7 @@ object AddReportScreenTestTags {
 
   const val SCROLL_CONTAINER = "scrollContainer"
 
-  fun getTestTagForVet(vetId: String): String = "vetOption_$vetId"
+  fun getTestTagForOffice(vetId: String): String = "officeOption_$vetId"
 }
 
 /** Texts for the report creation feedback. For testing purposes */
@@ -81,7 +83,7 @@ object AddReportFeedbackTexts {
 
 /** Constants for testing purposes */
 object AddReportConstants {
-  val vetOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")
+  val officeOptions = listOf("Best Office Ever!", "Meh Office", "Great Office")
 }
 
 /** Texts on the button used to upload/remove a photo */
@@ -112,10 +114,8 @@ private const val FILE_PROVIDER =
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddReportScreen(
-    userViewModel: UserViewModel = viewModel(),
+    userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
     onBack: () -> Unit = {},
-    userRole: UserRole,
-    userId: String,
     onCreateReport: () -> Unit = {},
     addReportViewModel: AddReportViewModelContract
 ) {
@@ -133,7 +133,20 @@ fun AddReportScreen(
 
   val uiState by addReportViewModel.uiState.collectAsState()
   val user by userViewModel.user.collectAsState()
-  val vets = (user as Farmer).linkedVets
+
+  val offices = remember { mutableStateMapOf<String, String>() }
+
+  // For each linked office, load their name
+  (user as Farmer).linkedOffices.forEach { officeId ->
+    val vm: OfficeNameViewModel = viewModel(key = officeId)
+    val label by vm.uiState.collectAsState()
+
+    LaunchedEffect(officeId) {
+      vm.loadOffice(uid = officeId, deletedOffice = "Deleted office", noneOffice = "Unknown office")
+    }
+
+    offices[officeId] = label
+  }
 
   // For gallery/camera photo picking
   var showCamera by remember { mutableStateOf(false) }
@@ -141,8 +154,7 @@ fun AddReportScreen(
 
   // For the dropdown menu
   var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
-  var selectedOption by remember { mutableStateOf((user as Farmer).defaultVet ?: "") }
-  LaunchedEffect(selectedOption) { addReportViewModel.setVet(selectedOption) }
+  var selectedOption by remember { mutableStateOf((user as Farmer).defaultOffice ?: "") }
 
   // For the confirmation snackbar (i.e alter window)
   val snackbarHostState = remember { SnackbarHostState() }
@@ -240,34 +252,35 @@ fun AddReportScreen(
                 }
               }
 
+              var selectedOfficeName = offices[selectedOption] ?: selectedOption
               ExposedDropdownMenuBox(
                   expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                     OutlinedTextField(
-                        value = selectedOption,
+                        value = selectedOfficeName,
                         onValueChange = {}, // No direct text editing
                         readOnly = true,
-                        label = { Text("Choose a Vet") },
+                        label = { Text("Choose an Office") },
                         trailingIcon = {
                           ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                         },
                         modifier =
                             Modifier.menuAnchor() // Needed for M3 dropdown alignment
                                 .fillMaxWidth()
-                                .testTag(AddReportScreenTestTags.VET_DROPDOWN))
+                                .testTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
 
                     ExposedDropdownMenu(
                         expanded = expanded, onDismissRequest = { expanded = false }) {
-                          vets.forEach { option ->
+                          offices.forEach { (option, displayName) ->
                             DropdownMenuItem(
-                                text = { Text(option) },
+                                text = { Text(displayName) },
                                 onClick = {
-                                  selectedOption = option
-                                  addReportViewModel.setVet(option)
+                                  selectedOfficeName = displayName
+                                  addReportViewModel.setOffice(option)
                                   expanded = false
                                 },
                                 modifier =
                                     Modifier.testTag(
-                                        AddReportScreenTestTags.getTestTagForVet(option)))
+                                        AddReportScreenTestTags.getTestTagForOffice(option)))
                           }
                         }
                   }

@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 data class AddReportUiState(
     val title: String = "",
     val description: String = "",
-    val chosenVet: String = "", // TODO: Shouldn't be a string! Temporary measure
+    val chosenOffice: String = "", // TODO: Should be a separate type, not a String!
     val photoUri: Uri? = null,
     val questionForms: List<QuestionForm> = emptyList(),
     val uploadedImagePath: String? = null,
@@ -48,8 +48,8 @@ class AddReportViewModel(
     _uiState.value = _uiState.value.copy(description = newDescription)
   }
 
-  override fun setVet(vetId: String) {
-    _uiState.value = _uiState.value.copy(chosenVet = vetId)
+  override fun setOffice(officeId: String) {
+    _uiState.value = _uiState.value.copy(chosenOffice = officeId)
   }
 
   override fun setPhoto(uri: Uri?) {
@@ -131,7 +131,7 @@ class AddReportViewModel(
             questionForms = uiState.questionForms,
             photoURL = uiState.uploadedImagePath,
             farmerId = userId,
-            vetId = uiState.chosenVet,
+            officeId = uiState.chosenOffice,
             status = ReportStatus.PENDING,
             answer = null,
             location = Location(46.7990813, 6.6259961) // null // optional until implemented

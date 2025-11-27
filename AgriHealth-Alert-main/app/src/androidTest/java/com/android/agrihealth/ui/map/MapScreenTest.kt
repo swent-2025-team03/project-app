@@ -31,7 +31,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -47,7 +46,7 @@ object MapScreenTestReports {
           null,
           emptyList(),
           "farmerId1",
-          "vetId1",
+          "officeId1",
           ReportStatus.PENDING,
           null,
           Location(46.9481, 7.4474, "Place name 1"))
@@ -59,7 +58,7 @@ object MapScreenTestReports {
           null,
           emptyList(),
           "farmerId2",
-          "vetId2",
+          "officeId2",
           ReportStatus.IN_PROGRESS,
           "Vet answer",
           Location(46.9481, 7.4484))
@@ -71,7 +70,7 @@ object MapScreenTestReports {
           null,
           emptyList(),
           "farmerId3",
-          "vetId1",
+          "officeId1",
           ReportStatus.RESOLVED,
           null,
           Location(46.9481, 7.4464, "Place name 3"))
@@ -83,7 +82,7 @@ object MapScreenTestReports {
           null,
           emptyList(),
           "farmerId4",
-          "vetId4",
+          "officeId4",
           ReportStatus.SPAM,
           "Vet answer 4",
           Location(46.9491, 7.4474))
@@ -138,8 +137,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   // repository among other things
   private fun setContentToMapWithVM(
       isViewedFromOverview: Boolean = true,
-      selectedReportId: String? = null,
-      startingPosition: Location? = null
+      selectedReportId: String? = null
   ) {
     val mapViewModel =
         MapViewModel(
@@ -148,10 +146,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
             selectedReportId = selectedReportId)
     composeTestRule.setContent {
       MaterialTheme {
-        MapScreen(
-            mapViewModel = mapViewModel,
-            isViewedFromOverview = isViewedFromOverview,
-            startingPosition = startingPosition)
+        MapScreen(mapViewModel = mapViewModel, isViewedFromOverview = isViewedFromOverview)
       }
     }
   }
@@ -255,18 +250,6 @@ class MapScreenTest : FirebaseEmulatorsTest() {
       }
     }
   }
-
-  @Test
-  fun canOverrideStartingPosition() {
-    val yverdon = Location(46.7815062, 6.6463836) // Station d'épuration d'Yverdon-les-Bains
-    setContentToMapWithVM(startingPosition = yverdon)
-    // how do i test this
-    assertTrue(true)
-  }
-
-  @Test fun mapCenteredOnUserAddress() {}
-
-  @Test fun mapCenteredOnDefaultIfNoAddress() {}
 
   @Test
   fun canNavigateFromMapToReport() = runTest {

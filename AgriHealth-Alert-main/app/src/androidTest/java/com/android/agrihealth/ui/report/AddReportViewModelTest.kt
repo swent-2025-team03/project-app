@@ -3,10 +3,9 @@ package com.android.agrihealth.ui.report
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
-import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
-import com.android.agrihealth.data.repository.ReportRepository
+import com.android.agrihealth.testutil.FakeReportRepository
 import com.android.agrihealth.utils.TestAssetUtils
 import com.android.agrihealth.utils.TestAssetUtils.cleanupTestAssets
 import kotlinx.coroutines.Dispatchers
@@ -23,28 +22,6 @@ import org.junit.Before
 import org.junit.Test
 
 /** Tests created with generative AI */
-class FakeReportRepository : ReportRepository {
-  var storedReport: Report? = null
-
-  override fun getNewReportId(): String = "fake-id"
-
-  override suspend fun getAllReports(userId: String): List<Report> = emptyList()
-
-  override suspend fun getReportsByFarmer(farmerId: String): List<Report> = emptyList()
-
-  override suspend fun getReportsByVet(vetId: String): List<Report> = emptyList()
-
-  override suspend fun getReportById(reportId: String): Report? = null
-
-  override suspend fun addReport(report: Report) {
-    storedReport = report
-  }
-
-  override suspend fun editReport(reportId: String, newReport: Report) {}
-
-  override suspend fun deleteReport(reportId: String) {}
-}
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddReportViewModelTest {
 
@@ -73,7 +50,7 @@ class AddReportViewModelTest {
     val state = viewModel.uiState.value
     assertEquals("", state.title)
     assertEquals("", state.description)
-    assertEquals("", state.chosenVet)
+    assertEquals("", state.chosenOffice)
     assertNull(viewModel.uiState.value.photoUri)
   }
 
@@ -96,7 +73,7 @@ class AddReportViewModelTest {
 
   @Test
   fun setVet_updatesVetOnly() {
-    viewModel.setVet("Vet")
+    viewModel.setOffice("Vet")
     assertEquals("Vet", viewModel.uiState.value.chosenVet)
     assertEquals("", viewModel.uiState.value.title)
     assertEquals("", viewModel.uiState.value.description)
@@ -141,7 +118,7 @@ class AddReportViewModelTest {
           }
         }
 
-        viewModel.setVet(AddReportConstants.vetOptions[0])
+        viewModel.setOffice(AddReportConstants.officeOptions[0])
         val result = viewModel.createReport()
         advanceUntilIdle() // To avoid errors of synchronization which would make this test
         // non-deterministic
@@ -150,10 +127,10 @@ class AddReportViewModelTest {
         val state = viewModel.uiState.value
         assertEquals("", state.title)
         assertEquals("", state.description)
-        assertEquals("", state.chosenVet)
+        assertEquals("", state.chosenOffice)
         // Report is saved
-        assertNotNull(repository.storedReport)
-        val addedReport = repository.storedReport!!
+        assertNotNull(repository.lastAddedReport)
+        val addedReport = repository.lastAddedReport!!
         assertEquals("Report", addedReport.title)
         assertEquals("A description", addedReport.description)
         addedReport.questionForms.forEachIndexed { index, question ->
@@ -167,7 +144,7 @@ class AddReportViewModelTest {
             }
           }
         }
-        assertEquals(AddReportConstants.vetOptions[0], addedReport.vetId)
+        assertEquals(AddReportConstants.officeOptions[0], addedReport.officeId)
         assertEquals(ReportStatus.PENDING, addedReport.status)
       }
 
@@ -175,12 +152,12 @@ class AddReportViewModelTest {
   fun clearInputs_resetsAllFields() {
     viewModel.setTitle("T")
     viewModel.setDescription("D")
-    viewModel.setVet("V")
+    viewModel.setOffice("O")
     viewModel.clearInputs()
     val state = viewModel.uiState.value
     assertEquals("", state.title)
     assertEquals("", state.description)
-    assertEquals("", state.chosenVet)
+    assertEquals("", state.chosenOffice)
     assertEquals(null, state.photoUri)
   }
 }

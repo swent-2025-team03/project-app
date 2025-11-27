@@ -2,6 +2,7 @@ package com.android.agrihealth
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +20,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.credentials.CredentialManager
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -27,6 +29,9 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
+import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.FARMER_TO_OFFICE
+import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.VET_TO_OFFICE
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
@@ -46,12 +51,14 @@ import com.android.agrihealth.ui.overview.OverviewViewModel
 import com.android.agrihealth.ui.planner.PlannerScreen
 import com.android.agrihealth.ui.profile.ChangePasswordScreen
 import com.android.agrihealth.ui.profile.ChangePasswordViewModel
+import com.android.agrihealth.ui.profile.ClaimCodeScreen
+import com.android.agrihealth.ui.profile.CodesViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreen
 import com.android.agrihealth.ui.profile.ProfileScreen
 import com.android.agrihealth.ui.report.AddReportScreen
 import com.android.agrihealth.ui.report.AddReportViewModel
-import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
+import com.android.agrihealth.ui.report.ReportViewViewModel
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.ViewUserScreen
 import com.android.agrihealth.ui.user.ViewUserViewModel
@@ -122,7 +129,7 @@ fun AgriHealthApp(
         SignUpScreen(
             userViewModel = userViewModel,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onSignedUp = { navigationActions.navigateTo(Screen.EditProfile(false)) })
+            onSignedUp = { navigationActions.navigateTo(Screen.EditProfile) })
       }
     }
     navigation(startDestination = Screen.RoleSelection.route, route = Screen.RoleSelection.name) {
@@ -130,7 +137,7 @@ fun AgriHealthApp(
         RoleSelectionScreen(
             credentialManager = credentialManager,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onButtonPressed = { navigationActions.navigateTo(Screen.EditProfile(false)) })
+            onButtonPressed = { navigationActions.navigateTo(Screen.EditProfile) })
       }
     }
 
@@ -145,7 +152,7 @@ fun AgriHealthApp(
         OverviewScreen(
             credentialManager = credentialManager,
             userRole = currentUserRole,
-            userId = currentUserId,
+            user = currentUser,
             overviewViewModel = overviewViewModel,
             onAddReport = { navigationActions.navigateTo(Screen.AddReport) },
             onReportClick = { reportId ->
@@ -155,16 +162,22 @@ fun AgriHealthApp(
         )
       }
       composable(Screen.AddReport.route) {
+        //        val createReportViewModel =
+        //            object : androidx.lifecycle.ViewModelProvider.Factory {
+        //              override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        //                return AddReportViewModel(userId = currentUserId) as T
+        //              }
+        //            }
+        //        val addReportViewModel: AddReportViewModel = viewModel(factory =
+        // createReportViewModel)
         val createReportViewModel =
             AddReportViewModel(userId = currentUserId) // TODO CHange, see editprofilescreen
 
         AddReportScreen(
             onBack = { navigationActions.goBack() },
-            userRole = currentUserRole,
-            userId = currentUserId,
             userViewModel = userViewModel,
             onCreateReport = { reloadReports = !reloadReports },
-            addReportViewModel = createReportViewModel,
+            addReportViewModel = addReportViewModel,
         )
       }
       composable(
@@ -174,7 +187,7 @@ fun AgriHealthApp(
             val reportId = backStackEntry.arguments?.getString("reportId") ?: ""
 
             // You might fetch the report by ID here
-            val viewModel: ReportViewModel = viewModel()
+            val viewModel: ReportViewViewModel = viewModel()
 
             ReportViewScreen(
                 navigationActions = navigationActions,
@@ -209,8 +222,8 @@ fun AgriHealthApp(
               overviewViewModel.signOut(credentialManager)
               navigationActions.navigateToAuthAndClear()
             },
-            onEditProfile = { navigationActions.navigateTo(Screen.EditProfile(false)) },
-            onCodeFarmer = { navigationActions.navigateTo(Screen.EditProfile(true)) },
+            onEditProfile = { navigationActions.navigateTo(Screen.EditProfile) },
+            onCodeFarmer = { navigationActions.navigateTo(Screen.ClaimCode(FARMER_TO_OFFICE)) },
             onManageOffice = { navigationActions.navigateTo(Screen.ManageOffice) })
       }
       composable(Screen.ManageOffice.route) {
@@ -219,7 +232,7 @@ fun AgriHealthApp(
             userViewModel = userViewModel,
             onGoBack = { navigationActions.goBack() },
             onCreateOffice = { navigationActions.navigateTo(Screen.CreateOffice) },
-            onJoinOffice = { /*TODO : implement */})
+            onJoinOffice = { navigationActions.navigateTo(Screen.ClaimCode(VET_TO_OFFICE)) })
       }
       composable(Screen.CreateOffice.route) {
         CreateOfficeScreen(
@@ -231,26 +244,16 @@ fun AgriHealthApp(
 
     // --- Edit Profile Graph ---
     navigation(startDestination = Screen.EditProfile.route, route = Screen.EditProfile.name) {
-      composable(
-          route = Screen.EditProfile.route,
-          arguments =
-              listOf(
-                  navArgument("showOnlyVetField") {
-                    type = NavType.BoolType
-                    defaultValue = false
-                  })) { backStackEntry ->
-            val showOnlyVetField = backStackEntry.arguments?.getBoolean("showOnlyVetField") ?: false
-
-            EditProfileScreen(
-                userViewModel = userViewModel,
-                onGoBack = { navigationActions.navigateTo(Screen.Profile) },
-                onSave = { updatedUser ->
-                  userViewModel.updateUser(updatedUser)
-                  navigationActions.navigateTo(Screen.Profile)
-                },
-                onPasswordChange = { navigationActions.navigateTo(Screen.ChangePassword) },
-                showOnlyVetField = showOnlyVetField)
-          }
+      composable(route = Screen.EditProfile.route) {
+        EditProfileScreen(
+            userViewModel = userViewModel,
+            onGoBack = { navigationActions.navigateTo(Screen.Profile) },
+            onSave = { updatedUser ->
+              userViewModel.updateUser(updatedUser)
+              navigationActions.navigateTo(Screen.Profile)
+            },
+            onPasswordChange = { navigationActions.navigateTo(Screen.ChangePassword) })
+      }
     }
 
     // --- Change Password Graph ---
@@ -259,7 +262,7 @@ fun AgriHealthApp(
         val changePasswordViewModel: ChangePasswordViewModel = viewModel()
         ChangePasswordScreen(
             onBack = { navigationActions.goBack() },
-            onUpdatePassword = { navigationActions.navigateTo(Screen.EditProfile(false)) },
+            onUpdatePassword = { navigationActions.navigateTo(Screen.EditProfile) },
             userEmail = currentUserEmail,
             changePasswordViewModel = changePasswordViewModel)
       }
@@ -290,12 +293,15 @@ fun AgriHealthApp(
 
           val location = if (lat != null && lng != null) Location(lat, lng) else null
           val mapViewModel =
-              MapViewModel(locationViewModel = locationViewModel, selectedReportId = sourceReport)
+              MapViewModel(
+                  locationViewModel = locationViewModel,
+                  selectedReportId = sourceReport,
+                  startingPosition = location)
           MapScreen(
               mapViewModel = mapViewModel,
               navigationActions = navigationActions,
               isViewedFromOverview = (sourceReport == null),
-              startingPosition = location)
+              forceStartingPosition = (location != null))
         }
 
     composable(
@@ -309,6 +315,39 @@ fun AgriHealthApp(
                 })) { backStackEntry ->
           val reportId = backStackEntry.arguments?.getString("reportId")
           PlannerScreen(navigationActions)
+        }
+    composable(
+        route = Screen.ClaimCode.route,
+        arguments =
+            listOf(
+                navArgument("connectionRepo") {
+                  type = NavType.StringType
+                  nullable = false
+                  defaultValue = FARMER_TO_OFFICE
+                })) { backStackEntry ->
+          val connectionRepository =
+              when (backStackEntry.arguments?.getString("connectionRepo")) {
+                VET_TO_OFFICE -> ConnectionRepositoryProvider.vetToOfficeRepository
+                FARMER_TO_OFFICE -> ConnectionRepositoryProvider.farmerToOfficeRepository
+                else -> {
+                  Log.e(
+                      "ClaimCode controller",
+                      "Unknown collection path : ${backStackEntry.arguments?.getString("connectionRepo")}")
+                  ConnectionRepositoryProvider.farmerToOfficeRepository
+                }
+              }
+          val profileFactory =
+              object : androidx.lifecycle.ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return CodesViewModel(userViewModel, connectionRepository) as T
+                }
+              }
+          ClaimCodeScreen(
+              codesViewModel =
+                  viewModel(
+                      factory = profileFactory,
+                      key = backStackEntry.arguments?.getString("connectionRepo")),
+              { navigationActions.goBack() })
         }
   }
 }

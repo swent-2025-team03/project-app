@@ -2,15 +2,17 @@ package com.android.agrihealth.ui.overview
 
 import androidx.credentials.CredentialManager
 import com.android.agrihealth.data.model.report.ReportStatus
-import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.data.model.user.User
 import kotlinx.coroutines.flow.StateFlow
 
 interface OverviewViewModelContract {
   val uiState: StateFlow<OverviewUIState>
 
-  fun loadReports(userRole: UserRole, userId: String)
+  fun loadReports(user: User)
 
-  fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?)
+  fun loadAlerts()
+
+  fun updateFilters(status: ReportStatus?, officeId: String?, farmerId: String?)
 
   fun signOut(credentialManager: CredentialManager)
 }

@@ -16,7 +16,7 @@ class FakeOverviewRepository : ReportRepository {
               questionForms = emptyList(),
               photoURL = null,
               farmerId = "FARMER_001",
-              vetId = "VET_001",
+              officeId = "OFF_001",
               status = ReportStatus.IN_PROGRESS,
               answer = null,
               location = Location(46.5191, 6.5668, "Lausanne Farm")),
@@ -27,7 +27,7 @@ class FakeOverviewRepository : ReportRepository {
               questionForms = emptyList(),
               photoURL = null,
               farmerId = "FARMER_001",
-              vetId = "VET_001",
+              officeId = "OFF_001",
               status = ReportStatus.PENDING,
               answer = null,
               location = Location(46.5210, 6.5650, "Vaud Farm")))
@@ -47,7 +47,7 @@ class FakeOverviewRepository : ReportRepository {
     // no-op for test
   }
 
-  override suspend fun getReportsByVet(vetId: String): List<Report> {
+  override suspend fun getReportsByOffice(officeId: String): List<Report> {
     return emptyList()
   }
 
