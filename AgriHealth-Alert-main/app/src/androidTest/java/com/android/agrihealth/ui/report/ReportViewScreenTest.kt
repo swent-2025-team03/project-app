@@ -11,6 +11,7 @@ import com.android.agrihealth.testutil.FakeOverviewViewModel
 import com.android.agrihealth.testutil.FakeReportRepository
 import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
 import com.android.agrihealth.ui.navigation.NavigationActions
+import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
@@ -29,7 +30,7 @@ class ReportViewScreenTest {
   /** Sets up the ReportViewScreen for a given role (Vet or Farmer). */
   private fun setReportViewScreen(
       role: UserRole,
-      viewModel: ReportViewModel = ReportViewModel(FakeReportRepository())
+      viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
   ) {
     composeTestRule.setContent {
       val navController = rememberNavController()
@@ -40,11 +41,12 @@ class ReportViewScreenTest {
   }
 
   // --- Role-specific helpers (wrappers) ---
-  private fun setVetScreen(viewModel: ReportViewModel = ReportViewModel(FakeReportRepository())) =
-      setReportViewScreen(UserRole.VET, viewModel)
+  private fun setVetScreen(
+      viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
+  ) = setReportViewScreen(UserRole.VET, viewModel)
 
   private fun setFarmerScreen(
-      viewModel: ReportViewModel = ReportViewModel(FakeReportRepository())
+      viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
   ) = setReportViewScreen(UserRole.FARMER, viewModel)
 
   // --- TEST 1: Vet typing in answer field ---
@@ -141,7 +143,7 @@ class ReportViewScreenTest {
   // but this serves as a sanity check that status text changes.
   @Test
   fun statusTextReflectsViewModelChange() {
-    val viewModel = ReportViewModel()
+    val viewModel = ReportViewViewModel()
     setVetScreen(viewModel)
     composeTestRule.runOnUiThread { viewModel.onStatusChange(ReportStatus.RESOLVED) }
     composeTestRule.waitForIdle()
@@ -156,7 +158,7 @@ class ReportViewScreenTest {
   fun vet_autoChangesPendingToInProgress_onLaunch() {
     // When a Vet screen is launched and the ViewModel's report status is PENDING (default),
     // the LaunchedEffect in the composable should auto-change it to IN_PROGRESS.
-    val viewModel = ReportViewModel()
+    val viewModel = ReportViewViewModel()
     setVetScreen(viewModel)
     // Wait for composition + LaunchedEffect to run
     composeTestRule.waitForIdle()
@@ -198,7 +200,7 @@ class ReportViewScreenTest {
 
   @Test
   fun vet_showsFarmerIdText() {
-    val viewModel = ReportViewModel()
+    val viewModel = ReportViewViewModel()
     setVetScreen(viewModel)
 
     composeTestRule.waitForIdle()
@@ -257,7 +259,7 @@ class ReportViewScreenTest {
   @Test
   fun vet_canSelectInProgressStatus_viaDropdown() {
     // Test selecting IN_PROGRESS via dropdown (complements existing RESOLVED test)
-    val viewModel = ReportViewModel()
+    val viewModel = ReportViewViewModel()
     setVetScreen(viewModel)
     composeTestRule.waitForIdle()
 
@@ -276,7 +278,7 @@ class ReportViewScreenTest {
   @Test
   fun vet_saveButton_navigatesBackAfterSuccessfulSave() {
     val fakeRepo = FakeReportRepository()
-    val viewModel = ReportViewModel(repository = fakeRepo)
+    val viewModel = ReportViewViewModel(repository = fakeRepo)
 
     composeTestRule.setContent {
       val navController = rememberNavController()
@@ -337,5 +339,38 @@ class ReportViewScreenTest {
     }
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).assertIsDisplayed()
     assertTrue(fakeRepo.editCalled)
+  }
+
+  @Test
+  fun vet_unsavedChanges() {
+    setVetScreen()
+
+    val alertBox = composeTestRule.onNodeWithTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX)
+    val backButton = composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
+
+    // Change something
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.ANSWER_FIELD).performTextInput("wsh")
+
+    // Try to go back and cancel
+    backButton.performClick()
+    alertBox.assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_CANCEL)
+        .assertIsDisplayed()
+        .performClick()
+    alertBox.assertIsNotDisplayed()
+
+    // Try to go back and discard
+    backButton.performClick()
+    alertBox.assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_DISCARD)
+        .assertIsDisplayed()
+        .performClick()
+    alertBox.assertIsNotDisplayed()
+
+    // Too lazy to add navigation, so check if the screen consumed the unsaved changes flag
+    backButton.performClick()
+    alertBox.assertIsNotDisplayed()
   }
 }
