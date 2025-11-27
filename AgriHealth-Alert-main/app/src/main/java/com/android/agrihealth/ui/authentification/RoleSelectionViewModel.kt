@@ -33,7 +33,7 @@ class RoleSelectionViewModel(
                   "",
                   "",
                   null,
-                  defaultVet = null,
+                  defaultOffice = null,
                   isGoogleAccount = true)
         }
     viewModelScope.launch { userRepository.addUser(user) }

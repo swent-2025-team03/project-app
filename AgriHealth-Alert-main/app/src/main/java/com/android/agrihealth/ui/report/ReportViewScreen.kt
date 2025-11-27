@@ -27,6 +27,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
+import com.android.agrihealth.ui.common.OfficeName
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 
@@ -173,7 +174,7 @@ fun ReportViewScreen(
                     .testTag(ReportViewScreenTestTags.SCROLL_CONTAINER),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
-              // ---- Farmer or Vet info line ----
+              // ---- Farmer or Office info line ----
               Row(
                   verticalAlignment = Alignment.CenterVertically,
                   modifier = Modifier.testTag(ReportViewScreenTestTags.ROLE_INFO_LINE)) {
@@ -185,10 +186,8 @@ fun ReportViewScreen(
                             navigationActions.navigateTo(Screen.ViewUser(report.farmerId))
                           })
                     } else {
-                      // Farmer views vet
-                      AuthorName(
-                          uid = report.vetId,
-                          onClick = { navigationActions.navigateTo(Screen.ViewUser(report.vetId)) })
+                      // Farmer views office
+                      OfficeName(uid = report.officeId, onClick = { /* TODO("add ViewOffice") */})
                     }
                   }
 

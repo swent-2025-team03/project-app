@@ -421,7 +421,7 @@ fun PreviewReportInfo() {
               "very very very very very very very very very very very very very very very very very long description",
           questionForms = emptyList(),
           farmerId = "farmer id",
-          vetId = "vetId",
+          officeId = "offId",
           status = ReportStatus.IN_PROGRESS,
           answer = "answer to the report",
           location = null,

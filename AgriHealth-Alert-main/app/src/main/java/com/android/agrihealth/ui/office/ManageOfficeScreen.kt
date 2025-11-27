@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.StatusColors
+import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -32,6 +33,8 @@ import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_DESCRI
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_NAME
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_VET_LIST
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
+import com.android.agrihealth.ui.profile.CodesViewModel
+import com.android.agrihealth.ui.profile.GenerateCode
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
 
@@ -57,7 +60,8 @@ fun ManageOfficeScreen(
     onCreateOffice: () -> Unit = {},
     onJoinOffice: () -> Unit = {},
 ) {
-  val vm: ManageOfficeViewModel =
+  val snackbarHostState = remember { SnackbarHostState() }
+  val manageOfficeVm: ManageOfficeViewModel =
       viewModel(
           factory =
               object : ViewModelProvider.Factory {
@@ -65,14 +69,24 @@ fun ManageOfficeScreen(
                   return ManageOfficeViewModel(userViewModel, OfficeRepositoryFirestore()) as T
                 }
               })
+  val connectionVm: CodesViewModel =
+      viewModel(
+          factory =
+              object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return CodesViewModel(
+                      userViewModel, ConnectionRepositoryProvider.vetToOfficeRepository)
+                      as T
+                }
+              })
 
-  val uiState by vm.uiState.collectAsState()
+  val uiState by manageOfficeVm.uiState.collectAsState()
 
   var showLeaveDialog by remember { mutableStateOf(false) }
 
   val isOwner = uiState.office?.ownerId == userViewModel.user.value.uid
 
-  LaunchedEffect(userViewModel.user.value) { vm.loadOffice() }
+  LaunchedEffect(userViewModel.user.value) { manageOfficeVm.loadOffice() }
 
   Scaffold(
       topBar = {
@@ -84,7 +98,8 @@ fun ManageOfficeScreen(
               }
             },
             modifier = Modifier.testTag(TOP_BAR))
-      }) { innerPadding ->
+      },
+      snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
         Column(
             modifier =
                 Modifier.padding(innerPadding).padding(16.dp).verticalScroll(rememberScrollState()),
@@ -104,7 +119,7 @@ fun ManageOfficeScreen(
               } else {
                 OutlinedTextField(
                     value = if (isOwner) uiState.editableName else uiState.office!!.name,
-                    onValueChange = { if (isOwner) vm.onNameChange(it) },
+                    onValueChange = { if (isOwner) manageOfficeVm.onNameChange(it) },
                     label = { Text("Office Name") },
                     enabled = isOwner,
                     modifier = Modifier.fillMaxWidth().testTag(OFFICE_NAME))
@@ -113,7 +128,7 @@ fun ManageOfficeScreen(
                     value =
                         if (isOwner) uiState.editableDescription
                         else (uiState.office!!.description ?: ""),
-                    onValueChange = { if (isOwner) vm.onDescriptionChange(it) },
+                    onValueChange = { if (isOwner) manageOfficeVm.onDescriptionChange(it) },
                     label = { Text("Description") },
                     enabled = isOwner,
                     modifier = Modifier.fillMaxWidth().testTag(OFFICE_DESCRIPTION))
@@ -122,7 +137,7 @@ fun ManageOfficeScreen(
                     value =
                         if (isOwner) uiState.editableAddress
                         else uiState.office!!.address?.toString() ?: "",
-                    onValueChange = { if (isOwner) vm.onAddressChange(it) },
+                    onValueChange = { if (isOwner) manageOfficeVm.onAddressChange(it) },
                     label = { Text("Address") },
                     enabled = isOwner,
                     modifier = Modifier.fillMaxWidth().testTag(OFFICE_ADDRESS))
@@ -140,18 +155,17 @@ fun ManageOfficeScreen(
                     }
 
                 if (isOwner) {
+                  GenerateCode(codesViewModel = connectionVm, snackbarHostState = snackbarHostState)
                   Button(
-                      onClick = { vm.updateOffice() },
+                      onClick = { manageOfficeVm.updateOffice() },
                       modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),
                   ) {
                     Text("Save Changes")
                   }
                 }
 
-                val leaveButtonEnabled = isOwner
                 OutlinedButton(
-                    onClick = { if (leaveButtonEnabled) showLeaveDialog = true },
-                    enabled = leaveButtonEnabled,
+                    onClick = { showLeaveDialog = true },
                     colors =
                         ButtonDefaults.outlinedButtonColors(contentColor = StatusColors().spam),
                     border = BorderStroke(1.dp, StatusColors().spam),
@@ -169,7 +183,7 @@ fun ManageOfficeScreen(
                         TextButton(
                             onClick = {
                               showLeaveDialog = false
-                              vm.leaveOffice(onSuccess = onGoBack)
+                              manageOfficeVm.leaveOffice(onSuccess = onGoBack)
                             },
                             modifier = Modifier.testTag(CONFIRM_LEAVE)) {
                               Text("Leave")

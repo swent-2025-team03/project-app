@@ -67,7 +67,7 @@ val previewReport1 =
         questionForms = emptyList(),
         photoUri = null,
         farmerId = "farmer1",
-        vetId = "vet1",
+        officeId = "office1",
         status = ReportStatus.IN_PROGRESS,
         answer = null,
         location = Location(latitude = 12.34, longitude = 56.78, name = "Farmhouse A"),
