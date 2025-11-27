@@ -58,6 +58,7 @@ import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.max
@@ -110,9 +111,11 @@ fun PlannerScreen(
     plannerVM.setUserId(userId)
     plannerVM.loadReports()
     val report = plannerVM.setReportToSetTheDateFor(reportId)
-    val date = report?.startTime?.toLocalDate() ?: LocalDate.now()
-    plannerVM.setSelectedDate(date)
-    plannerVM.setOriginalDate(date)
+    val date: LocalDateTime = report?.startTime ?: LocalDateTime.now()
+    plannerVM.setSelectedDate(date.toLocalDate())
+    plannerVM.setOriginalDate(date.toLocalDate())
+    plannerVM.setReportTime(date.toLocalTime())
+    plannerVM.setReportDuration(report?.duration ?: LocalTime.of(1, 0))
   }
 
   Scaffold(
@@ -179,7 +182,9 @@ fun PlannerScreen(
             SetReportDateBox(
                 modifier = Modifier.align(Alignment.BottomEnd),
                 report = uiState.reportToSetTheDateFor,
-                uiState.selectedDate,
+                selectedDate = uiState.selectedDate,
+                initialTime = uiState.setTime,
+                initialDuration = uiState.setDuration,
                 onSetReportDateClick = { plannerVM.editReportWithNewTime() },
                 onTimeSelected = plannerVM::setReportTime,
                 onDurationSelected = plannerVM::setReportDuration)
@@ -455,6 +460,8 @@ fun SetReportDateBox(
     modifier: Modifier = Modifier,
     report: Report?,
     selectedDate: LocalDate = LocalDate.now(),
+    initialTime: LocalTime,
+    initialDuration: LocalTime,
     onSetReportDateClick: () -> Unit = {},
     onTimeSelected: (LocalTime) -> Unit = {},
     onDurationSelected: (LocalTime) -> Unit = {}
@@ -479,9 +486,9 @@ fun SetReportDateBox(
               overflow = TextOverflow.Ellipsis)
           Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(text = "$date at ", style = MaterialTheme.typography.bodyLarge)
-            TimePickerBox(onTimeSelected = onTimeSelected)
+            TimePickerBox(initialTime = initialTime, onTimeSelected = onTimeSelected)
             Text("   Duration: ")
-            TimePickerBox(initialTime = LocalTime.of(1, 0), onTimeSelected = onDurationSelected)
+            TimePickerBox(initialTime = initialDuration, onTimeSelected = onDurationSelected)
             Spacer(Modifier.weight(2f))
             IconButton(
                 onClick = onSetReportDateClick,
