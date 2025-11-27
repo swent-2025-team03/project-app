@@ -24,6 +24,9 @@ class AlertViewModel(private val repository: AlertRepository = AlertRepositoryPr
   private val _uiState = MutableStateFlow(AlertViewUIState())
   val uiState: StateFlow<AlertViewUIState> = _uiState.asStateFlow()
 
+  private val _currentAlertIndex = MutableStateFlow(0)
+  val currentAlertIndex: StateFlow<Int> = _currentAlertIndex.asStateFlow()
+
   /** Loads an alert by its ID and updates the state. */
   fun loadAlert(alertId: String) {
     viewModelScope.launch {
@@ -31,6 +34,8 @@ class AlertViewModel(private val repository: AlertRepository = AlertRepositoryPr
         val fetchedAlert = repository.getAlertById(alertId)
         if (fetchedAlert != null) {
           _uiState.value = AlertViewUIState(alert = fetchedAlert)
+          val index = repository.getAlerts().indexOfFirst { it.id == alertId }
+          if (index != -1) _currentAlertIndex.value = index
         } else {
           Log.e("AlertViewModel", "Alert with ID $alertId not found.")
         }

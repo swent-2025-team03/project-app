@@ -19,10 +19,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.ui.navigation.NavigationActions
+import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags
 
 object AlertViewScreenTestTags {
-  const val SCREEN_CONTAINER = "AlertViewScreenContainer"
+  const val PREVIOUS_ALERT_ARROW = "previousAlertArrow"
+  const val NEXT_ALERT_ARROW = "nextAlertArrow"
+
+  fun containerTag(index: Int) = "SCREEN_CONTAINER_$index"
 }
 
 /** Screen to display a single alert in detail. */
@@ -50,18 +54,23 @@ fun AlertViewScreen(
                   overflow = TextOverflow.Ellipsis)
             },
             navigationIcon = {
-              IconButton(onClick = { navigationActions.goBack() }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-              }
+              IconButton(
+                  onClick = { navigationActions.goBack() },
+                  modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back")
+                  }
             })
       }) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+          val alertIndex by viewModel.currentAlertIndex.collectAsState()
           Column(
               modifier =
                   Modifier.verticalScroll(rememberScrollState())
                       .padding(16.dp)
                       .fillMaxSize()
-                      .testTag(AlertViewScreenTestTags.SCREEN_CONTAINER),
+                      .testTag(AlertViewScreenTestTags.containerTag(alertIndex)),
               verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 // --- Full title (only if too long) ---
                 val maxTitleChars = 30 // Number of characters that will fit in the topappbar
@@ -96,12 +105,14 @@ fun AlertViewScreen(
               verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
                     onClick = { viewModel.loadPreviousAlert(alert.id) },
-                    enabled = viewModel.hasPrevious(alert.id)) {
+                    enabled = viewModel.hasPrevious(alert.id),
+                    modifier = Modifier.testTag(AlertViewScreenTestTags.PREVIOUS_ALERT_ARROW)) {
                       Icon(Icons.Default.ChevronLeft, contentDescription = "Previous Alert")
                     }
                 IconButton(
                     onClick = { viewModel.loadNextAlert(alert.id) },
-                    enabled = viewModel.hasNext(alert.id)) {
+                    enabled = viewModel.hasNext(alert.id),
+                    modifier = Modifier.testTag(AlertViewScreenTestTags.NEXT_ALERT_ARROW)) {
                       Icon(Icons.Default.ChevronRight, contentDescription = "Next Alert")
                     }
               }
