@@ -29,6 +29,7 @@ import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
 
 object ReportViewScreenTestTags {
   const val STATUS_BADGE_BOX = "StatusBadgeBox"
@@ -155,7 +156,7 @@ fun ReportViewScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
               // --- Full title (only if too long) ---
-              val maxTitleChars = 23 // Number of characters that will fit in the topappbar
+              val maxTitleChars = maxTitleCharsForScreen()
               val showFullTitleInBody = report.title.length > maxTitleChars
               if (showFullTitleInBody) {
                 Text(

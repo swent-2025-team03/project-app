@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
 
 object AlertViewScreenTestTags {
   const val ALERT_FULL_TITLE = "alertFullTitle"
@@ -99,7 +100,7 @@ fun AlertViewScreen(
               verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
                 // --- Full title (only if too long) ---
-                val maxTitleChars = rememberMaxTitleChars()
+                val maxTitleChars = maxTitleCharsForScreen()
                 val showFullTitleInBody = alert.title.length > maxTitleChars
                 if (showFullTitleInBody) {
                   Text(
@@ -154,20 +155,6 @@ fun AlertViewScreen(
               }
         }
       }
-}
-
-@Composable
-private fun rememberMaxTitleChars(): Int {
-  val configuration = LocalConfiguration.current
-  val screenWidth = configuration.screenWidthDp.dp
-  val density = LocalDensity.current
-
-  val titleStyle = MaterialTheme.typography.titleLarge
-  // Approximation: average character width is about 60% of the font size
-  val approxCharWidthPx = with(density) { titleStyle.fontSize.toPx() * 0.6f }
-
-  val maxChars = with(density) { screenWidth.toPx() / approxCharWidthPx }
-  return maxChars.toInt()
 }
 
 /*
