@@ -21,6 +21,12 @@ import androidx.compose.ui.unit.dp
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 
+// -- imports for preview --
+/*
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
+*/
+
 object AlertViewScreenTestTags {
   const val ALERT_FULL_TITLE = "alertFullTitle"
   const val ALERT_DESCRIPTION = "alertDescription"
@@ -33,7 +39,16 @@ object AlertViewScreenTestTags {
   fun containerTag(index: Int) = "SCREEN_CONTAINER_$index"
 }
 
-/** Screen to display a single alert in detail. */
+/**
+ * Displays detailed information for a single alert.
+ *
+ * Loads the alert for the given [alertId], shows its main fields, and provides navigation to the
+ * previous/next alert. Also includes a placeholder button for future "View on Map" functionality.
+ *
+ * @param navigationActions Navigation handler for back navigation.
+ * @param viewModel ViewModel that provides alert data and navigation logic.
+ * @param alertId ID of the alert to load and display.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlertViewScreen(
@@ -131,3 +146,22 @@ fun AlertViewScreen(
         }
       }
 }
+/*
+@Preview(showBackground = true)
+@Composable
+fun AlertViewScreenPreview() {
+    val fakeRepo = com.android.agrihealth.testutil.FakeAlertRepository()
+    val viewModel = AlertViewModel(fakeRepo)
+
+    val navController = androidx.navigation.compose.rememberNavController()
+    LaunchedEffect(Unit) {
+        viewModel.loadAlert("1")
+    }
+
+    AlertViewScreen(
+        navigationActions = NavigationActions(navController),
+        viewModel = viewModel,
+        alertId = "1"
+    )
+}
+*/

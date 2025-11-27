@@ -109,7 +109,6 @@ class AlertViewModelTest {
   @Test
   fun nextPrevious_doNothing_atBoundaries() =
       runTest(dispatcher) {
-        // First alert
         val firstId = repository.allAlerts[0].id
         viewModel.loadAlert(firstId)
         advanceUntilIdle()
@@ -119,7 +118,6 @@ class AlertViewModelTest {
 
         assertEquals(firstId, viewModel.uiState.value.alert!!.id)
 
-        // Last alert
         val lastId = repository.allAlerts.last().id
         viewModel.loadAlert(lastId)
         advanceUntilIdle()

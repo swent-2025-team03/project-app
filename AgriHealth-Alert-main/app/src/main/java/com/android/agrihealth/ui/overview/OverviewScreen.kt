@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.overview
 
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -276,7 +275,6 @@ fun AlertItem(
       onClick = {
         if (isCentered) {
           onCenterClick()
-          Log.d("Overview", "Clicked on center!")
         } else {
           onNotCenterClick()
         }
