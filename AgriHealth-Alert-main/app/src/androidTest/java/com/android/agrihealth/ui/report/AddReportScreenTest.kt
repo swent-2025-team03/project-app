@@ -32,9 +32,9 @@ import org.junit.Test
 
 private val linkedOffices =
     mapOf(
-        "Best Office Ever!" to "Deleted Office",
-        "Meh Office" to "Deleted Office",
-        "Great Office" to "Deleted Office")
+        "Best Office Ever!" to "Deleted office",
+        "Meh Office" to "Deleted office",
+        "Great Office" to "Deleted office")
 
 private fun fakeFarmerViewModel(): UserViewModel =
     FakeUserViewModel(
