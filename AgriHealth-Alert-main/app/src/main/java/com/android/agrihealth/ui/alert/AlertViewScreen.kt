@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.ui.navigation.NavigationActions
+import com.android.agrihealth.ui.report.ReportViewScreenTestTags
 
 object AlertViewScreenTestTags {
     const val SCREEN_CONTAINER = "AlertViewScreenContainer"
@@ -62,6 +63,7 @@ fun AlertViewScreen(
                     .testTag(AlertViewScreenTestTags.SCREEN_CONTAINER),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // --- Alert details ---
                 Text(
                     text = "Description: ${alert.description}",
                     style = MaterialTheme.typography.bodyLarge
@@ -75,7 +77,15 @@ fun AlertViewScreen(
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
-
+            // --- View on Map Button ---
+            OutlinedButton(
+                modifier =
+                    Modifier.fillMaxWidth().testTag(ReportViewScreenTestTags.VIEW_ON_MAP),
+                onClick = { /*TODO: implement View on Map using polygon when available */ }
+            ) {
+                Text("View on Map")
+            }
+            // --- Navigation arrows (previous / next) ---
                 Row(
                     modifier = Modifier
                         .align(Alignment.Center)
