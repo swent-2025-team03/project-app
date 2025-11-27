@@ -76,7 +76,7 @@ class PlannerScreenTest : FirebaseEmulatorsTest() {
   ) {
     composeTestRule.setContent {
       PlannerScreen(
-          userId = PlannerTestReportsData.report1.vetId,
+          userId = PlannerTestReportsData.report1.officeId,
           reportId = reportId,
           goBack = goBack,
           tabClicked = tabClicked,
@@ -195,7 +195,7 @@ class PlannerScreenTest : FirebaseEmulatorsTest() {
     }
     Log.d(
         "PlannerTest",
-        "Reports added to repository ${reportRepository.getAllReports(report1.vetId)}")
+        "Reports added to repository ${reportRepository.getAllReports(report1.officeId)}")
 
     setPlannerScreen()
 
