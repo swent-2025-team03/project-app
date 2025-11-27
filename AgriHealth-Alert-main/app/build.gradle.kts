@@ -201,9 +201,6 @@ dependencies {
     // ------- Using Coil for image handling --------------
     implementation("io.coil-kt:coil-compose:2.4.0")
 
-    // For photo picking on storage / take photo with camera -----
-    implementation("io.github.ismoy:imagepickerkmp:1.0.26")
-
 }
 
 tasks.withType<Test> {

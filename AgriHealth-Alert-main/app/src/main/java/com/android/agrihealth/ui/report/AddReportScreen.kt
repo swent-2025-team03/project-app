@@ -1,6 +1,10 @@
 package com.android.agrihealth.ui.report
 
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -41,19 +45,8 @@ import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.user.UserViewModel
-import io.github.ismoy.imagepickerkmp.CameraPhotoHandler
-import io.github.ismoy.imagepickerkmp.GalleryPhotoHandler
-import io.github.ismoy.imagepickerkmp.GalleryPickerLauncher
-import io.github.ismoy.imagepickerkmp.ImagePickerConfig
-import io.github.ismoy.imagepickerkmp.ImagePickerLauncher
-import io.github.ismoy.imagepickerkmp.domain.config.ImagePickerConfig
-import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
-import io.github.ismoy.imagepickerkmp.domain.models.PhotoResult
-import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
-import io.github.ismoy.imagepickerkmp.presentation.ui.components.ImagePickerLauncher
 import java.io.File
 import kotlinx.coroutines.launch
-import androidx.core.net.toUri
 
 // -- imports for preview --
 /*
@@ -105,7 +98,7 @@ object AddReportDialogTexts {
 }
 
 /** This **MUST** be the same as in: AndroidManifest.xml --> <provider --> android:authorities */
-private const val FILE_PROVIDER = "fileprovider" // TODO: Maybe move this into its own object
+private const val FILE_PROVIDER = "com.android.agrihealth.fileprovider" // TODO: Maybe move this into its own object
 
 /**
  * Displays the report creation screen for farmers
@@ -370,35 +363,56 @@ fun UploadRemovePhotoButton(
   onImagePicked: (Uri?) -> Unit,
   onImageRemoved: () -> Unit
 ) {
-  var showCamera by remember { mutableStateOf(false) }
-  var showGallery by remember { mutableStateOf(false) }
+  val context = LocalContext.current
 
-  if (showCamera) {
-    ImagePickerLauncher(
-      config = ImagePickerConfig(
-        onPhotoCaptured = { result ->
-          onImagePicked(result.uri.toUri())
-          showCamera = false
-        },
-        onError = { showCamera = false },
-        onDismiss = { showCamera = false }
-      )
-    )
+  var showDialog by remember { mutableStateOf(false) }
+
+  // Opens the app's permissions so the user does not need to search for it
+  fun openAppPermissionsSettings(context: Context) {
+    val intent = Intent(
+      Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+      Uri.fromParts("package", context.packageName, null)
+    ).apply {
+      addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(intent)
   }
 
-  if (showGallery) {
-    GalleryPickerLauncher(
-      onPhotosSelected = { photos ->
-        onImagePicked(photos.firstOrNull().uri.toUri())
-        showGallery = false
-      },
-      onError = { showGallery = false },
-      onDismiss = { showGallery = false },
-      allowMultiple = true
-    )
-  }
+  var photoUri by remember { mutableStateOf<Uri?>(null) }
 
+  // For picking photo on the gallery
+  val galleryLauncher =
+    rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+      if (uri != null) {
+        onImagePicked(uri)
+      }
+    }
 
+  // For taking a photo with the camera
+  val cameraLauncher =
+    rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+      if (success && photoUri != null) {
+        onImagePicked(photoUri)
+      }
+    }
+
+  // Camera launcher which also asks for permissions
+  val cameraLauncherWithPermissionRequest =
+    rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+      if (granted) {
+        if (photoUri != null) {
+          cameraLauncher.launch(photoUri)
+        }
+      } else {
+        Toast.makeText(
+          context,
+          "Camera permission is required to take a photo",
+          Toast.LENGTH_LONG
+        ).show()
+        openAppPermissionsSettings(context)
+      }
+    }
+  
   Button(
       onClick = {
         if (photoAlreadyPicked) {
@@ -433,7 +447,7 @@ fun UploadRemovePhotoButton(
                 modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_GALLERY),
                 onClick = {
                   showDialog = false
-                  onImagePicked()
+                  galleryLauncher.launch("image/*")
                 },
                 colors =
                     ButtonDefaults.textButtonColors(
@@ -444,7 +458,18 @@ fun UploadRemovePhotoButton(
                 modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CAMERA),
                 onClick = {
                   showDialog = false
-                  onTakePhotoClick()
+                  // Create temporary file in cache
+                  val imageFile = File.createTempFile(
+                    "report_photo_",
+                    ".jpg",
+                    context.cacheDir
+                  )
+                  photoUri= FileProvider.getUriForFile(
+                    context,
+                    FILE_PROVIDER,
+                    imageFile
+                  )
+                  cameraLauncherWithPermissionRequest.launch(android.Manifest.permission.CAMERA)
                 },
                 colors =
                     ButtonDefaults.textButtonColors(
