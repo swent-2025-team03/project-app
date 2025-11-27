@@ -61,7 +61,7 @@ sealed class Screen(
   }
 
   data class ViewAlert(val alertId: String) :
-    Screen(route = "view_alert/${alertId}", name = "view_alert") {
+      Screen(route = "view_alert/${alertId}", name = "view_alert") {
     companion object {
       const val route = "view_alert/{alertId}"
     }

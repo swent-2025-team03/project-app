@@ -154,16 +154,15 @@ fun ReportViewScreen(
                     .testTag(ReportViewScreenTestTags.SCROLL_CONTAINER),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
-            // --- Full title (only if too long) ---
-            val maxTitleChars = 23 //Number of characters that will fit in the topappbar
-            val showFullTitleInBody = report.title.length > maxTitleChars
-            if (showFullTitleInBody) {
+              // --- Full title (only if too long) ---
+              val maxTitleChars = 23 // Number of characters that will fit in the topappbar
+              val showFullTitleInBody = report.title.length > maxTitleChars
+              if (showFullTitleInBody) {
                 Text(
                     text = "Title: ${report.title}",
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+                    fontWeight = FontWeight.Bold)
+              }
 
               // ---- Farmer or Vet info line ----
               Row(
@@ -196,10 +195,9 @@ fun ReportViewScreen(
               )*/
 
               // ---- Description ----
-            Text(
-                text = "Description: ${report.description}",
-                style = MaterialTheme.typography.bodyLarge
-            )
+              Text(
+                  text = "Description: ${report.description}",
+                  style = MaterialTheme.typography.bodyLarge)
 
               // ---- Questions (read-only) ----
               Text(

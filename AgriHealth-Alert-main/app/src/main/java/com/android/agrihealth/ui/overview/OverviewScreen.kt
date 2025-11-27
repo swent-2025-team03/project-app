@@ -276,7 +276,7 @@ fun AlertItem(
       onClick = {
         if (isCentered) {
           onCenterClick()
-            Log.d("Overview","Clicked on center!")
+          Log.d("Overview", "Clicked on center!")
         } else {
           onNotCenterClick()
         }

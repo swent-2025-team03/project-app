@@ -153,9 +153,7 @@ fun AgriHealthApp(
             onReportClick = { reportId ->
               navigationActions.navigateTo(Screen.ViewReport(reportId))
             },
-            onAlertClick = { alertId ->
-              navigationActions.navigateTo(Screen.ViewAlert(alertId))
-            },
+            onAlertClick = { alertId -> navigationActions.navigateTo(Screen.ViewAlert(alertId)) },
             navigationActions = navigationActions,
         )
       }
@@ -186,21 +184,18 @@ fun AgriHealthApp(
                 viewModel = viewModel,
                 reportId = reportId)
           }
-        composable(
-            route = Screen.ViewAlert.route,
-            arguments = listOf(navArgument("alertId") { type = NavType.StringType })
-        ) { backStackEntry ->
+      composable(
+          route = Screen.ViewAlert.route,
+          arguments = listOf(navArgument("alertId") { type = NavType.StringType })) { backStackEntry
+            ->
             val alertId = backStackEntry.arguments?.getString("alertId") ?: ""
 
             val viewModel: AlertViewModel = viewModel()
 
             AlertViewScreen(
-                navigationActions = navigationActions,
-                viewModel = viewModel,
-                alertId = alertId
-            )
-        }
-        composable(
+                navigationActions = navigationActions, viewModel = viewModel, alertId = alertId)
+          }
+      composable(
           route = Screen.ViewUser.route,
           arguments = listOf(navArgument("uid") { type = NavType.StringType })) { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("uid") ?: ""
