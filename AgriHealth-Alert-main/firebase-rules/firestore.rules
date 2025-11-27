@@ -5,7 +5,7 @@ service cloud.firestore {
     function isSignedIn() { return request.auth != null; }
 
     function hasRole(role) {
-      return request.auth != null
+      return isSignedIn()
           && exists(/databases/$(database)/documents/users/$(request.auth.uid))
           && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
     }
@@ -13,7 +13,7 @@ service cloud.firestore {
     // ---- Users ----
     match /users/{userID} {
       // Read own document OR another user's doc if they work in an office related to you in some capacity.
-      allow get: if (isSignedIn() && (userID == request.auth.uid || (
+      allow get: if  (userID == request.auth.uid || (
         (hasRole("Vet") && (
             (resource.data.role == "Vet" && resource.data.officeId ==
                 get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId)
@@ -23,7 +23,7 @@ service cloud.firestore {
                 in resource.data.linkedOffices)
         )) ||
             (hasRole("Farmer") && resource.data.role == "Vet" &&
-                resource.data.officeId in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.linkedOffices))));
+                resource.data.officeId in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.linkedOffices)));
 
       // Disallow listing to prevent user enumeration
       allow list: if false;
@@ -42,11 +42,11 @@ service cloud.firestore {
     match /farmerToOfficeConnectCodes/{code} {
         allow create: if hasRole("Vet");
         allow update: if hasRole("Farmer");
-        allow read: if request.auth != null;
+        allow read: if isSignedIn();
     }
 
     match /vetToOfficeConnectCodes/{code} {
-        allow create: if isSignedIn() && hasRole("Vet")
+        allow create: hasRole("Vet")
           && get(/databases/$(database)/documents/offices/$(request.resource.data.officeId)).data.ownerId
           == request.auth.uid;
         allow update: if hasRole("Vet");
@@ -56,17 +56,15 @@ service cloud.firestore {
     // ---- Reports ----
     match /reports/{reportID} {
       // Read and delete allowed only for the office or the farmer
-      allow read, delete: if isSignedIn() &&
-        ((hasRole("Vet") && resource.data.officeId ==
+      allow read, delete: if ((hasRole("Vet") && resource.data.officeId ==
            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId) ||
          (hasRole("Farmer") && request.auth.uid == resource.data.farmerId));
 
       // Updates allowed for both, but they cannot change officeId/farmerId
-      allow update: if isSignedIn() &&
-        ((hasRole("Vet") && resource.data.officeId ==
+      allow update: if (((hasRole("Vet") && resource.data.officeId ==
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId) ||
         (hasRole("Farmer") && request.auth.uid == resource.data.farmerId)) &&
-        !(request.resource.data.diff(resource.data).changedKeys().hasAny(['officeId','farmerId']));
+        !(request.resource.data.diff(resource.data).changedKeys().hasAny(['officeId','farmerId'])));
 
       // Only the farmer can create a new report
       allow create: if isSignedIn() &&

@@ -174,7 +174,7 @@ fun ReportViewScreen(
                     .testTag(ReportViewScreenTestTags.SCROLL_CONTAINER),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
-              // ---- Farmer or Vet info line ----
+              // ---- Farmer or Office info line ----
               Row(
                   verticalAlignment = Alignment.CenterVertically,
                   modifier = Modifier.testTag(ReportViewScreenTestTags.ROLE_INFO_LINE)) {
@@ -186,8 +186,8 @@ fun ReportViewScreen(
                             navigationActions.navigateTo(Screen.ViewUser(report.farmerId))
                           })
                     } else {
-                      // Farmer views vet
-                      OfficeName(uid = report.officeId, onClick = {})
+                      // Farmer views office
+                      OfficeName(uid = report.officeId, onClick = { TODO("add ViewOffice") })
                     }
                   }
 

@@ -14,16 +14,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class CodesViewModel(
-    private val userViewModel: UserViewModel,
+    private val userViewModel: UserViewModel = UserViewModel(),
     private val connectionRepository: ConnectionRepository,
     private val officeRepository: OfficeRepository = OfficeRepositoryProvider.get()
 ) : ViewModel() {
 
   private val _generatedCode = MutableStateFlow<String?>(null)
   private val _claimMessage = MutableStateFlow<String?>(null)
-  val claimMessage: StateFlow<String?> = _claimMessage
-
   val generatedCode: StateFlow<String?> = _generatedCode
+  val claimMessage: StateFlow<String?> = _claimMessage
 
   fun generateCode() {
     val currentUser = userViewModel.user.value
@@ -37,10 +36,7 @@ class CodesViewModel(
             val updatedVet = vet.copy(validCodes = vet.validCodes + code)
             userViewModel.updateUser(updatedVet)
           },
-          onFailure = { e ->
-            _generatedCode.value = "Error: ${e.message}"
-            e.printStackTrace()
-          })
+          onFailure = { e -> _generatedCode.value = "Error: ${e.message}" })
     }
   }
 
@@ -74,7 +70,8 @@ class CodesViewModel(
                   officeRepository.updateOffice(updatedOffice)
                   _claimMessage.value = "You successfully joined an office"
                 } catch (_: Exception) {
-                  "Something went wrong somehow :("
+                  if (_claimMessage.value == null)
+                      _claimMessage.value = "Something went wrong somehow :("
                 }
               }
             }

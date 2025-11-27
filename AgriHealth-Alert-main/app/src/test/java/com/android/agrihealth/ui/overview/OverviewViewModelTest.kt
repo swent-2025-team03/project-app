@@ -24,8 +24,7 @@ class OverviewViewModelTest {
 
   private val farmer001 =
       Farmer("FARMER_001", "john", "john", "john@john.john", null, defaultOffice = null)
-  private val vet001 =
-      Vet("VET_001", "john", "john", "john@john.john", null, officeId = "OFFICE_001")
+  private val vet001 = Vet("VET_001", "john", "john", "john@john.john", null, officeId = "OFF_001")
 
   @Before
   fun setup() {

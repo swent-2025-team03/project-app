@@ -195,7 +195,7 @@ fun ProfileScreen(
                 LaunchedEffect(user) {
                   officeNameVm.loadOffice(
                       uid = (user as Farmer).defaultOffice,
-                      deletedOffice = "Deleted vet",
+                      deletedOffice = "Deleted office",
                       noneOffice = "Unassigned")
                 }
 

@@ -45,7 +45,7 @@ fun ClaimCodeScreen(
   Scaffold(
       topBar = {
         TopAppBar(
-            title = { Text("Claim a code", style = MaterialTheme.typography.titleMedium) },
+            title = { Text("Claim a code", style = MaterialTheme.typography.titleLarge) },
             navigationIcon = {
               IconButton(onClick = onGoBack, modifier = Modifier.testTag(GO_BACK_BUTTON)) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Go back")
@@ -86,7 +86,7 @@ fun ClaimCodeScreen(
                   modifier =
                       Modifier.align(Alignment.CenterHorizontally)
                           .testTag(CodeComposableComponentsTestTags.ADD_CODE_BUTTON)) {
-                    Text("claim Code")
+                    Text("Claim code")
                   }
               Spacer(modifier = Modifier.weight(1f))
               Button(
