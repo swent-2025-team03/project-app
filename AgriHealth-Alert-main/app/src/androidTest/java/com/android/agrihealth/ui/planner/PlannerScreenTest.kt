@@ -12,10 +12,10 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.repository.ReportRepositoryLocal
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -36,6 +36,17 @@ import org.junit.Rule
 import org.junit.Test
 
 object PlannerTestReportsData {
+  val user =
+      Farmer(
+          uid = "user",
+          firstname = "john",
+          lastname = "Testing",
+          email = "email",
+          address = null,
+          linkedOffices = emptyList(),
+          defaultOffice = null,
+          isGoogleAccount = false,
+          description = "description")
   val report1 =
       Report(
           "rep_id1",
@@ -43,7 +54,7 @@ object PlannerTestReportsData {
           "Description 1",
           emptyList(),
           null,
-          "farmerId1",
+          user.uid,
           "vetId1",
           ReportStatus.PENDING,
           null,
@@ -56,7 +67,7 @@ object PlannerTestReportsData {
           id = "rep_id3", status = ReportStatus.IN_PROGRESS, duration = LocalTime.of(3, 10))
 }
 
-class PlannerScreenTest : FirebaseEmulatorsTest() {
+class PlannerScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -76,7 +87,7 @@ class PlannerScreenTest : FirebaseEmulatorsTest() {
   ) {
     composeTestRule.setContent {
       PlannerScreen(
-          userId = PlannerTestReportsData.report1.officeId,
+          user = PlannerTestReportsData.user,
           reportId = reportId,
           goBack = goBack,
           tabClicked = tabClicked,

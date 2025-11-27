@@ -55,10 +55,12 @@ import com.android.agrihealth.core.design.theme.onStatusColor
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
+import java.lang.IllegalArgumentException
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -93,7 +95,7 @@ object PlannerScreenTestTags {
 /**
  * Planner Screen lets the user see their Reports ordered by dates.
  *
- * @param userId the id of the user currently using the app, used to fetch the reports
+ * @param user the user currently using the app, used to fetch the reports
  * @param reportId the id of the report that the user is currently setting a date for
  * @param goBack function called when top left back arrow is clicked
  * @param tabClicked called with tab.destination when a tab of the bottom bar is clicked
@@ -103,7 +105,7 @@ object PlannerScreenTestTags {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlannerScreen(
-    userId: String = "",
+    user: User? = null,
     reportId: String? = null,
     goBack: () -> Unit = {},
     tabClicked: (Screen) -> Unit = {},
@@ -112,9 +114,10 @@ fun PlannerScreen(
 ) {
 
   val uiState by plannerVM.uiState.collectAsState()
+  val user = user ?: throw IllegalArgumentException("User cannot be null for PlannerScreen")
 
-  LaunchedEffect(userId, reportId) {
-    plannerVM.setUserId(userId)
+  LaunchedEffect(user, reportId) {
+    plannerVM.setUser(user)
     plannerVM.loadReports()
     val report = plannerVM.setReportToSetTheDateFor(reportId)
     val date: LocalDateTime = report?.startTime ?: LocalDateTime.now()

@@ -3,6 +3,9 @@ package com.android.agrihealth.ui.planner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import java.time.DayOfWeek
@@ -16,7 +19,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class PlannerUIState(
-    val userId: String = "VET_456",
+    val user: User =
+        Farmer(
+            uid = "",
+            firstname = "",
+            lastname = "",
+            email = "",
+            address = null,
+            linkedOffices = emptyList(),
+            defaultOffice = "",
+            isGoogleAccount = false,
+            description = ""),
     val reports: Map<LocalDate?, List<Report>> = emptyMap(),
     val selectedDateReports: List<Report> = emptyList(),
     val originalDate: LocalDate = LocalDate.now(),
@@ -44,8 +57,12 @@ class PlannerViewModel(
   val uiState: StateFlow<PlannerUIState> = _uiState.asStateFlow()
 
   suspend fun loadReports() {
-    val userId = _uiState.value.userId
-    val reports = reportRepository.getAllReports(userId).groupBy { it.startTime?.toLocalDate() }
+    val user = _uiState.value.user
+    val reports =
+        when (user) {
+          is Farmer -> reportRepository.getReportsByFarmer(user.uid)
+          is Vet -> reportRepository.getReportsByOffice(user.officeId ?: "")
+        }.groupBy { it.startTime?.toLocalDate() }
     _uiState.value =
         _uiState.value.copy(
             reports = reports,
@@ -98,8 +115,8 @@ class PlannerViewModel(
     _uiState.value = _uiState.value.copy(setDuration = time)
   }
 
-  fun setUserId(userId: String) {
-    _uiState.value = _uiState.value.copy(userId = userId)
+  fun setUser(user: User) {
+    _uiState.value = _uiState.value.copy(user = user)
   }
 
   fun setReportToSetTheDateFor(reportId: String?): Report? {
