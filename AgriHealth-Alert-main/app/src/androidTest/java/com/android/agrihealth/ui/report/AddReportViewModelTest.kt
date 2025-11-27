@@ -3,10 +3,9 @@ package com.android.agrihealth.ui.report
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
-import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
-import com.android.agrihealth.data.repository.ReportRepository
+import com.android.agrihealth.testutil.FakeReportRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -21,28 +20,6 @@ import org.junit.Before
 import org.junit.Test
 
 /** Tests created with generative AI */
-class FakeReportRepository : ReportRepository {
-  var storedReport: Report? = null
-
-  override fun getNewReportId(): String = "fake-id"
-
-  override suspend fun getAllReports(userId: String): List<Report> = emptyList()
-
-  override suspend fun getReportsByFarmer(farmerId: String): List<Report> = emptyList()
-
-  override suspend fun getReportsByVet(vetId: String): List<Report> = emptyList()
-
-  override suspend fun getReportById(reportId: String): Report? = null
-
-  override suspend fun addReport(report: Report) {
-    storedReport = report
-  }
-
-  override suspend fun editReport(reportId: String, newReport: Report) {}
-
-  override suspend fun deleteReport(reportId: String) {}
-}
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddReportViewModelTest {
 
@@ -130,8 +107,8 @@ class AddReportViewModelTest {
         assertEquals("", state.description)
         assertEquals("", state.chosenVet)
         // Report is saved
-        assertNotNull(repository.storedReport)
-        val addedReport = repository.storedReport!!
+        assertNotNull(repository.lastAddedReport)
+        val addedReport = repository.lastAddedReport!!
         assertEquals("Report", addedReport.title)
         assertEquals("A description", addedReport.description)
         addedReport.questionForms.forEachIndexed { index, question ->

@@ -50,8 +50,8 @@ import com.android.agrihealth.ui.profile.EditProfileScreen
 import com.android.agrihealth.ui.profile.ProfileScreen
 import com.android.agrihealth.ui.report.AddReportScreen
 import com.android.agrihealth.ui.report.AddReportViewModel
-import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
+import com.android.agrihealth.ui.report.ReportViewViewModel
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.ViewUserScreen
 import com.android.agrihealth.ui.user.ViewUserViewModel
@@ -173,7 +173,7 @@ fun AgriHealthApp(
             val reportId = backStackEntry.arguments?.getString("reportId") ?: ""
 
             // You might fetch the report by ID here
-            val viewModel: ReportViewModel = viewModel()
+            val viewModel: ReportViewViewModel = viewModel()
 
             ReportViewScreen(
                 navigationActions = navigationActions,
@@ -289,12 +289,15 @@ fun AgriHealthApp(
 
           val location = if (lat != null && lng != null) Location(lat, lng) else null
           val mapViewModel =
-              MapViewModel(locationViewModel = locationViewModel, selectedReportId = sourceReport)
+              MapViewModel(
+                  locationViewModel = locationViewModel,
+                  selectedReportId = sourceReport,
+                  startingPosition = location)
           MapScreen(
               mapViewModel = mapViewModel,
               navigationActions = navigationActions,
               isViewedFromOverview = (sourceReport == null),
-              startingPosition = location)
+              forceStartingPosition = (location != null))
         }
 
     composable(
