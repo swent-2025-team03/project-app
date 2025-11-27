@@ -5,7 +5,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Preview
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.DropdownMenuItem
@@ -34,7 +32,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -49,7 +46,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
@@ -59,12 +55,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.R
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.device.location.locationPermissionsRequester
-import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
@@ -79,10 +72,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
@@ -115,7 +105,7 @@ fun MapScreen(
     locationViewModel: LocationViewModel = viewModel(),
     navigationActions: NavigationActions? = null,
     isViewedFromOverview: Boolean = true,
-    startingPosition: Location? = null
+    forceStartingPosition: Boolean = false
 ) {
   val uiState by mapViewModel.uiState.collectAsState()
   val user by userViewModel.user.collectAsState()
@@ -125,7 +115,7 @@ fun MapScreen(
   val mapInitialZoom by mapViewModel.zoom.collectAsState()
   val cameraPositionState = rememberCameraPositionState {}
 
-  LaunchedEffect(startingPosition) { mapViewModel.setStartingLocation(startingPosition) }
+  if (forceStartingPosition) mapViewModel.setStartingLocation(mapInitialLocation)
 
   LaunchedEffect(mapInitialLocation) {
     cameraPositionState.position =
@@ -137,17 +127,7 @@ fun MapScreen(
 
   val selectedReport = mapViewModel.selectedReport.collectAsState()
 
-  val googleMapUiSettings = remember {
-    MapUiSettings(
-        zoomControlsEnabled = false,
-    )
-  }
-  val context = LocalContext.current
-  val darkTheme = isSystemInDarkTheme()
-  val styleRes = if (darkTheme) R.raw.map_style_dark else R.raw.map_style_light
-  val style = MapStyleOptions.loadRawResourceStyle(context, styleRes)
-
-  val googleMapMapProperties = remember(style) { MapProperties(mapStyleOptions = style) }
+  val (googleMapUiSettings, googleMapMapProperties) = getUISettingsAndTheme()
 
   // Floating button Position
   var reportBoxHeightPx by remember { mutableIntStateOf(0) }
@@ -263,29 +243,6 @@ fun MapScreen(
               report = selectedReport.value,
               onReportClick = { navigationActions?.navigateTo(Screen.ViewReport(it)) })
         }
-      })
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MapTopBar(onBack: () -> Unit) {
-  TopAppBar(
-      title = {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically) {
-              Text(
-                  text = "Map",
-                  style = MaterialTheme.typography.titleLarge,
-                  modifier = Modifier.weight(1f).testTag(MapScreenTestTags.TOP_BAR_MAP_TITLE))
-            }
-      },
-      navigationIcon = {
-        IconButton(
-            onClick = onBack, modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
-              Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-            }
       })
 }
 
@@ -435,10 +392,14 @@ fun createCircleMarker(color: Int, radius: Float = 40f, strokeWidth: Float = 8f)
   return BitmapDescriptorFactory.fromBitmap(bitmap)
 }
 
+// Preview composable functions
+/*
 // @Preview
 @Composable
 fun PreviewMapScreen() {
-  AgriHealthAppTheme { MapScreen(startingPosition = Location(46.7990813, 6.6264253)) }
+  LocationRepositoryProvider.repository = LocationRepository(LocalContext.current)
+  val mapViewModel = MapViewModel(startingPosition = Location(46.7990813, 6.6264253), locationViewModel = LocationViewModel())
+  AgriHealthAppTheme { MapScreen(mapViewModel) }
 }
 
 // @Preview
@@ -472,3 +433,4 @@ fun PreviewReportInfo() {
     )
   }
 }
+*/

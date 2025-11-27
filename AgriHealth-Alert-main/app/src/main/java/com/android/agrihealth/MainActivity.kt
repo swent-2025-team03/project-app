@@ -289,12 +289,15 @@ fun AgriHealthApp(
 
           val location = if (lat != null && lng != null) Location(lat, lng) else null
           val mapViewModel =
-              MapViewModel(locationViewModel = locationViewModel, selectedReportId = sourceReport)
+              MapViewModel(
+                  locationViewModel = locationViewModel,
+                  selectedReportId = sourceReport,
+                  startingPosition = location)
           MapScreen(
               mapViewModel = mapViewModel,
               navigationActions = navigationActions,
               isViewedFromOverview = (sourceReport == null),
-              startingPosition = location)
+              forceStartingPosition = (location != null))
         }
 
     composable(
