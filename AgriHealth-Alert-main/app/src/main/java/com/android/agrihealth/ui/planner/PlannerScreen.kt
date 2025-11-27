@@ -188,6 +188,12 @@ fun PlannerScreen(
       })
 }
 
+/**
+ * Text showing "24 - 30 Nov" or "29 Nov - 4 Dec" shows both month only if they are different
+ *
+ * @param start the date of the first part of the Text before " - "
+ * @param end the date of the second part of the Text after " - "
+ */
 @Composable
 fun WeekHeader(start: LocalDate, end: LocalDate) {
   val dayFormatter = remember { DateTimeFormatter.ofPattern("d") }
@@ -206,6 +212,14 @@ fun WeekHeader(start: LocalDate, end: LocalDate) {
   Text(text, modifier = Modifier.testTag(PlannerScreenTestTags.WEEK_HEADER))
 }
 
+/**
+ * Scrollable Pager showing the days of one week, scroll right for next week, left for past week.
+ * Can be clicked to select a different week day.
+ *
+ * @param onDateSelected called when a DayCard is clicked with LocalDate the date of the DayCard
+ * @param startingDate the date in the middle of the Pager shown first.
+ * @param dayReportMap used to show DotGrid on the DayCards
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WeeklyPager(

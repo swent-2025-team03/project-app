@@ -16,6 +16,7 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepositoryLocal
+import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import java.time.DayOfWeek
@@ -26,6 +27,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -81,6 +83,7 @@ class PlannerScreenTest : FirebaseEmulatorsTest() {
           plannerVM = PlannerViewModel(reportRepository),
       )
     }
+    composeTestRule.waitForIdle()
   }
 
   @Test
@@ -97,7 +100,6 @@ class PlannerScreenTest : FirebaseEmulatorsTest() {
         goBack = { goBackCalled = true },
         tabClicked = { screen -> tabClickedCalledWith = screen },
         reportClicked = { reportId -> reportClickedCalledWith = reportId })
-    composeTestRule.waitForIdle()
 
     assertFalse(goBackCalled)
     composeTestRule
@@ -105,14 +107,14 @@ class PlannerScreenTest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
     assertTrue(goBackCalled)
-    assertEquals(null, tabClickedCalledWith)
+    assertNull(tabClickedCalledWith)
     composeTestRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
     composeTestRule
         .onNodeWithTag(NavigationTestTags.OVERVIEW_TAB)
         .assertIsDisplayed()
         .performClick()
     assertEquals(Screen.Overview, tabClickedCalledWith)
-    assertEquals(null, reportClickedCalledWith)
+    assertNull(reportClickedCalledWith)
     composeTestRule
         .onNodeWithTag(PlannerScreenTestTags.reportCardTag(report1.id))
         .assertIsDisplayed()
@@ -123,7 +125,6 @@ class PlannerScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun displayedDatesAreCorrect() {
     setPlannerScreen()
-    composeTestRule.waitForIdle()
 
     checkDisplayedDateInfoIsCorrect(today)
 
@@ -152,22 +153,18 @@ class PlannerScreenTest : FirebaseEmulatorsTest() {
         "Reports added to repository ${reportRepository.getAllReports(report1.vetId)}")
 
     setPlannerScreen()
-    composeTestRule.waitForIdle()
 
-    composeTestRule.waitUntil(50000) {
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+      scrollDailySchedulerToReportCardWithId(report2.id)
       composeTestRule.onNodeWithTag(PlannerScreenTestTags.reportCardTag(report2.id)).isDisplayed()
     }
 
     // Check reports for today
-    composeTestRule
-        .onNodeWithTag(PlannerScreenTestTags.DAILY_SCHEDULER)
-        .performScrollToNode(hasTestTag(PlannerScreenTestTags.reportCardTag(report1.id)))
+    scrollDailySchedulerToReportCardWithId(report1.id)
     composeTestRule
         .onNodeWithTag(PlannerScreenTestTags.reportCardTag(report1.id))
         .assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(PlannerScreenTestTags.DAILY_SCHEDULER)
-        .performScrollToNode(hasTestTag(PlannerScreenTestTags.reportCardTag(report2.id)))
+    scrollDailySchedulerToReportCardWithId(report2.id)
     composeTestRule
         .onNodeWithTag(PlannerScreenTestTags.reportCardTag(report2.id))
         .assertIsDisplayed()
@@ -183,9 +180,7 @@ class PlannerScreenTest : FirebaseEmulatorsTest() {
 
     assertReportNotInDailyScheduler(report2.id)
 
-    composeTestRule
-        .onNodeWithTag(PlannerScreenTestTags.DAILY_SCHEDULER)
-        .performScrollToNode(hasTestTag(PlannerScreenTestTags.reportCardTag(report3.id)))
+    scrollDailySchedulerToReportCardWithId(report3.id)
     composeTestRule
         .onNodeWithTag(PlannerScreenTestTags.reportCardTag(report3.id))
         .assertIsDisplayed()
@@ -206,20 +201,20 @@ class PlannerScreenTest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
     composeTestRule.waitForIdle()
-    composeTestRule
-        .onNodeWithTag(PlannerScreenTestTags.DAILY_SCHEDULER)
-        .performScrollToNode(hasTestTag(PlannerScreenTestTags.reportCardTag(report1.id)))
+    scrollDailySchedulerToReportCardWithId(report1.id)
     composeTestRule
         .onNodeWithTag(PlannerScreenTestTags.reportCardTag(report1.id))
         .assertIsDisplayed()
   }
 
   fun assertReportNotInDailyScheduler(reportId: String) {
-    assertThrows(AssertionError::class.java) {
-      composeTestRule
-          .onNodeWithTag(PlannerScreenTestTags.DAILY_SCHEDULER)
-          .performScrollToNode(hasTestTag(PlannerScreenTestTags.reportCardTag(reportId)))
-    }
+    assertThrows(AssertionError::class.java) { scrollDailySchedulerToReportCardWithId(reportId) }
+  }
+
+  fun scrollDailySchedulerToReportCardWithId(reportId: String) {
+    composeTestRule
+        .onNodeWithTag(PlannerScreenTestTags.DAILY_SCHEDULER)
+        .performScrollToNode(hasTestTag(PlannerScreenTestTags.reportCardTag(reportId)))
   }
 
   fun checkDisplayedDateInfoIsCorrect(today: LocalDate) {

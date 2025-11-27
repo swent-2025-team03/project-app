@@ -25,7 +25,7 @@ data class PlannerUIState(
     val selectedDate: LocalDate = LocalDate.now(),
     val selectedWeek: List<LocalDate> =
         (0..6).map { selectedDate.with(DayOfWeek.MONDAY).plusDays(it.toLong()) },
-    val selectedWeekNumber: Int = selectedDate.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR),
+    val selectedWeekNumber: Int = selectedDate[IsoFields.WEEK_OF_WEEK_BASED_YEAR],
 
     // Report for which we are setting the date
     val setTime: LocalTime = LocalTime.now(),
@@ -49,9 +49,21 @@ class PlannerViewModel(
             selectedDateReports = reports[_uiState.value.selectedDate] ?: emptyList())
   }
 
+  fun editReportWithNewTime() {
+    val selectedDate = _uiState.value.selectedDate
+    val newDateTime = LocalDateTime.of(selectedDate, _uiState.value.setTime)
+    viewModelScope.launch {
+      reportRepository.editReport(
+          _uiState.value.reportToSetTheDateFor!!.id,
+          _uiState.value.reportToSetTheDateFor!!.copy(
+              startTime = newDateTime, duration = _uiState.value.setDuration))
+      loadReports()
+    }
+  }
+
   fun setSelectedDate(date: LocalDate) {
     val week: List<LocalDate> = (0..6).map { date.with(DayOfWeek.MONDAY).plusDays(it.toLong()) }
-    val weekNumber = date.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)
+    val weekNumber = date[IsoFields.WEEK_OF_WEEK_BASED_YEAR]
 
     _uiState.value =
         _uiState.value.copy(
@@ -75,18 +87,6 @@ class PlannerViewModel(
 
   fun setUserId(userId: String) {
     _uiState.value = _uiState.value.copy(userId = userId)
-  }
-
-  fun editReportWithNewTime() {
-    val selectedDate = _uiState.value.selectedDate
-    val newDateTime = LocalDateTime.of(selectedDate, _uiState.value.setTime)
-    viewModelScope.launch {
-      reportRepository.editReport(
-          _uiState.value.reportToSetTheDateFor!!.id,
-          _uiState.value.reportToSetTheDateFor!!.copy(
-              startTime = newDateTime, duration = _uiState.value.setDuration))
-      loadReports()
-    }
   }
 
   fun setReportToSetTheDateFor(reportId: String?): Report? {
