@@ -50,9 +50,11 @@ import com.android.agrihealth.ui.profile.EditProfileScreen
 import com.android.agrihealth.ui.profile.ProfileScreen
 import com.android.agrihealth.ui.report.AddReportScreen
 import com.android.agrihealth.ui.report.AddReportViewModel
-import com.android.agrihealth.ui.report.ReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
+import com.android.agrihealth.ui.report.ReportViewViewModel
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.ViewUserScreen
+import com.android.agrihealth.ui.user.ViewUserViewModel
 import com.android.agrihealth.ui.user.defaultUser
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -171,13 +173,22 @@ fun AgriHealthApp(
             val reportId = backStackEntry.arguments?.getString("reportId") ?: ""
 
             // You might fetch the report by ID here
-            val viewModel: ReportViewModel = viewModel()
+            val viewModel: ReportViewViewModel = viewModel()
 
             ReportViewScreen(
                 navigationActions = navigationActions,
                 userRole = currentUserRole,
                 viewModel = viewModel,
                 reportId = reportId)
+          }
+      composable(
+          route = Screen.ViewUser.route,
+          arguments = listOf(navArgument("uid") { type = NavType.StringType })) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("uid") ?: ""
+            val viewModel: ViewUserViewModel =
+                viewModel(factory = ViewUserViewModel.provideFactory(targetUserId = userId))
+
+            ViewUserScreen(viewModel = viewModel, onBack = { navigationActions.goBack() })
           }
     }
 
@@ -203,6 +214,7 @@ fun AgriHealthApp(
       }
       composable(Screen.ManageOffice.route) {
         ManageOfficeScreen(
+            navigationActions = navigationActions,
             userViewModel = userViewModel,
             onGoBack = { navigationActions.goBack() },
             onCreateOffice = { navigationActions.navigateTo(Screen.CreateOffice) },

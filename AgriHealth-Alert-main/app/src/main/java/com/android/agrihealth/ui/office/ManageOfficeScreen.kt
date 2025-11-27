@@ -20,7 +20,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.ui.common.AuthorName
+import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.CONFIRM_LEAVE
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.JOIN_OFFICE_BUTTON
@@ -49,6 +51,7 @@ object ManageOfficeScreenTestTags {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManageOfficeScreen(
+    navigationActions: NavigationActions,
     userViewModel: UserViewModel = viewModel(),
     onGoBack: () -> Unit = {},
     onCreateOffice: () -> Unit = {},
@@ -129,7 +132,11 @@ fun ManageOfficeScreen(
                 LazyColumn(
                     modifier =
                         Modifier.fillMaxWidth().heightIn(max = 300.dp).testTag(OFFICE_VET_LIST)) {
-                      items(uiState.office!!.vets) { vetId -> AuthorName(vetId) }
+                      items(uiState.office!!.vets) { vetId ->
+                        AuthorName(
+                            vetId,
+                            onClick = { navigationActions.navigateTo(Screen.ViewUser(vetId)) })
+                      }
                     }
 
                 if (isOwner) {

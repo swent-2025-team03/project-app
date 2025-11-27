@@ -20,34 +20,26 @@ import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
+import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.user.UserViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 
-private fun fakeFarmerViewModel(): UserViewModel {
-  return object : UserViewModel() {
-    private val fakeUserFlow =
-        MutableStateFlow(
-            Farmer(
-                uid = "test_user",
-                firstname = "Farmer",
-                lastname = "Joe",
-                email = "email@email.com",
-                address = Location(0.0, 0.0, "123 Farm Lane"),
-                linkedVets = listOf("Best Vet Ever!", "Meh Vet", "Great Vet"),
-                defaultVet = null))
-
-    override var user: StateFlow<User> = fakeUserFlow.asStateFlow()
-  }
-}
+private fun fakeFarmerViewModel(): UserViewModel =
+    FakeUserViewModel(
+        Farmer(
+            uid = "test_user",
+            firstname = "Farmer",
+            lastname = "Joe",
+            email = "email@email.com",
+            address = Location(0.0, 0.0, "123 Farm Lane"),
+            linkedVets = listOf("Best Vet Ever!", "Meh Vet", "Great Vet"),
+            defaultVet = null,
+        ))
 
 class AddReportScreenTest {
 
