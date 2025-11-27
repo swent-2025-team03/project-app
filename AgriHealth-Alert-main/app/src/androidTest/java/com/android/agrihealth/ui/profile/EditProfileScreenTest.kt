@@ -4,10 +4,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.*
-import com.android.agrihealth.ui.user.UserViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.android.agrihealth.testutil.FakeUserViewModel
 import org.junit.Rule
 import org.junit.Test
 
@@ -19,40 +16,28 @@ class EditProfileScreenTest {
   val officeCodes = listOf("112233", "445566")
   val linkedOffices = listOf("off123", "off456")
 
-  private fun fakeFarmerViewModel(): UserViewModel {
-    return object : UserViewModel() {
-      private val fakeUserFlow =
-          MutableStateFlow(
-              Farmer(
-                  uid = "farmer_1",
-                  firstname = "Alice",
-                  lastname = "Johnson",
-                  email = "alice@farmmail.com",
-                  address = Location(0.0, 0.0, "Farm Address"),
-                  linkedOffices = linkedOffices,
-                  defaultOffice = linkedOffices.first()))
-
-      override var user: StateFlow<User> = fakeUserFlow.asStateFlow()
-    }
+  private fun fakeFarmerViewModel(): FakeUserViewModel {
+    return FakeUserViewModel(
+        Farmer(
+            uid = "farmer_1",
+            firstname = "Alice",
+            lastname = "Johnson",
+            email = "alice@farmmail.com",
+            address = Location(0.0, 0.0, "Farm Address"),
+            linkedOffices = linkedOffices,
+            defaultOffice = linkedOffices.first()))
   }
 
-  private fun fakeVetViewModel(vetCodes: List<String> = listOf()): UserViewModel {
-    return object : UserViewModel() {
-      private val fakeUserFlow =
-          MutableStateFlow(
-              Vet(
-                  uid = "vet_1",
-                  firstname = "Bob",
-                  lastname = "Smith",
-                  email = "bob@vetcare.com",
-                  address = Location(0.0, 0.0, "Clinic Address"),
-                  validCodes = vetCodes))
-
-      override var user: StateFlow<User> = fakeUserFlow.asStateFlow()
-    }
+  private fun fakeVetViewModel(vetCodes: List<String> = listOf()): FakeUserViewModel {
+    return FakeUserViewModel(
+        Vet(
+            uid = "vet_1",
+            firstname = "Bob",
+            lastname = "Smith",
+            email = "bob@vetcare.com",
+            address = Location(0.0, 0.0, "Clinic Address"),
+            validCodes = vetCodes))
   }
-
-  // Test suite
 
   @Test
   fun editProfileScreen_displaysBasicFields() {
