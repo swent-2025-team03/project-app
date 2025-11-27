@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.alert
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.alert.Alert
@@ -16,7 +15,7 @@ import kotlinx.coroutines.launch
  *
  * @property alert The currently loaded `Alert`. Null if not loaded yet.
  */
-data class AlertViewUIState(val alert: Alert? = null)
+data class AlertViewUIState(val alert: Alert? = null, val errorMessage: String? = null)
 
 class AlertViewModel(private val repository: AlertRepository = AlertRepositoryProvider.repository) :
     ViewModel() {
@@ -37,22 +36,26 @@ class AlertViewModel(private val repository: AlertRepository = AlertRepositoryPr
           val index = repository.getAlerts().indexOfFirst { it.id == alertId }
           if (index != -1) _currentAlertIndex.value = index
         } else {
-          Log.e("AlertViewModel", "Alert with ID $alertId not found.")
+          _uiState.value = _uiState.value.copy(errorMessage = "Alert with ID $alertId not found.")
         }
       } catch (e: Exception) {
-        Log.e("AlertViewModel", "Error loading Alert by ID: $alertId", e)
+        _uiState.value = _uiState.value.copy(errorMessage = "Error loading Alert: ${e.message}")
       }
     }
   }
 
   fun loadPreviousAlert(currentId: String) {
-    val previous = repository.getPreviousAlert(currentId)
-    previous?.let { loadAlert(it.id) }
+    viewModelScope.launch {
+      val previous = repository.getPreviousAlert(currentId)
+      previous?.let { loadAlert(it.id) }
+    }
   }
 
   fun loadNextAlert(currentId: String) {
-    val next = repository.getNextAlert(currentId)
-    next?.let { loadAlert(it.id) }
+    viewModelScope.launch {
+      val next = repository.getNextAlert(currentId)
+      next?.let { loadAlert(it.id) }
+    }
   }
 
   fun hasPrevious(currentId: String) = repository.getPreviousAlert(currentId) != null

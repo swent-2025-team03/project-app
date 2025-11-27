@@ -1,5 +1,7 @@
 package com.android.agrihealth.ui.alert
 
+// -- imports for preview --
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -12,20 +14,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
-
-// -- imports for preview --
-/*
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.compose.rememberNavController
-*/
 
 object AlertViewScreenTestTags {
   const val ALERT_FULL_TITLE = "alertFullTitle"
@@ -56,12 +55,18 @@ fun AlertViewScreen(
     viewModel: AlertViewModel,
     alertId: String = ""
 ) {
+  val snackbarHostState = remember { SnackbarHostState() }
   LaunchedEffect(alertId) { viewModel.loadAlert(alertId) }
 
   val uiState by viewModel.uiState.collectAsState()
   val alert = uiState.alert ?: return
 
+  LaunchedEffect(uiState.errorMessage) {
+    uiState.errorMessage?.let { message -> snackbarHostState.showSnackbar(message) }
+  }
+
   Scaffold(
+      snackbarHost = { SnackbarHost(snackbarHostState) },
       topBar = {
         TopAppBar(
             title = {
@@ -89,11 +94,12 @@ fun AlertViewScreen(
                   Modifier.verticalScroll(rememberScrollState())
                       .padding(16.dp)
                       .fillMaxSize()
-                      .testTag(AlertViewScreenTestTags.containerTag(alertIndex)),
+                      .testTag(AlertViewScreenTestTags.containerTag(alertIndex))
+                      .padding(bottom = 64.dp),
               verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
                 // --- Full title (only if too long) ---
-                val maxTitleChars = 30 // Number of characters that will fit in the topappbar
+                val maxTitleChars = rememberMaxTitleChars()
                 val showFullTitleInBody = alert.title.length > maxTitleChars
                 if (showFullTitleInBody) {
                   Text(
@@ -116,13 +122,16 @@ fun AlertViewScreen(
                     modifier = Modifier.testTag(AlertViewScreenTestTags.ALERT_REGION))
 
                 Spacer(modifier = Modifier.height(32.dp))
-
-                // --- View on Map Button ---
-                OutlinedButton(
-                    modifier = Modifier.fillMaxWidth().testTag(AlertViewScreenTestTags.VIEW_ON_MAP),
-                    onClick = { /*TODO: implement View on Map using polygon when available */}) {
-                      Text("View on Map")
-                    }
+              }
+          // --- View on Map Button ---
+          OutlinedButton(
+              modifier =
+                  Modifier.fillMaxWidth()
+                      .align(Alignment.BottomCenter)
+                      .padding(bottom = 16.dp)
+                      .testTag(AlertViewScreenTestTags.VIEW_ON_MAP),
+              onClick = { /*TODO: implement View on Map using polygon when available */}) {
+                Text("View on Map")
               }
           // --- Navigation arrows (previous / next) ---
           Row(
@@ -146,6 +155,21 @@ fun AlertViewScreen(
         }
       }
 }
+
+@Composable
+private fun rememberMaxTitleChars(): Int {
+  val configuration = LocalConfiguration.current
+  val screenWidth = configuration.screenWidthDp.dp
+  val density = LocalDensity.current
+
+  val titleStyle = MaterialTheme.typography.titleLarge
+  // Approximation: average character width is about 60% of the font size
+  val approxCharWidthPx = with(density) { titleStyle.fontSize.toPx() * 0.6f }
+
+  val maxChars = with(density) { screenWidth.toPx() / approxCharWidthPx }
+  return maxChars.toInt()
+}
+
 /*
 @Preview(showBackground = true)
 @Composable
