@@ -25,8 +25,8 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
 
   override suspend fun getAllReports(userId: String): List<Report> {
 
-    // Build an OR filter: (vetId == userId) OR (farmerId == userId)
-    val filter = Filter.or(Filter.equalTo("vetId", userId), Filter.equalTo("farmerId", userId))
+    // Build an OR filter: (officeId == userId) OR (farmerId == userId)
+    val filter = Filter.or(Filter.equalTo("officeId", userId), Filter.equalTo("farmerId", userId))
 
     val snapshot = db.collection(REPORTS_COLLECTION_PATH).where(filter).get().await()
 
@@ -40,8 +40,9 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
     return snapshot.documents.mapNotNull { docToReport(it) }
   }
 
-  override suspend fun getReportsByVet(vetId: String): List<Report> {
-    val snapshot = db.collection(REPORTS_COLLECTION_PATH).whereEqualTo("vetId", vetId).get().await()
+  override suspend fun getReportsByOffice(officeId: String): List<Report> {
+    val snapshot =
+        db.collection(REPORTS_COLLECTION_PATH).whereEqualTo("officeId", officeId).get().await()
 
     return snapshot.documents.mapNotNull { docToReport(it) }
   }
@@ -100,7 +101,7 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
         }
     val photoUri = doc.getString("photoUri")
     val farmerId = doc.getString("farmerId") ?: return null
-    val vetId = doc.getString("vetId") ?: return null
+    val officeId = doc.getString("officeId") ?: return null
     val statusStr = doc.getString("status") ?: return null
     val status = ReportStatus.valueOf(statusStr)
     val answer = doc.getString("answer")
@@ -143,7 +144,7 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
         questionForms = questionForms,
         photoUri = photoUri,
         farmerId = farmerId,
-        vetId = vetId,
+        officeId = officeId,
         status = status,
         answer = answer,
         location = location,

@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 data class AddReportUiState(
     val title: String = "",
     val description: String = "",
-    val chosenVet: String = "",
+    val chosenOffice: String = "",
     val questionForms: List<QuestionForm> = emptyList(),
 )
 
@@ -41,8 +41,8 @@ class AddReportViewModel(
     _uiState.value = _uiState.value.copy(description = newDescription)
   }
 
-  override fun setVet(option: String) {
-    _uiState.value = _uiState.value.copy(chosenVet = option)
+  override fun setOffice(officeId: String) {
+    _uiState.value = _uiState.value.copy(chosenOffice = officeId)
   }
 
   override fun updateQuestion(index: Int, updated: QuestionForm) {
@@ -69,7 +69,7 @@ class AddReportViewModel(
             questionForms = uiState.questionForms,
             photoUri = null, // currently unused
             farmerId = userId,
-            vetId = uiState.chosenVet,
+            officeId = uiState.chosenOffice,
             status = ReportStatus.PENDING,
             answer = null,
             location = Location(46.7990813, 6.6259961) // null // optional until implemented

@@ -156,8 +156,8 @@ open class SignUpViewModel(
               lastname = state.lastname,
               email = state.email,
               address = null,
-              linkedVets = emptyList(),
-              defaultVet = null)
+              linkedOffices = emptyList(),
+              defaultOffice = null)
       UserRole.VET ->
           Vet(
               uid = firebaseUser.uid,
