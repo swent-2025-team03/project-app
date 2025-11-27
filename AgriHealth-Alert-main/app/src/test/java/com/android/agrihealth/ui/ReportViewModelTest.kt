@@ -4,7 +4,7 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
-import com.android.agrihealth.ui.report.ReportViewModel
+import com.android.agrihealth.ui.report.ReportViewViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
@@ -17,14 +17,14 @@ import org.junit.Test
 class ReportViewModelTest {
 
   private lateinit var repository: FakeReportRepository
-  private lateinit var viewModel: ReportViewModel
+  private lateinit var viewModel: ReportViewViewModel
 
   private val testDispatcher = StandardTestDispatcher()
 
   @Before
   fun setup() {
     repository = FakeReportRepository()
-    viewModel = ReportViewModel(repository)
+    viewModel = ReportViewViewModel(repository)
     Dispatchers.setMain(testDispatcher)
   }
 
