@@ -176,11 +176,7 @@ class ReportViewScreenTest {
       composeTestRule
           .onAllNodes(
               hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
-                  .and(
-                      hasAnyDescendant(
-                          hasText("Vet", substring = true)
-                              .or(hasText("Deleted office"))
-                              .or(hasText("Unassigned")))),
+                  .and(hasAnyDescendant((hasText("Deleted office")).or(hasText("Unassigned")))),
               useUnmergedTree = true)
           .fetchSemanticsNodes()
           .isNotEmpty()
@@ -189,11 +185,7 @@ class ReportViewScreenTest {
     composeTestRule
         .onNode(
             hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
-                .and(
-                    hasAnyDescendant(
-                        hasText("Vet", substring = true)
-                            .or(hasText("Deleted office"))
-                            .or(hasText("Unassigned")))),
+                .and(hasAnyDescendant((hasText("Deleted office")).or(hasText("Unassigned")))),
             useUnmergedTree = true)
         .assertExists()
         .assertIsDisplayed()

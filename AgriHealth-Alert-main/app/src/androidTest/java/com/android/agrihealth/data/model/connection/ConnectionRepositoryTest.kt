@@ -2,8 +2,12 @@ package com.android.agrihealth.data.model.connection
 
 import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.CONNECT_CODES
 import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.FARMER_TO_OFFICE
+import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.VET_TO_OFFICE
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
+import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
+import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -41,6 +45,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
       authRepository.signUpWithEmailAndPassword(user2.email, password2, user2)
       authRepository.signOut()
       authRepository.signUpWithEmailAndPassword(user3.email, password3, user3)
+      OfficeRepositoryProvider.get().addOffice(office1.copy(ownerId = Firebase.auth.uid!!))
     }
   }
 
@@ -53,6 +58,21 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
     assertTrue(code.matches(Regex("\\d{6}")))
 
     val snap = db.collection(FARMER_TO_OFFICE + CONNECT_CODES).document(code).get().await()
+    assertTrue(snap.exists())
+    assertEquals("OPEN", snap.getString("status"))
+    assertEquals(officeId, snap.getString("officeId"))
+    assertNotNull(snap.getLong("ttlMinutes"))
+    assertNotNull(snap.getTimestamp("createdAt"))
+  }
+
+  @Test
+  fun generateCodeForOfficeWorks() = runTest {
+    repo = ConnectionRepository(db, connectionType = VET_TO_OFFICE)
+    val officeId = user3.officeId!!
+    val code = repo.generateCode().getOrThrow()
+    assertTrue(code.matches(Regex("\\d{6}")))
+
+    val snap = db.collection(VET_TO_OFFICE + CONNECT_CODES).document(code).get().await()
     assertTrue(snap.exists())
     assertEquals("OPEN", snap.getString("status"))
     assertEquals(officeId, snap.getString("officeId"))

@@ -47,7 +47,7 @@ object MapScreenTestReports {
           emptyList(),
           null,
           "farmerId1",
-          "vetId1",
+          "officeId1",
           ReportStatus.PENDING,
           null,
           Location(46.9481, 7.4474, "Place name 1"))
@@ -59,7 +59,7 @@ object MapScreenTestReports {
           emptyList(),
           null,
           "farmerId2",
-          "vetId2",
+          "officeId2",
           ReportStatus.IN_PROGRESS,
           "Vet answer",
           Location(46.9481, 7.4484))
@@ -71,7 +71,7 @@ object MapScreenTestReports {
           emptyList(),
           null,
           "farmerId3",
-          "vetId1",
+          "officeId1",
           ReportStatus.RESOLVED,
           null,
           Location(46.9481, 7.4464, "Place name 3"))
@@ -83,7 +83,7 @@ object MapScreenTestReports {
           emptyList(),
           null,
           "farmerId4",
-          "vetId4",
+          "officeId4",
           ReportStatus.SPAM,
           "Vet answer 4",
           Location(46.9491, 7.4474))

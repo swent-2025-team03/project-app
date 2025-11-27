@@ -25,10 +25,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.common.OfficeNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
@@ -63,20 +61,7 @@ fun EditProfileScreen(
   val user by userViewModel.user.collectAsState()
   val userRole = user.role
 
-  val factory = remember {
-    object : androidx.lifecycle.ViewModelProvider.Factory {
-      override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return CodesViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
-            as T
-      }
-    }
-  }
-  val codesViewModel: CodesViewModel = viewModel(factory = factory)
-
   val snackbarHostState = remember { SnackbarHostState() }
-
-  val vetClaimMessage by codesViewModel.claimMessage.collectAsState()
-  LaunchedEffect(vetClaimMessage) { vetClaimMessage?.let { snackbarHostState.showSnackbar(it) } }
 
   // Local mutable states
   var firstname by remember { mutableStateOf(user.firstname) }
@@ -200,7 +185,7 @@ fun EditProfileScreen(
 
                 val officeNames = remember { mutableStateMapOf<String, String>() }
 
-                // For each linked vet, load their name
+                // For each linked office, load their name
                 (user as Farmer).linkedOffices.forEach { officeId ->
                   val vm: OfficeNameViewModel = viewModel(key = officeId)
                   val uiState by vm.uiState.collectAsState()

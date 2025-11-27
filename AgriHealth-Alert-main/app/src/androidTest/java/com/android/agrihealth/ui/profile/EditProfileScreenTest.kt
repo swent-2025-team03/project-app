@@ -16,7 +16,8 @@ class EditProfileScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   // Some Helpers
-  val vetCodes = listOf("112233", "445566")
+  val officeCodes = listOf("112233", "445566")
+  val linkedOffices = listOf("off123", "off456")
 
   private fun fakeFarmerViewModel(): UserViewModel {
     return object : UserViewModel() {
@@ -28,8 +29,8 @@ class EditProfileScreenTest {
                   lastname = "Johnson",
                   email = "alice@farmmail.com",
                   address = Location(0.0, 0.0, "Farm Address"),
-                  linkedOffices = listOf("vet123", "vet456"),
-                  defaultOffice = "vet123"))
+                  linkedOffices = linkedOffices,
+                  defaultOffice = linkedOffices.first()))
 
       override var user: StateFlow<User> = fakeUserFlow.asStateFlow()
     }
@@ -76,7 +77,7 @@ class EditProfileScreenTest {
 
   @Test
   fun editProfileScreen_showsVetSpecificFields() {
-    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel(vetCodes)) }
+    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel(officeCodes)) }
 
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN)
@@ -112,7 +113,7 @@ class EditProfileScreenTest {
 
   @Test
   fun activeCodes_showsListIfExpanded() {
-    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel(vetCodes)) }
+    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel(officeCodes)) }
 
     val codeNodes = composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.ACTIVE_CODE_ELEMENT)
     val codeButtonNodes =

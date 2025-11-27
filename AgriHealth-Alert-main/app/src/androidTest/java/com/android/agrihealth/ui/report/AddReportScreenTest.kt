@@ -26,10 +26,15 @@ import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.user.UserViewModel
-import junit.framework.TestCase.assertTrue
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
+
+private val linkedOffices =
+    mapOf(
+        "Best Office Ever!" to "Deleted Office",
+        "Meh Office" to "Deleted Office",
+        "Great Office" to "Deleted Office")
 
 private fun fakeFarmerViewModel(): UserViewModel =
     FakeUserViewModel(
@@ -39,8 +44,8 @@ private fun fakeFarmerViewModel(): UserViewModel =
             lastname = "Joe",
             email = "email@email.com",
             address = Location(0.0, 0.0, "123 Farm Lane"),
-            linkedOffices = listOf("Best Vet Ever!", "Meh Vet", "Great Vet"),
-            defaultOffice = "Best Vet Ever!",
+            linkedOffices = linkedOffices.keys.toList(),
+            defaultOffice = linkedOffices.keys.toList().first(),
         ))
 
 class AddReportScreenTest {
@@ -168,8 +173,8 @@ class AddReportScreenTest {
       }
     }
 
-    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.VET_DROPDOWN))
-    composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).assertIsDisplayed()
+    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
+    composeRule.onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN).assertIsDisplayed()
     scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).assertIsDisplayed()
   }
@@ -196,7 +201,7 @@ class AddReportScreenTest {
   }
 
   @Test
-  fun selectingVet_updatesDisplayedOption() {
+  fun selectingOffice_updatesDisplayedOption() {
     val fakeUserViewModel = fakeFarmerViewModel()
 
     composeRule.setContent {
@@ -209,12 +214,12 @@ class AddReportScreenTest {
     }
     composeRule
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.VET_DROPDOWN))
-    composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).performClick()
-    val firstVet = "Deleted office"
-    composeRule.onAllNodesWithText(firstVet, useUnmergedTree = true).assertCountEquals(4)
-    composeRule.onAllNodesWithText(firstVet, useUnmergedTree = true).onFirst().performClick()
-    composeRule.onNodeWithText(firstVet, useUnmergedTree = true).assertIsDisplayed()
+        .performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
+    composeRule.onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN).performClick()
+    val firstOffice = linkedOffices.values.first()
+    composeRule.onAllNodesWithText(firstOffice, useUnmergedTree = true).assertCountEquals(4)
+    composeRule.onAllNodesWithText(firstOffice, useUnmergedTree = true).onFirst().performClick()
+    composeRule.onNodeWithText(firstOffice, useUnmergedTree = true).assertIsDisplayed()
   }
 
   @Test

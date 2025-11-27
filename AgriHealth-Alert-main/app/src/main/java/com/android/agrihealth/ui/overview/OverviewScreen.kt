@@ -55,7 +55,7 @@ object OverviewScreenTestTags {
   const val REPORT_ITEM = "reportItem"
   const val PROFILE_BUTTON = "ProfileButton"
   const val STATUS_DROPDOWN = "StatusFilterDropdown"
-  const val VET_ID_DROPDOWN = "VetIdFilterDropdown"
+  const val OFFICE_ID_DROPDOWN = "OfficeIdFilterDropdown"
   const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
 
   fun alertItemTag(page: Int) = "ALERT_ITEM_$page"
@@ -227,7 +227,7 @@ fun OverviewScreen(
                                   officeId = it,
                                   farmerId = uiState.selectedFarmer)
                             },
-                            modifier = Modifier.testTag(OverviewScreenTestTags.VET_ID_DROPDOWN),
+                            modifier = Modifier.testTag(OverviewScreenTestTags.OFFICE_ID_DROPDOWN),
                             placeholder = "Filter by offices")
                       } else if (userRole == UserRole.VET) {
                         // -- FarmerId filter (only for vet) --
@@ -414,7 +414,7 @@ fun PreviewOverviewScreen() {
           selectedStatus = null,
           selectedVet = null,
           selectedFarmer = null,
-          vetOptions = listOf("vet_001", "vet_002"),
+          officeOptions = listOf("vet_001", "vet_002"),
           farmerOptions = listOf("farmer_001", "farmer_002"))
   val dummyViewModel =
       object : OverviewViewModelContract {

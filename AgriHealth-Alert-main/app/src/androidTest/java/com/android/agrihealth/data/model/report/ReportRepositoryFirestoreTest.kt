@@ -44,7 +44,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
           questionForms = listOf(openQuestion),
           photoUri = "url to the photo",
           farmerId = user2.uid,
-          officeId = "Vet2",
+          officeId = "Off2",
           status = ReportStatus.RESOLVED,
           answer = "this is the answer",
           location = Location(42.0, 6.7, "the nice farm were all the dogs go when they are old"),

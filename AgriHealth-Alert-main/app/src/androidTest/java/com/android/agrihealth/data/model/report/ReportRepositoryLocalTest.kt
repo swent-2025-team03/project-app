@@ -23,7 +23,7 @@ class ReportRepositoryLocalTest {
           questionForms = emptyList(),
           photoUri = "http://example.com/photo.jpg",
           farmerId = "farmer123",
-          officeId = "vet456",
+          officeId = "off456",
           status = ReportStatus.PENDING,
           answer = "answerTest",
           location = Location(latitude = 10.0, longitude = 20.0, name = "Test Location"),

@@ -44,7 +44,7 @@ class FakeOverviewViewModel(initialState: OverviewUIState = OverviewUIState()) :
   override fun loadAlerts() {}
 
   // updateFilters is not used for tests so it is remained empty
-  override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {}
+  override fun updateFilters(status: ReportStatus?, officeId: String?, farmerId: String?) {}
 
   override fun signOut(credentialManager: CredentialManager) {
     authRepository = AuthRepositoryProvider.repository

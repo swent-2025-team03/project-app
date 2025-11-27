@@ -77,7 +77,7 @@ class ProfileScreenTest : FirebaseEmulatorsTest() {
                 lastname = "Johnson",
                 email = "alice@farmmail.com",
                 address = null,
-                defaultOffice = "vet123"))
+                defaultOffice = "off123"))
     setScreen(vm)
 
     composeTestRule.onNodeWithTag(DEFAULT_OFFICE_FIELD).assertExists()

@@ -48,11 +48,11 @@ import com.android.agrihealth.testutil.FakeAddReportViewModel
 object AddReportScreenTestTags {
   const val TITLE_FIELD = "titleField"
   const val DESCRIPTION_FIELD = "descriptionField"
-  const val VET_DROPDOWN = "vetDropDown"
+  const val OFFICE_DROPDOWN = "officeDropDown"
   const val CREATE_BUTTON = "createButton"
   const val SCROLL_CONTAINER = "AddReportScrollContainer"
 
-  fun getTestTagForVet(vetId: String): String = "vetOption_$vetId"
+  fun getTestTagForOffice(vetId: String): String = "officeOption_$vetId"
 }
 
 /** Texts for the report creation feedback. For testing purposes */
@@ -63,7 +63,7 @@ object AddReportFeedbackTexts {
 
 // Used for testing purposes
 object AddReportConstants {
-  val vetOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")
+  val officeOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")
 }
 
 /**
@@ -88,7 +88,7 @@ fun AddReportScreen(
 
   val offices = remember { mutableStateMapOf<String, String>() }
 
-  // For each linked vet, load their name
+  // For each linked office, load their name
   (user as Farmer).linkedOffices.forEach { officeId ->
     val vm: OfficeNameViewModel = viewModel(key = officeId)
     val label by vm.uiState.collectAsState()
@@ -214,12 +214,11 @@ fun AddReportScreen(
                         modifier =
                             Modifier.menuAnchor() // Needed for M3 dropdown alignment
                                 .fillMaxWidth()
-                                .testTag(AddReportScreenTestTags.VET_DROPDOWN))
+                                .testTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
 
                     ExposedDropdownMenu(
                         expanded = expanded, onDismissRequest = { expanded = false }) {
-                          offices.keys.forEach { option ->
-                            val displayName = offices[option] ?: option
+                          offices.forEach { (option, displayName) ->
                             DropdownMenuItem(
                                 text = { Text(displayName) },
                                 onClick = {
@@ -229,7 +228,7 @@ fun AddReportScreen(
                                 },
                                 modifier =
                                     Modifier.testTag(
-                                        AddReportScreenTestTags.getTestTagForVet(option)))
+                                        AddReportScreenTestTags.getTestTagForOffice(option)))
                           }
                         }
                   }
@@ -293,7 +292,7 @@ private fun Field(
 }
 
 /**
- * Preview of the ReportViewScreen for both farmer and vet roles. Allows testing of layout and
+ * Preview of the ReportViewScreen for both farmer and office roles. Allows testing of layout and
  * colors directly in Android Studio.
  */
 /*

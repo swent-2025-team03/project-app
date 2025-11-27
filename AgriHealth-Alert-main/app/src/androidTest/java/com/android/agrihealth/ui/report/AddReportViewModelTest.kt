@@ -96,7 +96,7 @@ class AddReportViewModelTest {
           }
         }
 
-        viewModel.setOffice(AddReportConstants.vetOptions[0])
+        viewModel.setOffice(AddReportConstants.officeOptions[0])
         val result = viewModel.createReport()
         advanceUntilIdle() // To avoid errors of synchronization which would make this test
         // non-deterministic
@@ -122,7 +122,7 @@ class AddReportViewModelTest {
             }
           }
         }
-        assertEquals(AddReportConstants.vetOptions[0], addedReport.officeId)
+        assertEquals(AddReportConstants.officeOptions[0], addedReport.officeId)
         assertEquals(ReportStatus.PENDING, addedReport.status)
       }
 
@@ -130,7 +130,7 @@ class AddReportViewModelTest {
   fun clearInputs_resetsAllFields() {
     viewModel.setTitle("T")
     viewModel.setDescription("D")
-    viewModel.setOffice("V")
+    viewModel.setOffice("O")
     viewModel.clearInputs()
     val state = viewModel.uiState.value
     assertEquals("", state.title)
