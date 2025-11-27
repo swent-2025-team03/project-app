@@ -187,7 +187,7 @@ fun ReportViewScreen(
                           })
                     } else {
                       // Farmer views office
-                      OfficeName(uid = report.officeId, onClick = { TODO("add ViewOffice") })
+                      OfficeName(uid = report.officeId, onClick = { /* TODO("add ViewOffice") */})
                     }
                   }
 
