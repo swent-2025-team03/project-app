@@ -34,6 +34,7 @@ import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.UserViewModelContract
 
 object EditProfileScreenTestTags {
   const val FIRSTNAME_FIELD = "FirstNameField"
@@ -53,7 +54,7 @@ object EditProfileScreenTestTags {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
-    userViewModel: UserViewModel = viewModel(),
+    userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
     onGoBack: () -> Unit = {},
     onSave: (User) -> Unit = { userViewModel.updateUser(it) },
     onPasswordChange: () -> Unit = {}
