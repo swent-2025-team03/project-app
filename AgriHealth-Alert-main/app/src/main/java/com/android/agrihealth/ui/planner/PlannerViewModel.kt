@@ -31,6 +31,9 @@ data class PlannerUIState(
     val setTime: LocalTime = LocalTime.now(),
     val setDuration: LocalTime = LocalTime.of(1, 0),
     val reportToSetTheDateFor: Report? = null,
+
+    // Unsaved Changes
+    val isUnsavedAlertShowing: Boolean = false
 )
 
 class PlannerViewModel(
@@ -58,7 +61,17 @@ class PlannerViewModel(
           _uiState.value.reportToSetTheDateFor!!.copy(
               startTime = newDateTime, duration = _uiState.value.setDuration))
       loadReports()
+      setReportToSetTheDateFor(_uiState.value.reportToSetTheDateFor!!.id)
     }
+  }
+
+  fun isReportDateSet(): Boolean {
+    return _uiState.value.reportToSetTheDateFor == null ||
+        _uiState.value.reportToSetTheDateFor?.startTime != null
+  }
+
+  fun setIsUnsavedAlertShowing(value: Boolean) {
+    _uiState.value = _uiState.value.copy(isUnsavedAlertShowing = value)
   }
 
   fun setSelectedDate(date: LocalDate) {

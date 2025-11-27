@@ -1,6 +1,7 @@
 package com.android.agrihealth.ui.planner
 
 import android.app.TimePickerDialog
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -30,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -72,6 +75,9 @@ object PlannerScreenTestTags {
   const val DAILY_SCHEDULER = "dailyScheduler"
   const val SET_REPORT_DATE_BOX = "setReportDateBox"
   const val SET_REPORT_DATE_BUTTON = "setReportDateButton"
+  const val UNSAVED_ALERT_BOX = "unsavedAlertBoxPlanner"
+  const val UNSAVED_ALERT_BOX_CANCEL = "unsavedAlertBoxPlannerCancelButton"
+  const val UNSAVED_ALERT_BOX_GO_BACK = "unsavedAlertBoxPlannerGoBackButton"
 
   fun dayCardTag(day: LocalDate): String = "dayCard_${day}"
 
@@ -118,6 +124,27 @@ fun PlannerScreen(
     plannerVM.setReportDuration(report?.duration ?: LocalTime.of(1, 0))
   }
 
+  BackHandler {
+    if (plannerVM.isReportDateSet()) {
+      goBack()
+    } else {
+      if (uiState.isUnsavedAlertShowing) {
+        goBack()
+      } else {
+        plannerVM.setIsUnsavedAlertShowing(true)
+      }
+    }
+  }
+
+  if (uiState.isUnsavedAlertShowing) {
+    UnsavedChangesAlert(
+        onGoBack = {
+          plannerVM.setIsUnsavedAlertShowing(false)
+          goBack()
+        },
+        onStay = { plannerVM.setIsUnsavedAlertShowing(false) })
+  }
+
   Scaffold(
       topBar = {
         TopAppBar(
@@ -129,7 +156,13 @@ fun PlannerScreen(
             },
             navigationIcon = {
               IconButton(
-                  onClick = { goBack() },
+                  onClick = {
+                    if (plannerVM.isReportDateSet()) {
+                      goBack()
+                    } else {
+                      plannerVM.setIsUnsavedAlertShowing(true)
+                    }
+                  },
                   modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -190,6 +223,31 @@ fun PlannerScreen(
                 onDurationSelected = plannerVM::setReportDuration)
           }
         }
+      })
+}
+
+/** AlertDialog shown if the user exits the screen without setting a date. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UnsavedChangesAlert(onGoBack: () -> Unit, onStay: () -> Unit) {
+  AlertDialog(
+      modifier = Modifier.testTag(PlannerScreenTestTags.UNSAVED_ALERT_BOX),
+      onDismissRequest = onStay,
+      title = { Text("Date Not Assigned") },
+      text = { Text("You did not assign a date.\nGo back anyway?") },
+      confirmButton = {
+        TextButton(
+            modifier = Modifier.testTag(PlannerScreenTestTags.UNSAVED_ALERT_BOX_GO_BACK),
+            onClick = onGoBack) {
+              Text("Go Back")
+            }
+      },
+      dismissButton = {
+        TextButton(
+            modifier = Modifier.testTag(PlannerScreenTestTags.UNSAVED_ALERT_BOX_CANCEL),
+            onClick = onStay) {
+              Text("Set the Date")
+            }
       })
 }
 
@@ -448,6 +506,8 @@ fun DailyTasks(
  * @param modifier the modifier of the outside Box
  * @param report The report whose date is being set
  * @param selectedDate the date selected using the WeeklyPager
+ * @param initialTime the initial time shown on the set startTime button
+ * @param initialDuration the initial time shown on the set duration button
  * @param onSetReportDateClick called when the user clicks the + icon, meant to be called once the
  *   user hase chosen a date and duration
  * @param onTimeSelected called when the user is done with the time picker for the startTime with

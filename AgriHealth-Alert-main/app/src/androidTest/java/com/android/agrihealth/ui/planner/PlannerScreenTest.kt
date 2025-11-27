@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isDisplayed
@@ -115,11 +116,55 @@ class PlannerScreenTest : FirebaseEmulatorsTest() {
         .performClick()
     assertEquals(Screen.Overview, tabClickedCalledWith)
     assertNull(reportClickedCalledWith)
+    scrollDailySchedulerToReportCardWithId(report1.id)
     composeTestRule
         .onNodeWithTag(PlannerScreenTestTags.reportCardTag(report1.id))
         .assertIsDisplayed()
         .performClick()
     assertEquals(report1.id, reportClickedCalledWith)
+  }
+
+  @Test
+  fun testUnchangedDateAlert() = runTest {
+    var goBackCalled = false
+    val report1 = PlannerTestReportsData.report1.copy(startTime = null)
+
+    runBlocking { reportRepository.addReport(report1) }
+
+    setPlannerScreen(reportId = report1.id, goBack = { goBackCalled = true })
+    composeTestRule
+        .onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule.onNodeWithTag(PlannerScreenTestTags.UNSAVED_ALERT_BOX).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(PlannerScreenTestTags.UNSAVED_ALERT_BOX_CANCEL)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule.onNodeWithTag(PlannerScreenTestTags.UNSAVED_ALERT_BOX).assertIsNotDisplayed()
+    assertFalse(goBackCalled)
+    composeTestRule
+        .onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule.onNodeWithTag(PlannerScreenTestTags.UNSAVED_ALERT_BOX).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(PlannerScreenTestTags.UNSAVED_ALERT_BOX_GO_BACK)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule.onNodeWithTag(PlannerScreenTestTags.UNSAVED_ALERT_BOX).assertIsNotDisplayed()
+    assertTrue(goBackCalled)
+    goBackCalled = false
+    composeTestRule
+        .onNodeWithTag(PlannerScreenTestTags.SET_REPORT_DATE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule
+        .onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule.onNodeWithTag(PlannerScreenTestTags.UNSAVED_ALERT_BOX).assertIsNotDisplayed()
+    assertTrue(goBackCalled)
   }
 
   @Test
