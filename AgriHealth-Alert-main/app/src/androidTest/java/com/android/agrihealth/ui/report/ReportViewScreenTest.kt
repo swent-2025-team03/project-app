@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.FakeOverviewViewModel
 import com.android.agrihealth.testutil.FakeReportRepository
 import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
@@ -169,17 +170,13 @@ class ReportViewScreenTest {
   }
 
   @Test
-  fun farmer_roleInfoLine_showsVetRole_orIdentifier() {
+  fun farmer_roleInfoLine_showsOfficeName() {
     setFarmerScreen()
     composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule
           .onAllNodes(
               hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
-                  .and(
-                      hasAnyDescendant(
-                          hasText("Vet", substring = true)
-                              .or(hasText("Deleted user"))
-                              .or(hasText("Unassigned")))),
+                  .and(hasAnyDescendant((hasText("Deleted office")).or(hasText("Unassigned")))),
               useUnmergedTree = true)
           .fetchSemanticsNodes()
           .isNotEmpty()
@@ -188,11 +185,7 @@ class ReportViewScreenTest {
     composeTestRule
         .onNode(
             hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
-                .and(
-                    hasAnyDescendant(
-                        hasText("Vet", substring = true)
-                            .or(hasText("Deleted user"))
-                            .or(hasText("Unassigned")))),
+                .and(hasAnyDescendant((hasText("Deleted office")).or(hasText("Unassigned")))),
             useUnmergedTree = true)
         .assertExists()
         .assertIsDisplayed()
@@ -284,12 +277,13 @@ class ReportViewScreenTest {
       val navController = rememberNavController()
       val navigation = NavigationActions(navController)
       val TEST_REPORT_ID = "RPT001"
+      val vet = Vet("mock_vet_id", "john", "john", "john@john.john", null)
 
       NavHost(navController = navController, startDestination = Screen.Overview.route) {
         composable(Screen.Overview.route) {
           OverviewScreen(
               userRole = UserRole.VET,
-              userId = "user_123",
+              user = vet,
               overviewViewModel = FakeOverviewViewModel(),
               onAddReport = {},
               onReportClick = {},
