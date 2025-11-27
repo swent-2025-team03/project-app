@@ -3,7 +3,6 @@ package com.android.agrihealth.data.model.report
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.repository.ReportRepositoryFirestore
-import com.android.agrihealth.utils.TestAssetUtils
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore

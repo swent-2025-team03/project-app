@@ -15,7 +15,6 @@ import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -29,9 +28,9 @@ data class AddReportUiState(
 )
 
 class AddReportViewModel(
-  private val userId: String,
-  private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
-  private val imageViewModel: ImageViewModel = ImageViewModel(),
+    private val userId: String,
+    private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
+    private val imageViewModel: ImageViewModel = ImageViewModel(),
 ) : ViewModel(), AddReportViewModelContract {
   private val _uiState = MutableStateFlow(AddReportUiState())
   override val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
@@ -71,7 +70,6 @@ class AddReportViewModel(
     _uiState.value = _uiState.value.copy(questionForms = updatedList)
   }
 
-
   override suspend fun createReport(): Boolean {
     val current = _uiState.value
     if (current.title.isBlank() || current.description.isBlank()) return false
@@ -81,9 +79,10 @@ class AddReportViewModel(
 
     if (current.photoUri != null && uploadedPath == null) {
       imageViewModel.upload(current.photoUri)
-      val resultState = imageViewModel.uiState
-        //.drop(1) // skip Idle/Loading
-        .first { it is ImageUIState.UploadSuccess || it is ImageUIState.Error }
+      val resultState =
+          imageViewModel.uiState
+              // .drop(1) // skip Idle/Loading
+              .first { it is ImageUIState.UploadSuccess || it is ImageUIState.Error }
 
       when (resultState) {
         is ImageUIState.UploadSuccess -> {
@@ -96,24 +95,23 @@ class AddReportViewModel(
     }
 
     val newReport =
-      Report(
-        id = reportRepository.getNewReportId(),
-        title = current.title,
-        description = current.description,
-        questionForms = current.questionForms,
-        photoURL = uploadedPath,
-        farmerId = userId,
-        vetId = current.chosenVet,
-        status = ReportStatus.PENDING,
-        answer = null,
-        location = Location(46.7990813, 6.6259961),
-      )
+        Report(
+            id = reportRepository.getNewReportId(),
+            title = current.title,
+            description = current.description,
+            questionForms = current.questionForms,
+            photoURL = uploadedPath,
+            farmerId = userId,
+            vetId = current.chosenVet,
+            status = ReportStatus.PENDING,
+            answer = null,
+            location = Location(46.7990813, 6.6259961),
+        )
 
     viewModelScope.launch { reportRepository.addReport(newReport) }
     clearInputs()
     return true
   }
-
 
   suspend fun createReport2(): Boolean {
     val uiState = _uiState.value

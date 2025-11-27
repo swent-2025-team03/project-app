@@ -98,7 +98,8 @@ object AddReportDialogTexts {
 }
 
 /** This **MUST** be the same as in: AndroidManifest.xml --> <provider --> android:authorities */
-private const val FILE_PROVIDER = "com.android.agrihealth.fileprovider" // TODO: Maybe move this into its own object
+private const val FILE_PROVIDER =
+    "com.android.agrihealth.fileprovider" // TODO: Maybe move this into its own object
 
 /**
  * Displays the report creation screen for farmers
@@ -359,9 +360,9 @@ private fun MultilineField(
  */
 @Composable
 fun UploadRemovePhotoButton(
-  photoAlreadyPicked: Boolean,
-  onImagePicked: (Uri?) -> Unit,
-  onImageRemoved: () -> Unit
+    photoAlreadyPicked: Boolean,
+    onImagePicked: (Uri?) -> Unit,
+    onImageRemoved: () -> Unit
 ) {
   val context = LocalContext.current
 
@@ -369,12 +370,11 @@ fun UploadRemovePhotoButton(
 
   // Opens the app's permissions so the user does not need to search for it
   fun openAppPermissionsSettings(context: Context) {
-    val intent = Intent(
-      Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-      Uri.fromParts("package", context.packageName, null)
-    ).apply {
-      addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    }
+    val intent =
+        Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.fromParts("package", context.packageName, null))
+            .apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
     context.startActivity(intent)
   }
 
@@ -382,37 +382,35 @@ fun UploadRemovePhotoButton(
 
   // For picking photo on the gallery
   val galleryLauncher =
-    rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-      if (uri != null) {
-        onImagePicked(uri)
+      rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        if (uri != null) {
+          onImagePicked(uri)
+        }
       }
-    }
 
   // For taking a photo with the camera
   val cameraLauncher =
-    rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-      if (success && photoUri != null) {
-        onImagePicked(photoUri)
+      rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success && photoUri != null) {
+          onImagePicked(photoUri)
+        }
       }
-    }
 
   // Camera launcher which also asks for permissions
   val cameraLauncherWithPermissionRequest =
-    rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-      if (granted) {
-        if (photoUri != null) {
-          cameraLauncher.launch(photoUri)
+      rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) {
+          if (photoUri != null) {
+            cameraLauncher.launch(photoUri)
+          }
+        } else {
+          Toast.makeText(
+                  context, "Camera permission is required to take a photo", Toast.LENGTH_LONG)
+              .show()
+          openAppPermissionsSettings(context)
         }
-      } else {
-        Toast.makeText(
-          context,
-          "Camera permission is required to take a photo",
-          Toast.LENGTH_LONG
-        ).show()
-        openAppPermissionsSettings(context)
       }
-    }
-  
+
   Button(
       onClick = {
         if (photoAlreadyPicked) {
@@ -459,16 +457,8 @@ fun UploadRemovePhotoButton(
                 onClick = {
                   showDialog = false
                   // Create temporary file in cache
-                  val imageFile = File.createTempFile(
-                    "report_photo_",
-                    ".jpg",
-                    context.cacheDir
-                  )
-                  photoUri= FileProvider.getUriForFile(
-                    context,
-                    FILE_PROVIDER,
-                    imageFile
-                  )
+                  val imageFile = File.createTempFile("report_photo_", ".jpg", context.cacheDir)
+                  photoUri = FileProvider.getUriForFile(context, FILE_PROVIDER, imageFile)
                   cameraLauncherWithPermissionRequest.launch(android.Manifest.permission.CAMERA)
                 },
                 colors =

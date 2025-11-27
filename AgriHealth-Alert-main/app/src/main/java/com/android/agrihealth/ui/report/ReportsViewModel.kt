@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
  * @property status The current status of the report. Defaults to `ReportStatus.PENDING`.
  */
 data class ReportViewUIState(
-  val report: Report =
+    val report: Report =
         Report(
             id = "RPT001",
             title = "My sheep is acting strange",
@@ -34,8 +34,8 @@ data class ReportViewUIState(
             status = ReportStatus.PENDING,
             answer = null,
             location = Location(46.5191, 6.5668, "Lausanne Farm")),
-  val answerText: String = "",
-  val status: ReportStatus = ReportStatus.PENDING
+    val answerText: String = "",
+    val status: ReportStatus = ReportStatus.PENDING
 )
 
 /**
