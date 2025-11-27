@@ -13,7 +13,8 @@ class EditProfileScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   // Some Helpers
-  val vetCodes = listOf("112233", "445566")
+  val officeCodes = listOf("112233", "445566")
+  val linkedOffices = listOf("off123", "off456")
 
   private fun fakeFarmerViewModel(): FakeUserViewModel {
     return FakeUserViewModel(
@@ -23,8 +24,8 @@ class EditProfileScreenTest {
             lastname = "Johnson",
             email = "alice@farmmail.com",
             address = Location(0.0, 0.0, "Farm Address"),
-            linkedVets = listOf("vet123", "vet456"),
-            defaultVet = "vet123"))
+            linkedOffices = linkedOffices,
+            defaultOffice = linkedOffices.first()))
   }
 
   private fun fakeVetViewModel(vetCodes: List<String> = listOf()): FakeUserViewModel {
@@ -57,13 +58,11 @@ class EditProfileScreenTest {
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
         .assertIsDisplayed()
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.CODE_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.ADD_CODE_BUTTON).assertIsDisplayed()
   }
 
   @Test
   fun editProfileScreen_showsVetSpecificFields() {
-    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel(vetCodes)) }
+    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel(officeCodes)) }
 
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN)
@@ -99,7 +98,7 @@ class EditProfileScreenTest {
 
   @Test
   fun activeCodes_showsListIfExpanded() {
-    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel(vetCodes)) }
+    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel(officeCodes)) }
 
     val codeNodes = composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.ACTIVE_CODE_ELEMENT)
     val codeButtonNodes =

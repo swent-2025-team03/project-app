@@ -11,6 +11,8 @@ import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,8 +26,8 @@ val defaultUser =
         lastname = "Doe",
         email = "",
         address = null,
-        linkedVets = emptyList(),
-        defaultVet = null,
+        linkedOffices = emptyList(),
+        defaultOffice = null,
         isGoogleAccount = false)
 
 /**
@@ -41,7 +43,7 @@ open class UserViewModel(
 ) : ViewModel(), UserViewModelContract {
 
   // private val _userRole = MutableStateFlow<UserRole>(UserRole.FARMER)
-  private val _user = MutableStateFlow<User>(initialUser ?: defaultUser)
+  private val _user = MutableStateFlow(initialUser ?: defaultUser)
 
   // user id can be accessed using Firebase.auth.currentUser?.uid
 
@@ -78,8 +80,8 @@ open class UserViewModel(
   }
 
   /** Update user data (needed in profile screen) */
-  override fun updateUser(user: User) {
-    viewModelScope.launch {
+  override fun updateUser(user: User): Deferred<Unit> {
+    return viewModelScope.async {
       try {
         userRepository.updateUser(user)
         _user.value = user // update local state
@@ -95,8 +97,8 @@ open class UserViewModel(
   }
 
   /** Updating the officeId when creating or joining an office */
-  fun updateVetOfficeId(officeId: String?) {
-    viewModelScope.launch {
+  override fun updateVetOfficeId(officeId: String?): Deferred<Unit> {
+    return viewModelScope.async {
       val current = _user.value
 
       // Only vets should get an officeId

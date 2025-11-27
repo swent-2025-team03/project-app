@@ -8,7 +8,7 @@ import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
-import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.ui.overview.OverviewUIState
 import com.android.agrihealth.ui.overview.OverviewViewModelContract
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +24,7 @@ class FakeOverviewViewModel(initialState: OverviewUIState = OverviewUIState()) :
 
   private lateinit var authRepository: AuthRepository
 
-  override fun loadReports(userRole: UserRole, userId: String) {
+  override fun loadReports(user: User) {
     val dummyReports =
         listOf(
             Report(
@@ -33,8 +33,8 @@ class FakeOverviewViewModel(initialState: OverviewUIState = OverviewUIState()) :
                 description = "This is a test report",
                 questionForms = emptyList(),
                 photoUri = null,
-                farmerId = userId,
-                vetId = "vet_001",
+                farmerId = user.uid,
+                officeId = "off_001",
                 status = ReportStatus.PENDING,
                 answer = null,
                 location = null))
@@ -44,7 +44,7 @@ class FakeOverviewViewModel(initialState: OverviewUIState = OverviewUIState()) :
   override fun loadAlerts() {}
 
   // updateFilters is not used for tests so it is remained empty
-  override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {}
+  override fun updateFilters(status: ReportStatus?, officeId: String?, farmerId: String?) {}
 
   override fun signOut(credentialManager: CredentialManager) {
     authRepository = AuthRepositoryProvider.repository

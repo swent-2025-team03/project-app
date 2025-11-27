@@ -45,8 +45,8 @@ class ViewUserScreenTest {
               lastname = "User",
               email = "cur@x.com",
               address = null,
-              linkedVets = emptyList(),
-              defaultVet = null)
+              linkedOffices = emptyList(),
+              defaultOffice = null)
   ) {
     val userVm = UserViewModel(initialUser = currentUser)
 
@@ -95,8 +95,8 @@ class ViewUserScreenTest {
             lastname = "Bateman",
             email = "mail@mail.com",
             address = null,
-            linkedVets = emptyList(),
-            defaultVet = null,
+            linkedOffices = emptyList(),
+            defaultOffice = null,
             isGoogleAccount = false,
             description = null)
 
@@ -118,8 +118,8 @@ class ViewUserScreenTest {
             lastname = "Wayne",
             email = "mail@mail.com",
             address = null,
-            linkedVets = emptyList(),
-            defaultVet = null)
+            linkedOffices = emptyList(),
+            defaultOffice = null)
     val vm = FakeViewUserViewModel(ViewUserUiState.Success(user))
     setScreen(vm)
 
@@ -138,8 +138,8 @@ class ViewUserScreenTest {
             lastname = "Miles",
             email = "mail@mail.com",
             address = null,
-            linkedVets = emptyList(),
-            defaultVet = null)
+            linkedOffices = emptyList(),
+            defaultOffice = null)
     val vm = FakeViewUserViewModel(ViewUserUiState.Success(user))
     setScreen(vm)
 
@@ -155,8 +155,8 @@ class ViewUserScreenTest {
             lastname = "Reznik",
             email = "mail@mail.com",
             address = null,
-            linkedVets = emptyList(),
-            defaultVet = null)
+            linkedOffices = emptyList(),
+            defaultOffice = null)
     val vm = FakeViewUserViewModel(ViewUserUiState.Success(user))
     setScreen(vm)
 
@@ -195,8 +195,8 @@ class ViewUserScreenTest {
             lastname = "Bale",
             email = "mail@mail.com",
             address = null,
-            linkedVets = emptyList(),
-            defaultVet = null)
+            linkedOffices = emptyList(),
+            defaultOffice = null)
 
     val vm = FakeViewUserViewModel(ViewUserUiState.Success(user))
     setScreen(vm)
@@ -213,8 +213,8 @@ class ViewUserScreenTest {
             lastname = "Anymore",
             email = "mail@mail.com",
             address = Location(latitude = 0.0, longitude = 0.0),
-            linkedVets = emptyList(),
-            defaultVet = null)
+            linkedOffices = emptyList(),
+            defaultOffice = null)
 
     val vm = FakeViewUserViewModel(ViewUserUiState.Success(farmer))
     setScreen(vm)
@@ -234,8 +234,8 @@ class ViewUserScreenTest {
             lastname = "Smith",
             email = "alice@mail.com",
             address = null,
-            linkedVets = emptyList(),
-            defaultVet = null,
+            linkedOffices = emptyList(),
+            defaultOffice = null,
             description = "Test description")
 
     val vm = FakeViewUserViewModel(ViewUserUiState.Success(user))
@@ -256,8 +256,8 @@ class ViewUserScreenTest {
             lastname = "Smith",
             email = "alice@mail.com",
             address = null,
-            linkedVets = emptyList(),
-            defaultVet = null)
+            linkedOffices = emptyList(),
+            defaultOffice = null)
 
     val vm = FakeViewUserViewModel(ViewUserUiState.Success(user))
     setScreen(vm)

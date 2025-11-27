@@ -11,7 +11,10 @@ import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,9 +32,9 @@ data class OverviewUIState(
     val reports: List<Report> = emptyList(),
     val alerts: List<Alert> = emptyList(),
     val selectedStatus: ReportStatus? = null,
-    val selectedVet: String? = null,
+    val selectedOffice: String? = null,
     val selectedFarmer: String? = null,
-    val vetOptions: List<String> = emptyList(),
+    val officeOptions: List<String> = emptyList(),
     val farmerOptions: List<String> = emptyList(),
     val filteredReports: List<Report> = emptyList()
 )
@@ -51,49 +54,53 @@ class OverviewViewModel(
   private lateinit var authRepository: AuthRepository
 
   /** Loads reports based on user role and ID. */
-  override fun loadReports(userRole: UserRole, userId: String) {
+  override fun loadReports(user: User) {
     viewModelScope.launch {
       try {
         val reports =
-            when (userRole) {
-              UserRole.FARMER -> reportRepository.getReportsByFarmer(userId)
-              UserRole.VET -> reportRepository.getReportsByVet(userId)
+            when (user) {
+              is Farmer -> reportRepository.getReportsByFarmer(user.uid)
+              is Vet -> reportRepository.getReportsByOffice(user.officeId ?: "")
             }.sortedByDescending { it.createdAt }
-        val vetOptions = reports.map { it.vetId }.distinct()
+        val officeOptions = reports.map { it.officeId }.distinct()
         val farmerOptions = reports.map { it.farmerId }.distinct()
         val filtered =
             applyFilters(
                 reports,
                 _uiState.value.selectedStatus,
-                _uiState.value.selectedVet,
+                _uiState.value.selectedOffice,
                 _uiState.value.selectedFarmer,
             )
 
         _uiState.value =
             _uiState.value.copy(
                 reports = reports,
-                vetOptions = vetOptions,
+                officeOptions = officeOptions,
                 farmerOptions = farmerOptions,
                 filteredReports = filtered)
       } catch (e: Exception) {
-        _uiState.value = OverviewUIState(reports = emptyList())
+        _uiState.value = _uiState.value.copy(reports = emptyList())
       }
     }
   }
 
   override fun loadAlerts() {
     viewModelScope.launch {
-      val alerts = alertRepository.getAlerts()
-      _uiState.value = _uiState.value.copy(alerts = alerts)
+      try {
+        val alerts = alertRepository.getAlerts()
+        _uiState.value = _uiState.value.copy(alerts = alerts)
+      } catch (e: Exception) {
+        _uiState.value = _uiState.value.copy(alerts = emptyList())
+      }
     }
   }
 
-  override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {
-    val filtered = applyFilters(_uiState.value.reports, status, vetId, farmerId)
+  override fun updateFilters(status: ReportStatus?, officeId: String?, farmerId: String?) {
+    val filtered = applyFilters(_uiState.value.reports, status, officeId, farmerId)
     _uiState.value =
         _uiState.value.copy(
             selectedStatus = status,
-            selectedVet = vetId,
+            selectedOffice = officeId,
             selectedFarmer = farmerId,
             filteredReports = filtered)
   }
@@ -101,12 +108,12 @@ class OverviewViewModel(
   private fun applyFilters(
       reports: List<Report>,
       status: ReportStatus?,
-      vetId: String?,
+      officeId: String?,
       farmerId: String?
   ): List<Report> {
     return reports.filter { report ->
       (status == null || report.status == status) &&
-          (vetId == null || report.vetId == vetId) &&
+          (officeId == null || report.officeId == officeId) &&
           (farmerId == null || report.farmerId == farmerId)
     }
   }

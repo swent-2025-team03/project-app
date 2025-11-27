@@ -99,8 +99,8 @@ fun RoleSelectionScreen(
                               lastname = "",
                               email = firebaseUser.email ?: "",
                               address = null,
-                              linkedVets = emptyList(),
-                              defaultVet = null)
+                              linkedOffices = emptyList(),
+                              defaultOffice = null)
                       userViewModel.setUser(newUser) // synchronous in-memory set
                     }
 
