@@ -38,8 +38,6 @@ class EditProfileScreenTest {
             validCodes = vetCodes))
   }
 
-  // Test suite
-
   @Test
   fun editProfileScreen_displaysBasicFields() {
     composeTestRule.setContent { EditProfileScreen(userViewModel = fakeFarmerViewModel()) }
