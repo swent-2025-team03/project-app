@@ -84,11 +84,10 @@ fun OverviewScreen(
   var lazySpace by remember { mutableStateOf(0.dp) }
   val minLazySpace = remember { 150.dp }
 
-  LaunchedEffect(userId) {
+  LaunchedEffect(userId, userRole) {
     overviewViewModel.loadReports(userRole, userId)
     overviewViewModel.loadAlerts()
   }
-
   Scaffold(
       // -- Top App Bar with logout icon --
       topBar = {
