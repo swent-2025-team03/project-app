@@ -30,6 +30,7 @@ import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 
+// map officeIds to their display name
 private val linkedOffices =
     mapOf(
         "Best Office Ever!" to "Deleted office",

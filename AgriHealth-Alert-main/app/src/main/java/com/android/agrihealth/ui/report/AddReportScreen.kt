@@ -63,7 +63,7 @@ object AddReportFeedbackTexts {
 
 // Used for testing purposes
 object AddReportConstants {
-  val officeOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")
+  val officeOptions = listOf("Best Office Ever!", "Meh Office", "Great Office")
 }
 
 /**
