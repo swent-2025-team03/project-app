@@ -82,10 +82,11 @@ class AlertViewScreenTest {
     val viewModel = AlertViewModel(FakeAlertRepository())
     setAlertViewScreen(alertId = "4", viewModel = viewModel)
     composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
-      composeTestRule.onAllNodesWithTag(AlertViewScreenTestTags.ALERT_FULL_TITLE)
-        .fetchSemanticsNodes().isNotEmpty()
+      composeTestRule
+          .onAllNodesWithTag(AlertViewScreenTestTags.ALERT_FULL_TITLE)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
     }
     composeTestRule.onNodeWithTag(AlertViewScreenTestTags.ALERT_FULL_TITLE).assertIsDisplayed()
-
   }
 }

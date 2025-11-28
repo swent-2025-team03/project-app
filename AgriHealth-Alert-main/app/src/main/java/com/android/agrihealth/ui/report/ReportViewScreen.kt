@@ -47,9 +47,9 @@ object ReportViewScreenTestTags {
   const val VIEW_ON_MAP = "viewReportOnMap"
   const val SAVE_BUTTON = "SaveButton"
   const val SCROLL_CONTAINER = "ReportViewScrollContainer"
-    const val UNSAVED_ALERT_BOX = "UnsavedChangesAlertBox"
-    const val UNSAVED_ALERT_BOX_DISCARD = "UnsavedChangesAlertDiscardButton"
-    const val UNSAVED_ALERT_BOX_CANCEL = "UnsavedChangesAlertCancelButton"
+  const val UNSAVED_ALERT_BOX = "UnsavedChangesAlertBox"
+  const val UNSAVED_ALERT_BOX_DISCARD = "UnsavedChangesAlertDiscardButton"
+  const val UNSAVED_ALERT_BOX_CANCEL = "UnsavedChangesAlertCancelButton"
 
   fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
 }
