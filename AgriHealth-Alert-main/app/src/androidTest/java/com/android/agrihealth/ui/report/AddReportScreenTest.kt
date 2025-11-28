@@ -292,8 +292,6 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-            userRole = UserRole.FARMER,
-            userId = "test_user",
             onCreateReport = {},
             addReportViewModel = FakeAddReportViewModel())
       }
@@ -314,8 +312,6 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-            userRole = UserRole.FARMER,
-            userId = "test_user",
             onCreateReport = {},
             addReportViewModel = fakeViewModel)
       }
@@ -344,8 +340,6 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-            userRole = UserRole.FARMER,
-            userId = "test_user",
             onCreateReport = {},
             addReportViewModel = fakeViewModel)
       }
@@ -363,8 +357,6 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-            userRole = UserRole.FARMER,
-            userId = "test_user",
             onCreateReport = {},
             addReportViewModel = FakeAddReportViewModel())
       }
@@ -387,8 +379,6 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-            userRole = UserRole.FARMER,
-            userId = "test_user",
             onCreateReport = {},
             addReportViewModel = fakeViewModel)
       }
@@ -415,8 +405,6 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-            userRole = UserRole.FARMER,
-            userId = "test_user",
             onCreateReport = {},
             addReportViewModel = fakeViewModel)
       }

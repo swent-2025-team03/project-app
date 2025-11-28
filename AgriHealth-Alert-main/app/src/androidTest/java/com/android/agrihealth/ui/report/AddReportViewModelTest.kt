@@ -67,14 +67,14 @@ class AddReportViewModelTest {
     viewModel.setDescription("Desc")
     assertEquals("Desc", viewModel.uiState.value.description)
     assertEquals("", viewModel.uiState.value.title)
-    assertEquals("", viewModel.uiState.value.chosenVet)
+    assertEquals("", viewModel.uiState.value.chosenOffice)
     assertNull(viewModel.uiState.value.photoUri)
   }
 
   @Test
   fun setVet_updatesVetOnly() {
     viewModel.setOffice("Vet")
-    assertEquals("Vet", viewModel.uiState.value.chosenVet)
+    assertEquals("Vet", viewModel.uiState.value.chosenOffice)
     assertEquals("", viewModel.uiState.value.title)
     assertEquals("", viewModel.uiState.value.description)
   }
