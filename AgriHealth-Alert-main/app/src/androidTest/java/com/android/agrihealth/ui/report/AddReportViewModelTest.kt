@@ -89,8 +89,9 @@ class AddReportViewModelTest {
   }
 
   @Test
-  fun createReport_withEmptyFields_returnsFalse() = runBlocking {
-    assertFalse(viewModel.createReport())
+  fun createReport_withEmptyFields_returnsValidationError() = runBlocking {
+    val result = viewModel.createReport()
+    assertEquals(result, CreateReportResult.ValidationError)
   }
 
   @Test
@@ -122,12 +123,14 @@ class AddReportViewModelTest {
         val result = viewModel.createReport()
         advanceUntilIdle() // To avoid errors of synchronization which would make this test
         // non-deterministic
-        assertTrue(result)
+        assertEquals(result, CreateReportResult.Success)
+
         // Fields are cleared
         val state = viewModel.uiState.value
         assertEquals("", state.title)
         assertEquals("", state.description)
         assertEquals("", state.chosenOffice)
+
         // Report is saved
         assertNotNull(repository.lastAddedReport)
         val addedReport = repository.lastAddedReport!!

@@ -45,9 +45,9 @@ class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
 
   override suspend fun createReport(): CreateReportResult {
     if (_uiState.value.title.isNotBlank() && _uiState.value.description.isNotBlank()) {
-      return CreateReportResult.ValidationError
-    } else {
       return CreateReportResult.Success
+    } else {
+      return CreateReportResult.ValidationError
     }
   }
 
