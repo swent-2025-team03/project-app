@@ -1,7 +1,9 @@
 package com.android.agrihealth.ui.report
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -27,9 +29,11 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
+import com.android.agrihealth.ui.common.OfficeName
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
+import java.time.format.DateTimeFormatter
 
 object ReportViewScreenTestTags {
   const val STATUS_BADGE_BOX = "StatusBadgeBox"
@@ -43,6 +47,9 @@ object ReportViewScreenTestTags {
   const val VIEW_ON_MAP = "viewReportOnMap"
   const val SAVE_BUTTON = "SaveButton"
   const val SCROLL_CONTAINER = "ReportViewScrollContainer"
+    const val UNSAVED_ALERT_BOX = "UnsavedChangesAlertBox"
+    const val UNSAVED_ALERT_BOX_DISCARD = "UnsavedChangesAlertDiscardButton"
+    const val UNSAVED_ALERT_BOX_CANCEL = "UnsavedChangesAlertCancelButton"
 
   fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
 }
@@ -70,7 +77,7 @@ private fun QuestionItem(
 fun ReportViewScreen(
     navigationActions: NavigationActions,
     userRole: UserRole,
-    viewModel: ReportViewModel,
+    viewModel: ReportViewViewModel,
     reportId: String = ""
 ) {
   LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
@@ -78,6 +85,7 @@ fun ReportViewScreen(
   val uiState by viewModel.uiState.collectAsState()
   // Observe save completion to navigate back on success
   val saveCompleted by viewModel.saveCompleted.collectAsState()
+  val unsavedChanges by viewModel.unsavedChanges.collectAsState()
 
   // --- Auto-change PENDING -> IN_PROGRESS for vets ---
   LaunchedEffect(userRole, uiState.report.status) {
@@ -99,6 +107,23 @@ fun ReportViewScreen(
   val selectedStatus = uiState.status
 
   var isSpamDialogOpen by remember { mutableStateOf(false) }
+  var isUnsavedAlertOpen by remember { mutableStateOf(false) }
+
+  fun handleGoBack(force: Boolean = false) {
+    if (unsavedChanges && !force) isUnsavedAlertOpen = true else navigationActions.goBack()
+  }
+
+  // Overrides behavior of Android system back button
+  BackHandler { handleGoBack() }
+
+  if (isUnsavedAlertOpen)
+      UnsavedChangesAlert(
+          onStay = { isUnsavedAlertOpen = false },
+          onDiscard = {
+            viewModel.consumeUnsavedChanges()
+            isUnsavedAlertOpen = false
+            handleGoBack(force = true)
+          })
 
   Scaffold(
       topBar = {
@@ -134,7 +159,7 @@ fun ReportViewScreen(
             },
             navigationIcon = {
               IconButton(
-                  onClick = { navigationActions.goBack() },
+                  onClick = { handleGoBack() },
                   modifier =
                       Modifier.testTag(
                           com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON)) {
@@ -164,8 +189,7 @@ fun ReportViewScreen(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold)
               }
-
-              // ---- Farmer or Vet info line ----
+              // ---- Farmer or Office info line ----
               Row(
                   verticalAlignment = Alignment.CenterVertically,
                   modifier = Modifier.testTag(ReportViewScreenTestTags.ROLE_INFO_LINE)) {
@@ -177,10 +201,8 @@ fun ReportViewScreen(
                             navigationActions.navigateTo(Screen.ViewUser(report.farmerId))
                           })
                     } else {
-                      // Farmer views vet
-                      AuthorName(
-                          uid = report.vetId,
-                          onClick = { navigationActions.navigateTo(Screen.ViewUser(report.vetId)) })
+                      // Farmer views office
+                      OfficeName(uid = report.officeId, onClick = { /* TODO("add ViewOffice") */})
                     }
                   }
 
@@ -271,6 +293,49 @@ fun ReportViewScreen(
                             }
                           }
                     }
+              }
+              // ---- Set Time section ----
+              Column {
+                Text(
+                    text = "Veterinarian visit: ",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold)
+                Spacer(modifier = Modifier.width(8.dp))
+                Row {
+                  Text(
+                      "    Start time: ",
+                      style = MaterialTheme.typography.titleMedium,
+                      fontWeight = FontWeight.SemiBold)
+                  Text(
+                      text =
+                          report.startTime?.format(
+                              DateTimeFormatter.ofPattern("HH:mm ' on ' dd MMM yyyy"))
+                              ?: "  Not set",
+                      style = MaterialTheme.typography.bodyLarge,
+                      color = MaterialTheme.colorScheme.primaryContainer,
+                      modifier =
+                          Modifier.clickable(
+                              onClick = {
+                                navigationActions.navigateTo(Screen.Planner(reportId = report.id))
+                              }))
+                }
+                Row {
+                  Text(
+                      "    Duration: ",
+                      style = MaterialTheme.typography.titleMedium,
+                      fontWeight = FontWeight.SemiBold)
+                  Text(
+                      text =
+                          report.duration?.format(DateTimeFormatter.ofPattern("HH:mm"))
+                              ?: "  Not set",
+                      style = MaterialTheme.typography.bodyLarge,
+                      color = MaterialTheme.colorScheme.primaryContainer,
+                      modifier =
+                          Modifier.clickable(
+                              onClick = {
+                                navigationActions.navigateTo(Screen.Planner(reportId = report.id))
+                              }))
+                }
               }
 
               // ---- Bottom section: Map + Spam + Save ----
@@ -364,6 +429,30 @@ fun ReportViewScreen(
       }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UnsavedChangesAlert(onDiscard: () -> Unit, onStay: () -> Unit) {
+  AlertDialog(
+      modifier = Modifier.testTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX),
+      onDismissRequest = onStay,
+      title = { Text("Unsaved changes") },
+      text = { Text("You have unsaved changes. Go back anyway?") },
+      confirmButton = {
+        TextButton(
+            modifier = Modifier.testTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_DISCARD),
+            onClick = onDiscard) {
+              Text("Discard changes")
+            }
+      },
+      dismissButton = {
+        TextButton(
+            modifier = Modifier.testTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_CANCEL),
+            onClick = onStay) {
+              Text("Cancel")
+            }
+      })
+}
+
 /*  If you want to use the preview, just de-comment this block.
 @Preview(showBackground = true, name = "Farmer View")
 @Composable
@@ -384,7 +473,7 @@ fun PreviewReportViewFarmer() {
 fun PreviewReportViewVet() {
   MaterialTheme {
     val navController = rememberNavController()
-    val viewModel = ReportViewModel()
+    val viewModel = ReportViewViewModel()
     ReportViewScreen(
         navigationActions = NavigationActions(navController),
         userRole = UserRole.VET,
