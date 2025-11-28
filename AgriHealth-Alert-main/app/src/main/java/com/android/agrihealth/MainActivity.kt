@@ -1,16 +1,19 @@
 package com.android.agrihealth
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,6 +39,7 @@ import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.location.LocationPicker
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.authentification.RoleSelectionScreen
 import com.android.agrihealth.ui.authentification.SignInScreen
@@ -67,6 +71,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
 class MainActivity : ComponentActivity() {
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -83,6 +88,7 @@ class MainActivity : ComponentActivity() {
   }
 }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun AgriHealthApp(
     context: Context = LocalContext.current,
@@ -103,6 +109,11 @@ fun AgriHealthApp(
   val currentUserId = currentUser.uid
   val currentUserRole = currentUser.role
   val currentUserEmail = currentUser.email
+
+    var pickedLat = remember {0.0}
+    var pickedLng = remember {0.0}
+
+    var pickedLocation = remember { mutableStateOf<Location?>(null)}
 
   val startDestination = remember {
     if (Firebase.auth.currentUser == null) Screen.Auth.name
@@ -177,6 +188,30 @@ fun AgriHealthApp(
             addReportViewModel = addReportViewModel,
         )
       }
+        composable(
+            route = Screen.LocationPicker.route
+        ) {
+            val createMapViewModel =
+                object : androidx.lifecycle.ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return MapViewModel(locationViewModel = locationViewModel) as T
+                    }
+                }
+            LocationPicker(
+                navigationActions = navigationActions,
+                mapViewModel = viewModel(factory = createMapViewModel),
+                onLatLng = { lat, lng ->
+                    pickedLat = lat
+                    pickedLng = lng
+                } ,
+                onAddress = {address ->
+                    if(address != null) {
+                        pickedLocation.value = Location(pickedLat, pickedLng, address)
+                        navigationActions.goBack()
+                    }
+                }
+            )
+        }
       composable(
           route = Screen.ViewReport.route,
           arguments = listOf(navArgument("reportId") { type = NavType.StringType })) {
@@ -249,6 +284,8 @@ fun AgriHealthApp(
               userViewModel.updateUser(updatedUser)
               navigationActions.navigateTo(Screen.Profile)
             },
+            pickedLocation = pickedLocation.value,
+            onChangeLocation =  {navigationActions.navigateTo(Screen.LocationPicker)},
             onPasswordChange = { navigationActions.navigateTo(Screen.ChangePassword) })
       }
     }
@@ -354,6 +391,7 @@ fun AgriHealthApp(
   }
 }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Preview(showBackground = true)
 @Composable
 fun AgriHealthPreview() {

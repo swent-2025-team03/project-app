@@ -27,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.common.OfficeNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
@@ -55,6 +56,8 @@ object EditProfileScreenTestTags {
 @Composable
 fun EditProfileScreen(
     userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
+    pickedLocation: Location? = null,
+    onChangeLocation: () -> Unit = {},
     onGoBack: () -> Unit = {},
     onSave: (User) -> Unit = { userViewModel.updateUser(it) },
     onPasswordChange: () -> Unit = {}
@@ -68,7 +71,7 @@ fun EditProfileScreen(
   var firstname by remember { mutableStateOf(user.firstname) }
   var lastname by remember { mutableStateOf(user.lastname) }
   var description by remember { mutableStateOf(user.description ?: "") }
-  var address by remember { mutableStateOf(user.address?.toString() ?: "") }
+  var address by remember { mutableStateOf(pickedLocation?.name ?: user.address?.name ?: "") }
 
   // Farmer-specific states
   var selectedDefaultOffice by remember { mutableStateOf((user as? Farmer)?.defaultOffice ?: "") }
@@ -158,19 +161,23 @@ fun EditProfileScreen(
               Spacer(modifier = Modifier.height(12.dp))
 
               // Address
-              OutlinedTextField(
-                  value = address,
-                  onValueChange = { address = it },
-                  label = {
-                    when (userRole) {
-                      UserRole.FARMER -> Text("Farm Address")
-                      UserRole.VET -> Text("Clinic Address")
-                    }
-                  },
-                  modifier =
-                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
-              // TODO: right now addresses are displayed as Location(...), I think we will change
-              // this once we work on the implementation of Location in more details.
+                OutlinedTextField(
+                    value = address,
+                    onValueChange = { address = it },
+                    readOnly = true,
+                    singleLine = true,
+                    label = {
+                        when (userRole) {
+                            UserRole.FARMER -> Text("Farm Address")
+                            UserRole.VET -> Text("Clinic Address")
+                        }
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD)
+                )
+            Button(onClick = onChangeLocation, modifier = Modifier.fillMaxWidth()) {
+                Text("change location")
+            }
 
               // Default Vet Selection and Code Input (Farmers only)
               if (user is Farmer) {
