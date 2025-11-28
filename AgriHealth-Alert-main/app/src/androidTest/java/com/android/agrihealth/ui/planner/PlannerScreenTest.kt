@@ -53,7 +53,7 @@ object PlannerTestReportsData {
           "Report title 1",
           "Description 1",
           photoURL = null,
-          questionForms= emptyList(),
+          questionForms = emptyList(),
           farmerId = user.uid,
           officeId = "officeId1",
           status = ReportStatus.PENDING,
