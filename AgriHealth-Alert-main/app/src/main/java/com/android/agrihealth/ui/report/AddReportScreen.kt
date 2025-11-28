@@ -40,6 +40,7 @@ import coil.compose.AsyncImage
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
+import com.android.agrihealth.data.model.report.QuestionForm
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.ui.common.OfficeNameViewModel
@@ -49,6 +50,7 @@ import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
 import java.io.File
 import kotlinx.coroutines.launch
+import kotlin.collections.forEachIndexed
 
 // -- imports for preview --
 /*
@@ -69,8 +71,12 @@ object AddReportScreenTestTags {
   const val DIALOG_CAMERA = "uploadImageDialogCamera"
   const val DIALOG_CANCEL = "uploadImageDialogCancel"
   const val IMAGE_PREVIEW = "imageDisplay"
-
   const val SCROLL_CONTAINER = "scrollContainer"
+  const val DIALOG_SUCCESS = "dialogSuccess"
+  const val DIALOG_FAILURE = "dialogFailure"
+
+  const val DIALOG_SUCCESS_OK = "dialogSuccessOk"
+  const val DIALOG_FAILURE_OK = "dialogFailureOk"
 
   fun getTestTagForOffice(vetId: String): String = "officeOption_$vetId"
 }
@@ -78,9 +84,11 @@ object AddReportScreenTestTags {
 /** Texts for the report creation feedback */
 object AddReportFeedbackTexts {
   const val SUCCESS = "Report created successfully!"
-  const val FAILURE = "Couldn't upload report... Please verify your connection and try again"
-
+  const val FAILURE = "Couldn't upload report... Please verify your connection and try again..."
   const val INCOMPLETE = "Please fill in all required fields..."
+
+  const val UNKNOWN = "Unknown error..."
+
 }
 
 /** Constants for testing purposes */
@@ -97,8 +105,11 @@ object AddReportUploadButtonTexts {
 /** Texts of the dialog shown when clicking on uploading photo button */
 object AddReportDialogTexts {
   const val GALLERY = "Gallery"
-  const val CAMERA = "camera"
-  const val CANCEL = "cancel"
+  const val CAMERA = "Camera"
+  const val CANCEL = "Cancel"
+  const val OK = "Ok"
+  const val TITLE_SUCCESS = "Success!"
+  const val TITLE_FAILURE = "Error!"
 }
 
 /** This **MUST** be the same as in: AndroidManifest.xml --> <provider --> android:authorities */
@@ -111,7 +122,7 @@ private fun generateCreateReportErrorMessage(
   e: Throwable?
 ): String {
   val baseMessage = AddReportFeedbackTexts.FAILURE
-  val errorMessage = e?.message ?: "Unknown error"
+  val errorMessage = e?.message ?: AddReportFeedbackTexts.UNKNOWN
 
   val fullMessage = """
         $baseMessage
@@ -187,6 +198,29 @@ fun AddReportScreen(
   var showErrorDialog by remember { mutableStateOf(false) }
   var errorDialogMessage by remember { mutableStateOf<String?>(null) }
 
+  // For the create report button
+  val context = LocalContext.current
+  val onCreateReportClick: () -> Unit = {
+    scope.launch {
+      when (val result = addReportViewModel.createReport()) {
+        is CreateReportResult.Success -> {
+          showSuccessDialog = true
+        }
+        is CreateReportResult.ValidationError -> {
+          snackbarHostState.showSnackbar(AddReportFeedbackTexts.INCOMPLETE)
+        }
+        is CreateReportResult.PhotoUploadError -> {
+          errorDialogMessage = generateCreateReportErrorMessage(result.e)
+          showErrorDialog = true
+        }
+        is CreateReportResult.RepositoryError -> {
+          errorDialogMessage = generateCreateReportErrorMessage(result.e)
+          showErrorDialog = true
+        }
+      }
+    }
+  }
+
   Scaffold(
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       topBar = {
@@ -234,80 +268,22 @@ fun AddReportScreen(
                   "Description",
                   AddReportScreenTestTags.DESCRIPTION_FIELD)
 
-              // Questions
-              uiState.questionForms.forEachIndexed { index, question ->
-                when (question) {
-                  is OpenQuestion -> {
-                    OpenQuestionItem(
-                        question = question,
-                        onAnswerChange = { updated ->
-                          addReportViewModel.updateQuestion(index, updated)
-                        },
-                        enabled = true,
-                        modifier = Modifier.testTag("QUESTION_${index}_OPEN"))
-                  }
-                  is YesOrNoQuestion -> {
-                    YesOrNoQuestionItem(
-                        question = question,
-                        onAnswerChange = { updated ->
-                          addReportViewModel.updateQuestion(index, updated)
-                        },
-                        enabled = true,
-                        modifier = Modifier.testTag("QUESTION_${index}_YESORNO"))
-                  }
-                  is MCQ -> {
-                    MCQItem(
-                        question = question,
-                        onAnswerChange = { updated ->
-                          addReportViewModel.updateQuestion(index, updated)
-                        },
-                        enabled = true,
-                        modifier = Modifier.testTag("QUESTION_${index}_MCQ"))
-                  }
-                  is MCQO -> {
-                    MCQOItem(
-                        question = question,
-                        onAnswerChange = { updated ->
-                          addReportViewModel.updateQuestion(index, updated)
-                        },
-                        enabled = true,
-                        modifier = Modifier.testTag("QUESTION_${index}_MCQO"))
-                  }
-                }
+
+            QuestionList(
+              questions = uiState.questionForms,
+              onQuestionChange = { index, updated ->
+                addReportViewModel.updateQuestion(index, updated)
               }
+            )
 
-              var selectedOfficeName = offices[selectedOption] ?: selectedOption
-              ExposedDropdownMenuBox(
-                  expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-                    OutlinedTextField(
-                        value = selectedOfficeName,
-                        onValueChange = {}, // No direct text editing
-                        readOnly = true,
-                        label = { Text("Choose an Office") },
-                        trailingIcon = {
-                          ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                        },
-                        modifier =
-                            Modifier.menuAnchor() // Needed for M3 dropdown alignment
-                                .fillMaxWidth()
-                                .testTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
-
-                    ExposedDropdownMenu(
-                        expanded = expanded, onDismissRequest = { expanded = false }) {
-                          offices.forEach { (option, displayName) ->
-                            DropdownMenuItem(
-                                text = { Text(displayName) },
-                                onClick = {
-                                  selectedOfficeName = displayName
-                                  addReportViewModel.setOffice(option)
-                                  expanded = false
-                                },
-                                modifier =
-                                    Modifier.testTag(
-                                        AddReportScreenTestTags.getTestTagForOffice(option)))
-                          }
-                        }
-                  }
+            OfficeDropdown(
+              offices = offices,
+              selectedOfficeId = selectedOption,
+              onOfficeSelected = { officeId ->
+                selectedOption = officeId
+                addReportViewModel.setOffice(officeId)
+              }
+            )
 
               UploadedImagePreview(photoUri = uiState.photoUri)
 
@@ -316,28 +292,9 @@ fun AddReportScreen(
                   onImagePicked = { addReportViewModel.setPhoto(it) },
                   onImageRemoved = { addReportViewModel.removePhoto() })
 
-          CreateReportButton(
-            onClick = {
-              scope.launch {
-                when (val result = addReportViewModel.createReport()) {
-                  is CreateReportResult.Success -> {
-                    showSuccessDialog = true
-                  }
-                  is CreateReportResult.ValidationError -> {
-                    snackbarHostState.showSnackbar(AddReportFeedbackTexts.INCOMPLETE)
-                  }
-                  is CreateReportResult.PhotoUploadError -> {
-                    errorDialogMessage = generateCreateReportErrorMessage(result.e)
-                    showErrorDialog = true
-                  }
-                  is CreateReportResult.RepositoryError -> {
-                    errorDialogMessage = generateCreateReportErrorMessage(result.e)
-                    showErrorDialog = true
-                  }
-                }
-              }
-            }
-          )
+              CreateReportButton(
+                onClick = onCreateReportClick
+              )
             }
 
         // If adding the report was successful
@@ -357,12 +314,13 @@ fun AddReportScreen(
                       Text("OK")
                     }
               },
-              title = { Text("Success!") },
-              text = { Text(AddReportFeedbackTexts.SUCCESS) })
+              title = { Text(AddReportDialogTexts.TITLE_SUCCESS) },
+              text = { Text(AddReportFeedbackTexts.SUCCESS) },
+              modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_SUCCESS))
         }
       }
 
-      if (showErrorDialog && errorDialogMessage != null) {
+      if (showErrorDialog) {
         AlertDialog(
           onDismissRequest = { showErrorDialog = false },
           confirmButton = {
@@ -370,11 +328,123 @@ fun AddReportScreen(
               Text("OK")
             }
           },
-          title = { Text("Report creation failed") },
-          text = { Text(errorDialogMessage!!) }
+          title = { Text(AddReportDialogTexts.TITLE_FAILURE) },
+          text = { Text(errorDialogMessage ?: AddReportFeedbackTexts.UNKNOWN)},
+          modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_FAILURE)
         )
       }
 }
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun OfficeDropdown(
+  offices: Map<String, String>,
+  selectedOfficeId: String,
+  onOfficeSelected: (String) -> Unit
+) {
+  var expanded by remember { mutableStateOf(false) }
+  var selectedOfficeName by remember {
+    mutableStateOf(offices[selectedOfficeId] ?: selectedOfficeId)
+  }
+
+  ExposedDropdownMenuBox(
+    expanded = expanded,
+    onExpandedChange = { expanded = !expanded }
+  ) {
+    OutlinedTextField(
+      value = selectedOfficeName,
+      onValueChange = {}, // No direct text editing
+      readOnly = true,
+      label = { Text("Choose an Office") },
+      trailingIcon = {
+        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+      },
+      modifier = Modifier
+        .menuAnchor()
+        .fillMaxWidth()
+        .testTag(AddReportScreenTestTags.OFFICE_DROPDOWN)
+    )
+
+    ExposedDropdownMenu(
+      expanded = expanded,
+      onDismissRequest = { expanded = false }
+    ) {
+      offices.forEach { (option, displayName) ->
+        DropdownMenuItem(
+          text = { Text(displayName) },
+          onClick = {
+            selectedOfficeName = displayName
+            onOfficeSelected(option)
+            expanded = false
+          },
+          modifier = Modifier.testTag(
+            AddReportScreenTestTags.getTestTagForOffice(option)
+          )
+        )
+      }
+    }
+  }
+}
+
+
+/**
+ *   A long list of questions that must be answered to create a report
+ *
+ *   @param questions A list containing all the questions
+ *   @param onQuestionChange Called when the user changes the selected answer of a question
+ */
+@Composable
+fun QuestionList(
+  questions: List<QuestionForm>,
+  onQuestionChange: (index: Int, updated: QuestionForm) -> Unit
+) {
+  questions.forEachIndexed { index, question ->
+    when (question) {
+      is OpenQuestion -> {
+        OpenQuestionItem(
+          question = question,
+          onAnswerChange = { updated ->
+            onQuestionChange(index, updated)
+          },
+          enabled = true,
+          modifier = Modifier.testTag("QUESTION_${index}_OPEN")
+        )
+      }
+      is YesOrNoQuestion -> {
+        YesOrNoQuestionItem(
+          question = question,
+          onAnswerChange = { updated ->
+            onQuestionChange(index, updated)
+          },
+          enabled = true,
+          modifier = Modifier.testTag("QUESTION_${index}_YESORNO")
+        )
+      }
+      is MCQ -> {
+        MCQItem(
+          question = question,
+          onAnswerChange = { updated ->
+            onQuestionChange(index, updated)
+          },
+          enabled = true,
+          modifier = Modifier.testTag("QUESTION_${index}_MCQ")
+        )
+      }
+      is MCQO -> {
+        MCQOItem(
+          question = question,
+          onAnswerChange = { updated ->
+            onQuestionChange(index, updated)
+          },
+          enabled = true,
+          modifier = Modifier.testTag("QUESTION_${index}_MCQO")
+        )
+      }
+    }
+  }
+}
+
 
 /**
  * A text filed used in the addReport screen
