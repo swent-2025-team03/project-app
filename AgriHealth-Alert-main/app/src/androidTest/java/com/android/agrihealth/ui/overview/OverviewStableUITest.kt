@@ -5,7 +5,9 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.FakeOverviewRepository
 import junit.framework.TestCase.assertEquals
 import org.junit.Rule
@@ -19,11 +21,16 @@ class OverviewStableUITest {
   @get:Rule val composeTestRule = createComposeRule()
 
   // --- Helper functions to set up screens ---
+
+  private val farmer =
+      Farmer("mock_farmer_id", "john", "john", "john@john.john", null, defaultOffice = null)
+  private val vet = Vet("mock_vet_id", "john", "john", "john@john.john", null)
+
   private fun setFarmerScreen() {
     composeTestRule.setContent {
       OverviewScreen(
           userRole = UserRole.FARMER,
-          userId = "mock_farmer_id",
+          user = farmer,
           overviewViewModel = OverviewViewModel(FakeOverviewRepository()))
     }
   }
@@ -32,7 +39,7 @@ class OverviewStableUITest {
     composeTestRule.setContent {
       OverviewScreen(
           userRole = UserRole.VET,
-          userId = "mock_vet_id",
+          user = vet,
           overviewViewModel = OverviewViewModel(FakeOverviewRepository()))
     }
   }

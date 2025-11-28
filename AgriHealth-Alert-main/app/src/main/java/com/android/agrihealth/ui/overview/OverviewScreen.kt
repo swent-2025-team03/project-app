@@ -29,8 +29,10 @@ import com.android.agrihealth.data.model.alert.Alert
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
+import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
+import com.android.agrihealth.ui.common.OfficeName
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -53,7 +55,7 @@ object OverviewScreenTestTags {
   const val REPORT_ITEM = "reportItem"
   const val PROFILE_BUTTON = "ProfileButton"
   const val STATUS_DROPDOWN = "StatusFilterDropdown"
-  const val VET_ID_DROPDOWN = "VetIdFilterDropdown"
+  const val OFFICE_ID_DROPDOWN = "OfficeIdFilterDropdown"
   const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
 
   fun alertItemTag(page: Int) = "ALERT_ITEM_$page"
@@ -72,7 +74,7 @@ object OverviewScreenTestTags {
 fun OverviewScreen(
     userRole: UserRole,
     credentialManager: CredentialManager = CredentialManager.create(LocalContext.current),
-    userId: String,
+    user: User,
     overviewViewModel: OverviewViewModelContract,
     onAddReport: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
@@ -85,8 +87,8 @@ fun OverviewScreen(
   var lazySpace by remember { mutableStateOf(0.dp) }
   val minLazySpace = remember { 150.dp }
 
-  LaunchedEffect(userId, userRole) {
-    overviewViewModel.loadReports(userRole, userId)
+  LaunchedEffect(user) {
+    overviewViewModel.loadReports(user)
     overviewViewModel.loadAlerts()
   }
   Scaffold(
@@ -209,25 +211,25 @@ fun OverviewScreen(
                           selectedOption = uiState.selectedStatus,
                           onOptionSelected = {
                             overviewViewModel.updateFilters(
-                                it, uiState.selectedVet, uiState.selectedFarmer)
+                                it, uiState.selectedOffice, uiState.selectedFarmer)
                           },
                           modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN),
                           placeholder = "Filter by status",
                           labelProvider = { status -> status?.displayString() ?: "-" })
                       Spacer(modifier = Modifier.width(8.dp))
                       if (userRole == UserRole.FARMER) {
-                        // -- VetId filter (only for farmer) --
+                        // -- OfficeId filter (only for farmer) --
                         DropdownMenuWrapper(
-                            options = listOf(null) + uiState.vetOptions,
-                            selectedOption = uiState.selectedVet,
+                            options = listOf(null) + uiState.officeOptions,
+                            selectedOption = uiState.selectedOffice,
                             onOptionSelected = {
                               overviewViewModel.updateFilters(
                                   status = uiState.selectedStatus,
-                                  vetId = it,
+                                  officeId = it,
                                   farmerId = uiState.selectedFarmer)
                             },
-                            modifier = Modifier.testTag(OverviewScreenTestTags.VET_ID_DROPDOWN),
-                            placeholder = "Filter by vets")
+                            modifier = Modifier.testTag(OverviewScreenTestTags.OFFICE_ID_DROPDOWN),
+                            placeholder = "Filter by offices")
                       } else if (userRole == UserRole.VET) {
                         // -- FarmerId filter (only for vet) --
                         DropdownMenuWrapper(
@@ -236,7 +238,7 @@ fun OverviewScreen(
                             onOptionSelected = {
                               overviewViewModel.updateFilters(
                                   status = uiState.selectedStatus,
-                                  vetId = uiState.selectedVet,
+                                  officeId = uiState.selectedOffice,
                                   farmerId = it)
                             },
                             modifier = Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN),
@@ -348,10 +350,11 @@ fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
       verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
           Text(report.title, style = MaterialTheme.typography.titleSmall)
-          val uid = if (userRole == UserRole.VET) report.farmerId else report.vetId
+
           Row(verticalAlignment = Alignment.CenterVertically) {
             // Show full name and role, no label
-            AuthorName(uid = uid)
+            if (userRole == UserRole.VET) AuthorName(uid = report.farmerId)
+            else OfficeName(uid = report.officeId, onClick = { /* TODO("add ViewOffice") */})
           }
           Text(
               text = report.description.let { if (it.length > 50) it.take(50) + "..." else it },
@@ -412,7 +415,7 @@ fun PreviewOverviewScreen() {
           selectedStatus = null,
           selectedVet = null,
           selectedFarmer = null,
-          vetOptions = listOf("vet_001", "vet_002"),
+          officeOptions = listOf("vet_001", "vet_002"),
           farmerOptions = listOf("farmer_001", "farmer_002"))
   val dummyViewModel =
       object : OverviewViewModelContract {

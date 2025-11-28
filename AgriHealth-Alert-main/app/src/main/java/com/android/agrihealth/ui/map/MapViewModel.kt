@@ -1,6 +1,10 @@
 package com.android.agrihealth.ui.map
 
+import android.content.Context
+import android.location.Geocoder
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.authentification.UserRepository
@@ -13,6 +17,8 @@ import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import java.util.Locale
+import kotlin.collections.firstOrNull
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,19 +30,23 @@ import kotlinx.coroutines.withTimeoutOrNull
 
 data class MapUIState(
     val reports: List<Report> = emptyList(),
-    val locationPermission: Boolean = false
+    val locationPermission: Boolean = false,
+    val geocodedAddress: String? = null
 )
 
 class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
     private val locationViewModel: LocationViewModel,
-    val selectedReportId: String? = null
+    val selectedReportId: String? = null,
+    startingPosition: Location? = null,
+    showReports: Boolean = true
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(MapUIState())
   val uiState: StateFlow<MapUIState> = _uiState.asStateFlow()
 
-  private val _startingLocation = MutableStateFlow(Location(46.9481, 7.4474, null)) // Bern
+  private val _startingLocation =
+      MutableStateFlow(startingPosition ?: Location(46.9481, 7.4474)) // Bern
   val startingLocation = _startingLocation.asStateFlow()
   private val _zoom = MutableStateFlow(10f)
   val zoom = _zoom.asStateFlow()
@@ -50,9 +60,13 @@ class MapViewModel(
       }
     }
     refreshMapPermission()
-    refreshReports(
-        Firebase.auth.currentUser?.uid
-            ?: throw IllegalArgumentException("Map refreshed Reports while current user was null"))
+    setStartingLocation()
+
+    if (showReports)
+        refreshReports(
+            Firebase.auth.currentUser?.uid
+                ?: throw IllegalArgumentException(
+                    "Map refreshed Reports while current user was null"))
   }
 
   fun refreshReports(uid: String) {
@@ -91,7 +105,7 @@ class MapViewModel(
    * @param location the map screen will start at this location if not null.
    * @param useCurrentLocation will fetch new location instead of using last known location if true.
    */
-  fun setStartingLocation(location: Location?, useCurrentLocation: Boolean = false) {
+  fun setStartingLocation(location: Location? = null, useCurrentLocation: Boolean = false) {
     // Specific starting point, takes priority because of report navigation for example
     if (location != null) {
       _startingLocation.value = location
@@ -124,8 +138,29 @@ class MapViewModel(
     return user.getOrNull()?.address
   }
 
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  /**
+   * Converts geographical coordinates into a text address
+   *
+   * @param context Current composable context
+   * @param lat Latitude to convert
+   * @param lng Longitude to convert
+   */
+  fun getAddressFromLatLng(context: Context, lat: Double, lng: Double) {
+    val geocoder = Geocoder(context, Locale.getDefault())
+
+    try {
+      // Deprecated but I can't use the new function for some reason
+      val addresses = geocoder.getFromLocation(lat, lng, 1)
+      val result = addresses?.firstOrNull()?.getAddressLine(0)
+      _uiState.value = _uiState.value.copy(geocodedAddress = result)
+    } catch (_: Exception) {
+      _uiState.value = _uiState.value.copy(geocodedAddress = null)
+    }
+  }
+
   fun refreshCameraPosition() {
-    setStartingLocation(null, useCurrentLocation = true)
+    setStartingLocation(useCurrentLocation = true)
   }
 
   data class SpiderifiedReport(val report: Report, val position: LatLng, val center: LatLng)

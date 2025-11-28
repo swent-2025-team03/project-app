@@ -4,7 +4,7 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
-import com.android.agrihealth.ui.report.ReportViewModel
+import com.android.agrihealth.ui.report.ReportViewViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
@@ -17,14 +17,14 @@ import org.junit.Test
 class ReportViewModelTest {
 
   private lateinit var repository: FakeReportRepository
-  private lateinit var viewModel: ReportViewModel
+  private lateinit var viewModel: ReportViewViewModel
 
   private val testDispatcher = StandardTestDispatcher()
 
   @Before
   fun setup() {
     repository = FakeReportRepository()
-    viewModel = ReportViewModel(repository)
+    viewModel = ReportViewViewModel(repository)
     Dispatchers.setMain(testDispatcher)
   }
 
@@ -106,7 +106,7 @@ class FakeReportRepository : ReportRepository {
           questionForms = emptyList(),
           photoUri = null,
           farmerId = "F1",
-          vetId = "V1",
+          officeId = "OFF1",
           status = ReportStatus.PENDING,
           answer = "old answer",
           location = Location(0.0, 0.0, "Nowhere"))
@@ -130,7 +130,7 @@ class FakeReportRepository : ReportRepository {
 
   override suspend fun getReportsByFarmer(farmerId: String): List<Report> = emptyList()
 
-  override suspend fun getReportsByVet(vetId: String): List<Report> = emptyList()
+  override suspend fun getReportsByOffice(officeId: String): List<Report> = emptyList()
 
   override suspend fun addReport(report: Report) {
     // not used

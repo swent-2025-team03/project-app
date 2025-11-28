@@ -9,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,37 +16,33 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
-import com.android.agrihealth.ui.common.AuthorNameViewModel
+import com.android.agrihealth.ui.common.OfficeNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.LOGOUT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_FARMER
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_VET
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_VET_FIELD
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_OFFICE_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DESCRIPTION_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.GENERATED_CODE_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.MANAGE_OFFICE_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
-import kotlinx.coroutines.launch
+import com.android.agrihealth.ui.user.UserViewModelContract
 
 object ProfileScreenTestTags {
 
@@ -57,17 +52,15 @@ object ProfileScreenTestTags {
   const val EDIT_BUTTON = "EditButton"
   const val DESCRIPTION_FIELD = "DescriptionField"
   const val ADDRESS_FIELD = "AddressField"
-  const val DEFAULT_VET_FIELD = "DefaultVetField"
+  const val DEFAULT_OFFICE_FIELD = "DefaultOfficeField"
   const val CODE_BUTTON_FARMER = "CodeButtonFarmer"
-  const val CODE_BUTTON_VET = "CodeButtonVet"
-  const val GENERATED_CODE_TEXT = "GeneratedCodeText"
   const val MANAGE_OFFICE_BUTTON = "ManageOfficeButton"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    userViewModel: UserViewModel = viewModel(),
+    userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
     onGoBack: () -> Unit = {},
     onLogout: () -> Unit = {},
     onEditProfile: () -> Unit = {},
@@ -81,12 +74,12 @@ fun ProfileScreen(
   val factory = remember {
     object : androidx.lifecycle.ViewModelProvider.Factory {
       override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return ProfileViewModel(userViewModel) as T
+        return CodesViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
+            as T
       }
     }
   }
-  val profileViewModel: ProfileViewModel = viewModel(factory = factory)
-  val code by profileViewModel.generatedCode.collectAsState()
+  val codesViewModel: CodesViewModel = viewModel(factory = factory)
 
   val snackbarHostState = remember { SnackbarHostState() }
 
@@ -147,7 +140,7 @@ fun ProfileScreen(
               // Description
               Spacer(modifier = Modifier.height(12.dp))
               OutlinedTextField(
-                  value = user.description?.toString() ?: "",
+                  value = user.description ?: "",
                   onValueChange = {},
                   label = { Text("Description") },
                   enabled = false,
@@ -197,22 +190,23 @@ fun ProfileScreen(
 
               // Default Vet (Farmers only)
               if (user is Farmer) {
-                val authorNameVm: AuthorNameViewModel = viewModel(key = (user as Farmer).defaultVet)
-                val vetName by authorNameVm.label.collectAsState()
+                val officeNameVm: OfficeNameViewModel =
+                    viewModel(key = (user as Farmer).defaultOffice)
+                val officeName by officeNameVm.uiState.collectAsState()
                 LaunchedEffect(user) {
-                  authorNameVm.load(
-                      uid = (user as Farmer).defaultVet,
-                      deletedText = "Deleted vet",
-                      unassignedText = "Unassigned")
+                  officeNameVm.loadOffice(
+                      uid = (user as Farmer).defaultOffice,
+                      deletedOffice = "Deleted office",
+                      noneOffice = "Unassigned")
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
-                    value = vetName,
+                    value = officeName,
                     onValueChange = {},
-                    label = { Text("Default Vet") },
+                    label = { Text("Default Office") },
                     enabled = false,
-                    modifier = Modifier.fillMaxWidth().testTag(DEFAULT_VET_FIELD))
+                    modifier = Modifier.fillMaxWidth().testTag(DEFAULT_OFFICE_FIELD))
               }
 
               Spacer(modifier = Modifier.height(24.dp))
@@ -222,40 +216,13 @@ fun ProfileScreen(
                     onClick = onCodeFarmer,
                     modifier =
                         Modifier.align(Alignment.CenterHorizontally).testTag(CODE_BUTTON_FARMER)) {
-                      Text("Add new Vet with Code")
+                      Text("Add new Office with Code")
                     }
               }
 
               if (user is Vet) {
-                Button(
-                    onClick = { profileViewModel.generateVetCode() },
-                    modifier =
-                        Modifier.align(Alignment.CenterHorizontally).testTag(CODE_BUTTON_VET)) {
-                      Text("Generate new Farmer's Code")
-                    }
-
-                if (code != null && userRole == UserRole.VET) {
-                  val clipboard = LocalClipboardManager.current
-                  val scope = rememberCoroutineScope()
-
-                  Row(
-                      verticalAlignment = Alignment.CenterVertically,
-                      horizontalArrangement = Arrangement.Center) {
-                        Text(
-                            "Generated Code: $code",
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(end = 8.dp).testTag(GENERATED_CODE_TEXT))
-                        IconButton(
-                            onClick = {
-                              clipboard.setText(AnnotatedString(code!!))
-                              scope.launch { snackbarHostState.showSnackbar("Code copied!") }
-                            }) {
-                              Icon(
-                                  imageVector = Icons.Filled.ContentCopy,
-                                  contentDescription = "Copy Code")
-                            }
-                      }
-                }
+                GenerateCode(
+                    codesViewModel, snackbarHostState, Modifier.align(Alignment.CenterHorizontally))
 
                 Spacer(modifier = Modifier.height(12.dp))
 

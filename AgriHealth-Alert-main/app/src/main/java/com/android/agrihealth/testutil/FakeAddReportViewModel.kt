@@ -31,8 +31,8 @@ class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
     _uiState.value = _uiState.value.copy(description = newDescription)
   }
 
-  override fun setVet(option: String) {
-    _uiState.value = _uiState.value.copy(chosenVet = option)
+  override fun setOffice(officeId: String) {
+    _uiState.value = _uiState.value.copy(chosenOffice = officeId)
   }
 
   override fun updateQuestion(index: Int, updated: QuestionForm) {

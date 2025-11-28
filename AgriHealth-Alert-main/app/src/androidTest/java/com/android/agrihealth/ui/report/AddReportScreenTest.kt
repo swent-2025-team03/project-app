@@ -20,16 +20,21 @@ import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.testutil.TestConstants
-import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.UserViewModelContract
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 
-private fun fakeFarmerViewModel(): UserViewModel =
+private val linkedOffices =
+    mapOf(
+        "Best Office Ever!" to "Deleted office",
+        "Meh Office" to "Deleted office",
+        "Great Office" to "Deleted office")
+
+private fun fakeFarmerViewModel(): UserViewModelContract =
     FakeUserViewModel(
         Farmer(
             uid = "test_user",
@@ -37,8 +42,8 @@ private fun fakeFarmerViewModel(): UserViewModel =
             lastname = "Joe",
             email = "email@email.com",
             address = Location(0.0, 0.0, "123 Farm Lane"),
-            linkedVets = listOf("Best Vet Ever!", "Meh Vet", "Great Vet"),
-            defaultVet = null,
+            linkedOffices = linkedOffices.keys.toList(),
+            defaultOffice = linkedOffices.keys.toList().first(),
         ))
 
 class AddReportScreenTest {
@@ -112,11 +117,7 @@ class AddReportScreenTest {
   fun displayAllFieldsAndButtons() {
     composeRule.setContent {
       MaterialTheme {
-        AddReportScreen(
-            userRole = UserRole.FARMER,
-            userId = "test_user",
-            onCreateReport = {},
-            addReportViewModel = FakeAddReportViewModel())
+        AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
       }
     }
     composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).assertIsDisplayed()
@@ -170,8 +171,8 @@ class AddReportScreenTest {
       }
     }
 
-    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.VET_DROPDOWN))
-    composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).assertIsDisplayed()
+    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
+    composeRule.onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN).assertIsDisplayed()
     scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).assertIsDisplayed()
   }
@@ -180,11 +181,7 @@ class AddReportScreenTest {
   fun createButton_showsSnackbar_onEmptyFields() {
     composeRule.setContent {
       MaterialTheme {
-        AddReportScreen(
-            userRole = UserRole.FARMER,
-            userId = "test_user",
-            onCreateReport = {},
-            addReportViewModel = FakeAddReportViewModel())
+        AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
       }
     }
     // Click with fields empty
@@ -202,37 +199,42 @@ class AddReportScreenTest {
   }
 
   @Test
-  fun selectingVet_updatesDisplayedOption() {
+  fun selectingOffice_updatesDisplayedOption() {
     val fakeUserViewModel = fakeFarmerViewModel()
 
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
             userViewModel = fakeUserViewModel,
-            userRole = UserRole.FARMER,
-            userId = "test_user",
             onCreateReport = {},
             addReportViewModel = FakeAddReportViewModel())
       }
     }
+
+    val firstOfficeId = linkedOffices.keys.first()
+    val firstOfficeName = linkedOffices[firstOfficeId]!!
+
     composeRule
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.VET_DROPDOWN))
-    composeRule.onNodeWithTag(AddReportScreenTestTags.VET_DROPDOWN).performClick()
-    val firstVet = "Best Vet Ever!"
-    composeRule.onNodeWithText(firstVet).assertIsDisplayed().performClick()
-    composeRule.onNodeWithText(firstVet).assertIsDisplayed()
+        .performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
+
+    composeRule.onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN).performClick()
+    composeRule.waitForIdle()
+
+    composeRule
+        .onNodeWithTag(
+            AddReportScreenTestTags.getTestTagForOffice(firstOfficeId), useUnmergedTree = true)
+        .assertExists()
+        .performClick()
+
+    composeRule.onNodeWithText(firstOfficeName, useUnmergedTree = true).assertIsDisplayed()
   }
 
   @Test
   fun enteringTitleDescription_showsSuccessDialog() {
     composeRule.setContent {
       MaterialTheme {
-        AddReportScreen(
-            userRole = UserRole.FARMER,
-            userId = "test_user",
-            onCreateReport = {},
-            addReportViewModel = FakeAddReportViewModel())
+        AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
       }
     }
     createReport("title", "description")
@@ -253,10 +255,7 @@ class AddReportScreenTest {
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-            userRole = UserRole.FARMER,
-            userId = "test_user",
-            onCreateReport = { called = true },
-            addReportViewModel = FakeAddReportViewModel())
+            onCreateReport = { called = true }, addReportViewModel = FakeAddReportViewModel())
       }
     }
 

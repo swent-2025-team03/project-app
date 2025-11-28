@@ -30,7 +30,7 @@ data class ReportViewUIState(
             questionForms = emptyList(),
             photoUri = null, // Placeholder for now
             farmerId = "FARMER_123",
-            vetId = "VET_456",
+            officeId = "OFF_456",
             status = ReportStatus.PENDING,
             answer = null,
             location = Location(46.5191, 6.5668, "Lausanne Farm")),
@@ -42,12 +42,15 @@ data class ReportViewUIState(
  * ViewModel holding the state of a report being viewed. Currently uses mock data and local state
  * only.
  */
-class ReportViewModel(
+class ReportViewViewModel(
     private val repository: ReportRepository = ReportRepositoryProvider.repository
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(ReportViewUIState())
   val uiState: StateFlow<ReportViewUIState> = _uiState.asStateFlow()
+
+  private val _unsavedChanges = MutableStateFlow(false)
+  val unsavedChanges: StateFlow<Boolean> = _unsavedChanges.asStateFlow()
 
   // Flag to indicate that saving is completed (success). Observed by the UI for navigation.
   private val _saveCompleted = MutableStateFlow(false)
@@ -73,16 +76,27 @@ class ReportViewModel(
     }
   }
 
+  /**
+   * Called when something changed, to notify the user that they didn't save their changes if they
+   * try to leave the screen
+   */
+  private fun flagChanges() {
+    _unsavedChanges.value = true
+  }
+
   fun onAnswerChange(newText: String) {
     _uiState.value = _uiState.value.copy(answerText = newText)
+    flagChanges()
   }
 
   fun onStatusChange(newStatus: ReportStatus) {
     _uiState.value = _uiState.value.copy(status = newStatus)
+    flagChanges()
   }
 
   fun onSpam() {
     _uiState.value = _uiState.value.copy(status = ReportStatus.SPAM)
+    onSave()
   }
 
   /** Saves the modified report, then triggers the saveCompleted flag on success. */
@@ -103,5 +117,10 @@ class ReportViewModel(
   /** Resets the flag after the UI has consumed the navigation event. */
   fun consumeSaveCompleted() {
     _saveCompleted.value = false
+    consumeUnsavedChanges()
+  }
+
+  fun consumeUnsavedChanges() {
+    _unsavedChanges.value = false
   }
 }
