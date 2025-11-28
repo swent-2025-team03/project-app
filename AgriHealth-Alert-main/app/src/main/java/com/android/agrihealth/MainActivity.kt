@@ -162,16 +162,7 @@ fun AgriHealthApp(
         )
       }
       composable(Screen.AddReport.route) {
-        //        val createReportViewModel =
-        //            object : androidx.lifecycle.ViewModelProvider.Factory {
-        //              override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        //                return AddReportViewModel(userId = currentUserId) as T
-        //              }
-        //            }
-        //        val addReportViewModel: AddReportViewModel = viewModel(factory =
-        // createReportViewModel)
-        val createReportViewModel =
-            AddReportViewModel(userId = currentUserId) // TODO CHange, see editprofilescreen
+        val createReportViewModel = AddReportViewModel(userId = currentUserId)
 
         AddReportScreen(
             onBack = { navigationActions.goBack() },

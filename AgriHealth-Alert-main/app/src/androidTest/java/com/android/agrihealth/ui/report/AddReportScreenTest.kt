@@ -291,9 +291,7 @@ class AddReportScreenTest {
   fun imagePreview_isNotShownWhenEmpty() {
     composeRule.setContent {
       MaterialTheme {
-        AddReportScreen(
-            onCreateReport = {},
-            addReportViewModel = FakeAddReportViewModel())
+        AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
       }
     }
     scrollToUploadSection()
@@ -310,11 +308,7 @@ class AddReportScreenTest {
     val fakeViewModel = FakeAddReportViewModel()
     fakeViewModel.setPhoto(imageUri)
     composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen(
-            onCreateReport = {},
-            addReportViewModel = fakeViewModel)
-      }
+      MaterialTheme { AddReportScreen(onCreateReport = {}, addReportViewModel = fakeViewModel) }
     }
     scrollToUploadSection()
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
@@ -338,11 +332,7 @@ class AddReportScreenTest {
     fakeViewModel.setPhoto(imageUri)
 
     composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen(
-            onCreateReport = {},
-            addReportViewModel = fakeViewModel)
-      }
+      MaterialTheme { AddReportScreen(onCreateReport = {}, addReportViewModel = fakeViewModel) }
     }
     scrollToUploadSection()
     composeRule.waitForIdle()
@@ -356,9 +346,7 @@ class AddReportScreenTest {
   fun uploadImageDialog_cancel_dismissedNoPhotoPicked() {
     composeRule.setContent {
       MaterialTheme {
-        AddReportScreen(
-            onCreateReport = {},
-            addReportViewModel = FakeAddReportViewModel())
+        AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
       }
     }
 
@@ -377,11 +365,7 @@ class AddReportScreenTest {
   fun uploadImageDialog_gallery_setsPhoto() {
     val fakeViewModel = FakeAddReportViewModel()
     composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen(
-            onCreateReport = {},
-            addReportViewModel = fakeViewModel)
-      }
+      MaterialTheme { AddReportScreen(onCreateReport = {}, addReportViewModel = fakeViewModel) }
     }
 
     scrollToUploadSection()
@@ -403,11 +387,7 @@ class AddReportScreenTest {
   fun uploadImageDialog_camera_setsPhoto() {
     val fakeViewModel = FakeAddReportViewModel()
     composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen(
-            onCreateReport = {},
-            addReportViewModel = fakeViewModel)
-      }
+      MaterialTheme { AddReportScreen(onCreateReport = {}, addReportViewModel = fakeViewModel) }
     }
 
     scrollToUploadSection()
