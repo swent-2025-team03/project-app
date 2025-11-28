@@ -15,7 +15,7 @@ interface AddReportViewModelContract {
 
   fun updateQuestion(index: Int, updated: QuestionForm)
 
-  suspend fun createReport(): Boolean
+  suspend fun createReport(): CreateReportResult
 
   fun clearInputs()
 

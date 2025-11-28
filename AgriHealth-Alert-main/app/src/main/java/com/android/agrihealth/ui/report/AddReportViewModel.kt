@@ -27,6 +27,13 @@ data class AddReportUiState(
     val uploadedImagePath: String? = null,
 )
 
+sealed class CreateReportResult {
+  object Success : CreateReportResult()
+  object ValidationError : CreateReportResult() // missing fields, unanswered questions, etc.
+  data class PhotoUploadError(val e: Throwable) : CreateReportResult()
+  data class RepositoryError(val e: Throwable) : CreateReportResult()
+}
+
 class AddReportViewModel(
     private val userId: String,
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
@@ -70,27 +77,39 @@ class AddReportViewModel(
     _uiState.value = _uiState.value.copy(questionForms = updatedList)
   }
 
-  override suspend fun createReport(): Boolean {
+  override suspend fun createReport(): CreateReportResult  {
     val current = _uiState.value
-    if (current.title.isBlank() || current.description.isBlank()) return false
-    if (!current.questionForms.all { it.isValid() }) return false
+
+    // 1) Validation (checking that all fields are completed
+    if (current.title.isBlank() || current.description.isBlank()) {
+      return CreateReportResult.ValidationError
+    }
+    if (!current.questionForms.all { it.isValid() }) {
+      return CreateReportResult.ValidationError
+    }
 
     var uploadedPath = current.uploadedImagePath
 
-    if (current.photoUri != null && uploadedPath == null) {
+    // 2) Upload photo (if an image has been chosen)
+    if (current.photoUri != null) {
       imageViewModel.upload(current.photoUri)
+
       val resultState =
-          imageViewModel.uiState
-              // .drop(1) // skip Idle/Loading
-              .first { it is ImageUIState.UploadSuccess || it is ImageUIState.Error }
+        imageViewModel.uiState
+          .first { it is ImageUIState.UploadSuccess || it is ImageUIState.Error }
 
       when (resultState) {
         is ImageUIState.UploadSuccess -> {
           uploadedPath = resultState.path
           _uiState.value = _uiState.value.copy(uploadedImagePath = resultState.path)
         }
-        is ImageUIState.Error -> return false
-        else -> return false
+        is ImageUIState.Error -> {
+          return CreateReportResult.PhotoUploadError(resultState.e)
+        }
+        else -> {
+          return CreateReportResult.PhotoUploadError(
+            IllegalStateException("Something unexpected happened..."))
+        }
       }
     }
 
@@ -105,12 +124,16 @@ class AddReportViewModel(
             officeId = current.chosenOffice,
             status = ReportStatus.PENDING,
             answer = null,
-            location = Location(46.7990813, 6.6259961),
+            location = Location(46.7990813, 6.6259961),  // TODO Create way to select location automatically or manually on a map
         )
 
-    viewModelScope.launch { reportRepository.addReport(newReport) }
-    clearInputs()
-    return true
+    return try {
+      reportRepository.addReport(newReport)
+      clearInputs()
+      CreateReportResult.Success
+    } catch (e: Exception) {
+      CreateReportResult.RepositoryError(e)
+    }
   }
 
   suspend fun createReport2(): Boolean {

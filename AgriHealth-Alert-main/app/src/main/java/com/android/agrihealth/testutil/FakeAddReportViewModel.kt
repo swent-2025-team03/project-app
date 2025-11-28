@@ -9,6 +9,7 @@ import com.android.agrihealth.data.model.report.QuestionForm
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.ui.report.AddReportUiState
 import com.android.agrihealth.ui.report.AddReportViewModelContract
+import com.android.agrihealth.ui.report.CreateReportResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -42,8 +43,12 @@ class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
     _uiState.value = _uiState.value.copy(questionForms = updatedList)
   }
 
-  override suspend fun createReport(): Boolean {
-    return _uiState.value.title.isNotBlank() && _uiState.value.description.isNotBlank()
+  override suspend fun createReport(): CreateReportResult {
+    if (_uiState.value.title.isNotBlank() && _uiState.value.description.isNotBlank()) {
+      return CreateReportResult.ValidationError
+    } else {
+      return CreateReportResult.Success
+    }
   }
 
   override fun clearInputs() {

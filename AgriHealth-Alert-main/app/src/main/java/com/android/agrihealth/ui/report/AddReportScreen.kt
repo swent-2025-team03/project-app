@@ -75,10 +75,12 @@ object AddReportScreenTestTags {
   fun getTestTagForOffice(vetId: String): String = "officeOption_$vetId"
 }
 
-/** Texts for the report creation feedback. For testing purposes */
+/** Texts for the report creation feedback */
 object AddReportFeedbackTexts {
   const val SUCCESS = "Report created successfully!"
-  const val FAILURE = "Please fill in all required fields..."
+  const val FAILURE = "Couldn't upload report... Please verify your connection and try again"
+
+  const val INCOMPLETE = "Please fill in all required fields..."
 }
 
 /** Constants for testing purposes */
@@ -102,6 +104,25 @@ object AddReportDialogTexts {
 /** This **MUST** be the same as in: AndroidManifest.xml --> <provider --> android:authorities */
 private const val FILE_PROVIDER =
     "com.android.agrihealth.fileprovider" // TODO: Maybe move this into its own object
+
+
+// Helper function
+private fun generateCreateReportErrorMessage(
+  e: Throwable?
+): String {
+//  val baseMessage = AddReportFeedbackTexts.FAILURE
+//  val errorMessage = e?.message ?: "Unknown error"
+//
+//  val fullMessage = """
+//        $baseMessage
+//
+//        For more information, here is the actual error:
+//        $errorMessage
+//    """.trimIndent()
+//
+//  return fullMessage
+  return e?.message ?: "Unknown error"
+}
 
 /**
  * Displays the report creation screen for farmers
@@ -162,6 +183,10 @@ fun AddReportScreen(
 
   // For the dialog when adding a report is successful
   var showSuccessDialog by remember { mutableStateOf(false) }
+
+  // For the error dialog
+  var showErrorDialog by remember { mutableStateOf(false) }
+  var errorDialogMessage by remember { mutableStateOf<String?>(null) }
 
   Scaffold(
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -319,6 +344,19 @@ fun AddReportScreen(
               text = { Text(AddReportFeedbackTexts.SUCCESS) })
         }
       }
+
+      if (showErrorDialog && errorDialogMessage != null) {
+        AlertDialog(
+          onDismissRequest = { showErrorDialog = false },
+          confirmButton = {
+            TextButton(onClick = { showErrorDialog = false }) {
+              Text("OK")
+            }
+          },
+          title = { Text("Report creation failed") },
+          text = { Text(errorDialogMessage!!) }
+        )
+      }
 }
 
 /**
@@ -357,7 +395,7 @@ private fun MultilineField(
       onValueChange = onValueChange,
       placeholder = { Text(placeholder) },
       singleLine = false,
-      minLines = 1,
+      minLines = 2,
       maxLines = Int.MAX_VALUE,
       modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
   )
@@ -530,15 +568,24 @@ fun CreateReportButton(
     onSuccess: () -> Unit
 ) {
   val scope = rememberCoroutineScope()
+  val context = LocalContext.current
 
   Button(
-      onClick = {
+    onClick = {
         scope.launch {
-          val created = addReportViewModel.createReport()
-          if (created) {
-            onSuccess()
-          } else {
-            snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
+          when (val result = addReportViewModel.createReport()) {
+            is CreateReportResult.Success -> {
+              onSuccess()
+            }
+            is CreateReportResult.ValidationError -> {
+              snackbarHostState.showSnackbar(AddReportFeedbackTexts.INCOMPLETE)
+            }
+            is CreateReportResult.PhotoUploadError -> {
+              Toast.makeText(context, generateCreateReportErrorMessage(result.e), Toast.LENGTH_LONG).show()
+            }
+            is CreateReportResult.RepositoryError -> {
+              Toast.makeText(context, generateCreateReportErrorMessage(result.e), Toast.LENGTH_LONG).show()
+            }
           }
         }
       },
