@@ -4,7 +4,6 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.testutil.FakeAlertRepository
-import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.navigation.NavigationActions
 import org.junit.Rule
 import org.junit.Test
@@ -80,13 +79,8 @@ class AlertViewScreenTest {
   @Test
   fun longTitle_showsFullTitleInBody() {
     val viewModel = AlertViewModel(FakeAlertRepository())
+    viewModel.loadAlert("4")
     setAlertViewScreen(alertId = "4", viewModel = viewModel)
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
-      composeTestRule
-          .onAllNodesWithTag(AlertViewScreenTestTags.ALERT_FULL_TITLE)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
     composeTestRule.onNodeWithTag(AlertViewScreenTestTags.ALERT_FULL_TITLE).assertIsDisplayed()
   }
 }
