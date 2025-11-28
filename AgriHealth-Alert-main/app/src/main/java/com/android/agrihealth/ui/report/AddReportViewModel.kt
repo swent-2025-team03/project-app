@@ -102,7 +102,7 @@ class AddReportViewModel(
             questionForms = current.questionForms,
             photoURL = uploadedPath,
             farmerId = userId,
-            vetId = current.chosenVet,
+            officeId = current.chosenOffice,
             status = ReportStatus.PENDING,
             answer = null,
             location = Location(46.7990813, 6.6259961),

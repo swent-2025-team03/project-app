@@ -177,7 +177,7 @@ fun AgriHealthApp(
             onBack = { navigationActions.goBack() },
             userViewModel = userViewModel,
             onCreateReport = { reloadReports = !reloadReports },
-            addReportViewModel = addReportViewModel,
+            addReportViewModel = createReportViewModel,
         )
       }
       composable(
