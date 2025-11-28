@@ -32,8 +32,8 @@ import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.common.OfficeName
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
-import java.time.format.DateTimeFormatter
 import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
+import java.time.format.DateTimeFormatter
 
 object ReportViewScreenTestTags {
   const val STATUS_BADGE_BOX = "StatusBadgeBox"
