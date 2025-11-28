@@ -2,6 +2,8 @@ package com.android.agrihealth.data.model.report
 
 import com.android.agrihealth.data.model.location.Location
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 enum class ReportStatus {
   PENDING,
@@ -22,8 +24,8 @@ data class Report(
     val answer: String?,
     val location: Location?,
     val createdAt: Instant = Instant.now(), // Auto-set creation timestamp
-    val startTime: Float? = null,
-    val duration: Float? = null
+    val startTime: LocalDateTime? = null,
+    val duration: LocalTime? = null,
 )
 
 fun ReportStatus.displayString(): String =
