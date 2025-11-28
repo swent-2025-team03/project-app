@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -49,8 +50,8 @@ import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
 import java.io.File
-import kotlinx.coroutines.launch
 import kotlin.collections.forEachIndexed
+import kotlinx.coroutines.launch
 
 // -- imports for preview --
 /*
@@ -88,7 +89,6 @@ object AddReportFeedbackTexts {
   const val INCOMPLETE = "Please fill in all required fields..."
 
   const val UNKNOWN = "Unknown error..."
-
 }
 
 /** Constants for testing purposes */
@@ -116,20 +116,19 @@ object AddReportDialogTexts {
 private const val FILE_PROVIDER =
     "com.android.agrihealth.fileprovider" // TODO: Maybe move this into its own object
 
-
-// Helper function
-private fun generateCreateReportErrorMessage(
-  e: Throwable?
-): String {
+// Helper function to generate the error message displayed on the error dialog
+private fun generateCreateReportErrorMessage(e: Throwable?): String {
   val baseMessage = AddReportFeedbackTexts.FAILURE
   val errorMessage = e?.message ?: AddReportFeedbackTexts.UNKNOWN
 
-  val fullMessage = """
+  val fullMessage =
+      """
         $baseMessage
 
         Details:
         $errorMessage
-    """.trimIndent()
+    """
+          .trimIndent()
 
   return fullMessage
 }
@@ -179,12 +178,7 @@ fun AddReportScreen(
     offices[officeId] = label
   }
 
-  // For gallery/camera photo picking
-  var showCamera by remember { mutableStateOf(false) }
-  var showGallery by remember { mutableStateOf(false) }
-
   // For the dropdown menu
-  var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
   var selectedOption by remember { mutableStateOf((user as Farmer).defaultOffice ?: "") }
 
   // For the confirmation snackbar (i.e alter window)
@@ -199,7 +193,6 @@ fun AddReportScreen(
   var errorDialogMessage by remember { mutableStateOf<String?>(null) }
 
   // For the create report button
-  val context = LocalContext.current
   val onCreateReportClick: () -> Unit = {
     scope.launch {
       when (val result = addReportViewModel.createReport()) {
@@ -268,22 +261,19 @@ fun AddReportScreen(
                   "Description",
                   AddReportScreenTestTags.DESCRIPTION_FIELD)
 
+              QuestionList(
+                  questions = uiState.questionForms,
+                  onQuestionChange = { index, updated ->
+                    addReportViewModel.updateQuestion(index, updated)
+                  })
 
-            QuestionList(
-              questions = uiState.questionForms,
-              onQuestionChange = { index, updated ->
-                addReportViewModel.updateQuestion(index, updated)
-              }
-            )
-
-            OfficeDropdown(
-              offices = offices,
-              selectedOfficeId = selectedOption,
-              onOfficeSelected = { officeId ->
-                selectedOption = officeId
-                addReportViewModel.setOffice(officeId)
-              }
-            )
+              OfficeDropdown(
+                  offices = offices,
+                  selectedOfficeId = selectedOption,
+                  onOfficeSelected = { officeId ->
+                    selectedOption = officeId
+                    addReportViewModel.setOffice(officeId)
+                  })
 
               UploadedImagePreview(photoUri = uiState.photoUri)
 
@@ -292,162 +282,171 @@ fun AddReportScreen(
                   onImagePicked = { addReportViewModel.setPhoto(it) },
                   onImageRemoved = { addReportViewModel.removePhoto() })
 
-              CreateReportButton(
-                onClick = onCreateReportClick
-              )
+              CreateReportButton(onClick = onCreateReportClick)
             }
 
-        // If adding the report was successful
-        if (showSuccessDialog) {
-          AlertDialog(
-              onDismissRequest = {
-                showSuccessDialog = false
-                onBack()
-              },
-              confirmButton = {
-                TextButton(
-                    onClick = {
-                      showSuccessDialog = false
-                      onCreateReport()
-                      onBack()
-                    }) {
-                      Text("OK")
-                    }
-              },
-              title = { Text(AddReportDialogTexts.TITLE_SUCCESS) },
-              text = { Text(AddReportFeedbackTexts.SUCCESS) },
-              modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_SUCCESS))
-        }
-      }
+        CreateReportSuccessDialog(
+            visible = showSuccessDialog,
+            onDismiss = {
+              showSuccessDialog = false
+              onBack()
+              onCreateReport()
+            })
 
-      if (showErrorDialog) {
-        AlertDialog(
-          onDismissRequest = { showErrorDialog = false },
-          confirmButton = {
-            TextButton(onClick = { showErrorDialog = false }) {
-              Text("OK")
-            }
-          },
-          title = { Text(AddReportDialogTexts.TITLE_FAILURE) },
-          text = { Text(errorDialogMessage ?: AddReportFeedbackTexts.UNKNOWN)},
-          modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_FAILURE)
-        )
+        CreateReportErrorDialog(
+            visible = showErrorDialog,
+            errorMessage = errorDialogMessage,
+            onDismiss = { showErrorDialog = false })
       }
 }
 
+/**
+ * A dialog shown when the report has successfully been created
+ *
+ * @param visible True if the dialog should be shown
+ * @param onDismiss Executed when the user dismisses the dialog
+ */
+@Composable
+fun CreateReportSuccessDialog(visible: Boolean, onDismiss: () -> Unit) {
+  if (!visible) return
 
+  AlertDialog(
+      onDismissRequest = onDismiss,
+      confirmButton = {
+        TextButton(
+            onClick = onDismiss,
+            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_SUCCESS_OK),
+            colors =
+                ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurface)) {
+              Text(AddReportDialogTexts.OK)
+            }
+      },
+      title = { Text(AddReportDialogTexts.TITLE_SUCCESS) },
+      text = { Text(AddReportFeedbackTexts.SUCCESS) },
+      modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_SUCCESS),
+  )
+}
+
+/**
+ * A dialog shown when an error happened and a report couldn't be created
+ *
+ * @param visible True if the dialog should be shown
+ * @param errorMessage The error message received when attempting to create a report
+ * @param onDismiss Executed when the user dismisses the dialog
+ */
+@Composable
+fun CreateReportErrorDialog(visible: Boolean, errorMessage: String?, onDismiss: () -> Unit) {
+  if (!visible) return
+
+  AlertDialog(
+      onDismissRequest = onDismiss,
+      confirmButton = {
+        TextButton(
+            onClick = onDismiss,
+            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_FAILURE_OK),
+            colors =
+                ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurface)) {
+              Text(AddReportDialogTexts.OK)
+            }
+      },
+      title = { Text(AddReportDialogTexts.TITLE_FAILURE) },
+      text = { Text(errorMessage ?: AddReportFeedbackTexts.UNKNOWN) },
+      modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_FAILURE))
+}
+
+/**
+ * A dropdown menu to choose an office
+ *
+ * @param offices Offices and their associated label (i.e name)
+ * @param selectedOfficeId The id of the currently selected office
+ * @param onOfficeSelected Executed when an office is selected
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OfficeDropdown(
-  offices: Map<String, String>,
-  selectedOfficeId: String,
-  onOfficeSelected: (String) -> Unit
+    offices: Map<String, String>,
+    selectedOfficeId: String,
+    onOfficeSelected: (String) -> Unit
 ) {
   var expanded by remember { mutableStateOf(false) }
   var selectedOfficeName by remember {
     mutableStateOf(offices[selectedOfficeId] ?: selectedOfficeId)
   }
 
-  ExposedDropdownMenuBox(
-    expanded = expanded,
-    onExpandedChange = { expanded = !expanded }
-  ) {
+  ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
     OutlinedTextField(
-      value = selectedOfficeName,
-      onValueChange = {}, // No direct text editing
-      readOnly = true,
-      label = { Text("Choose an Office") },
-      trailingIcon = {
-        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-      },
-      modifier = Modifier
-        .menuAnchor()
-        .fillMaxWidth()
-        .testTag(AddReportScreenTestTags.OFFICE_DROPDOWN)
-    )
+        value = selectedOfficeName,
+        onValueChange = {}, // No direct text editing
+        readOnly = true,
+        label = { Text("Choose an Office") },
+        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+        modifier =
+            Modifier.menuAnchor().fillMaxWidth().testTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
 
-    ExposedDropdownMenu(
-      expanded = expanded,
-      onDismissRequest = { expanded = false }
-    ) {
+    ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
       offices.forEach { (option, displayName) ->
         DropdownMenuItem(
-          text = { Text(displayName) },
-          onClick = {
-            selectedOfficeName = displayName
-            onOfficeSelected(option)
-            expanded = false
-          },
-          modifier = Modifier.testTag(
-            AddReportScreenTestTags.getTestTagForOffice(option)
-          )
-        )
+            text = { Text(displayName) },
+            onClick = {
+              selectedOfficeName = displayName
+              onOfficeSelected(option)
+              expanded = false
+            },
+            modifier = Modifier.testTag(AddReportScreenTestTags.getTestTagForOffice(option)))
       }
     }
   }
 }
 
-
 /**
- *   A long list of questions that must be answered to create a report
+ * A long list of questions that must be answered to create a report
  *
- *   @param questions A list containing all the questions
- *   @param onQuestionChange Called when the user changes the selected answer of a question
+ * @param questions A list containing all the questions
+ * @param onQuestionChange Called when the user changes the selected answer of a question
  */
 @Composable
 fun QuestionList(
-  questions: List<QuestionForm>,
-  onQuestionChange: (index: Int, updated: QuestionForm) -> Unit
+    questions: List<QuestionForm>,
+    onQuestionChange: (index: Int, updated: QuestionForm) -> Unit
 ) {
   questions.forEachIndexed { index, question ->
     when (question) {
       is OpenQuestion -> {
         OpenQuestionItem(
-          question = question,
-          onAnswerChange = { updated ->
-            onQuestionChange(index, updated)
-          },
-          enabled = true,
-          modifier = Modifier.testTag("QUESTION_${index}_OPEN")
-        )
+            question = question,
+            onAnswerChange = { updated -> onQuestionChange(index, updated) },
+            enabled = true,
+            modifier = Modifier.testTag("QUESTION_${index}_OPEN"))
       }
       is YesOrNoQuestion -> {
         YesOrNoQuestionItem(
-          question = question,
-          onAnswerChange = { updated ->
-            onQuestionChange(index, updated)
-          },
-          enabled = true,
-          modifier = Modifier.testTag("QUESTION_${index}_YESORNO")
-        )
+            question = question,
+            onAnswerChange = { updated -> onQuestionChange(index, updated) },
+            enabled = true,
+            modifier = Modifier.testTag("QUESTION_${index}_YESORNO"))
       }
       is MCQ -> {
         MCQItem(
-          question = question,
-          onAnswerChange = { updated ->
-            onQuestionChange(index, updated)
-          },
-          enabled = true,
-          modifier = Modifier.testTag("QUESTION_${index}_MCQ")
-        )
+            question = question,
+            onAnswerChange = { updated -> onQuestionChange(index, updated) },
+            enabled = true,
+            modifier = Modifier.testTag("QUESTION_${index}_MCQ"))
       }
       is MCQO -> {
         MCQOItem(
-          question = question,
-          onAnswerChange = { updated ->
-            onQuestionChange(index, updated)
-          },
-          enabled = true,
-          modifier = Modifier.testTag("QUESTION_${index}_MCQO")
-        )
+            question = question,
+            onAnswerChange = { updated -> onQuestionChange(index, updated) },
+            enabled = true,
+            modifier = Modifier.testTag("QUESTION_${index}_MCQO"))
       }
     }
   }
 }
 
-
 /**
- * A text filed used in the addReport screen
+ * A text field used in the addReport screen
  *
  * @param value The text stored on the text field
  * @param onValueChange What happens when the text on the text field changes
@@ -470,6 +469,15 @@ private fun Field(
   )
 }
 
+/**
+ * A text field that supports multiple lines, used to indicate to the user that they should write
+ * more
+ *
+ * @param value The text stored on the text field
+ * @param onValueChange What happens when the text on the text field changes
+ * @param placeholder The placeholder shown when the text field is empty
+ * @param testTag The test tag associated with the text field
+ */
 @Composable
 private fun MultilineField(
     value: String,
@@ -482,7 +490,7 @@ private fun MultilineField(
       onValueChange = onValueChange,
       placeholder = { Text(placeholder) },
       singleLine = false,
-      minLines = 2,
+      minLines = 3,
       maxLines = Int.MAX_VALUE,
       modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
   )
@@ -650,17 +658,14 @@ fun UploadedImagePreview(photoUri: Uri?, modifier: Modifier = Modifier) {
  */
 @Composable
 fun CreateReportButton(
-  onClick: () -> Unit,
+    onClick: () -> Unit,
 ) {
   Button(
-    onClick = onClick,
-    modifier = Modifier
-      .fillMaxWidth()
-      .height(56.dp)
-      .testTag(AddReportScreenTestTags.CREATE_BUTTON)
-  ) {
-    Text("Create Report", style = MaterialTheme.typography.titleLarge)
-  }
+      onClick = onClick,
+      modifier =
+          Modifier.fillMaxWidth().height(56.dp).testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
+        Text("Create Report", style = MaterialTheme.typography.titleLarge)
+      }
 }
 
 // TODO: (OPTIONAL) Make this work again

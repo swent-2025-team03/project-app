@@ -29,8 +29,11 @@ data class AddReportUiState(
 
 sealed class CreateReportResult {
   object Success : CreateReportResult()
+
   object ValidationError : CreateReportResult() // missing fields, unanswered questions, etc.
+
   data class PhotoUploadError(val e: Throwable) : CreateReportResult()
+
   data class RepositoryError(val e: Throwable) : CreateReportResult()
 }
 
@@ -77,7 +80,7 @@ class AddReportViewModel(
     _uiState.value = _uiState.value.copy(questionForms = updatedList)
   }
 
-  override suspend fun createReport(): CreateReportResult  {
+  override suspend fun createReport(): CreateReportResult {
     val current = _uiState.value
 
     // 1) Validation (checking that all fields are completed
@@ -95,8 +98,9 @@ class AddReportViewModel(
       imageViewModel.upload(current.photoUri)
 
       val resultState =
-        imageViewModel.uiState
-          .first { it is ImageUIState.UploadSuccess || it is ImageUIState.Error }
+          imageViewModel.uiState.first {
+            it is ImageUIState.UploadSuccess || it is ImageUIState.Error
+          }
 
       when (resultState) {
         is ImageUIState.UploadSuccess -> {
@@ -108,7 +112,7 @@ class AddReportViewModel(
         }
         else -> {
           return CreateReportResult.PhotoUploadError(
-            IllegalStateException("Something unexpected happened..."))
+              IllegalStateException("Something unexpected happened..."))
         }
       }
     }
@@ -124,7 +128,11 @@ class AddReportViewModel(
             officeId = current.chosenOffice,
             status = ReportStatus.PENDING,
             answer = null,
-            location = Location(46.7990813, 6.6259961),  // TODO Create way to select location automatically or manually on a map
+            location =
+                Location(
+                    46.7990813,
+                    6.6259961), // TODO Create way to select location automatically or manually on a
+                                // map
         )
 
     return try {
