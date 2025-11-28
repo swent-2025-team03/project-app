@@ -305,7 +305,12 @@ fun AgriHealthApp(
                   defaultValue = null
                 })) { backStackEntry ->
           val reportId = backStackEntry.arguments?.getString("reportId")
-          PlannerScreen(navigationActions)
+          PlannerScreen(
+              user = currentUser,
+              reportId = reportId,
+              goBack = navigationActions::goBack,
+              tabClicked = navigationActions::navigateTo,
+              reportClicked = { it -> navigationActions.navigateTo(Screen.ViewReport(it)) })
         }
     composable(
         route = Screen.ClaimCode.route,
