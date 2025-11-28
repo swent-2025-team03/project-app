@@ -110,18 +110,17 @@ private const val FILE_PROVIDER =
 private fun generateCreateReportErrorMessage(
   e: Throwable?
 ): String {
-//  val baseMessage = AddReportFeedbackTexts.FAILURE
-//  val errorMessage = e?.message ?: "Unknown error"
-//
-//  val fullMessage = """
-//        $baseMessage
-//
-//        For more information, here is the actual error:
-//        $errorMessage
-//    """.trimIndent()
-//
-//  return fullMessage
-  return e?.message ?: "Unknown error"
+  val baseMessage = AddReportFeedbackTexts.FAILURE
+  val errorMessage = e?.message ?: "Unknown error"
+
+  val fullMessage = """
+        $baseMessage
+
+        Details:
+        $errorMessage
+    """.trimIndent()
+
+  return fullMessage
 }
 
 /**
@@ -317,10 +316,28 @@ fun AddReportScreen(
                   onImagePicked = { addReportViewModel.setPhoto(it) },
                   onImageRemoved = { addReportViewModel.removePhoto() })
 
-              CreateReportButton(
-                  addReportViewModel = addReportViewModel,
-                  snackbarHostState = snackbarHostState,
-                  onSuccess = { showSuccessDialog = true })
+          CreateReportButton(
+            onClick = {
+              scope.launch {
+                when (val result = addReportViewModel.createReport()) {
+                  is CreateReportResult.Success -> {
+                    showSuccessDialog = true
+                  }
+                  is CreateReportResult.ValidationError -> {
+                    snackbarHostState.showSnackbar(AddReportFeedbackTexts.INCOMPLETE)
+                  }
+                  is CreateReportResult.PhotoUploadError -> {
+                    errorDialogMessage = generateCreateReportErrorMessage(result.e)
+                    showErrorDialog = true
+                  }
+                  is CreateReportResult.RepositoryError -> {
+                    errorDialogMessage = generateCreateReportErrorMessage(result.e)
+                    showErrorDialog = true
+                  }
+                }
+              }
+            }
+          )
             }
 
         // If adding the report was successful
@@ -563,36 +580,17 @@ fun UploadedImagePreview(photoUri: Uri?, modifier: Modifier = Modifier) {
  */
 @Composable
 fun CreateReportButton(
-    addReportViewModel: AddReportViewModelContract,
-    snackbarHostState: SnackbarHostState,
-    onSuccess: () -> Unit
+  onClick: () -> Unit,
 ) {
-  val scope = rememberCoroutineScope()
-  val context = LocalContext.current
-
   Button(
-    onClick = {
-        scope.launch {
-          when (val result = addReportViewModel.createReport()) {
-            is CreateReportResult.Success -> {
-              onSuccess()
-            }
-            is CreateReportResult.ValidationError -> {
-              snackbarHostState.showSnackbar(AddReportFeedbackTexts.INCOMPLETE)
-            }
-            is CreateReportResult.PhotoUploadError -> {
-              Toast.makeText(context, generateCreateReportErrorMessage(result.e), Toast.LENGTH_LONG).show()
-            }
-            is CreateReportResult.RepositoryError -> {
-              Toast.makeText(context, generateCreateReportErrorMessage(result.e), Toast.LENGTH_LONG).show()
-            }
-          }
-        }
-      },
-      modifier =
-          Modifier.fillMaxWidth().height(56.dp).testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
-        Text("Create Report", style = MaterialTheme.typography.titleLarge)
-      }
+    onClick = onClick,
+    modifier = Modifier
+      .fillMaxWidth()
+      .height(56.dp)
+      .testTag(AddReportScreenTestTags.CREATE_BUTTON)
+  ) {
+    Text("Create Report", style = MaterialTheme.typography.titleLarge)
+  }
 }
 
 // TODO: (OPTIONAL) Make this work again
