@@ -23,6 +23,10 @@ class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
                       MCQO("MCQO Question 1", listOf("Option A", "Option B"), -1, ""))))
   override val uiState: StateFlow<AddReportUiState> = _uiState
 
+    override fun switchIsCollected() {
+        _uiState.value = _uiState.value.copy(isCollected = !uiState.value.isCollected)
+    }
+
   override fun setTitle(newTitle: String) {
     _uiState.value = _uiState.value.copy(title = newTitle)
   }
