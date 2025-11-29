@@ -90,7 +90,6 @@ object AddReportFeedbackTexts {
   const val UNKNOWN = "Unknown error..."
 }
 
-
 /** Texts on the button used to upload/remove a photo */
 object AddReportUploadButtonTexts {
   const val UPLOAD_IMAGE = "Upload Image"
@@ -111,7 +110,8 @@ object AddReportDialogTexts {
 private const val FILE_PROVIDER =
     "com.android.agrihealth.fileprovider" // TODO: Maybe move this into its own object
 
-// Helper function to format the error message shown in the error dialog when creating a report failed
+// Helper function to format the error message shown in the error dialog when creating a report
+// failed
 private fun generateCreateReportErrorMessage(e: Throwable?): String {
   val baseMessage = AddReportFeedbackTexts.FAILURE
   val errorMessage = e?.message ?: AddReportFeedbackTexts.UNKNOWN
@@ -236,13 +236,9 @@ fun AddReportScreen(
                     .padding(16.dp)
                     .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
-              TitleField(
-                  uiState.title,
-                  { addReportViewModel.setTitle(it) })
+              TitleField(uiState.title, { addReportViewModel.setTitle(it) })
 
-              DescriptionField(
-                  uiState.description,
-                  { addReportViewModel.setDescription(it) })
+              DescriptionField(uiState.description, { addReportViewModel.setDescription(it) })
 
               QuestionList(
                   questions = uiState.questionForms,
@@ -429,8 +425,8 @@ fun QuestionList(
 }
 
 /**
- * A text field used to input the title o the report.
- * It is kept single line to encourage users to write short titles
+ * A text field used to input the title o the report. It is kept single line to encourage users to
+ * write short titles
  *
  * @param value The text stored on the text field
  * @param onValueChange What happens when the text on the text field changes
@@ -445,13 +441,16 @@ private fun TitleField(
       onValueChange = onValueChange,
       placeholder = { Text("Title") },
       singleLine = true,
-      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(AddReportScreenTestTags.TITLE_FIELD),
+      modifier =
+          Modifier.fillMaxWidth()
+              .padding(vertical = 8.dp)
+              .testTag(AddReportScreenTestTags.TITLE_FIELD),
   )
 }
 
 /**
- * A multi-line text field used to input the description of the report.
- * It is 3 lines high so that the user can see that it can and should hold more text than the title
+ * A multi-line text field used to input the description of the report. It is 3 lines high so that
+ * the user can see that it can and should hold more text than the title
  *
  * @param value The text stored on the text field
  * @param onValueChange What happens when the text on the text field changes
@@ -468,7 +467,10 @@ private fun DescriptionField(
       singleLine = false,
       minLines = 3,
       maxLines = Int.MAX_VALUE,
-      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(AddReportScreenTestTags.DESCRIPTION_FIELD),
+      modifier =
+          Modifier.fillMaxWidth()
+              .padding(vertical = 8.dp)
+              .testTag(AddReportScreenTestTags.DESCRIPTION_FIELD),
   )
 }
 

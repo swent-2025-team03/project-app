@@ -166,11 +166,11 @@ fun AgriHealthApp(
       }
       composable(Screen.AddReport.route) {
         val createReportViewModel =
-          object : androidx.lifecycle.ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-              return AddReportViewModel(userId = currentUserId) as T
+            object : androidx.lifecycle.ViewModelProvider.Factory {
+              override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return AddReportViewModel(userId = currentUserId) as T
+              }
             }
-          }
         val addReportViewModel: AddReportViewModel = viewModel(factory = createReportViewModel)
 
         AddReportScreen(

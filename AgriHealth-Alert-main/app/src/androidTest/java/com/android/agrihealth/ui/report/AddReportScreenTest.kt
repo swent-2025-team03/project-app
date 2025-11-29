@@ -93,7 +93,6 @@ class AddReportScreenTest {
 
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-
   // Waits until the dialog is shown
   private fun assertDialogIsShown(testTag: String) {
     composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
@@ -103,9 +102,9 @@ class AddReportScreenTest {
 
   // Checks if all the components of the dialog work correctly
   private fun assertDialogWorks(
-    dialogTestTag: String,
-    dialogTitle: String,
-    dismissTestTag: String
+      dialogTestTag: String,
+      dialogTitle: String,
+      dismissTestTag: String
   ) {
     assertDialogIsShown(dialogTestTag)
 
@@ -114,12 +113,11 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(dismissTestTag).assertHasClickAction()
   }
 
-
   // Scrolls down
   private fun scrollToUploadSection() {
     composeRule
-      .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-      .performScrollToNode(hasTestTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON))
+        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+        .performScrollToNode(hasTestTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON))
   }
 
   // Manually fills a report

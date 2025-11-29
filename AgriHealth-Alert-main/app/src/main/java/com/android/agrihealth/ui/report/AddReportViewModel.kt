@@ -25,38 +25,28 @@ data class AddReportUiState(
     val uploadedImagePath: String? = null,
 )
 
-/**
- *   Represents the result of creating a report
- */
+/** Represents the result of creating a report */
 sealed class CreateReportResult {
-  /**
-   *  The report has successfully been created
-   */
+  /** The report has successfully been created */
   object Success : CreateReportResult()
 
-  /**
-   *  There is a validation error. For example a required field is missing a value
-   */
+  /** There is a validation error. For example a required field is missing a value */
   object ValidationError : CreateReportResult()
 
-  /**
-   *   Uploading the photo to the image repository failed
-   */
+  /** Uploading the photo to the image repository failed */
   data class PhotoUploadError(val e: Throwable) : CreateReportResult()
 
-  /**
-   *  Uploading the report to the report repository failed.
-   */
+  /** Uploading the report to the report repository failed. */
   data class RepositoryError(val e: Throwable) : CreateReportResult()
 }
 
 /**
- *   The view associated to the report creation screen.
+ * The view associated to the report creation screen.
  *
- *   @param userId The ID of the user viewing this screen
- *   @param reportRepository The repository containing the reports
- *   @param imageViewModel The view model used to handle uploading/downloading photos
- *   @see AddReportScreen
+ * @param userId The ID of the user viewing this screen
+ * @param reportRepository The repository containing the reports
+ * @param imageViewModel The view model used to handle uploading/downloading photos
+ * @see AddReportScreen
  */
 class AddReportViewModel(
     private val userId: String,
