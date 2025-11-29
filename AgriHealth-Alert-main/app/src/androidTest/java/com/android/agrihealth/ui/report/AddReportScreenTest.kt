@@ -93,18 +93,36 @@ class AddReportScreenTest {
 
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-  @After
-  fun cleanup() {
-    cleanupTestAssets()
-  }
 
+  // Waits until the dialog is shown
   private fun assertDialogIsShown(testTag: String) {
     composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeRule.onAllNodesWithTag(testTag).fetchSemanticsNodes().isNotEmpty()
     }
   }
 
-  // -- Helper function --
+  // Checks if all the components of the dialog work correctly
+  private fun assertDialogWorks(
+    dialogTestTag: String,
+    dialogTitle: String,
+    dismissTestTag: String
+  ) {
+    assertDialogIsShown(dialogTestTag)
+
+    composeRule.onNodeWithText(dialogTitle).assertIsDisplayed()
+
+    composeRule.onNodeWithTag(dismissTestTag).assertHasClickAction()
+  }
+
+
+  // Scrolls down
+  private fun scrollToUploadSection() {
+    composeRule
+      .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+      .performScrollToNode(hasTestTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON))
+  }
+
+  // Manually fills a report
   private fun fillReportWith(title: String, description: String) {
     composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput(title)
     composeRule
@@ -165,6 +183,11 @@ class AddReportScreenTest {
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
         .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
+  }
+
+  @After
+  fun cleanup() {
+    cleanupTestAssets()
   }
 
   @Test
@@ -320,13 +343,6 @@ class AddReportScreenTest {
     assertTrue(called)
   }
 
-  // Helper function for the tests below
-  private fun scrollToUploadSection() {
-    composeRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON))
-  }
-
   @Test
   fun imagePreview_isNotShownWhenEmpty() {
     composeRule.setContent {
@@ -444,19 +460,6 @@ class AddReportScreenTest {
     composeRule
         .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
         .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
-  }
-
-  // Helper function that checks if all the components of the dialog work correctly
-  private fun assertDialogWorks(
-      dialogTestTag: String,
-      dialogTitle: String,
-      dismissTestTag: String
-  ) {
-    assertDialogIsShown(dialogTestTag)
-
-    composeRule.onNodeWithText(dialogTitle).assertIsDisplayed()
-
-    composeRule.onNodeWithTag(dismissTestTag).assertHasClickAction()
   }
 
   @Test

@@ -28,6 +28,8 @@ class AddReportViewModelTest {
   private lateinit var repository: FakeReportRepository
   private lateinit var viewModel: AddReportViewModel
 
+  private val officeOptions = listOf("Best Office Ever!", "Meh Office", "Great Office")
+
   @Before
   fun setup() {
     Dispatchers.setMain(StandardTestDispatcher()) // Necessary for scheduling coroutines
@@ -119,7 +121,8 @@ class AddReportViewModelTest {
           }
         }
 
-        viewModel.setOffice(AddReportConstants.officeOptions[0])
+        val officeID = "My office"
+        viewModel.setOffice(officeID)
         val result = viewModel.createReport()
         advanceUntilIdle() // To avoid errors of synchronization which would make this test
         // non-deterministic
@@ -147,7 +150,7 @@ class AddReportViewModelTest {
             }
           }
         }
-        assertEquals(AddReportConstants.officeOptions[0], addedReport.officeId)
+        assertEquals(officeID, addedReport.officeId)
         assertEquals(ReportStatus.PENDING, addedReport.status)
       }
 

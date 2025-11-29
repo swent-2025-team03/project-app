@@ -19,7 +19,7 @@ interface AddReportViewModelContract {
 
   fun clearInputs()
 
-  fun setPhoto(uri: Uri?) // TODO: Change to "String?"
+  fun setPhoto(uri: Uri?)
 
   fun removePhoto()
 

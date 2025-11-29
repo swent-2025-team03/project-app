@@ -91,10 +91,6 @@ object AddReportFeedbackTexts {
   const val UNKNOWN = "Unknown error..."
 }
 
-/** Constants for testing purposes */
-object AddReportConstants {
-  val officeOptions = listOf("Best Office Ever!", "Meh Office", "Great Office")
-}
 
 /** Texts on the button used to upload/remove a photo */
 object AddReportUploadButtonTexts {
@@ -116,7 +112,7 @@ object AddReportDialogTexts {
 private const val FILE_PROVIDER =
     "com.android.agrihealth.fileprovider" // TODO: Maybe move this into its own object
 
-// Helper function to generate the error message displayed on the error dialog
+// Helper function to format the error message shown in the error dialog when creating a report failed
 private fun generateCreateReportErrorMessage(e: Throwable?): String {
   val baseMessage = AddReportFeedbackTexts.FAILURE
   val errorMessage = e?.message ?: AddReportFeedbackTexts.UNKNOWN
@@ -151,17 +147,6 @@ fun AddReportScreen(
     onCreateReport: () -> Unit = {},
     addReportViewModel: AddReportViewModelContract
 ) {
-
-  // TODO Add this back and make changes so ui state is remembered between recompositions
-  //
-  //  val factory = remember(userId) {
-  //    object : androidx.lifecycle.ViewModelProvider.Factory {
-  //      override fun <T : ViewModel> create(modelClass: Class<T>): T {
-  //        return AddReportViewModel(userId) as T
-  //      }
-  //    }
-  //  }
-  //  val addReportViewModel: AddReportViewModel = viewModel(factory = factory)
 
   val uiState by addReportViewModel.uiState.collectAsState()
   val user by userViewModel.user.collectAsState()
@@ -252,16 +237,13 @@ fun AddReportScreen(
                     .padding(16.dp)
                     .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
-              Field(
+              TitleField(
                   uiState.title,
-                  { addReportViewModel.setTitle(it) },
-                  "Title",
-                  AddReportScreenTestTags.TITLE_FIELD)
-              MultilineField(
+                  { addReportViewModel.setTitle(it) })
+
+              DescriptionField(
                   uiState.description,
-                  { addReportViewModel.setDescription(it) },
-                  "Description",
-                  AddReportScreenTestTags.DESCRIPTION_FIELD)
+                  { addReportViewModel.setDescription(it) })
 
               QuestionList(
                   questions = uiState.questionForms,
@@ -448,53 +430,46 @@ fun QuestionList(
 }
 
 /**
- * A text field used in the addReport screen
+ * A text field used to input the title o the report.
+ * It is kept single line to encourage users to write short titles
  *
  * @param value The text stored on the text field
  * @param onValueChange What happens when the text on the text field changes
- * @param placeholder The placeholder shown when the text field is empty
- * @param testTag The test tag associated with the text field
  */
 @Composable
-private fun Field(
+private fun TitleField(
     value: String,
     onValueChange: (String) -> Unit,
-    placeholder: String,
-    testTag: String
 ) {
   OutlinedTextField(
       value = value,
       onValueChange = onValueChange,
-      placeholder = { Text(placeholder) },
+      placeholder = { Text("Title") },
       singleLine = true,
-      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
+      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(AddReportScreenTestTags.TITLE_FIELD),
   )
 }
 
 /**
- * A text field that supports multiple lines, used to indicate to the user that they should write
- * more
+ * A multi-line text field used to input the description of the report.
+ * It is 3 lines high so that the user can see that it can and should hold more text than the title
  *
  * @param value The text stored on the text field
  * @param onValueChange What happens when the text on the text field changes
- * @param placeholder The placeholder shown when the text field is empty
- * @param testTag The test tag associated with the text field
  */
 @Composable
-private fun MultilineField(
+private fun DescriptionField(
     value: String,
     onValueChange: (String) -> Unit,
-    placeholder: String,
-    testTag: String,
 ) {
   OutlinedTextField(
       value = value,
       onValueChange = onValueChange,
-      placeholder = { Text(placeholder) },
+      placeholder = { Text("Description") },
       singleLine = false,
       minLines = 3,
       maxLines = Int.MAX_VALUE,
-      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag),
+      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(AddReportScreenTestTags.DESCRIPTION_FIELD),
   )
 }
 

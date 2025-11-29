@@ -25,16 +25,39 @@ data class AddReportUiState(
     val uploadedImagePath: String? = null,
 )
 
+/**
+ *   Represents the result of creating a report
+ */
 sealed class CreateReportResult {
+  /**
+   *  The report has successfully been created
+   */
   object Success : CreateReportResult()
 
-  object ValidationError : CreateReportResult() // missing fields, unanswered questions, etc.
+  /**
+   *  There is a validation error. For example a required field is missing a value
+   */
+  object ValidationError : CreateReportResult()
 
+  /**
+   *   Uploading the photo to the image repository failed
+   */
   data class PhotoUploadError(val e: Throwable) : CreateReportResult()
 
+  /**
+   *  Uploading the report to the report repository failed.
+   */
   data class RepositoryError(val e: Throwable) : CreateReportResult()
 }
 
+/**
+ *   The view associated to the report creation screen.
+ *
+ *   @param userId The ID of the user viewing this screen
+ *   @param reportRepository The repository containing the reports
+ *   @param imageViewModel The view model used to handle uploading/downloading photos
+ *   @see AddReportScreen
+ */
 class AddReportViewModel(
     private val userId: String,
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
@@ -82,6 +105,7 @@ class AddReportViewModel(
     val current = _uiState.value
 
     // Input validation (checking that all fields are completed
+    // TODO More validation may be necessary (e.g forcing to have an office assigned, ...)
     if (current.title.isBlank() || current.description.isBlank()) {
       return CreateReportResult.ValidationError
     }
@@ -110,7 +134,7 @@ class AddReportViewModel(
         }
         else -> {
           return CreateReportResult.PhotoUploadError(
-              IllegalStateException("Something unexpected happened..."))
+              IllegalStateException(AddReportFeedbackTexts.UNKNOWN))
         }
       }
     }
