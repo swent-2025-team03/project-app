@@ -260,14 +260,14 @@ fun EditProfileScreen(
                               (user as? Farmer)?.copy(
                                   firstname = firstname,
                                   lastname = lastname,
-                                  address = user.address?.copy(name = address),
+                                  address = pickedLocation,
                                   defaultOffice = selectedDefaultOffice,
                                   description = updatedDescription)
                           UserRole.VET ->
                               (user as? Vet)?.copy(
                                   firstname = firstname,
                                   lastname = lastname,
-                                  address = user.address?.copy(name = address),
+                                  address = pickedLocation,
                                   description = updatedDescription)
                         }
                     updatedUser?.let { onSave(it) }

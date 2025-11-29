@@ -113,7 +113,7 @@ fun AgriHealthApp(
   var pickedLat = remember { 0.0 }
   var pickedLng = remember { 0.0 }
 
-  var pickedLocation = remember { mutableStateOf(currentUser.address) }
+  val pickedLocation = remember { mutableStateOf(currentUser.address) }
 
   val startDestination = remember {
     if (Firebase.auth.currentUser == null) Screen.Auth.name
@@ -197,8 +197,7 @@ fun AgriHealthApp(
             }
         val mapViewModel: MapViewModel =
             viewModel(factory = createMapViewModel, key = pickedLocation.value.toString())
-        val permissionAsked = locationPermissionsRequester(locationViewModel)
-        if (permissionAsked) {
+        if (locationPermissionsRequester(locationViewModel)) {
           mapViewModel.refreshMapPermission()
         }
         mapViewModel.setStartingLocation(pickedLocation.value)
