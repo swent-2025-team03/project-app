@@ -16,7 +16,7 @@ data class Report(
     val id: String,
     val title: String,
     val description: String,
-    val photoURL: String?, // TODO Change to "String?" or better yet, "URL"
+    val photoURL: String?,
     val questionForms: List<QuestionForm>,
     val farmerId: String,
     val officeId: String,

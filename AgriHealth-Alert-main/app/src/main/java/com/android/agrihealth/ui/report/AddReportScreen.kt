@@ -75,7 +75,6 @@ object AddReportScreenTestTags {
   const val SCROLL_CONTAINER = "scrollContainer"
   const val DIALOG_SUCCESS = "dialogSuccess"
   const val DIALOG_FAILURE = "dialogFailure"
-
   const val DIALOG_SUCCESS_OK = "dialogSuccessOk"
   const val DIALOG_FAILURE_OK = "dialogFailureOk"
 
