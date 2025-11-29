@@ -136,7 +136,7 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
               (it["minute"] as? Long ?: 0).toInt(),
               (it["second"] as? Long ?: 0).toInt())
         }
-    val isCollected = doc.get("isCollected") as? Boolean ?: false
+    val collected = doc.get("collected") as? Boolean ?: false
 
     Report(
         id = id,
@@ -152,7 +152,7 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
         createdAt = createdAt,
         startTime = startTime,
         duration = duration,
-        isCollected = isCollected)
+        collected = collected)
   } catch (e: Exception) {
     Log.e("ReportRepositoryFirestore", "Error converting document ${doc.id} to Report", e)
     null

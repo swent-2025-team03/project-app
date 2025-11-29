@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 interface AddReportViewModelContract {
   val uiState: StateFlow<AddReportUiState>
 
-  fun switchIsCollected()
+  fun switchCollected()
 
   fun setTitle(newTitle: String)
 

@@ -239,8 +239,8 @@ fun AddReportScreen(
                 Text("Share anonymous data")
                 Spacer(modifier = Modifier.weight(1f))
                 Switch(
-                    checked = uiState.isCollected,
-                    onCheckedChange = { addReportViewModel.switchIsCollected() })
+                    checked = uiState.collected,
+                    onCheckedChange = { addReportViewModel.switchCollected() })
               }
 
               Button(
