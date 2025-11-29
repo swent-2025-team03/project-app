@@ -294,11 +294,7 @@ fun ReportViewScreen(
                           }
                     }
               }
-              Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Share anonymous data")
-                Spacer(modifier = Modifier.weight(1f))
-                Switch(checked = report.collected, enabled = false, onCheckedChange = {})
-              }
+              CollectedSwitch(report.collected)
               // ---- Set Time section ----
               Column {
                 Text(

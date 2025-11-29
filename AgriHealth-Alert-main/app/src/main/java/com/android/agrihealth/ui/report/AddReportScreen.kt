@@ -3,7 +3,6 @@ package com.android.agrihealth.ui.report
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -235,13 +234,7 @@ fun AddReportScreen(
                         }
                   }
 
-              Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Share anonymous data")
-                Spacer(modifier = Modifier.weight(1f))
-                Switch(
-                    checked = uiState.collected,
-                    onCheckedChange = { addReportViewModel.switchCollected() })
-              }
+              CollectedSwitch(uiState.collected, { addReportViewModel.switchCollected() }, true)
 
               Button(
                   onClick = {
