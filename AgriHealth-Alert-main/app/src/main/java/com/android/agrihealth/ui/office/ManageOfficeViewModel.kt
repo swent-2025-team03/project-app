@@ -72,7 +72,7 @@ class ManageOfficeViewModel(
 
         try {
           // Remove officeId from vet first
-          userViewModel.updateVetOfficeId(null)
+          userViewModel.updateUser(user.copy(officeId = null, address = null))
 
           // Remove vet from office list
           val updatedOffice = office.copy(vets = office.vets.filterNot { it == user.uid })
