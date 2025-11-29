@@ -235,13 +235,13 @@ fun AddReportScreen(
                         }
                   }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
+              Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Share anonymous data")
                 Spacer(modifier = Modifier.weight(1f))
-                Switch(checked = uiState.isCollected,
-                    onCheckedChange = {addReportViewModel.switchIsCollected()})
-            }
-
+                Switch(
+                    checked = uiState.isCollected,
+                    onCheckedChange = { addReportViewModel.switchIsCollected() })
+              }
 
               Button(
                   onClick = {
