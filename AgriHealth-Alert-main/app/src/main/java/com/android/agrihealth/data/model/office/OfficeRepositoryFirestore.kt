@@ -53,10 +53,18 @@ class OfficeRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fir
   }
 
   private fun officeFromData(data: Map<String, Any>): Office {
+    val addressData = data["address"] as? Map<*, *>
+    val address =
+        addressData?.let {
+          Location(
+              latitude = it["latitude"] as? Double ?: 0.0,
+              longitude = it["longitude"] as? Double ?: 0.0,
+              name = it["name"] as? String ?: "")
+        }
     return Office(
         id = data["id"] as String,
         name = data["name"] as String,
-        address = data["address"] as? Location,
+        address = address,
         description = data["description"] as? String,
         vets = data["vets"] as? List<String> ?: emptyList(),
         ownerId = data["ownerId"] as String)

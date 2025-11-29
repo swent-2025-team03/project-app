@@ -25,12 +25,15 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.common.OfficeNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.office.ManageOfficeViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
@@ -65,6 +68,18 @@ fun EditProfileScreen(
 ) {
   val user by userViewModel.user.collectAsState()
   val userRole = user.role
+
+  val createManageOfficeViewModel =
+      object : androidx.lifecycle.ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+          return ManageOfficeViewModel(
+              userViewModel = userViewModel as UserViewModel,
+              officeRepository = OfficeRepositoryProvider.get())
+              as T
+        }
+      }
+
+  val manageOfficeVm: ManageOfficeViewModel = viewModel(factory = createManageOfficeViewModel)
 
   val snackbarHostState = remember { SnackbarHostState() }
 
@@ -267,12 +282,14 @@ fun EditProfileScreen(
                                   address = pickedLocation,
                                   defaultOffice = selectedDefaultOffice,
                                   description = updatedDescription)
-                          UserRole.VET ->
-                              (user as? Vet)?.copy(
-                                  firstname = firstname,
-                                  lastname = lastname,
-                                  address = pickedLocation,
-                                  description = updatedDescription)
+                          UserRole.VET -> {
+                            manageOfficeVm.updateOffice(newAddress = pickedLocation)
+                            (user as? Vet)?.copy(
+                                firstname = firstname,
+                                lastname = lastname,
+                                address = pickedLocation,
+                                description = updatedDescription)
+                          }
                         }
                     updatedUser?.let { onSave(it) }
                   },
