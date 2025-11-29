@@ -102,10 +102,10 @@ fun AddReportScreen(
       vm.loadOffice(uid = officeId, deletedOffice = "Deleted office", noneOffice = "Unknown office")
     }
 
-    LaunchedEffect(pickedLocation) { addReportViewModel.setAddress(pickedLocation) }
-
     offices[officeId] = label
   }
+
+  LaunchedEffect(pickedLocation) { addReportViewModel.setAddress(pickedLocation) }
 
   // For the dropdown menu
   var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
@@ -208,7 +208,7 @@ fun AddReportScreen(
               }
 
               OutlinedTextField(
-                  value = pickedLocation?.name ?: "Select a Location",
+                  value = uiState.address?.name ?: "Select a Location",
                   placeholder = { Text("Select a Location") },
                   onValueChange = {},
                   readOnly = true,
