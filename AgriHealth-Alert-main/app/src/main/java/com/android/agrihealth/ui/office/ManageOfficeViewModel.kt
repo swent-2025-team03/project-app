@@ -6,7 +6,7 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.UserViewModelContract
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -21,11 +21,10 @@ data class ManageOfficeUiState(
 )
 
 class ManageOfficeViewModel(
-    private val userViewModel: UserViewModel,
+    private val userViewModel: UserViewModelContract,
     private val officeRepository: OfficeRepository
 ) : ViewModel() {
 
-  private val user = userViewModel.user.value
   private val _uiState = MutableStateFlow(ManageOfficeUiState())
   val uiState: StateFlow<ManageOfficeUiState> = _uiState
 

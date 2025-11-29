@@ -73,8 +73,7 @@ fun EditProfileScreen(
       object : androidx.lifecycle.ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
           return ManageOfficeViewModel(
-              userViewModel = userViewModel as UserViewModel,
-              officeRepository = OfficeRepositoryProvider.get())
+              userViewModel = userViewModel, officeRepository = OfficeRepositoryProvider.get())
               as T
         }
       }
