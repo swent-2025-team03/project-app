@@ -102,6 +102,8 @@ fun AddReportScreen(
       vm.loadOffice(uid = officeId, deletedOffice = "Deleted office", noneOffice = "Unknown office")
     }
 
+    LaunchedEffect(pickedLocation) { addReportViewModel.setAddress(pickedLocation) }
+
     offices[officeId] = label
   }
 
