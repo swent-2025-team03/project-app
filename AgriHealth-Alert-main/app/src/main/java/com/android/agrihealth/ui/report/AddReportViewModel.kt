@@ -34,9 +34,9 @@ class AddReportViewModel(
         _uiState.value.copy(questionForms = HealthQuestionFactory.animalHealthQuestions())
   }
 
-    override fun switchIsCollected() {
-        _uiState.value = _uiState.value.copy(isCollected = !uiState.value.isCollected)
-    }
+  override fun switchIsCollected() {
+    _uiState.value = _uiState.value.copy(isCollected = !uiState.value.isCollected)
+  }
 
   override fun setTitle(newTitle: String) {
     _uiState.value = _uiState.value.copy(title = newTitle)

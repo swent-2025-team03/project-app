@@ -7,6 +7,7 @@ interface AddReportViewModelContract {
   val uiState: StateFlow<AddReportUiState>
 
   fun switchIsCollected()
+
   fun setTitle(newTitle: String)
 
   fun setDescription(newDescription: String)
