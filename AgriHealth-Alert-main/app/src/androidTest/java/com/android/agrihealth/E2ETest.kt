@@ -346,7 +346,6 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(CreateOfficeScreenTestTags.NAME_FIELD)
         .assertIsDisplayed()
         .performTextInput("Vet Office")
-    composeTestRule.onNodeWithTag(CreateOfficeScreenTestTags.ADDRESS_FIELD).assertIsDisplayed()
     composeTestRule.onNodeWithTag(CreateOfficeScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()
 
     waitUntilTestTag(CreateOfficeScreenTestTags.CREATE_BUTTON)

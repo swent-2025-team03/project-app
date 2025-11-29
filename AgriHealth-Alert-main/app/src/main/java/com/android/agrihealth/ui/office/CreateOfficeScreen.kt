@@ -22,7 +22,6 @@ import com.android.agrihealth.ui.user.UserViewModel
 object CreateOfficeScreenTestTags {
   const val NAME_FIELD = "CreateOfficeNameField"
   const val DESCRIPTION_FIELD = "CreateOfficeDescriptionField"
-  const val ADDRESS_FIELD = "CreateOfficeAddressField"
   const val CREATE_BUTTON = "CreateOfficeButtonConfirm"
 }
 
