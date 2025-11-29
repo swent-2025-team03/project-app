@@ -104,7 +104,7 @@ class FakeReportRepository : ReportRepository {
           title = "Test report",
           description = "desc",
           questionForms = emptyList(),
-          photoUri = null,
+          photoURL = null,
           farmerId = "F1",
           officeId = "OFF1",
           status = ReportStatus.PENDING,
