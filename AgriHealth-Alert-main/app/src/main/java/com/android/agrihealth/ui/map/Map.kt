@@ -66,7 +66,6 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
-import com.android.agrihealth.ui.user.UserViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -101,14 +100,12 @@ const val AllFilterText = "All reports"
 @Composable
 fun MapScreen(
     mapViewModel: MapViewModel = viewModel(),
-    userViewModel: UserViewModel = viewModel(),
     locationViewModel: LocationViewModel = viewModel(),
     navigationActions: NavigationActions? = null,
     isViewedFromOverview: Boolean = true,
     forceStartingPosition: Boolean = false
 ) {
   val uiState by mapViewModel.uiState.collectAsState()
-  val user by userViewModel.user.collectAsState()
   var selectedFilter by remember { mutableStateOf<String?>(null) }
 
   val mapInitialLocation by mapViewModel.startingLocation.collectAsState()
@@ -122,8 +119,6 @@ fun MapScreen(
         CameraPosition.fromLatLngZoom(
             LatLng(mapInitialLocation.latitude, mapInitialLocation.longitude), mapInitialZoom)
   }
-
-  LaunchedEffect(user.uid) { mapViewModel.refreshReports(user.uid) }
 
   val selectedReport = mapViewModel.selectedReport.collectAsState()
 

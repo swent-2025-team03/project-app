@@ -1,27 +1,26 @@
 package com.android.agrihealth.ui.map
 
+import FakeReportRepository
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.printToLog
 import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
-import com.android.agrihealth.data.repository.ReportRepositoryLocal
 import com.android.agrihealth.ui.navigation.NavigationTestTags
-import com.android.agrihealth.ui.user.UserViewModel
 import com.google.android.gms.maps.model.LatLng
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -88,7 +87,7 @@ object MapScreenTestReports {
           Location(46.9491, 7.4474))
 }
 
-class MapScreenTest : FirebaseEmulatorsTest() {
+class MapScreenTest {
 
   private val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
@@ -102,17 +101,15 @@ class MapScreenTest : FirebaseEmulatorsTest() {
 
   private lateinit var locationViewModel: LocationViewModel
   private lateinit var locationRepository: LocationRepository
-  val reportRepository = ReportRepositoryLocal()
+  val reportRepository = FakeReportRepository()
   private lateinit var userId: String
 
   @Before
-  override fun setUp() {
-    super.setUp()
-    runTest { authRepository.signUpWithEmailAndPassword(user1.email, "123456", user1) }
-    assert(Firebase.auth.currentUser != null)
-    UserViewModel().refreshCurrentUser()
-    userId = UserViewModel().user.value.uid
+  fun setUp() = runTest {
+    // Fake user
+    userId = "TEST_USER"
 
+    // Fake location repository
     locationRepository = mockk(relaxed = true)
 
     coEvery { locationRepository.getLastKnownLocation() } returns Location(46.9481, 7.4474, "Bern")
@@ -125,12 +122,12 @@ class MapScreenTest : FirebaseEmulatorsTest() {
 
     LocationRepositoryProvider.repository = locationRepository
     locationViewModel = LocationViewModel()
-    runTest {
-      reportRepository.addReport(MapScreenTestReports.report1.copy(farmerId = userId))
-      reportRepository.addReport(MapScreenTestReports.report2.copy(farmerId = userId))
-      reportRepository.addReport(MapScreenTestReports.report3.copy(farmerId = userId))
-      reportRepository.addReport(MapScreenTestReports.report4.copy(farmerId = userId))
-    }
+
+    // Inject test reports
+    reportRepository.addReport(MapScreenTestReports.report1.copy(farmerId = userId))
+    reportRepository.addReport(MapScreenTestReports.report2.copy(farmerId = userId))
+    reportRepository.addReport(MapScreenTestReports.report3.copy(farmerId = userId))
+    reportRepository.addReport(MapScreenTestReports.report4.copy(farmerId = userId))
   }
 
   // Sets composeTestRule to the map screen with a predefined MapViewModel, using the local report
@@ -143,7 +140,8 @@ class MapScreenTest : FirebaseEmulatorsTest() {
         MapViewModel(
             reportRepository = reportRepository,
             locationViewModel = locationViewModel,
-            selectedReportId = selectedReportId)
+            selectedReportId = selectedReportId,
+            userId = userId)
     composeTestRule.setContent {
       MaterialTheme {
         MapScreen(mapViewModel = mapViewModel, isViewedFromOverview = isViewedFromOverview)
@@ -187,11 +185,37 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   fun displayReportsFromUser() = runTest {
     setContentToMapWithVM()
 
-    reportRepository.getReportsByFarmer(userId).forEach { report ->
-      composeTestRule
-          .onNodeWithTag(
-              MapScreenTestTags.getTestTagForReportMarker(report.id), useUnmergedTree = true)
-          .assertIsDisplayed()
+    // 1) Log complet de l’arbre de sémantique
+    Log.d("MAPTEST", "---- FULL SEMANTICS TREE ----")
+    composeTestRule.onRoot().printToLog("MAPTEST")
+
+    // 2) Récupère les reports du fake repo
+    val reports = reportRepository.getReportsByFarmer(userId)
+    Log.d("MAPTEST", "Reports for userId=$userId: count=${reports.size}")
+    reports.forEach { r -> Log.d("MAPTEST", "  report id=${r.id}, title=${r.title}") }
+
+    // 3) Vérifie chaque marker
+    reports.forEach { report ->
+      val markerTag = MapScreenTestTags.getTestTagForReportMarker(report.id)
+      Log.d("MAPTEST", "Checking markerTag = $markerTag")
+
+      val node = composeTestRule.onNodeWithTag(markerTag, useUnmergedTree = true)
+
+      try {
+        node.assertExists()
+        Log.d("MAPTEST", "✔ Marker exists for $markerTag")
+      } catch (e: AssertionError) {
+        Log.d("MAPTEST", "✘ Marker DOES NOT EXIST for $markerTag")
+        throw e
+      }
+
+      try {
+        node.assertIsDisplayed()
+        Log.d("MAPTEST", "✔ Marker DISPLAYED for $markerTag")
+      } catch (e: AssertionError) {
+        Log.d("MAPTEST", "✘ Marker NOT DISPLAYED for $markerTag")
+        throw e
+      }
     }
   }
 
@@ -281,6 +305,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
         MapViewModel(
             reportRepository = reportRepository,
             locationViewModel = locationViewModel,
+            userId = userId,
             selectedReportId = MapScreenTestReports.report1.id)
 
     val reports1 = List(10) { index -> MapScreenTestReports.report1.copy(id = "report1$index") }

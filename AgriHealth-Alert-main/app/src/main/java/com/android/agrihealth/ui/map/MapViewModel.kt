@@ -15,8 +15,6 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.google.android.gms.maps.model.LatLng
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import java.util.Locale
 import kotlin.collections.firstOrNull
 import kotlin.math.cos
@@ -38,6 +36,7 @@ class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
     private val locationViewModel: LocationViewModel,
+    private val userId: String,
     val selectedReportId: String? = null,
     startingPosition: Location? = null,
     showReports: Boolean = true
@@ -62,11 +61,9 @@ class MapViewModel(
     refreshMapPermission()
     setStartingLocation()
 
-    if (showReports)
-        refreshReports(
-            Firebase.auth.currentUser?.uid
-                ?: throw IllegalArgumentException(
-                    "Map refreshed Reports while current user was null"))
+    if (showReports) {
+      refreshReports(userId)
+    }
   }
 
   fun refreshReports(uid: String) {
@@ -133,8 +130,7 @@ class MapViewModel(
   }
 
   private suspend fun getLocationFromUserAddress(): Location? {
-    val uid = Firebase.auth.currentUser?.uid ?: return null
-    val user = userRepository.getUserFromId(uid)
+    val user = userRepository.getUserFromId(userId)
     return user.getOrNull()?.address
   }
 

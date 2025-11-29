@@ -307,7 +307,8 @@ fun AgriHealthApp(
               MapViewModel(
                   locationViewModel = locationViewModel,
                   selectedReportId = sourceReport,
-                  startingPosition = location)
+                  startingPosition = location,
+                  userId = currentUserId)
           MapScreen(
               mapViewModel = mapViewModel,
               navigationActions = navigationActions,
