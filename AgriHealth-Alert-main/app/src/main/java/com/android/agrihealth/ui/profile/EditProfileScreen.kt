@@ -81,6 +81,8 @@ fun EditProfileScreen(
 
   val manageOfficeVm: ManageOfficeViewModel = viewModel(factory = createManageOfficeViewModel)
 
+  val isOwner = manageOfficeVm.uiState.collectAsState().value.office?.ownerId == user.uid
+
   val snackbarHostState = remember { SnackbarHostState() }
 
   // Local mutable states
@@ -175,7 +177,13 @@ fun EditProfileScreen(
               }
 
               Spacer(modifier = Modifier.height(12.dp))
-
+              if (user is Vet && !isOwner) {
+                Text(
+                    text = "Only office owners can change their address.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 4.dp))
+              }
               // Address
               OutlinedTextField(
                   value = address,
@@ -192,6 +200,7 @@ fun EditProfileScreen(
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
               Button(
                   onClick = onChangeLocation,
+                  enabled = user is Vet && isOwner,
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LOCATION_BUTTON)) {
                     Text("change location")
