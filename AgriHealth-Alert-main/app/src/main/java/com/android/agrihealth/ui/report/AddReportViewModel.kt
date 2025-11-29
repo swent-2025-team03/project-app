@@ -2,7 +2,6 @@ package com.android.agrihealth.ui.report
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.images.ImageUIState
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
@@ -16,7 +15,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 
 data class AddReportUiState(
     val title: String = "",
@@ -83,7 +81,7 @@ class AddReportViewModel(
   override suspend fun createReport(): CreateReportResult {
     val current = _uiState.value
 
-    // 1) Validation (checking that all fields are completed
+    // Input validation (checking that all fields are completed
     if (current.title.isBlank() || current.description.isBlank()) {
       return CreateReportResult.ValidationError
     }
@@ -93,7 +91,7 @@ class AddReportViewModel(
 
     var uploadedPath = current.uploadedImagePath
 
-    // 2) Upload photo (if an image has been chosen)
+    // Photo upload (if a photo has been chosen)
     if (current.photoUri != null) {
       imageViewModel.upload(current.photoUri)
 
@@ -132,48 +130,16 @@ class AddReportViewModel(
                 Location(
                     46.7990813,
                     6.6259961), // TODO Create way to select location automatically or manually on a
-                                // map
+            // map
         )
 
-    return try {
+    try {
       reportRepository.addReport(newReport)
       clearInputs()
-      CreateReportResult.Success
+      return CreateReportResult.Success
     } catch (e: Exception) {
-      CreateReportResult.RepositoryError(e)
+      return CreateReportResult.RepositoryError(e)
     }
-  }
-
-  suspend fun createReport2(): Boolean {
-    val uiState = _uiState.value
-    if (uiState.title.isBlank() || uiState.description.isBlank()) {
-      return false
-    }
-    val allQuestionsAnswered = uiState.questionForms.all { it.isValid() }
-    if (!allQuestionsAnswered) {
-      return false
-    }
-
-    val newReport =
-        Report(
-            id = reportRepository.getNewReportId(),
-            title = uiState.title,
-            description = uiState.description,
-            questionForms = uiState.questionForms,
-            photoURL = uiState.uploadedImagePath,
-            farmerId = userId,
-            officeId = uiState.chosenOffice,
-            status = ReportStatus.PENDING,
-            answer = null,
-            location = Location(46.7990813, 6.6259961) // null // optional until implemented
-            )
-
-    viewModelScope.launch { reportRepository.addReport(newReport) }
-
-    // Clears all the fields
-    clearInputs() // TODO: Call only if addReport succeeds
-
-    return true
   }
 
   override fun clearInputs() {

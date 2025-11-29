@@ -137,8 +137,10 @@ private fun generateCreateReportErrorMessage(e: Throwable?): String {
  * Displays the report creation screen for farmers
  *
  * @param onBack A callback invoked when the back button in the top bar is pressed.
- * @param createReportViewModel The [AddReportViewModel] instance responsible for managing report
+ * @param addReportViewModel The [AddReportViewModel] instance responsible for managing report
  *   creation logic and UI state.
+ * @param onCreateReport Executed when the report has successfully been created
+ * @param userViewModel ViewModel for managing user-related data and operations.
  * @see AddReportViewModel
  */
 @OptIn(ExperimentalMaterial3Api::class)
