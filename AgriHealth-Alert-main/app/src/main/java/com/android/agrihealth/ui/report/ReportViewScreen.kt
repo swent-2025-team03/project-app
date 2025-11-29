@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -15,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -75,7 +77,7 @@ private fun QuestionItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportViewScreen(
-    navigationActions: NavigationActions,
+    navigationActions: NavigationActions? = null,
     userRole: UserRole,
     viewModel: ReportViewViewModel,
     reportId: String = ""
@@ -97,7 +99,7 @@ fun ReportViewScreen(
   // Navigate back when save is completed, then consume the flag to avoid re-trigger
   LaunchedEffect(saveCompleted) {
     if (saveCompleted) {
-      navigationActions.goBack()
+      navigationActions?.goBack()
       viewModel.consumeSaveCompleted()
     }
   }
@@ -110,7 +112,7 @@ fun ReportViewScreen(
   var isUnsavedAlertOpen by remember { mutableStateOf(false) }
 
   fun handleGoBack(force: Boolean = false) {
-    if (unsavedChanges && !force) isUnsavedAlertOpen = true else navigationActions.goBack()
+    if (unsavedChanges && !force) isUnsavedAlertOpen = true else navigationActions?.goBack()
   }
 
   // Overrides behavior of Android system back button
@@ -179,6 +181,7 @@ fun ReportViewScreen(
                     .padding(16.dp)
                     .testTag(ReportViewScreenTestTags.SCROLL_CONTAINER),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
+              val context = LocalContext.current
 
               // --- Full title (only if too long) ---
               val maxTitleChars = maxTitleCharsForScreen()
@@ -198,11 +201,21 @@ fun ReportViewScreen(
                       AuthorName(
                           uid = report.farmerId,
                           onClick = {
-                            navigationActions.navigateTo(Screen.ViewUser(report.farmerId))
+                            navigationActions?.navigateTo(Screen.ViewUser(report.farmerId))
                           })
                     } else {
                       // Farmer views office
-                      OfficeName(uid = report.officeId, onClick = { /* TODO("add ViewOffice") */})
+                      OfficeName(
+                          uid = report.officeId,
+                          onClick = {
+                            if (report.officeId.isNotBlank()) {
+                              navigationActions?.navigateTo(Screen.ViewOffice(report.officeId))
+                            } else {
+                              Toast.makeText(
+                                      context, "This office no longer exists.", Toast.LENGTH_LONG)
+                                  .show()
+                            }
+                          })
                     }
                   }
 
@@ -316,7 +329,7 @@ fun ReportViewScreen(
                       modifier =
                           Modifier.clickable(
                               onClick = {
-                                navigationActions.navigateTo(Screen.Planner(reportId = report.id))
+                                navigationActions?.navigateTo(Screen.Planner(reportId = report.id))
                               }))
                 }
                 Row {
@@ -333,7 +346,7 @@ fun ReportViewScreen(
                       modifier =
                           Modifier.clickable(
                               onClick = {
-                                navigationActions.navigateTo(Screen.Planner(reportId = report.id))
+                                navigationActions?.navigateTo(Screen.Planner(reportId = report.id))
                               }))
                 }
               }
@@ -350,7 +363,7 @@ fun ReportViewScreen(
                               modifier =
                                   Modifier.weight(1f).testTag(ReportViewScreenTestTags.VIEW_ON_MAP),
                               onClick = {
-                                navigationActions.navigateTo(
+                                navigationActions?.navigateTo(
                                     Screen.Map(
                                         report.location?.latitude,
                                         report.location?.longitude,
