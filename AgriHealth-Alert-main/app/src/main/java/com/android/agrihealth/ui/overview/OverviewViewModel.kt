@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.overview
 
+import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
@@ -7,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.alert.Alert
 import com.android.agrihealth.data.model.alert.AlertRepository
 import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
+import com.android.agrihealth.data.model.alert.containsUser
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.report.Report
@@ -36,7 +38,8 @@ data class OverviewUIState(
     val selectedFarmer: String? = null,
     val officeOptions: List<String> = emptyList(),
     val farmerOptions: List<String> = emptyList(),
-    val filteredReports: List<Report> = emptyList()
+    val filteredReports: List<Report> = emptyList(),
+    val filteredAlerts: List<Alert> = emptyList()
 )
 
 /**
@@ -53,7 +56,10 @@ class OverviewViewModel(
 
   private lateinit var authRepository: AuthRepository
 
-  /** Loads reports based on user role and ID. */
+  /**
+   * Loads reports for the user based on role and updates UIState. Applies selected filters to
+   * generate filteredReports.
+   */
   override fun loadReports(user: User) {
     viewModelScope.launch {
       try {
@@ -65,7 +71,7 @@ class OverviewViewModel(
         val officeOptions = reports.map { it.officeId }.distinct()
         val farmerOptions = reports.map { it.farmerId }.distinct()
         val filtered =
-            applyFilters(
+            applyFiltersForReports(
                 reports,
                 _uiState.value.selectedStatus,
                 _uiState.value.selectedOffice,
@@ -84,19 +90,12 @@ class OverviewViewModel(
     }
   }
 
-  override fun loadAlerts() {
-    viewModelScope.launch {
-      try {
-        val alerts = alertRepository.getAlerts()
-        _uiState.value = _uiState.value.copy(alerts = alerts)
-      } catch (e: Exception) {
-        _uiState.value = _uiState.value.copy(alerts = emptyList())
-      }
-    }
-  }
-
-  override fun updateFilters(status: ReportStatus?, officeId: String?, farmerId: String?) {
-    val filtered = applyFilters(_uiState.value.reports, status, officeId, farmerId)
+  override fun updateFiltersForReports(
+      status: ReportStatus?,
+      officeId: String?,
+      farmerId: String?
+  ) {
+    val filtered = applyFiltersForReports(_uiState.value.reports, status, officeId, farmerId)
     _uiState.value =
         _uiState.value.copy(
             selectedStatus = status,
@@ -105,7 +104,7 @@ class OverviewViewModel(
             filteredReports = filtered)
   }
 
-  private fun applyFilters(
+  private fun applyFiltersForReports(
       reports: List<Report>,
       status: ReportStatus?,
       officeId: String?,
@@ -128,6 +127,43 @@ class OverviewViewModel(
       UserRole.FARMER -> allReports.filter { it.farmerId == userId }
       UserRole.VET -> allReports
     }
+  }
+
+  /**
+   * Loads all alerts from the repository and updates UIState. Also filters alerts based on the
+   * current user's location.
+   */
+  override fun loadAlerts(user: User) {
+    viewModelScope.launch {
+      try {
+        val alerts = alertRepository.getAlerts()
+        _uiState.value = _uiState.value.copy(alerts = alerts)
+
+        Log.d("OverviewVM", "Loaded alerts: ${alerts.size}")
+        // Filter alerts and update UIState
+        updateFilteredAlerts(user)
+      } catch (e: Exception) {
+        _uiState.value = _uiState.value.copy(alerts = emptyList(), filteredAlerts = emptyList())
+        Log.e("OverviewVM", "Failed to load alerts", e)
+      }
+    }
+  }
+
+  fun updateFilteredAlerts(user: User) {
+    val filtered = applyFiltersForAlerts(_uiState.value.alerts, user)
+    Log.d("OverviewVM", "User address: ${user.address}")
+    Log.d("OverviewVM", "Filtered alerts count: ${filtered.size}")
+    filtered.forEach { alert -> Log.d("OverviewVM", "Filtered Alert id=${alert.id}") }
+    _uiState.value = _uiState.value.copy(filteredAlerts = filtered)
+  }
+
+  private fun applyFiltersForAlerts(alerts: List<Alert>, user: User): List<Alert> {
+    val address = user.address
+    if (address == null) {
+      Log.d("OverviewVM", "User address is null")
+      return emptyList()
+    }
+    return alerts.filter { alert -> alert.containsUser(address.latitude, address.longitude) }
   }
 
   override fun signOut(credentialManager: CredentialManager) {

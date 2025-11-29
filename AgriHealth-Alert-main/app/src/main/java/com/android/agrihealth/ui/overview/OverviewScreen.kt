@@ -43,8 +43,10 @@ import kotlinx.coroutines.launch
 // -- imports for preview --
 /*
 import androidx.compose.ui.tooling.preview.Preview
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.testutil.FakeOverviewViewModel
 */
 
 object OverviewScreenTestTags {
@@ -89,7 +91,7 @@ fun OverviewScreen(
 
   LaunchedEffect(user) {
     overviewViewModel.loadReports(user)
-    overviewViewModel.loadAlerts()
+    overviewViewModel.loadAlerts(user)
   }
   Scaffold(
       // -- Top App Bar with logout icon --
@@ -153,12 +155,12 @@ fun OverviewScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 val pagerState =
-                    rememberPagerState(initialPage = 0, pageCount = { uiState.alerts.size })
+                    rememberPagerState(initialPage = 0, pageCount = { uiState.filteredAlerts.size })
                 val coroutineScope = rememberCoroutineScope()
                 val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                  if (uiState.alerts.isEmpty()) {
+                  if (uiState.filteredAlerts.isEmpty()) {
                     Text(
                         text = "No alerts available",
                         style = MaterialTheme.typography.bodyMedium,
@@ -169,7 +171,7 @@ fun OverviewScreen(
                         modifier = Modifier.fillMaxWidth(),
                         contentPadding = PaddingValues(horizontal = (screenWidth - 350.dp) / 2),
                         pageSpacing = 16.dp) { page ->
-                          val alert = uiState.alerts[page]
+                          val alert = uiState.filteredAlerts[page]
                           AlertItem(
                               alert = alert,
                               isCentered = pagerState.currentPage == page,
@@ -210,7 +212,7 @@ fun OverviewScreen(
                           options = listOf(null) + ReportStatus.entries,
                           selectedOption = uiState.selectedStatus,
                           onOptionSelected = {
-                            overviewViewModel.updateFilters(
+                            overviewViewModel.updateFiltersForReports(
                                 it, uiState.selectedOffice, uiState.selectedFarmer)
                           },
                           modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN),
@@ -223,7 +225,7 @@ fun OverviewScreen(
                             options = listOf(null) + uiState.officeOptions,
                             selectedOption = uiState.selectedOffice,
                             onOptionSelected = {
-                              overviewViewModel.updateFilters(
+                              overviewViewModel.updateFiltersForReports(
                                   status = uiState.selectedStatus,
                                   officeId = it,
                                   farmerId = uiState.selectedFarmer)
@@ -236,7 +238,7 @@ fun OverviewScreen(
                             options = listOf(null) + uiState.farmerOptions,
                             selectedOption = uiState.selectedFarmer,
                             onOptionSelected = {
-                              overviewViewModel.updateFilters(
+                              overviewViewModel.updateFiltersForReports(
                                   status = uiState.selectedStatus,
                                   officeId = uiState.selectedOffice,
                                   farmerId = it)
@@ -386,55 +388,26 @@ fun StatusTag(status: ReportStatus) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewOverviewScreen() {
-  val dummyReports =
-      listOf(
-          Report(
-              id = "1",
-              title = "Cow coughing",
-              description = "Coughing and nasal discharge observed",
-              photoUri = null,
-              farmerId = "farmer_001",
-              vetId = "vet_001",
-              status = ReportStatus.IN_PROGRESS,
-              answer = null,
-              location = null),
-          Report(
-              id = "2",
-              title = "Sheep limping",
-              description = "Limping observed in the rear leg; mild swelling noted",
-              photoUri = null,
-              farmerId = "farmer_002",
-              vetId = "vet_002",
-              status = ReportStatus.PENDING,
-              answer = null,
-              location = null))
-  val dummyUiState =
-      OverviewUIState(
-          reports = dummyReports,
-          filteredReports = dummyReports,
-          selectedStatus = null,
-          selectedVet = null,
-          selectedFarmer = null,
-          officeOptions = listOf("vet_001", "vet_002"),
-          farmerOptions = listOf("farmer_001", "farmer_002"))
-  val dummyViewModel =
-      object : OverviewViewModelContract {
-        override val uiState: StateFlow<OverviewUIState> = MutableStateFlow(dummyUiState)
+    val fakeFarmer = Farmer(
+        uid = "farmer_001",
+        firstname = "Test",
+        lastname = "Farmer",
+        email = "test@farmer.com",
+        address = Location(46.5191, 6.5668, "EPFL"),
+        linkedOffices = listOf("off_001"),
+        defaultOffice = "off_001"
+    )
+    val fakeViewModel = FakeOverviewViewModel(fakeFarmer)
 
-        override fun loadReports(userRole: UserRole, userId: String) {}
-
-        override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {}
-
-        override fun signOut(credentialManager: CredentialManager) {}
-      }
-  AgriHealthAppTheme {
-    OverviewScreen(
-        userRole = UserRole.FARMER,
-        userId = "farmer_001",
-        overviewViewModel = dummyViewModel,
-        onAddReport = {},
-        onReportClick = {},
-        navigationActions = null)
-  }
+    AgriHealthAppTheme {
+        OverviewScreen(
+            userRole = UserRole.FARMER,
+            user = fakeFarmer,
+            overviewViewModel = fakeViewModel,
+            onAddReport = {},
+            onReportClick = {},
+            onAlertClick = {}
+        )
+    }
 }
 */

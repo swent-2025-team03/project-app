@@ -1,10 +1,13 @@
 package com.android.agrihealth.ui.overview
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
@@ -13,17 +16,19 @@ import junit.framework.TestCase.assertEquals
 import org.junit.Rule
 import org.junit.Test
 
-/**
- * UI tests for [OverviewScreen]. This test class verifies the presence of stable UI elements in the
- * Overview screen. It DOES NOT check the presence of dynamic data such as report items.
- */
-class OverviewStableUITest {
+class OverviewScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   // --- Helper functions to set up screens ---
 
   private val farmer =
-      Farmer("mock_farmer_id", "john", "john", "john@john.john", null, defaultOffice = null)
+      Farmer(
+          uid = "mock_farmer_id",
+          firstname = "John",
+          lastname = "Doe",
+          email = "john@john.john",
+          address = Location(latitude = 46.5191, longitude = 6.5668),
+          defaultOffice = null)
   private val vet = Vet("mock_vet_id", "john", "john", "john@john.john", null)
 
   private fun setFarmerScreen() {
@@ -105,10 +110,17 @@ class OverviewStableUITest {
     assertEquals("Option 1", selectedOption)
   }
 
-  // --- TEST 8: Verify the first alert item is displayed ---
+  // --- TEST 8: Verify the first alert item is displayed for a farmer whose address is in the area
   @Test
-  fun firstAlertItem_isDisplayed() {
-    setFarmerScreen()
+  fun alertItem_isDisplayedWhenFarmerAddressIsIncluded() {
+    setFarmerScreen() // Farmer has EPFL address
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.alertItemTag(0)).assertIsDisplayed()
+  }
+
+  // --- TEST 9: Verify alerts are NOT displayed for a user whose address is not in the area ---
+  @Test
+  fun alertItem_isNotDisplayedWhenAddressIsOutside() {
+    setVetScreen() // Vet doesn't have any address
+    composeTestRule.onAllNodesWithTag(OverviewScreenTestTags.alertItemTag(0)).assertCountEquals(0)
   }
 }
