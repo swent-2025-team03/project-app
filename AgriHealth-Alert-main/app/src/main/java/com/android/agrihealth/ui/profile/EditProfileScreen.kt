@@ -43,6 +43,7 @@ object EditProfileScreenTestTags {
   const val DESCRIPTION_FIELD = "Description"
   const val PASSWORD_FIELD = "PasswordField"
   const val ADDRESS_FIELD = "EditAddressField"
+  const val LOCATION_BUTTON = "LocationButton"
   const val DEFAULT_VET_DROPDOWN = "DefaultVetDropdown"
   const val ADD_CODE_BUTTON = "AddVetButton"
   const val SAVE_BUTTON = "SaveButton"
@@ -174,9 +175,12 @@ fun EditProfileScreen(
                   },
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
-              Button(onClick = onChangeLocation, modifier = Modifier.fillMaxWidth()) {
-                Text("change location")
-              }
+              Button(
+                  onClick = onChangeLocation,
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LOCATION_BUTTON)) {
+                    Text("change location")
+                  }
 
               // Default Vet Selection and Code Input (Farmers only)
               if (user is Farmer) {

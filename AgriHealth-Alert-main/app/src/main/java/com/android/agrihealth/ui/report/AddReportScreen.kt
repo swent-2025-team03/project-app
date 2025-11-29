@@ -35,7 +35,6 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.ui.common.OfficeNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
-import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
 import kotlinx.coroutines.launch
@@ -52,6 +51,8 @@ object AddReportScreenTestTags {
   const val TITLE_FIELD = "titleField"
   const val DESCRIPTION_FIELD = "descriptionField"
   const val OFFICE_DROPDOWN = "officeDropDown"
+  const val ADDRESS_FIELD = "addressField"
+  const val LOCATION_BUTTON = "locationButton"
   const val CREATE_BUTTON = "createButton"
   const val SCROLL_CONTAINER = "AddReportScrollContainer"
 
@@ -214,11 +215,13 @@ fun AddReportScreen(
                   readOnly = true,
                   singleLine = true,
                   label = { Text("Selected Location") },
+                  modifier = Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.ADDRESS_FIELD))
+              Button(
+                  onClick = onChangeLocation,
                   modifier =
-                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
-              Button(onClick = onChangeLocation, modifier = Modifier.fillMaxWidth()) {
-                Text("Select Location")
-              }
+                      Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.LOCATION_BUTTON)) {
+                    Text("Select Location")
+                  }
 
               var selectedOfficeName = offices[selectedOption] ?: selectedOption
               ExposedDropdownMenuBox(
