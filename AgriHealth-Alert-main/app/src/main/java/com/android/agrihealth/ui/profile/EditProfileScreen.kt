@@ -71,7 +71,7 @@ fun EditProfileScreen(
   var address by remember { mutableStateOf(user.address?.toString() ?: "") }
 
   // Farmer-specific states
-  var selectedDefaultOffice by remember { mutableStateOf((user as? Farmer)?.defaultOffice ?: "") }
+  var selectedDefaultOffice by remember { mutableStateOf((user as? Farmer)?.defaultOffice) }
   var expandedVetDropdown by remember { mutableStateOf(false) }
 
   Scaffold(
