@@ -3,14 +3,12 @@ package com.android.agrihealth.ui.report
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertAny
-import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -25,19 +23,18 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.testutil.TestConstants
-import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.UserViewModelContract
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 
-// map officeIds to their display name
 private val linkedOffices =
     mapOf(
         "Best Office Ever!" to "Deleted office",
         "Meh Office" to "Deleted office",
         "Great Office" to "Deleted office")
 
-private fun fakeFarmerViewModel(): UserViewModel =
+private fun fakeFarmerViewModel(): UserViewModelContract =
     FakeUserViewModel(
         Farmer(
             uid = "test_user",
@@ -213,14 +210,24 @@ class AddReportScreenTest {
             addReportViewModel = FakeAddReportViewModel())
       }
     }
+
+    val firstOfficeId = linkedOffices.keys.first()
+    val firstOfficeName = linkedOffices[firstOfficeId]!!
+
     composeRule
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
         .performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
+
     composeRule.onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN).performClick()
-    val firstOffice = linkedOffices.values.first()
-    composeRule.onAllNodesWithText(firstOffice, useUnmergedTree = true).assertCountEquals(4)
-    composeRule.onAllNodesWithText(firstOffice, useUnmergedTree = true).onFirst().performClick()
-    composeRule.onNodeWithText(firstOffice, useUnmergedTree = true).assertIsDisplayed()
+    composeRule.waitForIdle()
+
+    composeRule
+        .onNodeWithTag(
+            AddReportScreenTestTags.getTestTagForOffice(firstOfficeId), useUnmergedTree = true)
+        .assertExists()
+        .performClick()
+
+    composeRule.onNodeWithText(firstOfficeName, useUnmergedTree = true).assertIsDisplayed()
   }
 
   @Test

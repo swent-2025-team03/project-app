@@ -8,13 +8,14 @@ import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.UserViewModelContract
 import java.lang.IllegalStateException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class CodesViewModel(
-    private val userViewModel: UserViewModel = UserViewModel(),
+    private val userViewModel: UserViewModelContract = UserViewModel(),
     private val connectionRepository: ConnectionRepository,
     private val officeRepository: OfficeRepository = OfficeRepositoryProvider.get()
 ) : ViewModel() {

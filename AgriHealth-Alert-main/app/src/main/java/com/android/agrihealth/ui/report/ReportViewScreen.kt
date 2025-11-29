@@ -3,6 +3,7 @@ package com.android.agrihealth.ui.report
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.core.design.theme.statusColor
@@ -30,6 +32,8 @@ import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.common.OfficeName
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
+import java.time.format.DateTimeFormatter
 
 object ReportViewScreenTestTags {
   const val STATUS_BADGE_BOX = "StatusBadgeBox"
@@ -134,6 +138,8 @@ fun ReportViewScreen(
                         text = report.title,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f))
                     Box(
                         modifier =
@@ -174,6 +180,15 @@ fun ReportViewScreen(
                     .testTag(ReportViewScreenTestTags.SCROLL_CONTAINER),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
+              // --- Full title (only if too long) ---
+              val maxTitleChars = maxTitleCharsForScreen()
+              val showFullTitleInBody = report.title.length > maxTitleChars
+              if (showFullTitleInBody) {
+                Text(
+                    text = "Title: ${report.title}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold)
+              }
               // ---- Farmer or Office info line ----
               Row(
                   verticalAlignment = Alignment.CenterVertically,
@@ -207,7 +222,9 @@ fun ReportViewScreen(
               )*/
 
               // ---- Description ----
-              Text(text = report.description, style = MaterialTheme.typography.bodyLarge)
+              Text(
+                  text = "Description: ${report.description}",
+                  style = MaterialTheme.typography.bodyLarge)
 
               // ---- Questions (read-only) ----
               Text(
@@ -280,6 +297,49 @@ fun ReportViewScreen(
                             }
                           }
                     }
+              }
+              // ---- Set Time section ----
+              Column {
+                Text(
+                    text = "Veterinarian visit: ",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold)
+                Spacer(modifier = Modifier.width(8.dp))
+                Row {
+                  Text(
+                      "    Start time: ",
+                      style = MaterialTheme.typography.titleMedium,
+                      fontWeight = FontWeight.SemiBold)
+                  Text(
+                      text =
+                          report.startTime?.format(
+                              DateTimeFormatter.ofPattern("HH:mm ' on ' dd MMM yyyy"))
+                              ?: "  Not set",
+                      style = MaterialTheme.typography.bodyLarge,
+                      color = MaterialTheme.colorScheme.primaryContainer,
+                      modifier =
+                          Modifier.clickable(
+                              onClick = {
+                                navigationActions.navigateTo(Screen.Planner(reportId = report.id))
+                              }))
+                }
+                Row {
+                  Text(
+                      "    Duration: ",
+                      style = MaterialTheme.typography.titleMedium,
+                      fontWeight = FontWeight.SemiBold)
+                  Text(
+                      text =
+                          report.duration?.format(DateTimeFormatter.ofPattern("HH:mm"))
+                              ?: "  Not set",
+                      style = MaterialTheme.typography.bodyLarge,
+                      color = MaterialTheme.colorScheme.primaryContainer,
+                      modifier =
+                          Modifier.clickable(
+                              onClick = {
+                                navigationActions.navigateTo(Screen.Planner(reportId = report.id))
+                              }))
+                }
               }
 
               // ---- Bottom section: Map + Spam + Save ----

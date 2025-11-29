@@ -12,6 +12,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
 import java.time.Instant
+import java.time.LocalDateTime
 import kotlinx.coroutines.tasks.await
 
 const val REPORTS_COLLECTION_PATH = "reports"
@@ -116,6 +117,25 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
     val createdAt =
         createdAtData?.let { Instant.ofEpochSecond(it["epochSecond"] as? Long ?: 0) }
             ?: Instant.now()
+    val startTimeData = doc.get("startTime") as? Map<*, *>
+    val startTime =
+        startTimeData?.let {
+          LocalDateTime.of(
+              (it["year"] as? Long ?: 0).toInt(),
+              (it["monthValue"] as? Long ?: 0).toInt(),
+              (it["dayOfMonth"] as? Long ?: 0).toInt(),
+              (it["hour"] as? Long ?: 0).toInt(),
+              (it["minute"] as? Long ?: 0).toInt(),
+              (it["second"] as? Long ?: 0).toInt())
+        }
+    val durationData = doc.get("duration") as? Map<*, *>
+    val duration =
+        durationData?.let {
+          java.time.LocalTime.of(
+              (it["hour"] as? Long ?: 0).toInt(),
+              (it["minute"] as? Long ?: 0).toInt(),
+              (it["second"] as? Long ?: 0).toInt())
+        }
 
     Report(
         id = id,
@@ -128,7 +148,10 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
         status = status,
         answer = answer,
         location = location,
-        createdAt = createdAt)
+        createdAt = createdAt,
+        startTime = startTime,
+        duration = duration,
+    )
   } catch (e: Exception) {
     Log.e("ReportRepositoryFirestore", "Error converting document ${doc.id} to Report", e)
     null
