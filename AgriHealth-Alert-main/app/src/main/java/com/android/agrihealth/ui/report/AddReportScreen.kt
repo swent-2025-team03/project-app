@@ -83,7 +83,7 @@ fun AddReportScreen(
     userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
     onBack: () -> Unit = {},
     onCreateReport: () -> Unit = {},
-    locationPicked: Location? = null,
+    pickedLocation: Location? = null,
     onChangeLocation: () -> Unit = {},
     addReportViewModel: AddReportViewModelContract
 ) {
@@ -206,7 +206,7 @@ fun AddReportScreen(
               }
 
               OutlinedTextField(
-                  value = locationPicked?.name ?: "Select a Location",
+                  value = pickedLocation?.name ?: "Select a Location",
                   placeholder = { Text("Select a Location") },
                   onValueChange = {},
                   readOnly = true,

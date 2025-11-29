@@ -191,6 +191,8 @@ fun AgriHealthApp(
             },
             userViewModel = userViewModel,
             onCreateReport = { reloadReports = !reloadReports },
+            pickedLocation = pickedLocation.value,
+            onChangeLocation = { navigationActions.navigateTo(Screen.LocationPicker) },
             addReportViewModel = addReportViewModel,
         )
       }
