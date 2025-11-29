@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -114,6 +115,10 @@ fun AgriHealthApp(
   var pickedLng = remember { 0.0 }
 
   val pickedLocation = remember { mutableStateOf(currentUser.address) }
+
+    LaunchedEffect(currentUser.address) {
+         pickedLocation.value = currentUser.address
+    }
 
   val startDestination = remember {
     if (Firebase.auth.currentUser == null) Screen.Auth.name
