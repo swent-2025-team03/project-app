@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.ADDRESS_FIELD
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.CREATE_BUTTON
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.DESCRIPTION_FIELD
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.NAME_FIELD
@@ -72,7 +71,6 @@ fun CreateOfficeScreen(
                   onValueChange = vm::onDescriptionChange,
                   label = { Text("Description (optional)") },
                   modifier = Modifier.fillMaxWidth().testTag(DESCRIPTION_FIELD))
-
 
               // Error text (only shown when not null)
               if (uiState.error != null) {
