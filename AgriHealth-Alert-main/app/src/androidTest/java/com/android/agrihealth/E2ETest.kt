@@ -550,20 +550,24 @@ class E2ETest : FirebaseEmulatorsTest() {
       break
     }
 
-      composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-          .performScrollToNode(hasTestTag(AddReportScreenTestTags.LOCATION_BUTTON))
-      composeTestRule.onNodeWithTag(AddReportScreenTestTags.LOCATION_BUTTON).performClick()
-      composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
-          composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).isDisplayed()
-      }
-      composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).performClick()
-      composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
-          composeTestRule.onNodeWithTag(LocationPickerTestTags.CONFIRMATION_PROMPT).isDisplayed()
-      }
-      composeTestRule.onNodeWithTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON).assertIsDisplayed().performClick()
-      composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT){
-          composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER).isDisplayed()
-      }
+    composeTestRule
+        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+        .performScrollToNode(hasTestTag(AddReportScreenTestTags.LOCATION_BUTTON))
+    composeTestRule.onNodeWithTag(AddReportScreenTestTags.LOCATION_BUTTON).performClick()
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+      composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).isDisplayed()
+    }
+    composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).performClick()
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+      composeTestRule.onNodeWithTag(LocationPickerTestTags.CONFIRMATION_PROMPT).isDisplayed()
+    }
+    composeTestRule
+        .onNodeWithTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+      composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER).isDisplayed()
+    }
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
         .performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
