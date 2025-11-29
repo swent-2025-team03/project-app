@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import FakeReportRepository
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.compose.NavHost
@@ -9,7 +10,6 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.FakeOverviewViewModel
-import com.android.agrihealth.testutil.FakeReportRepository
 import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
