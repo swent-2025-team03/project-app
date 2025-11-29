@@ -21,14 +21,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.ui.common.AuthorName
-import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.navigation.Screen
 
 object ViewOfficeScreenTestTags {
-  const val TOP_BAR = "ViewOfficeTopBar"
-  const val BACK_BUTTON = "ViewOfficeBackButton"
   const val LOADING_INDICATOR = "ViewOfficeLoadingIndicator"
   const val ERROR_TEXT = "ViewOfficeErrorText"
-  const val CONTENT_COLUMN = "ViewOfficeContentColumn"
+  const val OFFICE_INFO_COLUMN = "ViewOfficeContentColumn"
   const val OFFICE_ICON = "ViewOfficeIcon"
   const val NAME_FIELD = "ViewOfficeNameField"
   const val ADDRESS_FIELD = "ViewOfficeAddressField"
@@ -41,10 +40,8 @@ object ViewOfficeScreenTestTags {
 fun ViewOfficeScreen(
     viewModel: ViewOfficeViewModel,
     onBack: () -> Unit,
-    onOpenUser: (String) -> Unit = {},
-    userViewModel: UserViewModel = viewModel()
+    onOpenUser: (String) -> Unit = {}
 ) {
-  val currentUser by userViewModel.user.collectAsState()
   val uiState by viewModel.uiState
 
   val context = LocalContext.current
@@ -66,19 +63,18 @@ fun ViewOfficeScreen(
                 val office = (uiState as ViewOfficeUiState.Success).office
                 Text(office.name)
               } else {
-                Text("Office")
+                Text(Screen.ViewOffice("").name)
               }
             },
             navigationIcon = {
               IconButton(
                   onClick = onBack,
-                  modifier = Modifier.testTag(ViewOfficeScreenTestTags.BACK_BUTTON)) {
+                  modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                   }
             },
-            modifier = Modifier.testTag(ViewOfficeScreenTestTags.TOP_BAR))
+            modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE))
       }) { padding ->
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
         Box(modifier = Modifier.padding(padding)) {
           when (uiState) {
             is ViewOfficeUiState.Loading ->
@@ -111,14 +107,14 @@ private fun ViewOfficeContent(office: Office, onOpenUser: (String) -> Unit) {
           Modifier.fillMaxSize()
               .verticalScroll(scroll)
               .padding(16.dp)
-              .testTag(ViewOfficeScreenTestTags.CONTENT_COLUMN),
-      horizontalAlignment = Alignment.CenterHorizontally) {
+              .testTag(ViewOfficeScreenTestTags.OFFICE_INFO_COLUMN),
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
         Icon(
             imageVector = Icons.Default.AccountCircle,
             contentDescription = "Office",
             modifier = Modifier.size(120.dp).testTag(ViewOfficeScreenTestTags.OFFICE_ICON))
-
-        Spacer(Modifier.height(24.dp))
 
         OutlinedTextField(
             value = office.name,
@@ -128,8 +124,6 @@ private fun ViewOfficeContent(office: Office, onOpenUser: (String) -> Unit) {
             interactionSource = noInteraction,
             enabled = false,
             modifier = Modifier.fillMaxWidth().testTag(ViewOfficeScreenTestTags.NAME_FIELD))
-
-        Spacer(Modifier.height(8.dp))
 
         // TODO: add once location is implemented in users and offices
         office.address?.let {
@@ -141,8 +135,6 @@ private fun ViewOfficeContent(office: Office, onOpenUser: (String) -> Unit) {
               interactionSource = noInteraction,
               enabled = false,
               modifier = Modifier.fillMaxWidth().testTag(ViewOfficeScreenTestTags.ADDRESS_FIELD))
-
-          Spacer(Modifier.height(8.dp))
         }
 
         if (!office.description.isNullOrBlank()) {
@@ -155,13 +147,10 @@ private fun ViewOfficeContent(office: Office, onOpenUser: (String) -> Unit) {
               enabled = false,
               modifier =
                   Modifier.fillMaxWidth().testTag(ViewOfficeScreenTestTags.DESCRIPTION_FIELD))
-
-          Spacer(Modifier.height(8.dp))
         }
 
         if (office.vets.isNotEmpty()) {
           Text("Vets in this office:", style = MaterialTheme.typography.titleMedium)
-          Spacer(Modifier.height(8.dp))
 
           LazyColumn(
               modifier =
@@ -170,10 +159,6 @@ private fun ViewOfficeContent(office: Office, onOpenUser: (String) -> Unit) {
                       .testTag(ViewOfficeScreenTestTags.VET_LIST)) {
                 items(office.vets) { vetId -> AuthorName(vetId, onClick = { onOpenUser(vetId) }) }
               }
-
-          Spacer(Modifier.height(8.dp))
         }
-
-        Spacer(Modifier.height(32.dp))
       }
 }

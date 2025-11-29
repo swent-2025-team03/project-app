@@ -228,7 +228,6 @@ fun AgriHealthApp(
             ViewOfficeScreen(
                 viewModel = viewModel,
                 onBack = { navController.navigateUp() },
-                userViewModel = userViewModel,
                 onOpenUser = { uid -> navigationActions.navigateTo(Screen.ViewUser(uid)) })
           }
     }

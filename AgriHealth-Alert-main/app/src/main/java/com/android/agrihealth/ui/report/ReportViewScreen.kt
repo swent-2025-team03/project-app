@@ -320,7 +320,7 @@ fun ReportViewScreen(
                       modifier =
                           Modifier.clickable(
                               onClick = {
-                                navigationActions.navigateTo(Screen.Planner(reportId = report.id))
+                                navigationActions?.navigateTo(Screen.Planner(reportId = report.id))
                               }))
                 }
                 Row {
@@ -337,7 +337,7 @@ fun ReportViewScreen(
                       modifier =
                           Modifier.clickable(
                               onClick = {
-                                navigationActions.navigateTo(Screen.Planner(reportId = report.id))
+                                navigationActions?.navigateTo(Screen.Planner(reportId = report.id))
                               }))
                 }
               }

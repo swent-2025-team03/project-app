@@ -7,7 +7,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.testutil.FakeOfficeRepository
-import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.navigation.NavigationTestTags
 import org.junit.Rule
 import org.junit.Test
 
@@ -20,10 +20,6 @@ class FakeViewOfficeViewModel(initial: ViewOfficeUiState) :
     get() = _state
 
   override fun load() {}
-
-  fun setState(state: ViewOfficeUiState) {
-    _state.value = state
-  }
 }
 
 class ViewOfficeScreenTest {
@@ -31,11 +27,21 @@ class ViewOfficeScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   private fun setScreen(vm: FakeViewOfficeViewModel) {
-    val userVm = UserViewModel()
+    composeTestRule.setContent { MaterialTheme { ViewOfficeScreen(viewModel = vm, onBack = {}) } }
+  }
 
-    composeTestRule.setContent {
-      MaterialTheme { ViewOfficeScreen(viewModel = vm, userViewModel = userVm, onBack = {}) }
-    }
+  private fun setBasicTestScreen() {
+    val office =
+        Office(
+            id = "o1",
+            name = "Agri Vet Clinic",
+            address = null,
+            description = "Providing quality veterinary services for farm animals.",
+            vets = listOf("vet1", "vet2"),
+            ownerId = "owner1")
+
+    val vm = FakeViewOfficeViewModel(ViewOfficeUiState.Success(office))
+    setScreen(vm)
   }
 
   @Test
@@ -43,8 +49,8 @@ class ViewOfficeScreenTest {
     val vm = FakeViewOfficeViewModel(ViewOfficeUiState.Loading)
     setScreen(vm)
 
-    composeTestRule.onNodeWithTag(ViewOfficeScreenTestTags.TOP_BAR).assertExists()
-    composeTestRule.onNodeWithTag(ViewOfficeScreenTestTags.BACK_BUTTON).assertExists()
+    composeTestRule.onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE).assertExists()
+    composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertExists()
   }
 
   @Test
@@ -71,37 +77,17 @@ class ViewOfficeScreenTest {
 
   @Test
   fun successState_displaysContentColumn() {
-    val office =
-        Office(
-            id = "o1",
-            name = "Test Office",
-            address = null,
-            description = null,
-            vets = emptyList(),
-            ownerId = "owner1")
-
-    val vm = FakeViewOfficeViewModel(ViewOfficeUiState.Success(office))
-    setScreen(vm)
+    setBasicTestScreen()
 
     composeTestRule
-        .onNodeWithTag(ViewOfficeScreenTestTags.CONTENT_COLUMN)
+        .onNodeWithTag(ViewOfficeScreenTestTags.OFFICE_INFO_COLUMN)
         .assertExists()
         .assertIsDisplayed()
   }
 
   @Test
   fun officeIcon_isVisible() {
-    val office =
-        Office(
-            id = "o1",
-            name = "Icon Office",
-            address = null,
-            description = null,
-            vets = emptyList(),
-            ownerId = "owner1")
-
-    val vm = FakeViewOfficeViewModel(ViewOfficeUiState.Success(office))
-    setScreen(vm)
+    setBasicTestScreen()
 
     composeTestRule
         .onNodeWithTag(ViewOfficeScreenTestTags.OFFICE_ICON)
@@ -111,17 +97,7 @@ class ViewOfficeScreenTest {
 
   @Test
   fun nameField_displaysCorrectValue() {
-    val office =
-        Office(
-            id = "o1",
-            name = "Agri Vet Clinic",
-            address = null,
-            description = null,
-            vets = emptyList(),
-            ownerId = "owner1")
-
-    val vm = FakeViewOfficeViewModel(ViewOfficeUiState.Success(office))
-    setScreen(vm)
+    setBasicTestScreen()
 
     composeTestRule
         .onNodeWithTag(ViewOfficeScreenTestTags.NAME_FIELD)
@@ -130,17 +106,7 @@ class ViewOfficeScreenTest {
 
   @Test
   fun descriptionField_showsWhenDescriptionPresent() {
-    val office =
-        Office(
-            id = "o1",
-            name = "Desc Office",
-            address = null,
-            description = "Office description",
-            vets = emptyList(),
-            ownerId = "owner1")
-
-    val vm = FakeViewOfficeViewModel(ViewOfficeUiState.Success(office))
-    setScreen(vm)
+    setBasicTestScreen()
 
     composeTestRule
         .onNodeWithTag(ViewOfficeScreenTestTags.DESCRIPTION_FIELD)
@@ -150,17 +116,7 @@ class ViewOfficeScreenTest {
 
   @Test
   fun vetList_showsWhenVetsPresent() {
-    val office =
-        Office(
-            id = "o1",
-            name = "Vets Office",
-            address = null,
-            description = null,
-            vets = listOf("v1", "v2"),
-            ownerId = "owner1")
-
-    val vm = FakeViewOfficeViewModel(ViewOfficeUiState.Success(office))
-    setScreen(vm)
+    setBasicTestScreen()
 
     composeTestRule
         .onNodeWithTag(ViewOfficeScreenTestTags.VET_LIST)
@@ -170,21 +126,11 @@ class ViewOfficeScreenTest {
 
   @Test
   fun allKeyElements_haveTags() {
-    val office =
-        Office(
-            id = "o1",
-            name = "Full Office",
-            address = null,
-            description = null,
-            vets = emptyList(),
-            ownerId = "owner1")
+    setBasicTestScreen()
 
-    val vm = FakeViewOfficeViewModel(ViewOfficeUiState.Success(office))
-    setScreen(vm)
-
-    composeTestRule.onNodeWithTag(ViewOfficeScreenTestTags.TOP_BAR).assertExists()
+    composeTestRule.onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE).assertExists()
     composeTestRule.onNodeWithTag(ViewOfficeScreenTestTags.OFFICE_ICON).assertExists()
     composeTestRule.onNodeWithTag(ViewOfficeScreenTestTags.NAME_FIELD).assertExists()
-    composeTestRule.onNodeWithTag(ViewOfficeScreenTestTags.CONTENT_COLUMN).assertExists()
+    composeTestRule.onNodeWithTag(ViewOfficeScreenTestTags.OFFICE_INFO_COLUMN).assertExists()
   }
 }

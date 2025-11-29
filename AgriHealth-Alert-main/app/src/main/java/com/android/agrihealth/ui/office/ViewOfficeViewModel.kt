@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import kotlinx.coroutines.launch
@@ -12,8 +13,7 @@ import kotlinx.coroutines.launch
 sealed class ViewOfficeUiState {
   object Loading : ViewOfficeUiState()
 
-  data class Success(val office: com.android.agrihealth.data.model.office.Office) :
-      ViewOfficeUiState()
+  data class Success(val office: Office) : ViewOfficeUiState()
 
   data class Error(val message: String) : ViewOfficeUiState()
 }
