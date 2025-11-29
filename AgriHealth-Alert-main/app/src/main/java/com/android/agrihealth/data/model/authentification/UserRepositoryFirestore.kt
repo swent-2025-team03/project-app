@@ -7,6 +7,7 @@ import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
+import kotlin.collections.get
 import kotlinx.coroutines.tasks.await
 
 const val USERS_COLLECTION_PATH = "users"
@@ -89,6 +90,14 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     val roleStr = data["role"] as? String ?: throw Exception("Missing role")
     val isGoogleAccount = data["isGoogleAccount"] as? Boolean ?: false
     val description = data["description"] as? String?
+    val addressData = data["address"] as? Map<*, *>
+    val address =
+        addressData?.let {
+          Location(
+              latitude = it["latitude"] as? Double ?: 0.0,
+              longitude = it["longitude"] as? Double ?: 0.0,
+              name = it["name"] as? String ?: "")
+        }
 
     return when (roleStr) {
       "Farmer" ->
@@ -97,7 +106,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               firstname = firstname,
               lastname = lastname,
               email = email,
-              address = data["address"] as? Location?,
+              address = address,
               linkedOffices = data["linkedOffices"] as? List<String> ?: emptyList(),
               defaultOffice = data["defaultOffice"] as? String,
               isGoogleAccount = isGoogleAccount,
@@ -108,7 +117,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               firstname = firstname,
               lastname = lastname,
               email = email,
-              address = data["address"] as? Location?,
+              address = address,
               validCodes = data["validCodes"] as? List<String> ?: emptyList(),
               officeId = data["officeId"] as? String?,
               isGoogleAccount = isGoogleAccount,

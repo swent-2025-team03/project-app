@@ -41,6 +41,8 @@ sealed class Screen(
 
   object RoleSelection : Screen(route = "role", name = "Role")
 
+  object LocationPicker : Screen(route = "location_picker", name = "Select a Location")
+
   data class ViewReport(val reportId: String) :
       Screen(route = "view_report/${reportId}", name = "view_report") {
     companion object {
