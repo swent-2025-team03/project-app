@@ -31,11 +31,9 @@ fun NotificationTest() {
     Box {
       Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface).fillMaxSize()) {
         TextButton(
-            onClick = { messagingService.registerDevice { token = it } },
+            onClick = { messagingService.getToken { token = it } },
             modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer)) {
-              Text(
-                  "See messaging token",
-                color = MaterialTheme.colorScheme.onPrimaryContainer)
+              Text("See messaging token", color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
 
         Text(token, color = MaterialTheme.colorScheme.onSurface)
