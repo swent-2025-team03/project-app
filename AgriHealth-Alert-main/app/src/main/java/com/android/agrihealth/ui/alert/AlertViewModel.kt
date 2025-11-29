@@ -1,0 +1,64 @@
+package com.android.agrihealth.ui.alert
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.android.agrihealth.data.model.alert.Alert
+import com.android.agrihealth.data.model.alert.AlertRepository
+import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+/**
+ * Represents the UI state for viewing a single alert.
+ *
+ * @property alert The currently loaded `Alert`. Null if not loaded yet.
+ */
+data class AlertViewUIState(val alert: Alert? = null, val errorMessage: String? = null)
+
+class AlertViewModel(private val repository: AlertRepository = AlertRepositoryProvider.repository) :
+    ViewModel() {
+
+  private val _uiState = MutableStateFlow(AlertViewUIState())
+  val uiState: StateFlow<AlertViewUIState> = _uiState.asStateFlow()
+
+  private val _currentAlertIndex = MutableStateFlow(0)
+  val currentAlertIndex: StateFlow<Int> = _currentAlertIndex.asStateFlow()
+
+  /** Loads an alert by its ID and updates the state. */
+  fun loadAlert(alertId: String) {
+    viewModelScope.launch {
+      try {
+        val fetchedAlert = repository.getAlertById(alertId)
+        if (fetchedAlert != null) {
+          _uiState.value = AlertViewUIState(alert = fetchedAlert)
+          val index = repository.getAlerts().indexOfFirst { it.id == alertId }
+          if (index != -1) _currentAlertIndex.value = index
+        } else {
+          _uiState.value = _uiState.value.copy(errorMessage = "Alert with ID $alertId not found.")
+        }
+      } catch (e: Exception) {
+        _uiState.value = _uiState.value.copy(errorMessage = "Error loading Alert: ${e.message}")
+      }
+    }
+  }
+
+  fun loadPreviousAlert(currentId: String) {
+    viewModelScope.launch {
+      val previous = repository.getPreviousAlert(currentId)
+      previous?.let { loadAlert(it.id) }
+    }
+  }
+
+  fun loadNextAlert(currentId: String) {
+    viewModelScope.launch {
+      val next = repository.getNextAlert(currentId)
+      next?.let { loadAlert(it.id) }
+    }
+  }
+
+  fun hasPrevious(currentId: String) = repository.getPreviousAlert(currentId) != null
+
+  fun hasNext(currentId: String) = repository.getNextAlert(currentId) != null
+}

@@ -16,6 +16,7 @@ import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTes
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.TestConstants
+import com.android.agrihealth.ui.alert.AlertViewScreenTestTags
 import com.android.agrihealth.ui.authentification.RoleSelectionScreenTestTags
 import com.android.agrihealth.ui.authentification.SignInErrorMsg
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
@@ -210,13 +211,18 @@ class E2ETest : FirebaseEmulatorsTest() {
     checkOverviewScreenIsDisplayed()
 
     composeTestRule.onNodeWithTag("ALERT_ITEM_0").assertIsDisplayed()
-
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.alertItemTag(1)).performClick()
-    composeTestRule.onNodeWithTag("ALERT_ITEM_1").assertIsDisplayed()
-
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.alertItemTag(0)).performClick()
-    composeTestRule.onNodeWithTag("ALERT_ITEM_0").assertIsDisplayed()
 
+    composeTestRule.onNodeWithTag(AlertViewScreenTestTags.containerTag(0)).assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag(AlertViewScreenTestTags.NEXT_ALERT_ARROW).performClick()
+    composeTestRule.onNodeWithTag(AlertViewScreenTestTags.containerTag(1)).assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag(AlertViewScreenTestTags.PREVIOUS_ALERT_ARROW).performClick()
+    composeTestRule.onNodeWithTag(AlertViewScreenTestTags.containerTag(0)).assertIsDisplayed()
+
+    goBack()
+    checkOverviewScreenIsDisplayed()
     signOutFromScreen()
   }
 

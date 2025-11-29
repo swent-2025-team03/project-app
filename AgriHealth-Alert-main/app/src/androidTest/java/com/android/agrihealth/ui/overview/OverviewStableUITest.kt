@@ -104,4 +104,11 @@ class OverviewStableUITest {
 
     assertEquals("Option 1", selectedOption)
   }
+
+  // --- TEST 8: Verify the first alert item is displayed ---
+  @Test
+  fun firstAlertItem_isDisplayed() {
+    setFarmerScreen()
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.alertItemTag(0)).assertIsDisplayed()
+  }
 }
