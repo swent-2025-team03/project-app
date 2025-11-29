@@ -13,7 +13,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,6 +37,7 @@ import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
+import com.android.agrihealth.data.model.device.location.locationPermissionsRequester
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.location.LocationPicker
 import com.android.agrihealth.resources.C
@@ -110,10 +110,10 @@ fun AgriHealthApp(
   val currentUserRole = currentUser.role
   val currentUserEmail = currentUser.email
 
-    var pickedLat = remember {0.0}
-    var pickedLng = remember {0.0}
+  var pickedLat = remember { 0.0 }
+  var pickedLng = remember { 0.0 }
 
-    var pickedLocation = remember { mutableStateOf<Location?>(null)}
+  var pickedLocation = remember { mutableStateOf(currentUser.address) }
 
   val startDestination = remember {
     if (Firebase.auth.currentUser == null) Screen.Auth.name
@@ -188,30 +188,34 @@ fun AgriHealthApp(
             addReportViewModel = addReportViewModel,
         )
       }
-        composable(
-            route = Screen.LocationPicker.route
-        ) {
-            val createMapViewModel =
-                object : androidx.lifecycle.ViewModelProvider.Factory {
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return MapViewModel(locationViewModel = locationViewModel) as T
-                    }
-                }
-            LocationPicker(
-                navigationActions = navigationActions,
-                mapViewModel = viewModel(factory = createMapViewModel),
-                onLatLng = { lat, lng ->
-                    pickedLat = lat
-                    pickedLng = lng
-                } ,
-                onAddress = {address ->
-                    if(address != null) {
-                        pickedLocation.value = Location(pickedLat, pickedLng, address)
-                        navigationActions.goBack()
-                    }
-                }
-            )
+      composable(route = Screen.LocationPicker.route) {
+        val createMapViewModel =
+            object : androidx.lifecycle.ViewModelProvider.Factory {
+              override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return MapViewModel(locationViewModel = locationViewModel) as T
+              }
+            }
+        val mapViewModel: MapViewModel =
+            viewModel(factory = createMapViewModel, key = pickedLocation.value.toString())
+        val permissionAsked = locationPermissionsRequester(locationViewModel)
+        if (permissionAsked) {
+          mapViewModel.refreshMapPermission()
         }
+        mapViewModel.setStartingLocation(pickedLocation.value)
+        LocationPicker(
+            navigationActions = navigationActions,
+            mapViewModel = mapViewModel,
+            onLatLng = { lat, lng ->
+              pickedLat = lat
+              pickedLng = lng
+            },
+            onAddress = { address ->
+              if (address != null) {
+                pickedLocation.value = Location(pickedLat, pickedLng, address)
+                navigationActions.goBack()
+              }
+            })
+      }
       composable(
           route = Screen.ViewReport.route,
           arguments = listOf(navArgument("reportId") { type = NavType.StringType })) {
@@ -285,7 +289,7 @@ fun AgriHealthApp(
               navigationActions.navigateTo(Screen.Profile)
             },
             pickedLocation = pickedLocation.value,
-            onChangeLocation =  {navigationActions.navigateTo(Screen.LocationPicker)},
+            onChangeLocation = { navigationActions.navigateTo(Screen.LocationPicker) },
             onPasswordChange = { navigationActions.navigateTo(Screen.ChangePassword) })
       }
     }

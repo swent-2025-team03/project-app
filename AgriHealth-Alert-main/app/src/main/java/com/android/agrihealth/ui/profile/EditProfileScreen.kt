@@ -161,23 +161,22 @@ fun EditProfileScreen(
               Spacer(modifier = Modifier.height(12.dp))
 
               // Address
-                OutlinedTextField(
-                    value = address,
-                    onValueChange = { address = it },
-                    readOnly = true,
-                    singleLine = true,
-                    label = {
-                        when (userRole) {
-                            UserRole.FARMER -> Text("Farm Address")
-                            UserRole.VET -> Text("Clinic Address")
-                        }
-                    },
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD)
-                )
-            Button(onClick = onChangeLocation, modifier = Modifier.fillMaxWidth()) {
+              OutlinedTextField(
+                  value = address,
+                  onValueChange = { address = it },
+                  readOnly = true,
+                  singleLine = true,
+                  label = {
+                    when (userRole) {
+                      UserRole.FARMER -> Text("Farm Address")
+                      UserRole.VET -> Text("Clinic Address")
+                    }
+                  },
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
+              Button(onClick = onChangeLocation, modifier = Modifier.fillMaxWidth()) {
                 Text("change location")
-            }
+              }
 
               // Default Vet Selection and Code Input (Farmers only)
               if (user is Farmer) {
