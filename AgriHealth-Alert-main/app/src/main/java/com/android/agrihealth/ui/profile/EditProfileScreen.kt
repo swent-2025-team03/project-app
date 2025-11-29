@@ -88,7 +88,7 @@ fun EditProfileScreen(
   var firstname by remember { mutableStateOf(user.firstname) }
   var lastname by remember { mutableStateOf(user.lastname) }
   var description by remember { mutableStateOf(user.description ?: "") }
-  var address by remember { mutableStateOf(pickedLocation?.name ?: user.address?.name ?: "") }
+  var address by remember { mutableStateOf(pickedLocation?.name ?: "") }
 
   // Farmer-specific states
   var selectedDefaultOffice by remember { mutableStateOf((user as? Farmer)?.defaultOffice ?: "") }
