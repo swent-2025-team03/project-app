@@ -37,6 +37,8 @@ import com.android.agrihealth.data.model.device.location.LocationRepositoryProvi
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.resources.C
+import com.android.agrihealth.ui.alert.AlertViewModel
+import com.android.agrihealth.ui.alert.AlertViewScreen
 import com.android.agrihealth.ui.authentification.RoleSelectionScreen
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
@@ -158,6 +160,7 @@ fun AgriHealthApp(
             onReportClick = { reportId ->
               navigationActions.navigateTo(Screen.ViewReport(reportId))
             },
+            onAlertClick = { alertId -> navigationActions.navigateTo(Screen.ViewAlert(alertId)) },
             navigationActions = navigationActions,
         )
       }
@@ -191,6 +194,17 @@ fun AgriHealthApp(
                 userRole = currentUserRole,
                 viewModel = viewModel,
                 reportId = reportId)
+          }
+      composable(
+          route = Screen.ViewAlert.route,
+          arguments = listOf(navArgument("alertId") { type = NavType.StringType })) { backStackEntry
+            ->
+            val alertId = backStackEntry.arguments?.getString("alertId") ?: ""
+
+            val viewModel: AlertViewModel = viewModel()
+
+            AlertViewScreen(
+                navigationActions = navigationActions, viewModel = viewModel, alertId = alertId)
           }
       composable(
           route = Screen.ViewUser.route,
