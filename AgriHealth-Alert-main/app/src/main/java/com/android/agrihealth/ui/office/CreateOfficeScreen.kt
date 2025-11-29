@@ -73,14 +73,6 @@ fun CreateOfficeScreen(
                   label = { Text("Description (optional)") },
                   modifier = Modifier.fillMaxWidth().testTag(DESCRIPTION_FIELD))
 
-              // Input: Office Address
-              OutlinedTextField(
-                  value = uiState.address,
-                  readOnly = true,
-                  singleLine = true,
-                  onValueChange = {},
-                  label = { Text("Address ") },
-                  modifier = Modifier.fillMaxWidth().testTag(ADDRESS_FIELD))
 
               // Error text (only shown when not null)
               if (uiState.error != null) {

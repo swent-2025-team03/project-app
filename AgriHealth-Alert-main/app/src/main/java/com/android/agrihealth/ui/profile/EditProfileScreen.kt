@@ -202,7 +202,7 @@ fun EditProfileScreen(
                   enabled = user is Vet && isOwner,
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LOCATION_BUTTON)) {
-                    Text("change location")
+                    Text("Change Location")
                   }
 
               // Default Vet Selection and Code Input (Farmers only)
