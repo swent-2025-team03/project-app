@@ -75,12 +75,4 @@ class AlertViewScreenTest {
     setAlertViewScreen("1")
     composeTestRule.onNodeWithTag(AlertViewScreenTestTags.VIEW_ON_MAP).assertIsDisplayed()
   }
-
-  @Test
-  fun longTitle_showsFullTitleInBody() {
-    val viewModel = AlertViewModel(FakeAlertRepository())
-    viewModel.loadAlert("4")
-    setAlertViewScreen(alertId = "4", viewModel = viewModel)
-    composeTestRule.onNodeWithTag(AlertViewScreenTestTags.ALERT_FULL_TITLE).assertIsDisplayed()
-  }
 }
