@@ -77,7 +77,8 @@ class AddReportViewModel(
             officeId = uiState.chosenOffice,
             status = ReportStatus.PENDING,
             answer = null,
-            location = Location(46.7990813, 6.6259961) // null // optional until implemented
+            location = Location(46.7990813, 6.6259961), // null // optional until implemented
+            isCollected = uiState.isCollected
             )
 
     viewModelScope.launch { reportRepository.addReport(newReport) }
