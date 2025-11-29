@@ -177,7 +177,7 @@ class ReportViewScreenTest {
         .assertDoesNotExist()
   }
 
-  // --- TEST 13: Farmer can confirm spam ---
+  // --- TEST 13: Farmer can confirm delete ---
   @Test
   fun farmer_canConfirmDelete() {
     setFarmerScreen()
