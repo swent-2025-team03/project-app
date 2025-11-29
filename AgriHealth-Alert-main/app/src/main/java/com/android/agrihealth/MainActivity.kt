@@ -116,9 +116,7 @@ fun AgriHealthApp(
 
   val pickedLocation = remember { mutableStateOf(currentUser.address) }
 
-    LaunchedEffect(currentUser.address) {
-         pickedLocation.value = currentUser.address
-    }
+  LaunchedEffect(currentUser.address) { pickedLocation.value = currentUser.address }
 
   val startDestination = remember {
     if (Firebase.auth.currentUser == null) Screen.Auth.name
@@ -187,7 +185,10 @@ fun AgriHealthApp(
         val addReportViewModel: AddReportViewModel = viewModel(factory = createReportViewModel)
 
         AddReportScreen(
-            onBack = { navigationActions.goBack() },
+            onBack = {
+              pickedLocation.value = currentUser.address
+              navigationActions.goBack()
+            },
             userViewModel = userViewModel,
             onCreateReport = { reloadReports = !reloadReports },
             addReportViewModel = addReportViewModel,
@@ -287,7 +288,10 @@ fun AgriHealthApp(
       composable(route = Screen.EditProfile.route) {
         EditProfileScreen(
             userViewModel = userViewModel,
-            onGoBack = { navigationActions.navigateTo(Screen.Profile) },
+            onGoBack = {
+              pickedLocation.value = currentUser.address
+              navigationActions.navigateTo(Screen.Profile)
+            },
             onSave = { updatedUser ->
               userViewModel.updateUser(updatedUser)
               navigationActions.navigateTo(Screen.Profile)
