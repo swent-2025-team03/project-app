@@ -12,11 +12,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
+
+object ReportComposableCommonsTestTags {
+  const val COLLECTED_SWITCH = "collectedSwitch"
+}
 
 @Composable
 fun OpenQuestionItem(
@@ -124,9 +129,11 @@ fun CollectedSwitch(
     onCheckedChange: () -> Unit = {},
     enabled: Boolean = false
 ) {
-  Row(verticalAlignment = Alignment.CenterVertically) {
-    Text("Share anonymous data")
-    Spacer(modifier = Modifier.weight(1f))
-    Switch(checked = checked, onCheckedChange = { onCheckedChange }, enabled = enabled)
-  }
+  Row(
+      verticalAlignment = Alignment.CenterVertically,
+      modifier = Modifier.testTag(ReportComposableCommonsTestTags.COLLECTED_SWITCH)) {
+        Text("Share anonymous data")
+        Spacer(modifier = Modifier.weight(1f))
+        Switch(checked = checked, onCheckedChange = { onCheckedChange }, enabled = enabled)
+      }
 }
