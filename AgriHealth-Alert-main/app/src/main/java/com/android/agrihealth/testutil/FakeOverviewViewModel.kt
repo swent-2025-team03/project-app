@@ -81,6 +81,7 @@ class FakeOverviewViewModel(user: User? = null, initialState: OverviewUIState = 
   override fun loadAlerts(user: User) {}
 
   private lateinit var authRepository: AuthRepository
+
   override fun signOut(credentialManager: CredentialManager) {
     authRepository = AuthRepositoryProvider.repository
     viewModelScope.launch {
