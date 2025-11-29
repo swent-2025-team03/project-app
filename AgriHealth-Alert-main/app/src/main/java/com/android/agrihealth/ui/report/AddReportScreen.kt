@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
@@ -34,6 +35,7 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.ui.common.OfficeNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
 import kotlinx.coroutines.launch
@@ -81,6 +83,8 @@ fun AddReportScreen(
     userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
     onBack: () -> Unit = {},
     onCreateReport: () -> Unit = {},
+    locationPicked: Location? = null,
+    onChangeLocation: () -> Unit = {},
     addReportViewModel: AddReportViewModelContract
 ) {
 
@@ -199,6 +203,19 @@ fun AddReportScreen(
                         modifier = Modifier.testTag("QUESTION_${index}_MCQO"))
                   }
                 }
+              }
+
+              OutlinedTextField(
+                  value = locationPicked?.name ?: "Select a Location",
+                  placeholder = { Text("Select a Location") },
+                  onValueChange = {},
+                  readOnly = true,
+                  singleLine = true,
+                  label = { Text("Selected Location") },
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
+              Button(onClick = onChangeLocation, modifier = Modifier.fillMaxWidth()) {
+                Text("Select Location")
               }
 
               var selectedOfficeName = offices[selectedOption] ?: selectedOption
