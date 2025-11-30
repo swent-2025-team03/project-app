@@ -2,9 +2,14 @@ package com.android.agrihealth.data.model.device.notifications
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.media.RingtoneManager
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.android.agrihealth.MainActivity
 import com.android.agrihealth.R
 import com.android.agrihealth.data.model.device.notifications.Notification.NewReport
 import com.android.agrihealth.data.model.device.notifications.Notification.VetAnswer
@@ -13,7 +18,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
-class FirebaseMessagingService : NotificationHandler, FirebaseMessagingService() {
+class FirebaseMessagingService(private val context: Context) : NotificationHandler, FirebaseMessagingService() {
   private val messaging = FirebaseMessaging.getInstance()
   private val functions = FirebaseFunctions.getInstance()
 
@@ -98,7 +103,7 @@ class FirebaseMessagingService : NotificationHandler, FirebaseMessagingService()
     Log.d("FCM", "Sending notification $title")
     val channelId = "your_app_channel"
 
-    val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+    val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val channel =
@@ -114,6 +119,46 @@ class FirebaseMessagingService : NotificationHandler, FirebaseMessagingService()
             .build()
 
     notificationManager.notify(0, notification)
+  }
+
+  fun sendNotification() {
+    val requestCode = 0
+    val intent = Intent(this, MainActivity::class.java)
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    val pendingIntent = PendingIntent.getActivity(
+      this,
+      requestCode,
+      intent,
+      PendingIntent.FLAG_IMMUTABLE,
+    )
+
+    val channelId = "channel_id"
+    val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+    val notificationBuilder = NotificationCompat.Builder(this, channelId)
+      //.setSmallIcon(R.drawable.ic_stat_ic_notification)
+      //.setContentTitle(getString(R.string.fcm_message))
+      //.setContentText(messageBody)
+      .setSmallIcon(R.drawable.ic_launcher_foreground)
+      .setContentTitle("Title")
+      .setContentText("Text")
+      .setAutoCancel(true)
+      .setSound(defaultSoundUri)
+      .setContentIntent(pendingIntent)
+
+    val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+    // Since android Oreo notification channel is needed.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      val channel = NotificationChannel(
+        channelId,
+        "Channel human readable title",
+        NotificationManager.IMPORTANCE_DEFAULT,
+      )
+      notificationManager.createNotificationChannel(channel)
+    }
+
+    val notificationId = 0
+    notificationManager.notify(notificationId, notificationBuilder.build())
   }
 }
 

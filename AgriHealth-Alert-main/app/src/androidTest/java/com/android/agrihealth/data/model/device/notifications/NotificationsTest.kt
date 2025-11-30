@@ -1,5 +1,6 @@
 package com.android.agrihealth.data.model.device.notifications
 
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import kotlinx.coroutines.test.runTest
@@ -13,12 +14,16 @@ class NotificationsTest : FirebaseEmulatorsTest() {
   @Test
   fun test() = runTest {
     authRepository.signUpWithEmailAndPassword(user1.email, password1, user1)
-    val messagingService = FirebaseMessagingService()
 
-    val testNotification =
+    composeTestRule.setContent {
+      val context = LocalContext.current
+      val messagingService = FirebaseMessagingService(context)
+
+      val testNotification =
         Notification.NewReport(
-            authorUid = user1.uid, destinationUid = user1.uid, reportTitle = "maldie animal")
+          authorUid = user1.uid, destinationUid = user1.uid, reportTitle = "maldie animal")
 
-    messagingService.uploadNotification(testNotification) { assertTrue(it) }
+      messagingService.uploadNotification(testNotification) { assertTrue(it) }
+    }
   }
 }

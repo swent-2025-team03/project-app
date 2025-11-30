@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 
@@ -26,7 +27,8 @@ fun NotificationTest() {
     NotificationsPermissionsRequester(onGranted = { Log.d(TAG, "Granted permissions") })
     // Firebase.functions.useEmulator("192.168.1.62", 5001)
 
-    val messagingService = FirebaseMessagingService()
+    val context = LocalContext.current
+    val messagingService = FirebaseMessagingService(context)
     var token by remember { mutableStateOf("") }
 
     val testNotification =
@@ -50,7 +52,7 @@ fun NotificationTest() {
             }
 
         TextButton(
-            onClick = { messagingService.showNotification(testNotification) },
+            onClick = { messagingService.sendNotification() },
             modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer)) {
               Text("Force show notification", color = MaterialTheme.colorScheme.onPrimaryContainer)
             }

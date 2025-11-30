@@ -35,6 +35,7 @@ import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
+import com.android.agrihealth.data.model.device.notifications.FirebaseMessagingService
 import com.android.agrihealth.data.model.device.notifications.NotificationHandlerProvider
 import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
 import com.android.agrihealth.data.model.location.Location
@@ -110,6 +111,7 @@ fun AgriHealthApp(
   val currentUserEmail = currentUser.email
 
   // Notification handling, setup device
+  NotificationHandlerProvider.handler = FirebaseMessagingService(context)
   val notificationHandler = NotificationHandlerProvider.handler
   NotificationsPermissionsRequester(
       onGranted = {
