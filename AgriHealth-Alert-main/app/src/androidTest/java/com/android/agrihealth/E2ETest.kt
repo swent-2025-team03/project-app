@@ -31,7 +31,6 @@ import com.android.agrihealth.ui.profile.CodeComposableComponentsTestTags
 import com.android.agrihealth.ui.profile.CodesViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags
-import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags
 import com.android.agrihealth.ui.user.UserViewModel
@@ -578,9 +577,12 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onNodeWithText(AddReportFeedbackTexts.SUCCESS).isDisplayed()
+      composeTestRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS).isDisplayed()
     }
-    composeTestRule.onNodeWithText("OK").assertIsDisplayed().performClick()
+    composeTestRule
+        .onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS_OK)
+        .assertIsDisplayed()
+        .performClick()
   }
 
   private fun clickFirstReportItem() {
