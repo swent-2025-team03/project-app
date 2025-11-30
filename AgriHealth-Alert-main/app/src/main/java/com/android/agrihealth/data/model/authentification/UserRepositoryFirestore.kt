@@ -66,7 +66,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
                 },
             "isGoogleAccount" to user.isGoogleAccount,
             "description" to user.description,
-            "deviceTokensFCM" to user.deviceTokensFCM)
+            "deviceTokensFCM" to user.deviceTokensFCM.toList())
 
     // Add type-specific fields
     when (user) {
@@ -133,6 +133,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     if (old.email != new.email) changes["email"] = new.email
     if (old.isGoogleAccount != new.isGoogleAccount) changes["isGoogleAccount"] = new.isGoogleAccount
     if (old.description != new.description) changes["description"] = new.description
+    if (old.deviceTokensFCM != new.deviceTokensFCM) changes["deviceTokensFCM"] = new.deviceTokensFCM.toList()
 
     when {
       old is Farmer && new is Farmer -> {
