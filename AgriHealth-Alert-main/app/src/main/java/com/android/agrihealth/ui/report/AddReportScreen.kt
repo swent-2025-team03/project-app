@@ -146,7 +146,9 @@ fun AddReportScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp)
                     .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
-            verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            verticalArrangement = Arrangement.Top) {
+              HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
+
               Field(
                   uiState.title,
                   { addReportViewModel.setTitle(it) },
