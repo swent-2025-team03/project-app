@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 sealed class ViewOfficeUiState {
@@ -20,14 +22,15 @@ sealed class ViewOfficeUiState {
 
 open class ViewOfficeViewModel(
     private val targetOfficeId: String,
-    private val officeRepository: OfficeRepository
+    private val officeRepository: OfficeRepository,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Main
 ) : ViewModel() {
 
   private val _uiState = mutableStateOf<ViewOfficeUiState>(ViewOfficeUiState.Loading)
   open val uiState: State<ViewOfficeUiState> = _uiState
 
   open fun load() {
-    viewModelScope.launch {
+    viewModelScope.launch(dispatcher) {
       _uiState.value = ViewOfficeUiState.Loading
 
       val officeResult = officeRepository.getOffice(targetOfficeId)
@@ -46,7 +49,8 @@ open class ViewOfficeViewModel(
         object : ViewModelProvider.Factory {
           override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val officeRepo = OfficeRepositoryFirestore()
-            @Suppress("UNCHECKED_CAST") return ViewOfficeViewModel(targetOfficeId, officeRepo) as T
+            @Suppress("UNCHECKED_CAST")
+            return ViewOfficeViewModel(targetOfficeId, officeRepo, Dispatchers.Main) as T
           }
         }
   }

@@ -5,6 +5,7 @@ import com.android.agrihealth.data.model.office.OfficeRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -47,15 +48,35 @@ class ViewOfficeViewModelTest {
                 description = "A test description",
                 vets = listOf("vet1"),
                 ownerId = "owner")
+
         val vm =
             ViewOfficeViewModel(
-                targetOfficeId = "o1", officeRepository = FakeOfficeRepoForVM(office))
+                targetOfficeId = "o1",
+                officeRepository = FakeOfficeRepoForVM(office),
+                dispatcher = testDispatcher)
 
-        vm.load() // Launches coroutine
-        testScheduler.advanceUntilIdle() // Wait for coroutine to finish
+        vm.load()
+        advanceUntilIdle()
 
         val ui = vm.uiState.value
         assertTrue(ui is ViewOfficeUiState.Success)
         assertEquals("Test Office", (ui as ViewOfficeUiState.Success).office.name)
+      }
+
+  @Test
+  fun load_missingOffice_updatesUiStateToError() =
+      testScope.runTest {
+        val vm =
+            ViewOfficeViewModel(
+                targetOfficeId = "missing_id",
+                officeRepository = FakeOfficeRepoForVM(null),
+                dispatcher = testDispatcher)
+
+        vm.load()
+        advanceUntilIdle()
+
+        val ui = vm.uiState.value
+        assertTrue(ui is ViewOfficeUiState.Error)
+        assertEquals("Office does not exist.", (ui as ViewOfficeUiState.Error).message)
       }
 }
