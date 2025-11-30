@@ -13,6 +13,7 @@ import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
+import com.android.agrihealth.data.model.location.LocationPickerTestTags
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.TestConstants
@@ -326,7 +327,6 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(CreateOfficeScreenTestTags.NAME_FIELD)
         .assertIsDisplayed()
         .performTextInput("Vet Office")
-    composeTestRule.onNodeWithTag(CreateOfficeScreenTestTags.ADDRESS_FIELD).assertIsDisplayed()
     composeTestRule.onNodeWithTag(CreateOfficeScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()
 
     waitUntilTestTag(CreateOfficeScreenTestTags.CREATE_BUTTON)
@@ -530,6 +530,24 @@ class E2ETest : FirebaseEmulatorsTest() {
       break
     }
 
+    composeTestRule
+        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+        .performScrollToNode(hasTestTag(AddReportScreenTestTags.LOCATION_BUTTON))
+    composeTestRule.onNodeWithTag(AddReportScreenTestTags.LOCATION_BUTTON).performClick()
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+      composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).isDisplayed()
+    }
+    composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).performClick()
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+      composeTestRule.onNodeWithTag(LocationPickerTestTags.CONFIRMATION_PROMPT).isDisplayed()
+    }
+    composeTestRule
+        .onNodeWithTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+      composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER).isDisplayed()
+    }
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
         .performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))

@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.overview
 
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -254,7 +255,7 @@ fun OverviewScreen(
                         userRole = userRole,
                         report = report,
                         onClick = { onReportClick(report.id) },
-                    )
+                        navigationActions = navigationActions)
                     HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                   }
                 }
@@ -342,7 +343,14 @@ fun <T> DropdownMenuWrapper(
  * description, and status tag.
  */
 @Composable
-fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
+fun ReportItem(
+    report: Report,
+    onClick: () -> Unit,
+    userRole: UserRole,
+    navigationActions: NavigationActions? = null
+) {
+  val context = LocalContext.current
+
   Row(
       modifier =
           Modifier.fillMaxWidth()
@@ -354,9 +362,21 @@ fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
           Text(report.title, style = MaterialTheme.typography.titleSmall)
 
           Row(verticalAlignment = Alignment.CenterVertically) {
-            // Show full name and role, no label
-            if (userRole == UserRole.VET) AuthorName(uid = report.farmerId)
-            else OfficeName(uid = report.officeId, onClick = { /* TODO("add ViewOffice") */})
+            if (userRole == UserRole.VET) {
+              AuthorName(
+                  uid = report.farmerId,
+                  onClick = { navigationActions?.navigateTo(Screen.ViewUser(report.farmerId)) })
+            } else
+                OfficeName(
+                    uid = report.officeId,
+                    onClick = {
+                      if (report.officeId.isNotBlank()) {
+                        navigationActions?.navigateTo(Screen.ViewOffice(report.officeId))
+                      } else {
+                        Toast.makeText(context, "This office no longer exists.", Toast.LENGTH_LONG)
+                            .show()
+                      }
+                    })
           }
           Text(
               text = report.description.let { if (it.length > 50) it.take(50) + "..." else it },
