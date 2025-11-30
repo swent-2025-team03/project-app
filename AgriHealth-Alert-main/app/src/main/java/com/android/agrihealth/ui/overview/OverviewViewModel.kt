@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.overview
 
-import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
@@ -138,32 +137,27 @@ class OverviewViewModel(
       try {
         val alerts = alertRepository.getAlerts()
         _uiState.value = _uiState.value.copy(alerts = alerts)
-
-        Log.d("OverviewVM", "Loaded alerts: ${alerts.size}")
-        // Filter alerts and update UIState
         updateFilteredAlerts(user)
       } catch (e: Exception) {
         _uiState.value = _uiState.value.copy(alerts = emptyList(), filteredAlerts = emptyList())
-        Log.e("OverviewVM", "Failed to load alerts", e)
       }
     }
   }
 
   fun updateFilteredAlerts(user: User) {
     val filtered = applyFiltersForAlerts(_uiState.value.alerts, user)
-    Log.d("OverviewVM", "User address: ${user.address}")
-    Log.d("OverviewVM", "Filtered alerts count: ${filtered.size}")
-    filtered.forEach { alert -> Log.d("OverviewVM", "Filtered Alert id=${alert.id}") }
     _uiState.value = _uiState.value.copy(filteredAlerts = filtered)
   }
 
   private fun applyFiltersForAlerts(alerts: List<Alert>, user: User): List<Alert> {
-    val address = user.address
-    if (address == null) {
-      Log.d("OverviewVM", "User address is null")
-      return emptyList()
+    return alerts.filter { alert ->
+      if (alert.zones.isNullOrEmpty()) {
+        true
+      } else {
+        user.address?.let { address -> alert.containsUser(address.latitude, address.longitude) }
+            ?: false
+      }
     }
-    return alerts.filter { alert -> alert.containsUser(address.latitude, address.longitude) }
   }
 
   override fun signOut(credentialManager: CredentialManager) {

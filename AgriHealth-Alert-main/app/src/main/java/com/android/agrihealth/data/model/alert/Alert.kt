@@ -10,6 +10,6 @@ data class Alert(
     val title: String,
     val description: String,
     val outbreakDate: LocalDate,
-    val region: String,
-    val zones: List<AlertZone>
+    val region: String? = null,
+    val zones: List<AlertZone>? = null
 )

@@ -29,8 +29,8 @@ class FakeAlertRepository : AlertRepository {
               "Pest Outbreak",
               "Caterpillar infestation possible",
               LocalDate.of(2025, 11, 22),
-              "Empty Location",
-              emptyList()),
+              "Saitama, Japan",
+              listOf(AlertZone(Location(latitude = 35.8611, longitude = 139.7991), 10_000.0))),
           Alert(
               "4",
               "Another mock alert item to test what happens if details are too long!",

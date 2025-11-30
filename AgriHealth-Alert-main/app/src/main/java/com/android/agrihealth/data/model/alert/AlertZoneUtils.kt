@@ -35,7 +35,7 @@ fun distanceMeters(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Doub
  * @return true if the user is inside any zone, false otherwise
  */
 fun Alert.containsUser(userLat: Double, userLon: Double): Boolean {
-  return zones.any { zone ->
+  return zones.orEmpty().any { zone ->
     val distance = distanceMeters(userLat, userLon, zone.center.latitude, zone.center.longitude)
     distance <= zone.radiusMeters
   }
