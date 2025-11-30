@@ -16,4 +16,14 @@ data class Farmer(
     override val isGoogleAccount: Boolean = false,
     override val description: String? = null,
     override val deviceTokensFCM: Set<String> = emptySet()
-) : User(uid, firstname, lastname, UserRole.FARMER, email, address, isGoogleAccount, description, deviceTokensFCM)
+) :
+    User(
+        uid,
+        firstname,
+        lastname,
+        UserRole.FARMER,
+        email,
+        address,
+        isGoogleAccount,
+        description,
+        deviceTokensFCM)

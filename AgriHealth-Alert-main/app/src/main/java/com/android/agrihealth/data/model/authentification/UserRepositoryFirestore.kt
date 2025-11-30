@@ -3,7 +3,9 @@ package com.android.agrihealth.data.model.authentification
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.data.model.user.roleFromDisplayString
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
@@ -93,8 +95,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     val description = data["description"] as? String?
     val deviceTokensFCM = data["deviceTokensFCM"] as? Set<String> ?: emptySet()
 
-    return when (roleStr) {
-      "Farmer" ->
+    return when (roleFromDisplayString(roleStr)) {
+      UserRole.FARMER ->
           Farmer(
               uid = uid,
               firstname = firstname,
@@ -106,7 +108,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               isGoogleAccount = isGoogleAccount,
               description = description,
               deviceTokensFCM = deviceTokensFCM)
-      "Vet" ->
+      UserRole.VET ->
           Vet(
               uid = uid,
               firstname = firstname,

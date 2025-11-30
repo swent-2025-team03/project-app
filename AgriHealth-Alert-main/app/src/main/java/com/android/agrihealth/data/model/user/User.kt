@@ -16,40 +16,40 @@ sealed class User(
 
 /** Copies fields common to farmers and vets, because User is a sealed class */
 fun User.copyCommon(
-  uid: String = this.uid,
-  firstname: String = this.firstname,
-  lastname: String = this.lastname,
-  email: String = this.email,
-  address: Location? = this.address,
-  isGoogleAccount: Boolean = this.isGoogleAccount,
-  description: String? = this.description,
-  deviceTokensFCM: Set<String> = this.deviceTokensFCM
+    uid: String = this.uid,
+    firstname: String = this.firstname,
+    lastname: String = this.lastname,
+    email: String = this.email,
+    address: Location? = this.address,
+    isGoogleAccount: Boolean = this.isGoogleAccount,
+    description: String? = this.description,
+    deviceTokensFCM: Set<String> = this.deviceTokensFCM
 ): User {
   return when (this) {
-    is Farmer -> Farmer(
-      uid,
-      firstname,
-      lastname,
-      email,
-      address,
-      this.linkedOffices,
-      this.defaultOffice,
-      isGoogleAccount,
-      description,
-      deviceTokensFCM
-    )
-    is Vet -> Vet(
-      uid,
-      firstname,
-      lastname,
-      email,
-      address,
-      this.validCodes,
-      this.officeId,
-      isGoogleAccount,
-      description,
-      deviceTokensFCM
-    )
+    is Farmer ->
+        Farmer(
+            uid,
+            firstname,
+            lastname,
+            email,
+            address,
+            this.linkedOffices,
+            this.defaultOffice,
+            isGoogleAccount,
+            description,
+            deviceTokensFCM)
+    is Vet ->
+        Vet(
+            uid,
+            firstname,
+            lastname,
+            email,
+            address,
+            this.validCodes,
+            this.officeId,
+            isGoogleAccount,
+            description,
+            deviceTokensFCM)
   }
 }
 
@@ -66,7 +66,6 @@ enum class UserRole {
 fun UserRole.displayString(): String =
     name.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 
-fun roleFromDisplayString(role: String): UserRole {
+fun roleFromDisplayString(role: String): UserRole? {
   return UserRole.entries.firstOrNull { it.displayString().lowercase() == role.lowercase() }
-      ?: throw IllegalArgumentException("Invalid role")
 }

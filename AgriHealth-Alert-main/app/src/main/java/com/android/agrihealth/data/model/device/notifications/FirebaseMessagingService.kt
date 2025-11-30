@@ -28,9 +28,11 @@ class FirebaseMessagingService : NotificationHandler, FirebaseMessagingService()
     // TODO
     // Convert RemoteMessage into a simple to understand Message class for the app, easy building
 
-    val notification = message.data.toNotification() ?: throw IllegalArgumentException("Error while deserializing notification message")
+    val notification =
+        message.data.toNotification()
+            ?: throw IllegalArgumentException("Error while deserializing notification message")
     showNotification(notification)
-    //message.notification?.let { showNotification(it.title, it.body) }
+    // message.notification?.let { showNotification(it.title, it.body) }
   }
 
   // TODO figure this out
@@ -49,16 +51,15 @@ class FirebaseMessagingService : NotificationHandler, FirebaseMessagingService()
       if (task.isSuccessful) {
         val token = task.result
         onComplete(token)
-      }
-      else onComplete(null)
+      } else onComplete(null)
     }
   }
 
   override fun setupDevice(onComplete: (token: String) -> Unit) {
-      getToken { token ->
-        checkNotNull(token)
-        onComplete(token)
-      }
+    getToken { token ->
+      checkNotNull(token)
+      onComplete(token)
+    }
   }
 
   /** Uploads a notification to Firebase, to be received by the specified destination UID */
@@ -121,7 +122,6 @@ private fun Map<String, String>.toNotification(): Notification? {
             authorUid = authorUid,
             destinationUid = destinationUid,
             reportTitle = this["reportTitle"] ?: return null)
-
     NotificationType.VET_ANSWER ->
         VetAnswer(
             authorUid = authorUid,

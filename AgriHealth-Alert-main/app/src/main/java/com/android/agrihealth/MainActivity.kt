@@ -111,12 +111,14 @@ fun AgriHealthApp(
 
   // Notification handling, setup device
   val notificationHandler = NotificationHandlerProvider.handler
-  NotificationsPermissionsRequester(onGranted = {
-    notificationHandler.setupDevice { token ->
-      val newUser = currentUser.copyCommon(deviceTokensFCM = currentUser.deviceTokensFCM + token)
-      userViewModel.updateUser(newUser)
-    }
-  })
+  NotificationsPermissionsRequester(
+      onGranted = {
+        notificationHandler.setupDevice { token ->
+          val newUser =
+              currentUser.copyCommon(deviceTokensFCM = currentUser.deviceTokensFCM + token)
+          userViewModel.updateUser(newUser)
+        }
+      })
 
   val startDestination = remember {
     if (Firebase.auth.currentUser == null) Screen.Auth.name
