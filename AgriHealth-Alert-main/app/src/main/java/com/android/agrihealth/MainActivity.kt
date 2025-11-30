@@ -35,7 +35,6 @@ import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
-import com.android.agrihealth.data.model.device.notifications.FirebaseMessagingService
 import com.android.agrihealth.data.model.device.notifications.NotificationHandlerProvider
 import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
 import com.android.agrihealth.data.model.location.Location
@@ -114,7 +113,9 @@ fun AgriHealthApp(
   val notificationHandler = NotificationHandlerProvider.handler
   NotificationsPermissionsRequester(
       onGranted = {
-        notificationHandler.setupDevice { token ->
+        notificationHandler.getToken { token ->
+          if (token == null) return@getToken
+
           val newUser =
               currentUser.copyCommon(deviceTokensFCM = currentUser.deviceTokensFCM + token)
           userViewModel.updateUser(newUser)
