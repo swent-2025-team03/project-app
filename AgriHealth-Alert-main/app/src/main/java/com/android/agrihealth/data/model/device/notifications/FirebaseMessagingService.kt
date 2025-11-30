@@ -12,16 +12,13 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
-class FirebaseMessagingService : FirebaseMessagingService() {
+class FirebaseMessagingService : NotificationHandler, FirebaseMessagingService() {
   private val messaging = FirebaseMessaging.getInstance()
 
   // TODO overwrite doc
   override fun onNewToken(token: String) {
-    Log.d("FCM", "New token: $token")
-
-    // TODO
-    // Upload token to Firestore, users -> uid -> deviceFCMTokens = []
-    // Periodically check if needs to send token again?
+    // Current implementation expected token handling to be in MainActivity, when the app loads
+    // This is because a given user could have multiple devices
   }
 
   // TODO overwrite doc
@@ -31,7 +28,9 @@ class FirebaseMessagingService : FirebaseMessagingService() {
     // TODO
     // Convert RemoteMessage into a simple to understand Message class for the app, easy building
 
-    message.notification?.let { sendNotification(it.title, it.body) }
+    val notification = message.data.toNotification() ?: throw IllegalArgumentException("Error while deserializing notification message")
+    showNotification(notification)
+    //message.notification?.let { showNotification(it.title, it.body) }
   }
 
   // TODO figure this out
@@ -45,18 +44,32 @@ class FirebaseMessagingService : FirebaseMessagingService() {
    *
    * @param onComplete Action to take with the returned token
    */
-  fun getToken(onComplete: (token: String) -> Unit) {
+  private fun getToken(onComplete: (token: String?) -> Unit) {
     messaging.token.addOnCompleteListener { task ->
       if (task.isSuccessful) {
         val token = task.result
-        Log.d("FCM", "token from getToken: $token")
         onComplete(token)
       }
+      else onComplete(null)
     }
   }
 
-  // Probably change to take a Message?
-  private fun sendNotification(title: String?, message: String?) {
+  override fun setupDevice(onComplete: (token: String) -> Unit) {
+      getToken { token ->
+        checkNotNull(token)
+        onComplete(token)
+      }
+  }
+
+  /** Uploads a notification to Firebase, to be received by the specified destination UID */
+  override fun uploadNotification(notification: Notification) {
+    val data = notification.toDataMap()
+  }
+
+  /** Shows a notification on the recipient's device. Used when a new notification is received */
+  override fun showNotification(notification: Notification) { // TODO
+    val title = notification.type.toName()
+    val message = notification.destinationUid
     Log.d("FCM", "Sending notification $title")
     val channelId = "your_app_channel"
 
@@ -81,7 +94,7 @@ class FirebaseMessagingService : FirebaseMessagingService() {
 
 // Serialization and Deserialization
 
-fun Notification.toDataMap(): Map<String, String> =
+private fun Notification.toDataMap(): Map<String, String> =
     when (this) {
       is NewReport ->
           mapOf(
@@ -97,7 +110,7 @@ fun Notification.toDataMap(): Map<String, String> =
               "answer" to answer)
     }
 
-fun Map<String, String>.toNotification(): Notification? {
+private fun Map<String, String>.toNotification(): Notification? {
   val type = NotificationType.fromName(this["type"] ?: return null)
   val authorUid = this["authorUid"] ?: return null
   val destinationUid = this["destinationUid"] ?: return null

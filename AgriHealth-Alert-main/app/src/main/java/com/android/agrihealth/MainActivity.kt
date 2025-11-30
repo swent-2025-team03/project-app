@@ -35,7 +35,10 @@ import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
+import com.android.agrihealth.data.model.device.notifications.NotificationHandlerProvider
+import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
 import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.user.copyCommon
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.alert.AlertViewModel
 import com.android.agrihealth.ui.alert.AlertViewScreen
@@ -105,6 +108,15 @@ fun AgriHealthApp(
   val currentUserId = currentUser.uid
   val currentUserRole = currentUser.role
   val currentUserEmail = currentUser.email
+
+  // Notification handling, setup device
+  val notificationHandler = NotificationHandlerProvider.handler
+  NotificationsPermissionsRequester(onGranted = {
+    notificationHandler.setupDevice { token ->
+      val newUser = currentUser.copyCommon(deviceTokensFCM = currentUser.deviceTokensFCM + token)
+      userViewModel.updateUser(newUser)
+    }
+  })
 
   val startDestination = remember {
     if (Firebase.auth.currentUser == null) Screen.Auth.name

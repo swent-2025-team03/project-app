@@ -63,7 +63,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
                   is Vet -> "Vet"
                 },
             "isGoogleAccount" to user.isGoogleAccount,
-            "description" to user.description)
+            "description" to user.description,
+            "deviceTokensFCM" to user.deviceTokensFCM)
 
     // Add type-specific fields
     when (user) {
@@ -82,6 +83,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     return base
   }
 
+  @Suppress("UNCHECKED_CAST")
   private fun userFromData(uid: String, data: Map<String, Any>): User {
     val firstname = data["firstname"] as? String ?: throw Exception("Missing firstname")
     val lastname = data["lastname"] as? String ?: throw Exception("Missing lastname")
@@ -89,6 +91,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     val roleStr = data["role"] as? String ?: throw Exception("Missing role")
     val isGoogleAccount = data["isGoogleAccount"] as? Boolean ?: false
     val description = data["description"] as? String?
+    val deviceTokensFCM = data["deviceTokensFCM"] as? Set<String> ?: emptySet()
 
     return when (roleStr) {
       "Farmer" ->
@@ -101,7 +104,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               linkedOffices = data["linkedOffices"] as? List<String> ?: emptyList(),
               defaultOffice = data["defaultOffice"] as? String,
               isGoogleAccount = isGoogleAccount,
-              description = description)
+              description = description,
+              deviceTokensFCM = deviceTokensFCM)
       "Vet" ->
           Vet(
               uid = uid,
@@ -112,7 +116,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               validCodes = data["validCodes"] as? List<String> ?: emptyList(),
               officeId = data["officeId"] as? String?,
               isGoogleAccount = isGoogleAccount,
-              description = description)
+              description = description,
+              deviceTokensFCM = deviceTokensFCM)
       else -> throw Exception("Unknown user type: $roleStr")
     }
   }

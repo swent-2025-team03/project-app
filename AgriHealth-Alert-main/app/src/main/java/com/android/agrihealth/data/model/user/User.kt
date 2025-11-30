@@ -10,8 +10,48 @@ sealed class User(
     open val email: String,
     open val address: Location?,
     open val isGoogleAccount: Boolean = false,
-    open val description: String? = null
+    open val description: String? = null,
+    open val deviceTokensFCM: Set<String> = emptySet() // Notifications/Firebase messaging service
 )
+
+/** Copies fields common to farmers and vets, because User is a sealed class */
+fun User.copyCommon(
+  uid: String = this.uid,
+  firstname: String = this.firstname,
+  lastname: String = this.lastname,
+  email: String = this.email,
+  address: Location? = this.address,
+  isGoogleAccount: Boolean = this.isGoogleAccount,
+  description: String? = this.description,
+  deviceTokensFCM: Set<String> = this.deviceTokensFCM
+): User {
+  return when (this) {
+    is Farmer -> Farmer(
+      uid,
+      firstname,
+      lastname,
+      email,
+      address,
+      this.linkedOffices,
+      this.defaultOffice,
+      isGoogleAccount,
+      description,
+      deviceTokensFCM
+    )
+    is Vet -> Vet(
+      uid,
+      firstname,
+      lastname,
+      email,
+      address,
+      this.validCodes,
+      this.officeId,
+      isGoogleAccount,
+      description,
+      deviceTokensFCM
+    )
+  }
+}
 
 enum class UserRole {
   FARMER,
