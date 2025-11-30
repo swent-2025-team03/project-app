@@ -44,12 +44,14 @@ object ReportViewScreenTestTags {
   const val STATUS_DROPDOWN_FIELD = "StatusDropdownField"
   const val STATUS_DROPDOWN_MENU = "StatusDropdownMenu"
   const val SPAM_BUTTON = "SpamButton"
+  const val DELETE_BUTTON = "DeleteButton"
   const val VIEW_ON_MAP = "viewReportOnMap"
   const val SAVE_BUTTON = "SaveButton"
   const val SCROLL_CONTAINER = "ReportViewScrollContainer"
   const val UNSAVED_ALERT_BOX = "UnsavedChangesAlertBox"
   const val UNSAVED_ALERT_BOX_DISCARD = "UnsavedChangesAlertDiscardButton"
   const val UNSAVED_ALERT_BOX_CANCEL = "UnsavedChangesAlertCancelButton"
+  const val DELETE_REPORT_ALERT_BOX = "DeleteReportAlertBox"
 
   fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
 }
@@ -107,6 +109,7 @@ fun ReportViewScreen(
   val selectedStatus = uiState.status
 
   var isSpamDialogOpen by remember { mutableStateOf(false) }
+  var isDeleteDialogOpen by remember { mutableStateOf(false) }
   var isUnsavedAlertOpen by remember { mutableStateOf(false) }
 
   fun handleGoBack(force: Boolean = false) {
@@ -389,6 +392,18 @@ fun ReportViewScreen(
                                     Text("Reported as spam")
                                   }
                             }
+                          } else {
+                            val color = StatusColors().spam
+                            OutlinedButton(
+                                onClick = { isDeleteDialogOpen = true },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = color),
+                                border = BorderStroke(1.dp, color),
+                                shape = MaterialTheme.shapes.medium,
+                                modifier =
+                                    Modifier.weight(1f)
+                                        .testTag(ReportViewScreenTestTags.DELETE_BUTTON)) {
+                                  Text("Delete report")
+                                }
                           }
                         }
 
@@ -423,6 +438,26 @@ fun ReportViewScreen(
                     },
                     dismissButton = {
                       TextButton(onClick = { isSpamDialogOpen = false }) { Text("Cancel") }
+                    })
+              }
+              if (isDeleteDialogOpen) {
+                AlertDialog(
+                    modifier = Modifier.testTag(ReportViewScreenTestTags.DELETE_REPORT_ALERT_BOX),
+                    onDismissRequest = { isDeleteDialogOpen = false },
+                    title = { Text("Delete report?") },
+                    text = { Text("This will delete the report. This action cannot be undone") },
+                    confirmButton = {
+                      TextButton(
+                          onClick = {
+                            isDeleteDialogOpen = false
+                            viewModel.onDelete()
+                            navigationActions.goBack()
+                          }) {
+                            Text("Confirm", color = MaterialTheme.colorScheme.error)
+                          }
+                    },
+                    dismissButton = {
+                      TextButton(onClick = { isDeleteDialogOpen = false }) { Text("Cancel") }
                     })
               }
             }
