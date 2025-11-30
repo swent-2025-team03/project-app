@@ -8,12 +8,14 @@ import androidx.core.app.NotificationCompat
 import com.android.agrihealth.R
 import com.android.agrihealth.data.model.device.notifications.Notification.NewReport
 import com.android.agrihealth.data.model.device.notifications.Notification.VetAnswer
+import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 class FirebaseMessagingService : NotificationHandler, FirebaseMessagingService() {
   private val messaging = FirebaseMessaging.getInstance()
+  private val functions = FirebaseFunctions.getInstance()
 
   // TODO overwrite doc
   override fun onNewToken(token: String) {
@@ -63,8 +65,30 @@ class FirebaseMessagingService : NotificationHandler, FirebaseMessagingService()
   }
 
   /** Uploads a notification to Firebase, to be received by the specified destination UID */
-  override fun uploadNotification(notification: Notification) {
+  override fun uploadNotification(
+      notification: Notification,
+      onComplete: (success: Boolean) -> Unit
+  ) {
     val data = notification.toDataMap()
+
+    val uploader = functions.getHttpsCallable("sendNotification")
+
+    Log.d("FCM", "data to backend: $data")
+
+    uploader
+        .call(data)
+        .addOnSuccessListener { result ->
+          val data = result.data as Map<String, Any>
+          val success = data["success"] as Boolean
+          val message = data["message"] as String
+
+          Log.d("FCM", "Response: Success: $success, message: $message")
+          onComplete(success)
+        }
+        .addOnFailureListener { exception ->
+          Log.e("FCM", "Failed to send notification", exception)
+          onComplete(false)
+        }
   }
 
   /** Shows a notification on the recipient's device. Used when a new notification is received */

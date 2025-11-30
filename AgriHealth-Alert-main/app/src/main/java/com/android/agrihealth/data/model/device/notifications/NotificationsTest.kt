@@ -24,9 +24,16 @@ val TAG = "NotificationTester"
 fun NotificationTest() {
   AgriHealthAppTheme {
     NotificationsPermissionsRequester(onGranted = { Log.d(TAG, "Granted permissions") })
+    // Firebase.functions.useEmulator("192.168.1.62", 5001)
 
     val messagingService = FirebaseMessagingService()
     var token by remember { mutableStateOf("") }
+
+    val testNotification =
+        Notification.NewReport(
+            authorUid = "sgHb1hb8fDa7mU6EtdF63eJC9j32",
+            destinationUid = "sgHb1hb8fDa7mU6EtdF63eJC9j32",
+            reportTitle = "maldie animal")
 
     Box {
       Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface).fillMaxSize()) {
@@ -34,6 +41,18 @@ fun NotificationTest() {
             onClick = { messagingService.setupDevice { token = it } },
             modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer)) {
               Text("See messaging token", color = MaterialTheme.colorScheme.onPrimaryContainer)
+            }
+
+        TextButton(
+            onClick = { messagingService.uploadNotification(testNotification) },
+            modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer)) {
+              Text("Upload test notification", color = MaterialTheme.colorScheme.onPrimaryContainer)
+            }
+
+        TextButton(
+            onClick = { messagingService.showNotification(testNotification) },
+            modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer)) {
+              Text("Force show notification", color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
 
         Text(token, color = MaterialTheme.colorScheme.onSurface)
