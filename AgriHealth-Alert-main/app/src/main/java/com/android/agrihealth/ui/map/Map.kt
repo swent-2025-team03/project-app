@@ -3,7 +3,6 @@ package com.android.agrihealth.ui.map
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -189,9 +188,6 @@ fun MapScreen(
                 selectedFilter == null || report.status.displayString() == selectedFilter
               }
               .forEach { report ->
-                Log.d(
-                    "MAP_DEBUG",
-                    "Adding debug marker for report id=${report.id} with filter selectedFilter=$selectedFilter")
                 Box(
                     modifier =
                         Modifier.testTag(MapScreenTestTags.getTestTagForReportMarker(report.id))

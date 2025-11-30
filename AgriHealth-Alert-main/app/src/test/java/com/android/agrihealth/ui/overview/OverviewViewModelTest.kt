@@ -65,7 +65,6 @@ class OverviewViewModelTest {
           throwOnAddReport1 = true
           throwOnAddReport2 = true
         }
-    val viewModel = OverviewViewModel(repo)
     advanceUntilIdle()
     // No crash = success
   }

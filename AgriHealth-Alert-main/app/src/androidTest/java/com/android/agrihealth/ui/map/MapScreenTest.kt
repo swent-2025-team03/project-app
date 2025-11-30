@@ -243,14 +243,11 @@ class MapScreenTest {
   fun filterReportsByStatus() = runTest {
     setContentToMapWithVM()
 
-    // Attendre que la composition soit stable
     composeTestRule.waitForIdle()
     val vmReports = testMapViewModel.uiState.value.reports
 
-    // Précharger les reports (éviter suspend dans waitUntil)
     val allReportsForUser = reportRepository.getReportsByFarmer(userId)
 
-    // Attente markers
     composeTestRule.waitUntil(timeoutMillis = 5_000) {
       val count =
           allReportsForUser.sumOf { r ->
@@ -267,7 +264,6 @@ class MapScreenTest {
     val filters: List<String?> =
         listOf<String?>(null) + ReportStatus.entries.map { it.displayString() }
 
-    // Boucle sur les filtres
     filters.forEach { filter ->
       composeTestRule
           .onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU)
@@ -283,7 +279,6 @@ class MapScreenTest {
       val (matches, nonMatches) =
           reports.partition { r -> filter == null || r.status.displayString() == filter }
 
-      // === MATCHES : doivent exister ===
       matches.forEach { report ->
         val tag = MapScreenTestTags.getTestTagForReportMarker(report.id)
         composeTestRule
@@ -292,7 +287,6 @@ class MapScreenTest {
             .assertIsDisplayed()
       }
 
-      // === NON-MATCHES : ne doivent PAS exister ===
       nonMatches.forEach { report ->
         val tag = MapScreenTestTags.getTestTagForReportMarker(report.id)
         composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).assertDoesNotExist()

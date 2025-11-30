@@ -73,6 +73,16 @@ class ReportViewModelTest {
   }
 
   @Test
+  fun `onDelete deletes form repository`() = runTest {
+    repository.lastDeleted = "test"
+    viewModel.loadReport(repository.sampleReport.id)
+    advanceUntilIdle()
+    viewModel.onDelete()
+    advanceUntilIdle()
+    assertEquals(repository.sampleReport.id, repository.lastDeleted)
+  }
+
+  @Test
   fun `onSave calls repository with updated report`() = runTest {
     viewModel.onAnswerChange("Updated answer")
     viewModel.onStatusChange(ReportStatus.RESOLVED)
@@ -114,6 +124,7 @@ class FakeReportRepository : ReportRepository {
   val savedReports = mutableListOf<Report>()
   var throwOnGet = false
   var throwOnSave = false
+  var lastDeleted = "lastDeletedReportId"
 
   override suspend fun getReportById(id: String): Report? {
     if (throwOnGet) throw RuntimeException("Test error")
@@ -137,7 +148,7 @@ class FakeReportRepository : ReportRepository {
   }
 
   override suspend fun deleteReport(reportId: String) {
-    // not used
+    lastDeleted = reportId
   }
 
   override fun getNewReportId(): String = "FAKE_ID_123"

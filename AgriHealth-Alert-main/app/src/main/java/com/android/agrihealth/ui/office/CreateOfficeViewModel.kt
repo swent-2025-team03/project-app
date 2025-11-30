@@ -22,7 +22,8 @@ class CreateOfficeViewModel(
     private val officeRepository: OfficeRepository = OfficeRepositoryProvider.get()
 ) : ViewModel() {
 
-  private val _uiState = MutableStateFlow(CreateOfficeUiState())
+  private val user = userViewModel.user.value
+  private val _uiState = MutableStateFlow(CreateOfficeUiState(address = user.address?.name ?: ""))
   val uiState = _uiState.asStateFlow()
 
   fun onNameChange(value: String) {
@@ -33,10 +34,6 @@ class CreateOfficeViewModel(
     _uiState.update { it.copy(description = value) }
   }
 
-  fun onAddressChange(value: String) {
-    _uiState.update { it.copy(address = value) }
-  }
-
   fun createOffice(onSuccess: () -> Unit) {
     val state = _uiState.value
 
@@ -44,8 +41,6 @@ class CreateOfficeViewModel(
       _uiState.update { it.copy(error = "Office name cannot be empty.") }
       return
     }
-
-    val vet = userViewModel.user.value
 
     viewModelScope.launch {
       _uiState.update { it.copy(loading = true, error = null) }
@@ -57,9 +52,9 @@ class CreateOfficeViewModel(
               id = officeId,
               name = state.name,
               description = state.description.ifBlank { null },
-              address = null,
-              ownerId = vet.uid,
-              vets = listOf(vet.uid))
+              address = user.address,
+              ownerId = user.uid,
+              vets = listOf(user.uid))
 
       try {
         officeRepository.addOffice(createdOffice)

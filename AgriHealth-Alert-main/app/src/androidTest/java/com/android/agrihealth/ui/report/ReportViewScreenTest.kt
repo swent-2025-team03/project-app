@@ -153,6 +153,50 @@ class ReportViewScreenTest {
         .assertTextContains("RESOLVED")
   }
 
+  // --- TEST 11: Farmer can open Delete dialog ---
+  @Test
+  fun farmer_canOpenDeleteDialog() {
+    setFarmerScreen()
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.DELETE_BUTTON).performClick()
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.DELETE_REPORT_ALERT_BOX)
+        .assertIsDisplayed()
+    composeTestRule.onNodeWithText("Confirm").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Cancel").assertIsDisplayed()
+  }
+
+  // --- TEST 12: Farmer can cancel Delete dialog ---
+  @Test
+  fun farmer_canCancelDeleteDialog() {
+    setFarmerScreen()
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.DELETE_BUTTON).performClick()
+    composeTestRule.onNodeWithText("Cancel").performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.DELETE_REPORT_ALERT_BOX)
+        .assertDoesNotExist()
+  }
+
+  // --- TEST 13: Farmer can confirm delete ---
+  @Test
+  fun farmer_canConfirmDelete() {
+    setFarmerScreen()
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.DELETE_BUTTON).performClick()
+    composeTestRule.onNodeWithText("Confirm").performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.DELETE_REPORT_ALERT_BOX)
+        .assertDoesNotExist()
+  }
+
+  // --- TEST 14: Farmer sees both bottom buttons ---
+  @Test
+  fun farmer_bottomButtons_areDisplayed() {
+    setFarmerScreen()
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.VIEW_ON_MAP).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.DELETE_BUTTON).assertIsDisplayed()
+  }
+
   // -------------------- Additional tests to increase coverage --------------------
 
   @Test

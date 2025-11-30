@@ -1,6 +1,6 @@
 package com.android.agrihealth.data.model.authentification
 
-import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.location.locationFromMap
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
@@ -89,6 +89,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     val roleStr = data["role"] as? String ?: throw Exception("Missing role")
     val isGoogleAccount = data["isGoogleAccount"] as? Boolean ?: false
     val description = data["description"] as? String?
+    val addressData = data["address"] as? Map<*, *>
+    val address = locationFromMap(addressData)
 
     return when (roleStr) {
       "Farmer" ->
@@ -97,7 +99,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               firstname = firstname,
               lastname = lastname,
               email = email,
-              address = data["address"] as? Location?,
+              address = address,
               linkedOffices = data["linkedOffices"] as? List<String> ?: emptyList(),
               defaultOffice = data["defaultOffice"] as? String,
               isGoogleAccount = isGoogleAccount,
@@ -108,7 +110,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               firstname = firstname,
               lastname = lastname,
               email = email,
-              address = data["address"] as? Location?,
+              address = address,
               validCodes = data["validCodes"] as? List<String> ?: emptyList(),
               officeId = data["officeId"] as? String?,
               isGoogleAccount = isGoogleAccount,
