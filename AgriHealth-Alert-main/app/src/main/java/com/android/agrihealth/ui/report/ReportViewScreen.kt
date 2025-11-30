@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.report
 
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -33,9 +32,11 @@ import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.common.OfficeName
 import com.android.agrihealth.ui.navigation.NavigationActions
+import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.launch
 
 object ReportViewScreenTestTags {
   const val STATUS_BADGE_BOX = "StatusBadgeBox"
@@ -90,6 +91,9 @@ fun ReportViewScreen(
   // Observe save completion to navigate back on success
   val saveCompleted by viewModel.saveCompleted.collectAsState()
   val unsavedChanges by viewModel.unsavedChanges.collectAsState()
+
+  val snackbarHostState = remember { SnackbarHostState() }
+  val coroutineScope = rememberCoroutineScope()
 
   // --- Auto-change PENDING -> IN_PROGRESS for vets ---
   LaunchedEffect(userRole, uiState.report.status) {
@@ -165,15 +169,14 @@ fun ReportViewScreen(
             navigationIcon = {
               IconButton(
                   onClick = { handleGoBack() },
-                  modifier =
-                      Modifier.testTag(
-                          com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON)) {
+                  modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back")
                   }
             })
-      }) { padding ->
+      },
+      snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { padding ->
 
         // Main scrollable content
         Column(
@@ -214,9 +217,9 @@ fun ReportViewScreen(
                             if (report.officeId.isNotBlank()) {
                               navigationActions.navigateTo(Screen.ViewOffice(report.officeId))
                             } else {
-                              Toast.makeText(
-                                      context, "This office no longer exists.", Toast.LENGTH_LONG)
-                                  .show()
+                              coroutineScope.launch {
+                                snackbarHostState.showSnackbar("This office no longer exists.")
+                              }
                             }
                           })
                     }

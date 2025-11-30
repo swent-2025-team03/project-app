@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.overview
 
-import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -87,6 +86,7 @@ fun OverviewScreen(
   val density = LocalDensity.current
   var lazySpace by remember { mutableStateOf(0.dp) }
   val minLazySpace = remember { 150.dp }
+  val snackbarHostState = remember { SnackbarHostState() }
 
   LaunchedEffect(user) {
     overviewViewModel.loadReports(user)
@@ -128,6 +128,7 @@ fun OverviewScreen(
             onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
             modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
       },
+      snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
 
       // -- Main content area --
       content = { paddingValues ->
@@ -251,6 +252,7 @@ fun OverviewScreen(
                   items(uiState.filteredReports) { report ->
                     ReportItem(
                         userRole = userRole,
+                        snackbarHostState = snackbarHostState,
                         report = report,
                         onClick = { onReportClick(report.id) },
                         navigationActions = navigationActions)
@@ -345,9 +347,11 @@ fun ReportItem(
     report: Report,
     onClick: () -> Unit,
     userRole: UserRole,
+    snackbarHostState: SnackbarHostState,
     navigationActions: NavigationActions? = null
 ) {
   val context = LocalContext.current
+  val coroutineScope = rememberCoroutineScope()
 
   Row(
       modifier =
@@ -371,8 +375,9 @@ fun ReportItem(
                       if (report.officeId.isNotBlank()) {
                         navigationActions?.navigateTo(Screen.ViewOffice(report.officeId))
                       } else {
-                        Toast.makeText(context, "This office no longer exists.", Toast.LENGTH_LONG)
-                            .show()
+                        coroutineScope.launch {
+                          snackbarHostState.showSnackbar("This office no longer exists.")
+                        }
                       }
                     })
           }
