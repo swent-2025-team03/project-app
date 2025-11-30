@@ -25,11 +25,15 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.common.OfficeNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.office.ManageOfficeViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
@@ -42,6 +46,7 @@ object EditProfileScreenTestTags {
   const val DESCRIPTION_FIELD = "Description"
   const val PASSWORD_FIELD = "PasswordField"
   const val ADDRESS_FIELD = "EditAddressField"
+  const val LOCATION_BUTTON = "LocationButton"
   const val DEFAULT_VET_DROPDOWN = "DefaultVetDropdown"
   const val ADD_CODE_BUTTON = "AddVetButton"
   const val SAVE_BUTTON = "SaveButton"
@@ -55,6 +60,8 @@ object EditProfileScreenTestTags {
 @Composable
 fun EditProfileScreen(
     userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
+    pickedLocation: Location? = null,
+    onChangeLocation: () -> Unit = {},
     onGoBack: () -> Unit = {},
     onSave: (User) -> Unit = { userViewModel.updateUser(it) },
     onPasswordChange: () -> Unit = {}
@@ -62,13 +69,26 @@ fun EditProfileScreen(
   val user by userViewModel.user.collectAsState()
   val userRole = user.role
 
+  val createManageOfficeViewModel =
+      object : androidx.lifecycle.ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+          return ManageOfficeViewModel(
+              userViewModel = userViewModel, officeRepository = OfficeRepositoryProvider.get())
+              as T
+        }
+      }
+
+  val manageOfficeVm: ManageOfficeViewModel = viewModel(factory = createManageOfficeViewModel)
+
+  val isOwner = manageOfficeVm.uiState.collectAsState().value.office?.ownerId == user.uid
+
   val snackbarHostState = remember { SnackbarHostState() }
 
   // Local mutable states
   var firstname by remember { mutableStateOf(user.firstname) }
   var lastname by remember { mutableStateOf(user.lastname) }
   var description by remember { mutableStateOf(user.description ?: "") }
-  var address by remember { mutableStateOf(user.address?.toString() ?: "") }
+  var address by remember { mutableStateOf(pickedLocation?.name ?: "") }
 
   // Farmer-specific states
   var selectedDefaultOffice by remember { mutableStateOf((user as? Farmer)?.defaultOffice) }
@@ -156,11 +176,19 @@ fun EditProfileScreen(
               }
 
               Spacer(modifier = Modifier.height(12.dp))
-
+              if (user is Vet && !isOwner) {
+                Text(
+                    text = "Only office owners can change their address.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 4.dp))
+              }
               // Address
               OutlinedTextField(
                   value = address,
                   onValueChange = { address = it },
+                  readOnly = true,
+                  singleLine = true,
                   label = {
                     when (userRole) {
                       UserRole.FARMER -> Text("Farm Address")
@@ -169,8 +197,13 @@ fun EditProfileScreen(
                   },
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
-              // TODO: right now addresses are displayed as Location(...), I think we will change
-              // this once we work on the implementation of Location in more details.
+              Button(
+                  onClick = onChangeLocation,
+                  enabled = user !is Vet || isOwner,
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LOCATION_BUTTON)) {
+                    Text("Change Location")
+                  }
 
               // Default Vet Selection and Code Input (Farmers only)
               if (user is Farmer) {
@@ -254,15 +287,17 @@ fun EditProfileScreen(
                               (user as? Farmer)?.copy(
                                   firstname = firstname,
                                   lastname = lastname,
-                                  address = user.address?.copy(name = address),
+                                  address = pickedLocation,
                                   defaultOffice = selectedDefaultOffice,
                                   description = updatedDescription)
-                          UserRole.VET ->
-                              (user as? Vet)?.copy(
-                                  firstname = firstname,
-                                  lastname = lastname,
-                                  address = user.address?.copy(name = address),
-                                  description = updatedDescription)
+                          UserRole.VET -> {
+                            manageOfficeVm.updateOffice(newAddress = pickedLocation)
+                            (user as? Vet)?.copy(
+                                firstname = firstname,
+                                lastname = lastname,
+                                address = pickedLocation,
+                                description = updatedDescription)
+                          }
                         }
                     updatedUser?.let { onSave(it) }
                   },
