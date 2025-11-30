@@ -107,8 +107,8 @@ object AddReportDialogTexts {
 }
 
 /** This **MUST** be the same as in: AndroidManifest.xml --> <provider --> android:authorities */
-private const val FILE_PROVIDER =
-    "com.android.agrihealth.fileprovider" // TODO: Maybe move this into its own object
+fun getFileProviderAuthority(context: Context): String =
+  context.packageName + ".fileprovider" // TODO: Maybe move this into its own object
 
 // Helper function to format the error message shown in the error dialog when creating a report
 // failed
@@ -188,11 +188,7 @@ fun AddReportScreen(
         is CreateReportResult.ValidationError -> {
           snackbarHostState.showSnackbar(AddReportFeedbackTexts.INCOMPLETE)
         }
-        is CreateReportResult.PhotoUploadError -> {
-          errorDialogMessage = generateCreateReportErrorMessage(result.e)
-          showErrorDialog = true
-        }
-        is CreateReportResult.RepositoryError -> {
+        is CreateReportResult.UploadError -> {
           errorDialogMessage = generateCreateReportErrorMessage(result.e)
           showErrorDialog = true
         }
@@ -582,7 +578,7 @@ fun UploadRemovePhotoButton(
                   showDialog = false
                   // Create temporary file in cache
                   val imageFile = File.createTempFile("report_photo_", ".jpg", context.cacheDir)
-                  photoUri = FileProvider.getUriForFile(context, FILE_PROVIDER, imageFile)
+                  photoUri = FileProvider.getUriForFile(context, getFileProviderAuthority(context), imageFile)
                   cameraLauncherWithPermissionRequest.launch(android.Manifest.permission.CAMERA)
                 },
                 colors =

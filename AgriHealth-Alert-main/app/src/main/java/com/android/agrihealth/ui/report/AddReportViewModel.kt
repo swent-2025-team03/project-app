@@ -33,11 +33,9 @@ sealed class CreateReportResult {
   /** There is a validation error. For example a required field is missing a value */
   object ValidationError : CreateReportResult()
 
-  /** Uploading the photo to the image repository failed */
-  data class PhotoUploadError(val e: Throwable) : CreateReportResult()
+  /** Uploading the report to the repository failed. Or uploading the photo to the image repository failed */
+  data class UploadError(val e: Throwable) : CreateReportResult()
 
-  /** Uploading the report to the report repository failed. */
-  data class RepositoryError(val e: Throwable) : CreateReportResult()
 }
 
 /**
@@ -120,10 +118,10 @@ class AddReportViewModel(
           _uiState.value = _uiState.value.copy(uploadedImagePath = resultState.path)
         }
         is ImageUIState.Error -> {
-          return CreateReportResult.PhotoUploadError(resultState.e)
+          return CreateReportResult.UploadError(resultState.e)
         }
         else -> {
-          return CreateReportResult.PhotoUploadError(
+          return CreateReportResult.UploadError(
               IllegalStateException(AddReportFeedbackTexts.UNKNOWN))
         }
       }
@@ -152,7 +150,7 @@ class AddReportViewModel(
       clearInputs()
       return CreateReportResult.Success
     } catch (e: Exception) {
-      return CreateReportResult.RepositoryError(e)
+      return CreateReportResult.UploadError(e)
     }
   }
 

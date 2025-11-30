@@ -497,7 +497,7 @@ class AddReportScreenTest {
   fun createReport_errorDialogWorksCorrectly() {
     val errorMessage = "repository failed"
     val error = RuntimeException(errorMessage)
-    val fakeViewModel = ResultFakeAddReportViewModel(CreateReportResult.RepositoryError(error))
+    val fakeViewModel = ResultFakeAddReportViewModel(CreateReportResult.UploadError(error))
 
     composeRule.setContent {
       MaterialTheme { AddReportScreen(onCreateReport = {}, addReportViewModel = fakeViewModel) }
