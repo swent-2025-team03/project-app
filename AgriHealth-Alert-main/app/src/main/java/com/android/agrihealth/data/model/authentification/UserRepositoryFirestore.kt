@@ -1,13 +1,12 @@
 package com.android.agrihealth.data.model.authentification
 
-import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.location.locationFromMap
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
-import kotlin.collections.get
 import kotlinx.coroutines.tasks.await
 
 const val USERS_COLLECTION_PATH = "users"
@@ -91,13 +90,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     val isGoogleAccount = data["isGoogleAccount"] as? Boolean ?: false
     val description = data["description"] as? String?
     val addressData = data["address"] as? Map<*, *>
-    val address =
-        addressData?.let {
-          Location(
-              latitude = it["latitude"] as? Double ?: 0.0,
-              longitude = it["longitude"] as? Double ?: 0.0,
-              name = it["name"] as? String ?: "")
-        }
+    val address = locationFromMap(addressData)
 
     return when (roleStr) {
       "Farmer" ->

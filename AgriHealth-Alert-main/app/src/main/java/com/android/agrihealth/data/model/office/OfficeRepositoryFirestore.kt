@@ -1,6 +1,6 @@
 package com.android.agrihealth.data.model.office
 
-import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.location.locationFromMap
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
@@ -54,13 +54,7 @@ class OfficeRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fir
 
   private fun officeFromData(data: Map<String, Any>): Office {
     val addressData = data["address"] as? Map<*, *>
-    val address =
-        addressData?.let {
-          Location(
-              latitude = it["latitude"] as? Double ?: 0.0,
-              longitude = it["longitude"] as? Double ?: 0.0,
-              name = it["name"] as? String ?: "")
-        }
+    val address = locationFromMap(addressData)
     return Office(
         id = data["id"] as String,
         name = data["name"] as String,
