@@ -126,7 +126,7 @@ fun MCQOItem(
 @Composable
 fun CollectedSwitch(
     checked: Boolean = false,
-    onCheckedChange: () -> Unit = {},
+    onCheckedChange: (Boolean) -> Unit = {},
     enabled: Boolean = false
 ) {
   Row(
@@ -134,6 +134,6 @@ fun CollectedSwitch(
       modifier = Modifier.testTag(ReportComposableCommonsTestTags.COLLECTED_SWITCH)) {
         Text("Share anonymous data")
         Spacer(modifier = Modifier.weight(1f))
-        Switch(checked = checked, onCheckedChange = { onCheckedChange }, enabled = enabled)
+        Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
       }
 }
