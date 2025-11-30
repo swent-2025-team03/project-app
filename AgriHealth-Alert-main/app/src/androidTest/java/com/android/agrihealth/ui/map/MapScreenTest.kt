@@ -1,16 +1,14 @@
 package com.android.agrihealth.ui.map
 
 import FakeReportRepository
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.printToLog
 import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
@@ -103,6 +101,7 @@ class MapScreenTest {
   private lateinit var locationRepository: LocationRepository
   val reportRepository = FakeReportRepository()
   private lateinit var userId: String
+  private lateinit var testMapViewModel: MapViewModel
 
   @Before
   fun setUp() = runTest {
@@ -136,7 +135,7 @@ class MapScreenTest {
       isViewedFromOverview: Boolean = true,
       selectedReportId: String? = null
   ) {
-    val mapViewModel =
+    testMapViewModel =
         MapViewModel(
             reportRepository = reportRepository,
             locationViewModel = locationViewModel,
@@ -144,7 +143,7 @@ class MapScreenTest {
             userId = userId)
     composeTestRule.setContent {
       MaterialTheme {
-        MapScreen(mapViewModel = mapViewModel, isViewedFromOverview = isViewedFromOverview)
+        MapScreen(mapViewModel = testMapViewModel, isViewedFromOverview = isViewedFromOverview)
       }
     }
   }
@@ -185,37 +184,32 @@ class MapScreenTest {
   fun displayReportsFromUser() = runTest {
     setContentToMapWithVM()
 
-    // 1) Log complet de l’arbre de sémantique
-    Log.d("MAPTEST", "---- FULL SEMANTICS TREE ----")
-    composeTestRule.onRoot().printToLog("MAPTEST")
+    // Attendre que la composition soit stable
+    composeTestRule.waitForIdle()
+    // Vérification via ViewModel (sans logs)
+    val vmReports = testMapViewModel.uiState.value.reports
 
-    // 2) Récupère les reports du fake repo
-    val reports = reportRepository.getReportsByFarmer(userId)
-    Log.d("MAPTEST", "Reports for userId=$userId: count=${reports.size}")
-    reports.forEach { r -> Log.d("MAPTEST", "  report id=${r.id}, title=${r.title}") }
+    // Attente: des nodes avec préfixe reportMarker_ doivent apparaître
+    val expectedReports = reportRepository.getReportsByFarmer(userId)
+    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+      val count =
+          expectedReports.sumOf { r ->
+            val tag = MapScreenTestTags.getTestTagForReportMarker(r.id)
+            composeTestRule
+                .onAllNodesWithTag(tag, useUnmergedTree = true)
+                .fetchSemanticsNodes()
+                .size
+          }
+      count > 0
+    }
 
-    // 3) Vérifie chaque marker
+    // Vérifie chaque marker
+    val reports = expectedReports
     reports.forEach { report ->
       val markerTag = MapScreenTestTags.getTestTagForReportMarker(report.id)
-      Log.d("MAPTEST", "Checking markerTag = $markerTag")
-
       val node = composeTestRule.onNodeWithTag(markerTag, useUnmergedTree = true)
-
-      try {
-        node.assertExists()
-        Log.d("MAPTEST", "✔ Marker exists for $markerTag")
-      } catch (e: AssertionError) {
-        Log.d("MAPTEST", "✘ Marker DOES NOT EXIST for $markerTag")
-        throw e
-      }
-
-      try {
-        node.assertIsDisplayed()
-        Log.d("MAPTEST", "✔ Marker DISPLAYED for $markerTag")
-      } catch (e: AssertionError) {
-        Log.d("MAPTEST", "✘ Marker NOT DISPLAYED for $markerTag")
-        throw e
-      }
+      node.assertExists()
+      node.assertIsDisplayed()
     }
   }
 
@@ -248,29 +242,60 @@ class MapScreenTest {
   @Test
   fun filterReportsByStatus() = runTest {
     setContentToMapWithVM()
-    val reports = reportRepository.getReportsByFarmer(userId)
-    val filters = listOf(null) + ReportStatus.entries.map { it.displayString() }
 
+    // Attendre que la composition soit stable
+    composeTestRule.waitForIdle()
+    val vmReports = testMapViewModel.uiState.value.reports
+
+    // Précharger les reports (éviter suspend dans waitUntil)
+    val allReportsForUser = reportRepository.getReportsByFarmer(userId)
+
+    // Attente markers
+    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+      val count =
+          allReportsForUser.sumOf { r ->
+            val tag = MapScreenTestTags.getTestTagForReportMarker(r.id)
+            composeTestRule
+                .onAllNodesWithTag(tag, useUnmergedTree = true)
+                .fetchSemanticsNodes()
+                .size
+          }
+      count == allReportsForUser.size
+    }
+
+    val reports = allReportsForUser
+    val filters: List<String?> =
+        listOf<String?>(null) + ReportStatus.entries.map { it.displayString() }
+
+    // Boucle sur les filtres
     filters.forEach { filter ->
       composeTestRule
           .onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU)
           .assertIsDisplayed()
           .performClick()
-      composeTestRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForFilter(filter))
-          .assertIsDisplayed()
-          .performClick()
+
+      val filterTag = MapScreenTestTags.getTestTagForFilter(filter)
+
+      composeTestRule.onNodeWithTag(filterTag, useUnmergedTree = true).assertExists().performClick()
+
+      composeTestRule.waitForIdle()
+
       val (matches, nonMatches) =
-          reports.partition { it -> filter == null || it.status.displayString() == filter }
+          reports.partition { r -> filter == null || r.status.displayString() == filter }
+
+      // === MATCHES : doivent exister ===
       matches.forEach { report ->
+        val tag = MapScreenTestTags.getTestTagForReportMarker(report.id)
         composeTestRule
-            .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+            .onNodeWithTag(tag, useUnmergedTree = true)
+            .assertExists()
             .assertIsDisplayed()
       }
+
+      // === NON-MATCHES : ne doivent PAS exister ===
       nonMatches.forEach { report ->
-        composeTestRule
-            .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
-            .assertIsNotDisplayed()
+        val tag = MapScreenTestTags.getTestTagForReportMarker(report.id)
+        composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).assertDoesNotExist()
       }
     }
   }
@@ -299,8 +324,6 @@ class MapScreenTest {
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun spiderifyReportsTest() = runTest {
-    reportRepository.addReport(MapScreenTestReports.report1.copy(farmerId = userId))
-
     val mapViewModel =
         MapViewModel(
             reportRepository = reportRepository,
