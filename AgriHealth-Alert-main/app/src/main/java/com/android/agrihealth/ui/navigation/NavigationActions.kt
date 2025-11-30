@@ -31,7 +31,7 @@ sealed class Screen(
 
   object Overview : Screen(route = "overview", name = "Overview", isTopLevelDestination = true)
 
-  object AddReport : Screen(route = "add_report", name = "Create Report")
+  object AddReport : Screen(route = "add_report", name = "Create a Report")
 
   object ManageOffice : Screen(route = "manage_office", name = "Manage My Office")
 
