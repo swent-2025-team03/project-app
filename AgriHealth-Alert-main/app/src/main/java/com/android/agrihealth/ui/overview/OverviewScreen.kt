@@ -360,9 +360,11 @@ fun ReportItem(
           Text(report.title, style = MaterialTheme.typography.titleSmall)
 
           Row(verticalAlignment = Alignment.CenterVertically) {
-            // Show full name and role, no label
-            if (userRole == UserRole.VET) AuthorName(uid = report.farmerId)
-            else
+            if (userRole == UserRole.VET) {
+              AuthorName(
+                  uid = report.farmerId,
+                  onClick = { navigationActions?.navigateTo(Screen.ViewUser(report.farmerId)) })
+            } else
                 OfficeName(
                     uid = report.officeId,
                     onClick = {
