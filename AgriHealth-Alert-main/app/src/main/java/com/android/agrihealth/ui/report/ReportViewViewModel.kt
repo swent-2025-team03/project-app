@@ -99,6 +99,10 @@ class ReportViewViewModel(
     onSave()
   }
 
+  fun onDelete() {
+    viewModelScope.launch { repository.deleteReport(reportId = _uiState.value.report.id) }
+  }
+
   /** Saves the modified report, then triggers the saveCompleted flag on success. */
   fun onSave() {
     viewModelScope.launch {
