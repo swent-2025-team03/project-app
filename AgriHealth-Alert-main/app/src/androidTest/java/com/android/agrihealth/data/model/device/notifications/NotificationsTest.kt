@@ -16,8 +16,7 @@ class NotificationsTest : FirebaseEmulatorsTest() {
     authRepository.signUpWithEmailAndPassword(user1.email, password1, user1)
 
     composeTestRule.setContent {
-      val context = LocalContext.current
-      val messagingService = FirebaseMessagingService(context)
+      val messagingService = FirebaseMessagingService()
 
       val testNotification =
         Notification.NewReport(

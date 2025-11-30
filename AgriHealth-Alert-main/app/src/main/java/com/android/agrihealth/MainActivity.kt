@@ -111,7 +111,6 @@ fun AgriHealthApp(
   val currentUserEmail = currentUser.email
 
   // Notification handling, setup device
-  NotificationHandlerProvider.handler = FirebaseMessagingService(context)
   val notificationHandler = NotificationHandlerProvider.handler
   NotificationsPermissionsRequester(
       onGranted = {

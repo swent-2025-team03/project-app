@@ -18,28 +18,87 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
-class FirebaseMessagingService(private val context: Context) : NotificationHandler, FirebaseMessagingService() {
+class FirebaseMessagingService() : NotificationHandler, FirebaseMessagingService() {
   private val messaging = FirebaseMessaging.getInstance()
   private val functions = FirebaseFunctions.getInstance()
 
-  // TODO overwrite doc
+  private val channelNewReport = "new_report_channel"
+  private val channelVetAnswer = "vet_answer_channel"
+
+  override fun onCreate() {
+    super.onCreate()
+    createNotificationChannels()
+  }
+
+  private fun createNotificationChannels() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      val nm = getSystemService(NotificationManager::class.java) ?: return
+
+      nm.createNotificationChannel(NotificationChannel(
+        channelNewReport,
+        "New reports",
+        NotificationManager.IMPORTANCE_HIGH
+      ))
+
+      nm.createNotificationChannel(NotificationChannel(
+        channelVetAnswer,
+        "Vet answers",
+        NotificationManager.IMPORTANCE_HIGH
+      ))
+    }
+  }
+
+  /** WILL CRASH IF RAN FROM A COMPOSABLE
+   *
+   * Shows a notification on the user's current device. Used when a new notification is received */
+  override fun showNotification(notification: Notification) {
+    val nm = getSystemService(NotificationManager::class.java) ?: return
+
+    val (title, body, channelId) = when (notification) {
+      is NewReport -> Triple(
+        "New report from ${notification.authorUid}",
+        notification.reportTitle,
+        channelNewReport
+      )
+      is VetAnswer -> Triple(
+        "A vet has answered your report",
+        "${notification.authorUid}: ${notification.answer}",
+        channelVetAnswer
+      )
+    }
+
+    val systemNotification = NotificationCompat.Builder(this, channelId)
+      .setSmallIcon(R.drawable.ic_launcher_foreground)
+      .setContentTitle(title)
+      .setContentText(body)
+      .setPriority(NotificationCompat.PRIORITY_HIGH)
+      .setAutoCancel(true)
+      .build()
+
+    val id = System.currentTimeMillis().toInt()
+    nm.notify(id, systemNotification)
+  }
+
+  /** Empty function. Runs when a new FCM token is detected, but that is handled in MainActivity */
   override fun onNewToken(token: String) {
-    // Current implementation expected token handling to be in MainActivity, when the app loads
+    // Current implementation expects token handling to be in MainActivity, when the app loads
     // This is because a given user could have multiple devices
   }
 
-  // TODO overwrite doc
+  /** WILL CRASH IF RAN FROM A COMPOSABLE
+   *
+   * Shows a new notification to the recipient's devices.
+   * Runs when a new notification is received in Firebase Messaging
+   */
   override fun onMessageReceived(message: RemoteMessage) {
+    //message.notification?.let { actualShowNotification() }
     Log.d("FCM", "onMessageReceived called with id ${message.messageId}")
-
-    // TODO
-    // Convert RemoteMessage into a simple to understand Message class for the app, easy building
 
     val notification =
         message.data.toNotification()
             ?: throw IllegalArgumentException("Error while deserializing notification message")
+
     showNotification(notification)
-    // message.notification?.let { showNotification(it.title, it.body) }
   }
 
   // TODO figure this out
@@ -94,71 +153,6 @@ class FirebaseMessagingService(private val context: Context) : NotificationHandl
           Log.e("FCM", "Failed to send notification", exception)
           onComplete(false)
         }
-  }
-
-  /** Shows a notification on the recipient's device. Used when a new notification is received */
-  override fun showNotification(notification: Notification) { // TODO
-    val title = notification.type.toName()
-    val message = notification.destinationUid
-    Log.d("FCM", "Sending notification $title")
-    val channelId = "your_app_channel"
-
-    val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      val channel =
-          NotificationChannel(channelId, "Default Channel", NotificationManager.IMPORTANCE_DEFAULT)
-      notificationManager.createNotificationChannel(channel)
-    }
-
-    val notification =
-        NotificationCompat.Builder(this, channelId)
-            .setContentTitle(title)
-            .setContentText(message)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .build()
-
-    notificationManager.notify(0, notification)
-  }
-
-  fun sendNotification() {
-    val requestCode = 0
-    val intent = Intent(this, MainActivity::class.java)
-    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-    val pendingIntent = PendingIntent.getActivity(
-      this,
-      requestCode,
-      intent,
-      PendingIntent.FLAG_IMMUTABLE,
-    )
-
-    val channelId = "channel_id"
-    val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-    val notificationBuilder = NotificationCompat.Builder(this, channelId)
-      //.setSmallIcon(R.drawable.ic_stat_ic_notification)
-      //.setContentTitle(getString(R.string.fcm_message))
-      //.setContentText(messageBody)
-      .setSmallIcon(R.drawable.ic_launcher_foreground)
-      .setContentTitle("Title")
-      .setContentText("Text")
-      .setAutoCancel(true)
-      .setSound(defaultSoundUri)
-      .setContentIntent(pendingIntent)
-
-    val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-    // Since android Oreo notification channel is needed.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      val channel = NotificationChannel(
-        channelId,
-        "Channel human readable title",
-        NotificationManager.IMPORTANCE_DEFAULT,
-      )
-      notificationManager.createNotificationChannel(channel)
-    }
-
-    val notificationId = 0
-    notificationManager.notify(notificationId, notificationBuilder.build())
   }
 }
 
