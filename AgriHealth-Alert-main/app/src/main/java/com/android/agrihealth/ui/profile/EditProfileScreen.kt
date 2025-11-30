@@ -199,7 +199,7 @@ fun EditProfileScreen(
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
               Button(
                   onClick = onChangeLocation,
-                  enabled = user is Vet && isOwner,
+                  enabled = user !is Vet || isOwner,
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LOCATION_BUTTON)) {
                     Text("Change Location")

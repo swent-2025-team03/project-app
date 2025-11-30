@@ -207,6 +207,7 @@ fun AgriHealthApp(
             viewModel(factory = createMapViewModel, key = pickedLocation.value.toString())
         if (locationPermissionsRequester(locationViewModel)) {
           mapViewModel.refreshMapPermission()
+          mapViewModel.setStartingLocation(pickedLocation.value)
         }
         mapViewModel.setStartingLocation(pickedLocation.value)
         LocationPicker(
