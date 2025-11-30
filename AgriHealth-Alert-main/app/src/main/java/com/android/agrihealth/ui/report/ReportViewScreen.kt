@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -15,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -182,6 +184,7 @@ fun ReportViewScreen(
                     .padding(16.dp)
                     .testTag(ReportViewScreenTestTags.SCROLL_CONTAINER),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
+              val context = LocalContext.current
 
               // --- Full title (only if too long) ---
               val maxTitleChars = maxTitleCharsForScreen()
@@ -205,7 +208,17 @@ fun ReportViewScreen(
                           })
                     } else {
                       // Farmer views office
-                      OfficeName(uid = report.officeId, onClick = { /* TODO("add ViewOffice") */})
+                      OfficeName(
+                          uid = report.officeId,
+                          onClick = {
+                            if (report.officeId.isNotBlank()) {
+                              navigationActions.navigateTo(Screen.ViewOffice(report.officeId))
+                            } else {
+                              Toast.makeText(
+                                      context, "This office no longer exists.", Toast.LENGTH_LONG)
+                                  .show()
+                            }
+                          })
                     }
                   }
 
