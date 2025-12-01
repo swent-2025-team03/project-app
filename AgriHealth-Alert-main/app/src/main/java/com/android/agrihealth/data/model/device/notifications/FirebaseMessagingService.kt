@@ -5,14 +5,39 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import com.android.agrihealth.R
 import com.android.agrihealth.data.model.device.notifications.Notification.NewReport
 import com.android.agrihealth.data.model.device.notifications.Notification.VetAnswer
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+
+// Control panel imports
+/*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.authentification.USERS_COLLECTION_PATH
+*/
 
 @SuppressLint("MissingFirebaseInstanceTokenRefresh") // Tokens are handled in MainActivity
 class FirebaseMessagingService(
@@ -177,7 +202,7 @@ fun NotificationTestControlPanel() {
 
           val map = mapOf("deviceTokensFCM" to listOf(token))
           CoroutineScope(Dispatchers.IO).launch {
-            Firebase.firestore.collection(USERS_COLLECTION_PATH).document(uid!!).update(map).await()
+            Firebase.firestore.collection(USERS_COLLECTION_PATH).document(uid).update(map).await()
           }
         }
       })
@@ -189,8 +214,8 @@ fun NotificationTestControlPanel() {
     val reportTitle = "maldie animal"
     val answer = "unlucky bro unlucky"
 
-    val testNotification = NewReport(authorUid, destinationUid, reportTitle)
-    // val testNotification = VetAnswer(authorUid, destinationUid, answer)
+    //val testNotification = NewReport(authorUid, destinationUid, reportTitle)
+    val testNotification = VetAnswer(authorUid, destinationUid, answer)
 
     Box {
       Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface).fillMaxSize()) {
