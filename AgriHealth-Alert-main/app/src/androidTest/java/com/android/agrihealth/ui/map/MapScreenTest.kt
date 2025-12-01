@@ -255,7 +255,6 @@ class MapScreenTest {
     setContentToMapWithVM()
 
     composeTestRule.waitForIdle()
-    val vmReports = testMapViewModel.uiState.value.reports
 
     val allReportsForUser = reportRepository.getReportsByFarmer(userId)
 

@@ -4,34 +4,25 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
-import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
+import com.android.agrihealth.testutil.FakeOfficeRepository
 import com.android.agrihealth.testutil.TestConstants
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class OfficeNameTest() : FirebaseEmulatorsTest() {
+class OfficeNameTest {
 
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
   @Before
   fun setup() {
-    super.setUp()
-    val vet = user3.copy(officeId = "office")
-    var office = Office("office", "name", null, ownerId = vet.uid)
-    val authRepo = AuthRepositoryProvider.repository
-    val officeRepo = OfficeRepositoryProvider.get()
-    runTest {
-      authRepo.signUpWithEmailAndPassword(vet.email, "123456", vet)
-      office = office.copy(ownerId = Firebase.auth.uid!!)
-      officeRepo.addOffice(office)
-    }
+    val fakeRepo =
+        FakeOfficeRepository(
+            initialOffices =
+                listOf(Office(id = "office", name = "name", address = null, ownerId = "uid")))
+    OfficeRepositoryProvider.set(fakeRepo)
   }
 
   @Test
