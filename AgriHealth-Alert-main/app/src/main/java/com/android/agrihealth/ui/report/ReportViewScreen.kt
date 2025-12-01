@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -15,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,12 +46,14 @@ object ReportViewScreenTestTags {
   const val STATUS_DROPDOWN_FIELD = "StatusDropdownField"
   const val STATUS_DROPDOWN_MENU = "StatusDropdownMenu"
   const val SPAM_BUTTON = "SpamButton"
+  const val DELETE_BUTTON = "DeleteButton"
   const val VIEW_ON_MAP = "viewReportOnMap"
   const val SAVE_BUTTON = "SaveButton"
   const val SCROLL_CONTAINER = "ReportViewScrollContainer"
   const val UNSAVED_ALERT_BOX = "UnsavedChangesAlertBox"
   const val UNSAVED_ALERT_BOX_DISCARD = "UnsavedChangesAlertDiscardButton"
   const val UNSAVED_ALERT_BOX_CANCEL = "UnsavedChangesAlertCancelButton"
+  const val DELETE_REPORT_ALERT_BOX = "DeleteReportAlertBox"
 
   fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
 }
@@ -107,6 +111,7 @@ fun ReportViewScreen(
   val selectedStatus = uiState.status
 
   var isSpamDialogOpen by remember { mutableStateOf(false) }
+  var isDeleteDialogOpen by remember { mutableStateOf(false) }
   var isUnsavedAlertOpen by remember { mutableStateOf(false) }
 
   fun handleGoBack(force: Boolean = false) {
@@ -179,6 +184,7 @@ fun ReportViewScreen(
                     .padding(16.dp)
                     .testTag(ReportViewScreenTestTags.SCROLL_CONTAINER),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
+              val context = LocalContext.current
 
               // --- Full title (only if too long) ---
               val maxTitleChars = maxTitleCharsForScreen()
@@ -202,7 +208,17 @@ fun ReportViewScreen(
                           })
                     } else {
                       // Farmer views office
-                      OfficeName(uid = report.officeId, onClick = { /* TODO("add ViewOffice") */})
+                      OfficeName(
+                          uid = report.officeId,
+                          onClick = {
+                            if (report.officeId.isNotBlank()) {
+                              navigationActions.navigateTo(Screen.ViewOffice(report.officeId))
+                            } else {
+                              Toast.makeText(
+                                      context, "This office no longer exists.", Toast.LENGTH_LONG)
+                                  .show()
+                            }
+                          })
                     }
                   }
 
@@ -389,6 +405,18 @@ fun ReportViewScreen(
                                     Text("Reported as spam")
                                   }
                             }
+                          } else {
+                            val color = StatusColors().spam
+                            OutlinedButton(
+                                onClick = { isDeleteDialogOpen = true },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = color),
+                                border = BorderStroke(1.dp, color),
+                                shape = MaterialTheme.shapes.medium,
+                                modifier =
+                                    Modifier.weight(1f)
+                                        .testTag(ReportViewScreenTestTags.DELETE_BUTTON)) {
+                                  Text("Delete report")
+                                }
                           }
                         }
 
@@ -423,6 +451,26 @@ fun ReportViewScreen(
                     },
                     dismissButton = {
                       TextButton(onClick = { isSpamDialogOpen = false }) { Text("Cancel") }
+                    })
+              }
+              if (isDeleteDialogOpen) {
+                AlertDialog(
+                    modifier = Modifier.testTag(ReportViewScreenTestTags.DELETE_REPORT_ALERT_BOX),
+                    onDismissRequest = { isDeleteDialogOpen = false },
+                    title = { Text("Delete report?") },
+                    text = { Text("This will delete the report. This action cannot be undone") },
+                    confirmButton = {
+                      TextButton(
+                          onClick = {
+                            isDeleteDialogOpen = false
+                            viewModel.onDelete()
+                            navigationActions.goBack()
+                          }) {
+                            Text("Confirm", color = MaterialTheme.colorScheme.error)
+                          }
+                    },
+                    dismissButton = {
+                      TextButton(onClick = { isDeleteDialogOpen = false }) { Text("Cancel") }
                     })
               }
             }
