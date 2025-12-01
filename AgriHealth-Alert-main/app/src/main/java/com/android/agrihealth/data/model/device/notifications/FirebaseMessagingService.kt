@@ -15,7 +15,7 @@ import com.google.firebase.messaging.RemoteMessage
 
 @SuppressLint("MissingFirebaseInstanceTokenRefresh") // Tokens are handled in MainActivity
 class FirebaseMessagingService(
-  private val messaging: FirebaseMessaging = FirebaseMessaging.getInstance(),
+  private val tokenResolver: NotificationTokenResolver = FirebaseTokenResolver(),
   private val sender: NotificationSender = FirebaseNotificationSender()
 ) : NotificationHandler, FirebaseMessagingService() {
 
@@ -35,7 +35,7 @@ class FirebaseMessagingService(
    * @param onComplete Action to take with the returned token. May be null
    */
   override fun getToken(onComplete: (token: String?) -> Unit) {
-    messaging.token.addOnCompleteListener { task ->
+    tokenResolver.token.addOnCompleteListener { task ->
       if (task.isSuccessful) {
         val token = task.result
         onComplete(token)
