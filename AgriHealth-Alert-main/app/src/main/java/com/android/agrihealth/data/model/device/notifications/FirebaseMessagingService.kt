@@ -5,12 +5,37 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.NotificationCompat
 import com.android.agrihealth.R
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.authentification.USERS_COLLECTION_PATH
 import com.android.agrihealth.data.model.device.notifications.Notification.NewReport
 import com.android.agrihealth.data.model.device.notifications.Notification.VetAnswer
+import com.android.agrihealth.data.model.user.copyCommon
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 @SuppressLint("MissingFirebaseInstanceTokenRefresh") // Tokens are handled in MainActivity
 class FirebaseMessagingService(
@@ -146,5 +171,74 @@ fun Map<String, String>.toNotification(): Notification? {
             destinationUid = destinationUid,
             answer = this["answer"] ?: return null)
     null -> null
+  }
+}
+
+
+@Composable
+@Preview
+fun NotificationTestControlPanel() {
+  AgriHealthAppTheme {
+    var debugText by remember { mutableStateOf("") }
+
+    val uid = Firebase.auth.currentUser?.uid
+    if (uid == null) {
+      debugText = "You are not logged in, open MainActivity and try again"
+    }
+
+    val notificationHandler = NotificationHandlerProvider.handler
+    NotificationsPermissionsRequester(
+      onDenied = { debugText = "You need to grant notifications access for this screen to work" },
+      onGranted = {
+        notificationHandler.getToken { token ->
+          if(uid == null) return@getToken
+
+          if (token == null) {
+            debugText = "Could not get token for some reason, try again maybe"
+            return@getToken
+          }
+
+          val map = mapOf("deviceTokensFCM" to listOf(token))
+          CoroutineScope(Dispatchers.IO).launch {
+            Firebase.firestore.collection(USERS_COLLECTION_PATH).document(uid!!).update(map).await()
+          }
+        }
+      })
+
+    val messagingService = com.android.agrihealth.data.model.device.notifications.FirebaseMessagingService()
+
+    val authorUid = uid ?: ""
+    val destinationUid = uid ?: ""
+    val reportTitle = "maldie animal"
+    val answer = "unlucky bro unlucky"
+
+    val testNotification = NewReport(authorUid, destinationUid, reportTitle)
+    // val testNotification = VetAnswer(authorUid, destinationUid, answer)
+
+    Box {
+      Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface).fillMaxSize()) {
+        TextButton(
+          onClick = { messagingService.getToken { debugText = it!! } },
+          modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer)) {
+          Text("See messaging token", color = MaterialTheme.colorScheme.onPrimaryContainer)
+        }
+
+        TextButton(
+          onClick = {
+            messagingService.uploadNotification(
+              testNotification,
+              onComplete = { success ->
+                debugText =
+                  if (success) "Notification sent" else "Failed to send notification"
+              })
+            debugText = "Uploading..."
+          },
+          modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer)) {
+          Text("Upload test notification", color = MaterialTheme.colorScheme.onPrimaryContainer)
+        }
+
+        Text(debugText, color = MaterialTheme.colorScheme.onSurface)
+      }
+    }
   }
 }
