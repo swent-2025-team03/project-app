@@ -82,23 +82,11 @@ class MapViewModel(
   private fun fetchLocalizableReports(uid: String) {
     viewModelScope.launch {
       try {
-        Log.d(TAG, "fetchLocalizableReports: start for uid=$uid")
         val allReports = reportRepository.getAllReports(uid)
-        Log.d(TAG, "fetchLocalizableReports: allReports.size=${allReports.size}")
-        Log.d(
-            TAG,
-            "fetchLocalizableReports: allReports ids=${allReports.map { it.id }} " +
-                "locs=${allReports.map { it.id to it.location }}")
 
         val reports = allReports.filter { it.location != null }
-        Log.d(TAG, "fetchLocalizableReports: localizable.size=${reports.size}")
-        Log.d(TAG, "fetchLocalizableReports: localizable ids=${reports.map { it.id }}")
 
         _uiState.value = _uiState.value.copy(reports = reports)
-        Log.d(
-            TAG,
-            "fetchLocalizableReports: uiState.reports.size=${_uiState.value.reports.size}, " +
-                "ids=${_uiState.value.reports.map { it.id }}")
       } catch (e: Exception) {
         Log.e("MapScreen", "Failed to load todos: ${e.message}")
       }
@@ -194,17 +182,11 @@ class MapViewModel(
    */
   fun spiderifiedReports(): List<SpiderifiedReport> {
     val currentReports = uiState.value.reports
-    Log.d(TAG, "spiderifiedReports: uiState.reports.size=${currentReports.size}")
-    Log.d(TAG, "spiderifiedReports: reports ids=${currentReports.map { it.id }}")
 
     val groups =
         currentReports
             .filter { it.location != null }
             .groupBy { Pair(it.location!!.latitude, it.location.longitude) }
-
-    Log.d(
-        TAG,
-        "spiderifiedReports: groups=" + groups.mapValues { entry -> entry.value.map { it.id } })
 
     val result = mutableListOf<SpiderifiedReport>()
 
@@ -212,10 +194,6 @@ class MapViewModel(
       val baseLat = latLong.first
       val baseLng = latLong.second
       val center = LatLng(baseLat, baseLng)
-
-      Log.d(
-          TAG,
-          "spiderifiedReports: center=$center, group.size=${group.size}, ids=${group.map { it.id }}")
 
       if (group.size == 1) {
         result.add(SpiderifiedReport(group.first(), center, center))
@@ -230,7 +208,6 @@ class MapViewModel(
       }
     }
 
-    Log.d(TAG, "spiderifiedReports: result.size=${result.size}")
     return result
   }
 

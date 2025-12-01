@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.rule.GrantPermissionRule
+import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
@@ -17,6 +18,8 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
+import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.testutil.FakeUserRepository
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.google.android.gms.maps.model.LatLng
 import io.mockk.coEvery
@@ -107,7 +110,20 @@ class MapScreenTest {
   fun setUp() = runTest {
     // Fake user
     userId = "TEST_USER"
+    val fakeUser =
+        Farmer(
+            uid = userId,
+            firstname = "Test",
+            lastname = "User",
+            email = "test@example.com",
+            address = Location(46.9485, 7.4479),
+            linkedOffices = emptyList(),
+            defaultOffice = null,
+            isGoogleAccount = false,
+            description = null)
 
+    val fakeUserRepository = FakeUserRepository(fakeUser)
+    UserRepositoryProvider.repository = fakeUserRepository
     // Fake location repository
     locationRepository = mockk(relaxed = true)
 
@@ -184,12 +200,8 @@ class MapScreenTest {
   fun displayReportsFromUser() = runTest {
     setContentToMapWithVM()
 
-    // Attendre que la composition soit stable
     composeTestRule.waitForIdle()
-    // Vérification via ViewModel (sans logs)
-    val vmReports = testMapViewModel.uiState.value.reports
 
-    // Attente: des nodes avec préfixe reportMarker_ doivent apparaître
     val expectedReports = reportRepository.getReportsByFarmer(userId)
     composeTestRule.waitUntil(timeoutMillis = 5_000) {
       val count =
@@ -203,7 +215,6 @@ class MapScreenTest {
       count > 0
     }
 
-    // Vérifie chaque marker
     val reports = expectedReports
     reports.forEach { report ->
       val markerTag = MapScreenTestTags.getTestTagForReportMarker(report.id)
