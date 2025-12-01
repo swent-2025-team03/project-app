@@ -16,14 +16,6 @@ class ReportRepositoryLocal : ReportRepository {
     return reports.filter { it.farmerId == userId || it.officeId == userId }
   }
 
-  override suspend fun getReportsByFarmer(farmerId: String): List<Report> {
-    return reports.filter { it.farmerId == farmerId }
-  }
-
-  override suspend fun getReportsByOffice(officeId: String): List<Report> {
-    return reports.filter { it.officeId == officeId }
-  }
-
   override suspend fun getReportById(reportId: String): Report? {
     return reports.find { it.id == reportId }
         ?: throw NoSuchElementException("ReportRepositoryLocal: Report not found")

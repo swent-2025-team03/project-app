@@ -16,10 +16,6 @@ class FakeReportRepository : ReportRepository {
 
   override suspend fun getAllReports(userId: String): List<Report> = emptyList()
 
-  override suspend fun getReportsByFarmer(farmerId: String): List<Report> = emptyList()
-
-  override suspend fun getReportsByOffice(officeId: String): List<Report> = emptyList()
-
   override suspend fun getReportById(reportId: String): Report? = sample.copy(id = reportId)
 
   override suspend fun addReport(report: Report) {
