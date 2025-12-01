@@ -37,6 +37,7 @@ import com.android.agrihealth.ui.office.ManageOfficeViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
+import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
 
@@ -93,6 +94,7 @@ fun EditProfileScreen(
   // Farmer-specific states
   var selectedDefaultOffice by remember { mutableStateOf((user as? Farmer)?.defaultOffice) }
   var expandedVetDropdown by remember { mutableStateOf(false) }
+  var collected by remember { mutableStateOf(user.collected) }
 
   Scaffold(
       topBar = {
@@ -265,6 +267,7 @@ fun EditProfileScreen(
                             }
                           }
                     }
+                CollectedSwitch(collected, { collected = !collected }, true)
               }
 
               // Active Codes (Vets only)
@@ -289,14 +292,16 @@ fun EditProfileScreen(
                                   lastname = lastname,
                                   address = pickedLocation,
                                   defaultOffice = selectedDefaultOffice,
-                                  description = updatedDescription)
+                                  description = updatedDescription,
+                                  collected = collected)
                           UserRole.VET -> {
                             manageOfficeVm.updateOffice(newAddress = pickedLocation)
                             (user as? Vet)?.copy(
                                 firstname = firstname,
                                 lastname = lastname,
                                 address = pickedLocation,
-                                description = updatedDescription)
+                                description = updatedDescription,
+                                collected = collected)
                           }
                         }
                     updatedUser?.let { onSave(it) }
