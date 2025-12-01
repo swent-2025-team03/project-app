@@ -9,16 +9,14 @@ import androidx.core.app.NotificationCompat
 import com.android.agrihealth.R
 import com.android.agrihealth.data.model.device.notifications.Notification.NewReport
 import com.android.agrihealth.data.model.device.notifications.Notification.VetAnswer
-import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 @SuppressLint("MissingFirebaseInstanceTokenRefresh") // Tokens are handled in MainActivity
 class FirebaseMessagingService(
-  private val tokenResolver: NotificationTokenResolver = FirebaseTokenResolver(),
-  private val sender: NotificationSender = FirebaseNotificationSender()
+    private val tokenResolver: NotificationTokenResolver = FirebaseTokenResolver(),
+    private val sender: NotificationSender = FirebaseNotificationSender()
 ) : NotificationHandler, FirebaseMessagingService() {
-
 
   private val channelNewReport = "new_report_channel"
   private val channelVetAnswer = "vet_answer_channel"
@@ -50,9 +48,7 @@ class FirebaseMessagingService(
   ) {
     val data = notification.toDataMap()
 
-    sender.sendNotification(data) { success ->
-      onComplete(success)
-    }
+    sender.sendNotification(data) { success -> onComplete(success) }
   }
 
   /**
@@ -117,7 +113,7 @@ class FirebaseMessagingService(
 
 // Serialization and Deserialization
 
-private fun Notification.toDataMap(): Map<String, String> =
+fun Notification.toDataMap(): Map<String, String> =
     when (this) {
       is NewReport ->
           mapOf(
@@ -133,7 +129,7 @@ private fun Notification.toDataMap(): Map<String, String> =
               "answer" to answer)
     }
 
-private fun Map<String, String>.toNotification(): Notification? {
+fun Map<String, String>.toNotification(): Notification? {
   val type = NotificationType.fromName(this["type"] ?: return null)
   val authorUid = this["authorUid"] ?: return null
   val destinationUid = this["destinationUid"] ?: return null
