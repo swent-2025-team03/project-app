@@ -14,5 +14,16 @@ data class Farmer(
     var defaultOffice:
         String?, // Default office ID for quick access, can be changed in profile screen
     override val isGoogleAccount: Boolean = false,
-    override val description: String? = null
-) : User(uid, firstname, lastname, UserRole.FARMER, email, address, isGoogleAccount, description)
+    override val description: String? = null,
+    override val collected: Boolean = false
+) :
+    User(
+        uid,
+        firstname,
+        lastname,
+        UserRole.FARMER,
+        email,
+        address,
+        isGoogleAccount,
+        description,
+        collected)
