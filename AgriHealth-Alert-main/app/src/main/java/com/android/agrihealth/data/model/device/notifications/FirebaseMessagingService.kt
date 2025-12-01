@@ -9,15 +9,16 @@ import androidx.core.app.NotificationCompat
 import com.android.agrihealth.R
 import com.android.agrihealth.data.model.device.notifications.Notification.NewReport
 import com.android.agrihealth.data.model.device.notifications.Notification.VetAnswer
-import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 @SuppressLint("MissingFirebaseInstanceTokenRefresh") // Tokens are handled in MainActivity
-class FirebaseMessagingService() : NotificationHandler, FirebaseMessagingService() {
-  private val messaging = FirebaseMessaging.getInstance()
-  private val functions = FirebaseFunctions.getInstance()
+class FirebaseMessagingService(
+  private val messaging: FirebaseMessaging = FirebaseMessaging.getInstance(),
+  private val sender: NotificationSender = FirebaseNotificationSender()
+) : NotificationHandler, FirebaseMessagingService() {
+
 
   private val channelNewReport = "new_report_channel"
   private val channelVetAnswer = "vet_answer_channel"
@@ -49,24 +50,9 @@ class FirebaseMessagingService() : NotificationHandler, FirebaseMessagingService
   ) {
     val data = notification.toDataMap()
 
-    val uploader = functions.getHttpsCallable("sendNotification")
-
-    Log.d("FCM", "data to backend: $data")
-
-    uploader
-        .call(data)
-        .addOnSuccessListener { result ->
-          val data = result.data as Map<String, Any>
-          val success = data["success"] as Boolean
-          val message = data["message"] as String
-
-          Log.d("FCM", "Response: Success: $success, message: $message")
-          onComplete(success)
-        }
-        .addOnFailureListener { exception ->
-          Log.e("FCM", "Failed to send notification", exception)
-          onComplete(false)
-        }
+    sender.sendNotification(data) { success ->
+      onComplete(success)
+    }
   }
 
   /**
