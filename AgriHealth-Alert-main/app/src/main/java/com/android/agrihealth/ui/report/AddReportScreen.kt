@@ -128,6 +128,16 @@ private fun generateCreateReportErrorMessage(e: Throwable?): String {
   return fullMessage
 }
 
+private fun openAppPermissionsSettings(context: Context) {
+  val intent = Intent(
+    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+    Uri.fromParts("package", context.packageName, null),
+  ).apply {
+    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+  }
+  context.startActivity(intent)
+}
+
 /**
  * Displays the report creation screen for farmers
  *
@@ -196,6 +206,7 @@ fun AddReportScreen(
     }
   }
 
+
   Scaffold(
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       topBar = {
@@ -252,10 +263,11 @@ fun AddReportScreen(
 
               UploadedImagePreview(photoUri = uiState.photoUri)
 
-              UploadRemovePhotoButton(
-                  photoAlreadyPicked = uiState.photoUri != null,
-                  onImagePicked = { addReportViewModel.setPhoto(it) },
-                  onImageRemoved = { addReportViewModel.removePhoto() })
+            UploadRemovePhotoSection(
+              photoAlreadyPicked = uiState.photoUri != null,
+              onPhotoPicked = { addReportViewModel.setPhoto(it) },
+              onPhotoRemoved = { addReportViewModel.removePhoto() },
+            )
 
               CreateReportButton(onClick = onCreateReportClick)
             }
@@ -471,134 +483,160 @@ private fun DescriptionField(
 }
 
 /**
- * Button used to either upload or remove a photo depending on if one has already been selected
+ *  The section of the UI that handles adding or removing a photo from the report
  *
- * @param photoAlreadyPicked True if a photo has already been picked, False otherwise
- * @param onImagePicked What happens when a click was performed when the button shows "Upload image"
- * @param onImageRemoved What happens when a click was performed when the button shows "Remove
- *   image"
+ *  @param photoAlreadyPicked True if a photo has already ben added to the report, False otherwise
+ *  @param onPhotoPicked Called when a photo has been picked from the report
+ *  @param onPhotoRemoved Called when a photo has been removed from the report
+ */
+@Composable
+fun UploadRemovePhotoSection(
+  photoAlreadyPicked: Boolean,
+  onPhotoPicked: (Uri?) -> Unit,
+  onPhotoRemoved: () -> Unit,
+) {
+  val context = LocalContext.current
+  var showDialog by remember { mutableStateOf(false) }
+  var photoUri by remember { mutableStateOf<Uri?>(null) }
+
+  val galleryLauncher =
+    rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+      if (uri != null) onPhotoPicked(uri)
+    }
+
+  val cameraLauncher =
+    rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+      if (success && photoUri != null) onPhotoPicked(photoUri)
+    }
+
+  val cameraPermissionLauncher =
+    rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+      if (granted) {
+        photoUri?.let { cameraLauncher.launch(it) }
+      } else {
+        Toast.makeText(
+          context,
+          "Camera permission is required to take a photo",
+          Toast.LENGTH_LONG
+        ).show()
+        openAppPermissionsSettings(context)
+      }
+    }
+
+  UploadRemovePhotoButton(
+    photoAlreadyPicked = photoAlreadyPicked,
+    onClickUpload = { showDialog = true },
+    onClickRemove = onPhotoRemoved,
+  )
+
+  if (showDialog) {
+    PhotoSourceDialog(
+      onDismiss = { showDialog = false },
+      onGalleryClick = {
+        showDialog = false
+        galleryLauncher.launch("image/*")
+      },
+      onCameraClick = {
+        showDialog = false
+        val imageFile = File.createTempFile("report_photo_", ".jpg", context.cacheDir)
+        photoUri = FileProvider.getUriForFile(
+          context,
+          getFileProviderAuthority(context),
+          imageFile
+        )
+        cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+      },
+    )
+  }
+}
+
+/**
+ *  The button that allows user to either add a photo to the report or remove a photo from the report
+ *
+ *  @param photoAlreadyPicked True if a photo has already been picked by the user, False otherwise
+ *  @param onClickUpload Called when the user clicks to add a photo to the report
+ *  @param onClickRemove Called when the user clicks to remove a photo from the report
  */
 @Composable
 fun UploadRemovePhotoButton(
-    photoAlreadyPicked: Boolean,
-    onImagePicked: (Uri?) -> Unit,
-    onImageRemoved: () -> Unit
+  photoAlreadyPicked: Boolean,
+  onClickUpload: () -> Unit,
+  onClickRemove: () -> Unit,
 ) {
-  val context = LocalContext.current
-
-  var showDialog by remember { mutableStateOf(false) }
-
-  // Opens the app's permissions so the user does not need to search for it
-  fun openAppPermissionsSettings(context: Context) {
-    val intent =
-        Intent(
-                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                Uri.fromParts("package", context.packageName, null))
-            .apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-    context.startActivity(intent)
-  }
-
-  var photoUri by remember { mutableStateOf<Uri?>(null) }
-
-  // For picking photo on the gallery
-  val galleryLauncher =
-      rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        if (uri != null) {
-          onImagePicked(uri)
-        }
-      }
-
-  // For taking a photo with the camera
-  val cameraLauncher =
-      rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        if (success && photoUri != null) {
-          onImagePicked(photoUri)
-        }
-      }
-
-  // Camera launcher which also asks for permissions
-  val cameraLauncherWithPermissionRequest =
-      rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) {
-          if (photoUri != null) {
-            cameraLauncher.launch(photoUri)
-          }
-        } else {
-          Toast.makeText(
-                  context, "Camera permission is required to take a photo", Toast.LENGTH_LONG)
-              .show()
-          openAppPermissionsSettings(context)
-        }
-      }
-
   Button(
-      onClick = {
-        if (photoAlreadyPicked) {
-          onImageRemoved()
-        } else {
-          showDialog = true
-        }
-      },
-      modifier =
-          Modifier.fillMaxWidth()
-              .padding(vertical = 8.dp)
-              .testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
-
-      // TODO: Make button change color based on status when the app theme will be more developed
-      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
-        Text(
-            text =
-                if (photoAlreadyPicked) AddReportUploadButtonTexts.REMOVE_IMAGE
-                else AddReportUploadButtonTexts.UPLOAD_IMAGE,
-            style = MaterialTheme.typography.titleLarge)
-      }
-
-  if (showDialog) {
-    AlertDialog(
-        modifier = Modifier.testTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG),
-        onDismissRequest = { showDialog = false },
-        title = { Text("Select Image Source") },
-        text = { Text("Choose from gallery or take a new photo.") },
-        confirmButton = {
-          Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(
-                modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_GALLERY),
-                onClick = {
-                  showDialog = false
-                  galleryLauncher.launch("image/*")
-                },
-                colors =
-                    ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.onSurface)) {
-                  Text(AddReportDialogTexts.GALLERY)
-                }
-            TextButton(
-                modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CAMERA),
-                onClick = {
-                  showDialog = false
-                  // Create temporary file in cache
-                  val imageFile = File.createTempFile("report_photo_", ".jpg", context.cacheDir)
-                  photoUri = FileProvider.getUriForFile(context, getFileProviderAuthority(context), imageFile)
-                  cameraLauncherWithPermissionRequest.launch(android.Manifest.permission.CAMERA)
-                },
-                colors =
-                    ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.onSurface)) {
-                  Text(AddReportDialogTexts.CAMERA)
-                }
-          }
-        },
-        dismissButton = {
-          TextButton(
-              modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CANCEL),
-              onClick = { showDialog = false },
-              colors =
-                  ButtonDefaults.textButtonColors(
-                      contentColor = MaterialTheme.colorScheme.onSurfaceVariant)) {
-                Text(AddReportDialogTexts.CANCEL)
-              }
-        })
+    onClick = {
+      if (photoAlreadyPicked) onClickRemove() else onClickUpload()
+    },
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(vertical = 8.dp)
+      .testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
+    colors = ButtonDefaults.buttonColors(
+      containerColor = MaterialTheme.colorScheme.primary
+    ),
+  ) {
+    Text(
+      text = if (photoAlreadyPicked)
+        AddReportUploadButtonTexts.REMOVE_IMAGE
+      else
+        AddReportUploadButtonTexts.UPLOAD_IMAGE,
+      style = MaterialTheme.typography.titleLarge,
+    )
   }
+}
+
+/**
+ *  Dialog that asks the user whether they want to upload a photo from gallery or from camera
+ *
+ *  @param onDismiss Called when the user dismisses the dialog (i.e clicks on "Cancel")
+ *  @param onGalleryClick Called when the user clicks on the "Gallery" button
+ *  @param onCameraClick Called when the user clicks on the "Camera" button
+ */
+@Composable
+fun PhotoSourceDialog(
+  onDismiss: () -> Unit,
+  onGalleryClick: () -> Unit,
+  onCameraClick: () -> Unit,
+) {
+  AlertDialog(
+    modifier = Modifier.testTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG),
+    onDismissRequest = onDismiss,
+    title = { Text("Select Image Source") },
+    text = { Text("Choose from gallery or take a new photo.") },
+    confirmButton = {
+      Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        TextButton(
+          modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_GALLERY),
+          onClick = onGalleryClick,
+          colors = ButtonDefaults.textButtonColors(
+            contentColor = MaterialTheme.colorScheme.onSurface
+          ),
+        ) {
+          Text(AddReportDialogTexts.GALLERY)
+        }
+        TextButton(
+          modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CAMERA),
+          onClick = onCameraClick,
+          colors = ButtonDefaults.textButtonColors(
+            contentColor = MaterialTheme.colorScheme.onSurface
+          ),
+        ) {
+          Text(AddReportDialogTexts.CAMERA)
+        }
+      }
+    },
+    dismissButton = {
+      TextButton(
+        modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CANCEL),
+        onClick = onDismiss,
+        colors = ButtonDefaults.textButtonColors(
+          contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
+      ) {
+        Text(AddReportDialogTexts.CANCEL)
+      }
+    },
+  )
 }
 
 /**
@@ -626,8 +664,6 @@ fun UploadedImagePreview(photoUri: Uri?, modifier: Modifier = Modifier) {
 /**
  * Buttons that allows creating a report and uploading it on the repository
  *
- * @param addReportViewModel The viewModel associated with this screen
- * @param snackbarHostState Current state of the object managing the snackbar
  * @param onSuccess What happens after the report has been submitted
  */
 @Composable
