@@ -19,6 +19,7 @@ data class AddReportUiState(
     val description: String = "",
     val chosenOffice: String = "",
     val collected: Boolean = false,
+    val address: Location? = null,
     val questionForms: List<QuestionForm> = emptyList(),
 )
 
@@ -50,6 +51,10 @@ class AddReportViewModel(
     _uiState.value = _uiState.value.copy(chosenOffice = officeId)
   }
 
+  override fun setAddress(address: Location?) {
+    _uiState.value = _uiState.value.copy(address = address)
+  }
+
   override fun updateQuestion(index: Int, updated: QuestionForm) {
     val updatedList = _uiState.value.questionForms.toMutableList()
     updatedList[index] = updated
@@ -58,7 +63,7 @@ class AddReportViewModel(
 
   override suspend fun createReport(): Boolean {
     val uiState = _uiState.value
-    if (uiState.title.isBlank() || uiState.description.isBlank()) {
+    if (uiState.title.isBlank() || uiState.description.isBlank() || uiState.address == null) {
       return false
     }
     val allQuestionsAnswered = uiState.questionForms.all { it.isValid() }
@@ -77,8 +82,8 @@ class AddReportViewModel(
             officeId = uiState.chosenOffice,
             status = ReportStatus.PENDING,
             answer = null,
-            location = Location(46.7990813, 6.6259961), // null // optional until implemented
-            collected = uiState.collected)
+            collected = uiState.collected,
+            location = uiState.address)
 
     viewModelScope.launch { reportRepository.addReport(newReport) }
 

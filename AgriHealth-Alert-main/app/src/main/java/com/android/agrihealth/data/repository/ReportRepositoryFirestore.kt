@@ -1,7 +1,7 @@
 package com.android.agrihealth.data.repository
 
 import android.util.Log
-import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.location.locationFromMap
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
@@ -106,13 +106,7 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
     val status = ReportStatus.valueOf(statusStr)
     val answer = doc.getString("answer")
     val locationData = doc.get("location") as? Map<*, *>
-    val location =
-        locationData?.let {
-          Location(
-              latitude = it["latitude"] as? Double ?: 0.0,
-              longitude = it["longitude"] as? Double ?: 0.0,
-              name = it["name"] as? String ?: "")
-        }
+    val location = locationFromMap(locationData)
     val createdAtData = doc.get("createdAt") as? Map<*, *>
     val createdAt =
         createdAtData?.let { Instant.ofEpochSecond(it["epochSecond"] as? Long ?: 0) }

@@ -177,7 +177,8 @@ fun ProfileScreen(
 
               // Address (Location)
               OutlinedTextField(
-                  value = user.address?.toString() ?: "",
+                  value = user.address?.name ?: "",
+                  singleLine = true,
                   onValueChange = {},
                   label = {
                     when (userRole) {

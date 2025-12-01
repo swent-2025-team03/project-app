@@ -41,6 +41,8 @@ sealed class Screen(
 
   object RoleSelection : Screen(route = "role", name = "Role")
 
+  object LocationPicker : Screen(route = "location_picker", name = "Select a Location")
+
   data class ViewReport(val reportId: String) :
       Screen(route = "view_report/${reportId}", name = "view_report") {
     companion object {
@@ -58,6 +60,13 @@ sealed class Screen(
   data class ViewUser(val uid: String) : Screen(route = "view_user/${uid}", name = "View User") {
     companion object {
       const val route = "view_user/{uid}"
+    }
+  }
+
+  data class ViewOffice(val officeId: String) :
+      Screen(route = "view_office/${officeId}", name = "View Office") {
+    companion object {
+      const val route = "view_office/{officeId}"
     }
   }
 
