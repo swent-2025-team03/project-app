@@ -79,7 +79,9 @@ class MainActivity : ComponentActivity() {
       AgriHealthAppTheme {
         // A surface container using the 'background' color from the theme
         Surface(
-            modifier = Modifier.fillMaxSize().semantics { testTag = C.Tag.main_screen_container },
+            modifier = Modifier
+              .fillMaxSize()
+              .semantics { testTag = C.Tag.main_screen_container },
             color = MaterialTheme.colorScheme.background) {
               AgriHealthApp()
             }
@@ -111,16 +113,19 @@ fun AgriHealthApp(
 
   // Notification handling, setup device
   val notificationHandler = NotificationHandlerProvider.handler
-  NotificationsPermissionsRequester(
-      onGranted = {
-        notificationHandler.getToken { token ->
-          if (token == null) return@getToken
+  var canSendNotificationToken by remember { mutableStateOf(false) }
+  NotificationsPermissionsRequester(onGranted = {
+    // Fires on each recomposition of Overview, but it's a set so it's fine
+    if (canSendNotificationToken) {
+      notificationHandler.getToken { token ->
+        if (token == null) return@getToken
 
-          val newUser =
-              currentUser.copyCommon(deviceTokensFCM = currentUser.deviceTokensFCM + token)
-          userViewModel.updateUser(newUser)
-        }
-      })
+        val newUser =
+          currentUser.copyCommon(deviceTokensFCM = currentUser.deviceTokensFCM + token)
+        userViewModel.updateUser(newUser)
+      }
+    }
+  })
 
   val startDestination = remember {
     if (Firebase.auth.currentUser == null) Screen.Auth.name
@@ -177,6 +182,7 @@ fun AgriHealthApp(
               navigationActions.navigateTo(Screen.ViewReport(reportId))
             },
             onAlertClick = { alertId -> navigationActions.navigateTo(Screen.ViewAlert(alertId)) },
+            onLaunch = { canSendNotificationToken = true },
             navigationActions = navigationActions,
         )
       }
