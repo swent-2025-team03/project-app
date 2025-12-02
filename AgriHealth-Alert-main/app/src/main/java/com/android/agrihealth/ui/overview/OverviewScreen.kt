@@ -17,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import com.android.agrihealth.core.design.theme.statusColor
+import com.android.agrihealth.core.design.theme.zoneColor
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
@@ -263,56 +265,6 @@ fun OverviewScreen(
       })
 }
 
-/**
- * Card displaying the latest alert information. Currently uses static mock data. Future
- * implementation will fetch alerts.
- */
-@Composable
-fun AlertItem(
-    alertUiState: AlertUiState,
-    isCentered: Boolean,
-    onCenterClick: () -> Unit,
-    onNotCenterClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-  val alert = alertUiState.alert
-  val distanceText = alertUiState.distanceToAddress?.let { "${it.toInt()} m" } ?: "Out of Zone"
-  Card(
-      onClick = {
-        if (isCentered) {
-          onCenterClick()
-        } else {
-          onNotCenterClick()
-        }
-      },
-      modifier = modifier.width(350.dp),
-      elevation = CardDefaults.cardElevation(4.dp)) {
-        Column(
-            modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-              Text(
-                  text = alert.title,
-                  style = MaterialTheme.typography.titleLarge,
-                  maxLines = 1,
-                  overflow = TextOverflow.Ellipsis)
-              Spacer(modifier = Modifier.height(4.dp))
-              Text(
-                  text = alert.description,
-                  style = MaterialTheme.typography.bodyMedium,
-                  maxLines = 1,
-                  overflow = TextOverflow.Ellipsis)
-              Spacer(modifier = Modifier.height(4.dp))
-              Text(
-                  text = "${alert.region} • ${alert.outbreakDate}",
-                  style = MaterialTheme.typography.bodyMedium)
-              Spacer(modifier = Modifier.height(4.dp))
-              Text(
-                  text = "Distance: $distanceText",
-                  style = MaterialTheme.typography.labelMedium,
-                  color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-      }
-}
-
 /** Composable displaying a simple dropdown menu for filtering or selecting options. */
 @Composable
 fun <T> DropdownMenuWrapper(
@@ -389,7 +341,59 @@ fun ReportItem(
               style = MaterialTheme.typography.bodySmall,
               maxLines = 1)
         }
-        StatusTag(report.status)
+        ReportStatusTag(report.status)
+      }
+}
+
+/**
+ * Card displaying the latest alert information. Currently uses static mock data. Future
+ * implementation will fetch alerts.
+ */
+@Composable
+fun AlertItem(
+    alertUiState: AlertUiState,
+    isCentered: Boolean,
+    onCenterClick: () -> Unit,
+    onNotCenterClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+  val alert = alertUiState.alert
+  val distanceText = alertUiState.distanceToAddress?.let { "${it.toInt()} m" } ?: "Out of Zone"
+  Card(
+      onClick = {
+        if (isCentered) {
+          onCenterClick()
+        } else {
+          onNotCenterClick()
+        }
+      },
+      modifier = modifier.width(350.dp).height(120.dp),
+      elevation = CardDefaults.cardElevation(4.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+              Column(
+                  modifier = Modifier.weight(1f),
+                  verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = alert.title,
+                        style = MaterialTheme.typography.titleLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = alert.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${alert.region} • ${alert.outbreakDate}",
+                        style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(4.dp))
+                  }
+              AlertZoneTag(distanceText)
+            }
       }
 }
 
@@ -398,7 +402,7 @@ fun ReportItem(
  * status.
  */
 @Composable
-fun StatusTag(status: ReportStatus) {
+fun ReportStatusTag(status: ReportStatus) {
   Surface(
       color = statusColor(status),
       shape = MaterialTheme.shapes.small,
@@ -407,6 +411,25 @@ fun StatusTag(status: ReportStatus) {
             text = status.name.replace("_", " "),
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             style = MaterialTheme.typography.labelSmall)
+      }
+}
+
+/**
+ * Composable displaying the distance information of an alert as a colored tag. Color varies based
+ * on whether the user's address is in the zone or not.
+ */
+@Composable
+fun AlertZoneTag(distanceText: String) {
+  val isInside = !distanceText.contains("Out", ignoreCase = true)
+  Surface(
+      color = zoneColor(isInside),
+      shape = MaterialTheme.shapes.small,
+      modifier = Modifier.padding(start = 8.dp)) {
+        Text(
+            text = distanceText,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.White)
       }
 }
 /*
