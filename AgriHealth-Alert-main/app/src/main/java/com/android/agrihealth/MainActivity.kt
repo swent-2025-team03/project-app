@@ -93,7 +93,6 @@ fun AgriHealthApp(
     context: Context = LocalContext.current,
     credentialManager: CredentialManager = CredentialManager.create(context)
 ) {
-
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
 
