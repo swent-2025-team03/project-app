@@ -3,6 +3,8 @@ package com.android.agrihealth.ui.user
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.agrihealth.data.model.authentification.AuthProvider
+import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
@@ -38,7 +40,7 @@ val defaultUser =
  */
 open class UserViewModel(
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
-    private val auth: FirebaseAuth = Firebase.auth,
+    private val authRepository: AuthProvider,
     initialUser: User? = null
 ) : ViewModel(), UserViewModelContract {
 
@@ -52,10 +54,11 @@ open class UserViewModel(
   override var user: StateFlow<User> = _user.asStateFlow()
 
   init {
-    val currentUser = auth.currentUser
-    if (currentUser != null) {
-      runBlocking { loadUser(currentUser.uid) }
-    }
+      val uid = authRepository.currentUserUid
+      if (uid != null) {
+          viewModelScope.launch { loadUser(uid) }
+      }
+
   }
 
   /**
@@ -74,8 +77,9 @@ open class UserViewModel(
   /** Refreshes the current user's role by reloading it from the repository. */
   fun refreshCurrentUser() {
     viewModelScope.launch {
-      val currentUser = auth.currentUser ?: return@launch
-      loadUser(currentUser.uid)
+        val uid = authRepository.currentUserUid ?: return@launch
+        loadUser(uid)
+
     }
   }
 

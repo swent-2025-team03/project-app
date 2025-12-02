@@ -29,12 +29,14 @@ class UserViewModelTest {
   private val testDispatcher = StandardTestDispatcher()
   private lateinit var repository: FakeUserRepository
 
-  val auth = FirebaseAuth.getInstance()
+  // Fake AuthProvider for tests
+  private lateinit var authProvider: FakeAuthProvider
 
   @Before
   fun setUp() {
     Dispatchers.setMain(testDispatcher)
     repository = FakeUserRepository()
+    authProvider = FakeAuthProvider(null) // no user logged in by default
   }
 
   @After
@@ -45,9 +47,9 @@ class UserViewModelTest {
   @Test
   fun initKeepsDefaultUserWhenNoUserLoggedIn() = runTest {
     // Given no current user
-    assertEquals(auth.currentUser, null)
+    assertEquals(authProvider.currentUserUid, null)
 
-    val viewModel = UserViewModel(repository, auth)
+    val viewModel = UserViewModel(repository, authProvider)
     advanceUntilIdle()
 
     // Default role = FARMER
@@ -60,7 +62,7 @@ class UserViewModelTest {
     // Given a user in the repository
     repository.addUser(user3)
 
-    val viewModel = UserViewModel(repository, auth)
+    val viewModel = UserViewModel(repository, authProvider)
     advanceUntilIdle()
 
     // When loading user role
@@ -76,7 +78,7 @@ class UserViewModelTest {
   fun loadUserHandlesNonExistingUser() = runTest {
     // Given no user in the repository
 
-    val viewModel = UserViewModel(repository, auth)
+    val viewModel = UserViewModel(repository, authProvider)
     advanceUntilIdle()
 
     // When loading user role for non-existing user
@@ -105,3 +107,4 @@ class FakeUserRepository : UserRepository {
 
   override suspend fun deleteUser(uid: String) {}
 }
+
