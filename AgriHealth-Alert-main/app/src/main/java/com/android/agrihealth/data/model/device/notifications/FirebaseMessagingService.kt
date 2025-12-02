@@ -88,16 +88,9 @@ class FirebaseMessagingService(
 
     val (title, body, channelId) =
         when (notification) {
-          is NewReport ->
-              Triple(
-                  "New report",
-                  notification.reportTitle,
-                  channelNewReport)
+          is NewReport -> Triple("New report", notification.reportTitle, channelNewReport)
           is VetAnswer ->
-              Triple(
-                  "A vet has answered your report",
-                notification.answer,
-                  channelVetAnswer)
+              Triple("A vet has answered your report", notification.answer, channelVetAnswer)
         }
 
     val systemNotification =
@@ -148,10 +141,7 @@ fun Notification.toDataMap(): Map<String, String> =
               "destinationUid" to destinationUid,
               "reportTitle" to reportTitle)
       is VetAnswer ->
-          mapOf(
-              "type" to type.toName(),
-              "destinationUid" to destinationUid,
-              "answer" to answer)
+          mapOf("type" to type.toName(), "destinationUid" to destinationUid, "answer" to answer)
     }
 
 fun Map<String, String>.toNotification(): Notification? {
@@ -160,13 +150,9 @@ fun Map<String, String>.toNotification(): Notification? {
 
   return when (type) {
     NotificationType.NEW_REPORT ->
-        NewReport(
-            destinationUid = destinationUid,
-            reportTitle = this["reportTitle"] ?: return null)
+        NewReport(destinationUid = destinationUid, reportTitle = this["reportTitle"] ?: return null)
     NotificationType.VET_ANSWER ->
-        VetAnswer(
-            destinationUid = destinationUid,
-            answer = this["answer"] ?: return null)
+        VetAnswer(destinationUid = destinationUid, answer = this["answer"] ?: return null)
     null -> null
   }
 }

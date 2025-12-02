@@ -1,7 +1,5 @@
 package com.android.agrihealth.data.model.device.notifications
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.testutil.FakeNotificationSender
 import com.android.agrihealth.testutil.FakeNotificationTokenResolver
@@ -50,12 +48,10 @@ class NotificationsTest : FirebaseEmulatorsTest() {
   @Test
   fun uploadNotification_succeedsWithAllTypes() = runTest {
     val notificationNewReport =
-        Notification.NewReport(
-            destinationUid = user1.uid, reportTitle = "drop drop it fire")
+        Notification.NewReport(destinationUid = user1.uid, reportTitle = "drop drop it fire")
 
     val notificationVetAnswer =
-        Notification.VetAnswer(
-            destinationUid = user1.uid, answer = "rope neck asap")
+        Notification.VetAnswer(destinationUid = user1.uid, answer = "rope neck asap")
 
     messagingService.uploadNotification(notificationNewReport) { assertTrue(it) }
     messagingService.uploadNotification(notificationVetAnswer) { assertTrue(it) }
@@ -65,8 +61,7 @@ class NotificationsTest : FirebaseEmulatorsTest() {
   fun uploadNotification_failsWithUnknownUser() = runTest {
     val notif =
         Notification.NewReport(
-            destinationUid = user2.uid,
-            reportTitle = "o o e o reaching high reaching higher")
+            destinationUid = user2.uid, reportTitle = "o o e o reaching high reaching higher")
 
     messagingService.uploadNotification(notif) { assertFalse(it) }
   }
@@ -76,9 +71,7 @@ class NotificationsTest : FirebaseEmulatorsTest() {
     userRepository.addUser(user2.copy(deviceTokensFCM = setOf()))
 
     val notif =
-        Notification.NewReport(
-            destinationUid = user2.uid,
-            reportTitle = "every night every day")
+        Notification.NewReport(destinationUid = user2.uid, reportTitle = "every night every day")
 
     messagingService.uploadNotification(notif) { assertFalse(it) }
   }
@@ -91,13 +84,10 @@ class NotificationsTest : FirebaseEmulatorsTest() {
 
     every { spy.showNotification(capture(slot)) } just Runs
 
-    val authorUid = user2.uid
-
     val notificationNewReport =
         Notification.NewReport(destinationUid = user1.uid, reportTitle = "makes me sick")
     val notificationVetAnswer =
-        Notification.VetAnswer(
-            destinationUid = user1.uid, answer = "when you're acting like that")
+        Notification.VetAnswer(destinationUid = user1.uid, answer = "when you're acting like that")
 
     val messageNR = dataToRemoteMessage(notificationNewReport.toDataMap())
     val messageVA = dataToRemoteMessage(notificationVetAnswer.toDataMap())

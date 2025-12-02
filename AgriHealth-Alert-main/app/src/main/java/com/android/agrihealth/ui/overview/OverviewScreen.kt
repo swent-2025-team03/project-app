@@ -72,15 +72,15 @@ object OverviewScreenTestTags {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun OverviewScreen(
-  userRole: UserRole,
-  credentialManager: CredentialManager = CredentialManager.create(LocalContext.current),
-  user: User,
-  overviewViewModel: OverviewViewModelContract,
-  onAddReport: () -> Unit = {},
-  onReportClick: (String) -> Unit = {},
-  onAlertClick: (String) -> Unit = {},
-  onLaunch: () -> Unit = {},
-  navigationActions: NavigationActions? = null
+    userRole: UserRole,
+    credentialManager: CredentialManager = CredentialManager.create(LocalContext.current),
+    user: User,
+    overviewViewModel: OverviewViewModelContract,
+    onAddReport: () -> Unit = {},
+    onReportClick: (String) -> Unit = {},
+    onAlertClick: (String) -> Unit = {},
+    onLaunch: () -> Unit = {},
+    navigationActions: NavigationActions? = null
 ) {
 
   val uiState by overviewViewModel.uiState.collectAsState()
@@ -88,9 +88,7 @@ fun OverviewScreen(
   var lazySpace by remember { mutableStateOf(0.dp) }
   val minLazySpace = remember { 150.dp }
 
-  LaunchedEffect(Unit) {
-    onLaunch()
-  }
+  LaunchedEffect(Unit) { onLaunch() }
 
   LaunchedEffect(user) {
     overviewViewModel.loadReports(user)

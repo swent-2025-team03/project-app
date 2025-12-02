@@ -4,17 +4,12 @@ sealed interface Notification {
   val destinationUid: String
   val type: NotificationType
 
-  data class NewReport(
-      override val destinationUid: String,
-      val reportTitle: String
-  ) : Notification {
+  data class NewReport(override val destinationUid: String, val reportTitle: String) :
+      Notification {
     override val type = NotificationType.NEW_REPORT
   }
 
-  data class VetAnswer(
-      override val destinationUid: String,
-      val answer: String
-  ) : Notification {
+  data class VetAnswer(override val destinationUid: String, val answer: String) : Notification {
     override val type = NotificationType.VET_ANSWER
   }
 }
