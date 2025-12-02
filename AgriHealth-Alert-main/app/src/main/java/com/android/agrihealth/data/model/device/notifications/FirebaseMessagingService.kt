@@ -13,7 +13,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 // Control panel imports
-
+/*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,7 +39,7 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.authentification.USERS_COLLECTION_PATH
-
+*/
 
 @SuppressLint("MissingFirebaseInstanceTokenRefresh") // Tokens are handled in MainActivity
 class FirebaseMessagingService(
@@ -159,7 +159,7 @@ fun Map<String, String>.toNotification(): Notification? {
   }
 }
 
-
+/*
 @Composable
 @Preview
 fun NotificationTestControlPanel() {
@@ -246,4 +246,4 @@ fun NotificationTestControlPanel() {
     }
   }
 }
-
+*/
