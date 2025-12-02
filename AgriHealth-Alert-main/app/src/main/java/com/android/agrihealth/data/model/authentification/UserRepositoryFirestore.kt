@@ -93,7 +93,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     val roleStr = data["role"] as? String ?: throw Exception("Missing role")
     val isGoogleAccount = data["isGoogleAccount"] as? Boolean ?: false
     val description = data["description"] as? String?
-    val deviceTokensFCM = data["deviceTokensFCM"] as? Set<String> ?: emptySet()
+    val deviceTokensFCM = (data["deviceTokensFCM"] as? List<String>)?.toSet() ?: emptySet()
 
     return when (roleFromDisplayString(roleStr)) {
       UserRole.FARMER ->
