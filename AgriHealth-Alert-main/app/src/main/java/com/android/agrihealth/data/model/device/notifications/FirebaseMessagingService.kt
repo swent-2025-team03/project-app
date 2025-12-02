@@ -90,13 +90,13 @@ class FirebaseMessagingService(
         when (notification) {
           is NewReport ->
               Triple(
-                  "New report from ${notification.authorUid}",
+                  "New report",
                   notification.reportTitle,
                   channelNewReport)
           is VetAnswer ->
               Triple(
                   "A vet has answered your report",
-                  "${notification.authorUid}: ${notification.answer}",
+                notification.answer,
                   channelVetAnswer)
         }
 
@@ -145,31 +145,26 @@ fun Notification.toDataMap(): Map<String, String> =
       is NewReport ->
           mapOf(
               "type" to type.toName(),
-              "authorUid" to authorUid,
               "destinationUid" to destinationUid,
               "reportTitle" to reportTitle)
       is VetAnswer ->
           mapOf(
               "type" to type.toName(),
-              "authorUid" to authorUid,
               "destinationUid" to destinationUid,
               "answer" to answer)
     }
 
 fun Map<String, String>.toNotification(): Notification? {
   val type = NotificationType.fromName(this["type"] ?: return null)
-  val authorUid = this["authorUid"] ?: return null
   val destinationUid = this["destinationUid"] ?: return null
 
   return when (type) {
     NotificationType.NEW_REPORT ->
         NewReport(
-            authorUid = authorUid,
             destinationUid = destinationUid,
             reportTitle = this["reportTitle"] ?: return null)
     NotificationType.VET_ANSWER ->
         VetAnswer(
-            authorUid = authorUid,
             destinationUid = destinationUid,
             answer = this["answer"] ?: return null)
     null -> null
@@ -209,13 +204,12 @@ fun NotificationTestControlPanel() {
 
     val messagingService = com.android.agrihealth.data.model.device.notifications.FirebaseMessagingService()
 
-    val authorUid = uid ?: ""
     val destinationUid = uid ?: ""
     val reportTitle = "maldie animal"
     val answer = "unlucky bro unlucky"
 
-    //val testNotification = NewReport(authorUid, destinationUid, reportTitle)
-    val testNotification = VetAnswer(authorUid, destinationUid, answer)
+    //val testNotification = NewReport(destinationUid, reportTitle)
+    val testNotification = VetAnswer(destinationUid, answer)
 
     Box {
       Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface).fillMaxSize()) {

@@ -1,12 +1,10 @@
 package com.android.agrihealth.data.model.device.notifications
 
 sealed interface Notification {
-  val authorUid: String
   val destinationUid: String
   val type: NotificationType
 
   data class NewReport(
-      override val authorUid: String,
       override val destinationUid: String,
       val reportTitle: String
   ) : Notification {
@@ -14,7 +12,6 @@ sealed interface Notification {
   }
 
   data class VetAnswer(
-      override val authorUid: String,
       override val destinationUid: String,
       val answer: String
   ) : Notification {

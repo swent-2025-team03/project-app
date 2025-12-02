@@ -51,11 +51,11 @@ class NotificationsTest : FirebaseEmulatorsTest() {
   fun uploadNotification_succeedsWithAllTypes() = runTest {
     val notificationNewReport =
         Notification.NewReport(
-            authorUid = user1.uid, destinationUid = user1.uid, reportTitle = "drop drop it fire")
+            destinationUid = user1.uid, reportTitle = "drop drop it fire")
 
     val notificationVetAnswer =
         Notification.VetAnswer(
-            authorUid = user1.uid, destinationUid = user1.uid, answer = "rope neck asap")
+            destinationUid = user1.uid, answer = "rope neck asap")
 
     messagingService.uploadNotification(notificationNewReport) { assertTrue(it) }
     messagingService.uploadNotification(notificationVetAnswer) { assertTrue(it) }
@@ -65,7 +65,6 @@ class NotificationsTest : FirebaseEmulatorsTest() {
   fun uploadNotification_failsWithUnknownUser() = runTest {
     val notif =
         Notification.NewReport(
-            authorUid = user1.uid,
             destinationUid = user2.uid,
             reportTitle = "o o e o reaching high reaching higher")
 
@@ -78,7 +77,6 @@ class NotificationsTest : FirebaseEmulatorsTest() {
 
     val notif =
         Notification.NewReport(
-            authorUid = user1.uid,
             destinationUid = user2.uid,
             reportTitle = "every night every day")
 
@@ -96,10 +94,10 @@ class NotificationsTest : FirebaseEmulatorsTest() {
     val authorUid = user2.uid
 
     val notificationNewReport =
-        Notification.NewReport(authorUid, destinationUid = user1.uid, reportTitle = "makes me sick")
+        Notification.NewReport(destinationUid = user1.uid, reportTitle = "makes me sick")
     val notificationVetAnswer =
         Notification.VetAnswer(
-            authorUid, destinationUid = user1.uid, answer = "when you're acting like that")
+            destinationUid = user1.uid, answer = "when you're acting like that")
 
     val messageNR = dataToRemoteMessage(notificationNewReport.toDataMap())
     val messageVA = dataToRemoteMessage(notificationVetAnswer.toDataMap())
