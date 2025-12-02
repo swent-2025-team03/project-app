@@ -39,7 +39,7 @@ fun PermissionsRequester(
   val permissionRequest =
       rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
           results ->
-        granted = results.values.all { it } // every permission granted
+        granted = results.values.all { it }
 
         if (granted) onGranted() else onDenied()
         onComplete()

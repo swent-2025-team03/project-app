@@ -12,7 +12,7 @@ exports.sendNotification = functions.https.onCall(async (data, context) => {
   if (!destinationUid || !payload) {
     throw new functions.https.HttpsError(
         "invalid-argument",
-        `destinationUid and payload are required ${destinationUid} ${payload}`,
+        "destinationUid and payload are required",
     );
   }
 
@@ -30,13 +30,13 @@ exports.sendNotification = functions.https.onCall(async (data, context) => {
   const tokens = userDoc.get("deviceTokensFCM") || [];
 
   if (tokens.length === 0) {
-    // log("No device tokens for user", destinationUid);
+    // log(`No device tokens for user ${destinationUid}`);
     return {success: false, message: "User has no tokens"};
   }
 
   // Send notification to all tokens
   const message = {
-    data: payload, // must be strings
+    data: payload,
     tokens: tokens,
   };
 

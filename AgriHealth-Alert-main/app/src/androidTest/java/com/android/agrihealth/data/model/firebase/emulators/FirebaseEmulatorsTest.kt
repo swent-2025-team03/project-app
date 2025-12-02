@@ -40,8 +40,7 @@ open class FirebaseEmulatorsTest() {
           "email1@thing.com",
           null,
           listOf("Best Office Ever!", "Meh Office."),
-          "Test?",
-          deviceTokensFCM = setOf("1234"))
+          "Test?")
   val user2 = Farmer("def456", "mike", "neko", "email2@aaaaa.balls", null, emptyList(), null)
   val user3 = Vet("ghi789", "Nazuna", "Amemiya", "email3@kms.josh", null, officeId = "off1")
   val user4 = Farmer("jklABC", "John", "Fake", "fakeUser.glorp", null, emptyList(), null)

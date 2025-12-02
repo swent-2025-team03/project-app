@@ -76,7 +76,6 @@ class FirebaseMessagingService(
       onComplete: (success: Boolean) -> Unit
   ) {
     val data = notification.toDataMap()
-
     sender.sendNotification(data) { success -> onComplete(success) }
   }
 
@@ -112,7 +111,7 @@ class FirebaseMessagingService(
    * WILL CRASH IF RAN FROM A COMPOSABLE
    *
    * Shows a new notification to the recipient's devices. Runs when a new notification is received
-   * in Firebase Messaging
+   * in Firebase Messaging. Runs from a background service, not from the app directly
    */
   override fun onMessageReceived(message: RemoteMessage) {
     message.data.toNotification()?.let { notification -> showNotification(notification) }
