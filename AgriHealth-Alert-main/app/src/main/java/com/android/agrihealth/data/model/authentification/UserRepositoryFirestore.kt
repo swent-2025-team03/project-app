@@ -132,6 +132,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     if (old.email != new.email) changes["email"] = new.email
     if (old.isGoogleAccount != new.isGoogleAccount) changes["isGoogleAccount"] = new.isGoogleAccount
     if (old.description != new.description) changes["description"] = new.description
+    if (old.collected != new.collected) changes["collected"] = new.collected
 
     when {
       old is Farmer && new is Farmer -> {
