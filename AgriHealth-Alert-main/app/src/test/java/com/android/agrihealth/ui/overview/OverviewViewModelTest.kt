@@ -60,11 +60,10 @@ class OverviewViewModelTest {
 
   @Test
   fun `init handles addReport exception safely`() = runTest {
-    val repo =
-        FakeOverviewRepository().apply {
-          throwOnAddReport1 = true
-          throwOnAddReport2 = true
-        }
+    FakeOverviewRepository().apply {
+      throwOnAddReport1 = true
+      throwOnAddReport2 = true
+    }
     advanceUntilIdle()
     // No crash = success
   }

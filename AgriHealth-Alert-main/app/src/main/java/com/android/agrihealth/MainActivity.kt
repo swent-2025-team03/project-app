@@ -205,9 +205,7 @@ fun AgriHealthApp(
         val createMapViewModel =
             object : androidx.lifecycle.ViewModelProvider.Factory {
               override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return MapViewModel(
-                    locationViewModel = locationViewModel,
-                    userId = Firebase.auth.currentUser?.uid ?: "")
+                return MapViewModel(locationViewModel = locationViewModel, userId = currentUserId)
                     as T
               }
             }

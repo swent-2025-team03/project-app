@@ -20,6 +20,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.testutil.FakeUserRepository
+import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.google.android.gms.maps.model.LatLng
 import io.mockk.coEvery
@@ -104,7 +105,6 @@ class MapScreenTest {
   private lateinit var locationRepository: LocationRepository
   val reportRepository = FakeReportRepository()
   private lateinit var userId: String
-  private lateinit var testMapViewModel: MapViewModel
 
   @Before
   fun setUp() = runTest {
@@ -151,7 +151,7 @@ class MapScreenTest {
       isViewedFromOverview: Boolean = true,
       selectedReportId: String? = null
   ) {
-    testMapViewModel =
+    val mapViewModel =
         MapViewModel(
             reportRepository = reportRepository,
             locationViewModel = locationViewModel,
@@ -159,7 +159,7 @@ class MapScreenTest {
             userId = userId)
     composeTestRule.setContent {
       MaterialTheme {
-        MapScreen(mapViewModel = testMapViewModel, isViewedFromOverview = isViewedFromOverview)
+        MapScreen(mapViewModel = mapViewModel, isViewedFromOverview = isViewedFromOverview)
       }
     }
   }
@@ -202,25 +202,15 @@ class MapScreenTest {
 
     composeTestRule.waitForIdle()
 
-    val expectedReports = reportRepository.getReportsByFarmer(userId)
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
-      val count =
-          expectedReports.sumOf { r ->
-            val tag = MapScreenTestTags.getTestTagForReportMarker(r.id)
-            composeTestRule
-                .onAllNodesWithTag(tag, useUnmergedTree = true)
-                .fetchSemanticsNodes()
-                .size
-          }
-      count > 0
-    }
+    val reports = reportRepository.getReportsByFarmer(userId)
 
-    val reports = expectedReports
     reports.forEach { report ->
       val markerTag = MapScreenTestTags.getTestTagForReportMarker(report.id)
-      val node = composeTestRule.onNodeWithTag(markerTag, useUnmergedTree = true)
-      node.assertExists()
-      node.assertIsDisplayed()
+
+      composeTestRule
+          .onNodeWithTag(markerTag, useUnmergedTree = true)
+          .assertExists()
+          .assertIsDisplayed()
     }
   }
 
@@ -256,21 +246,20 @@ class MapScreenTest {
 
     composeTestRule.waitForIdle()
 
-    val allReportsForUser = reportRepository.getReportsByFarmer(userId)
+    val reports = reportRepository.getAllReports(userId)
 
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    composeTestRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
       val count =
-          allReportsForUser.sumOf { r ->
+          reports.sumOf { r ->
             val tag = MapScreenTestTags.getTestTagForReportMarker(r.id)
             composeTestRule
                 .onAllNodesWithTag(tag, useUnmergedTree = true)
                 .fetchSemanticsNodes()
                 .size
           }
-      count == allReportsForUser.size
+      count == reports.size
     }
 
-    val reports = allReportsForUser
     val filters: List<String?> =
         listOf<String?>(null) + ReportStatus.entries.map { it.displayString() }
 
@@ -290,16 +279,18 @@ class MapScreenTest {
           reports.partition { r -> filter == null || r.status.displayString() == filter }
 
       matches.forEach { report ->
-        val tag = MapScreenTestTags.getTestTagForReportMarker(report.id)
         composeTestRule
-            .onNodeWithTag(tag, useUnmergedTree = true)
+            .onNodeWithTag(
+                MapScreenTestTags.getTestTagForReportMarker(report.id), useUnmergedTree = true)
             .assertExists()
             .assertIsDisplayed()
       }
 
       nonMatches.forEach { report ->
-        val tag = MapScreenTestTags.getTestTagForReportMarker(report.id)
-        composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).assertDoesNotExist()
+        composeTestRule
+            .onNodeWithTag(
+                MapScreenTestTags.getTestTagForReportMarker(report.id), useUnmergedTree = true)
+            .assertDoesNotExist()
       }
     }
   }

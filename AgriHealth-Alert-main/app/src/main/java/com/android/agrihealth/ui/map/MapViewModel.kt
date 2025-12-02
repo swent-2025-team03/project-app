@@ -75,16 +75,11 @@ class MapViewModel(
         _uiState.value.copy(locationPermission = locationViewModel.hasLocationPermissions())
   }
 
-  companion object {
-    private const val TAG = "MapViewModel"
-  }
-
   private fun fetchLocalizableReports(uid: String) {
     viewModelScope.launch {
       try {
-        val allReports = reportRepository.getAllReports(uid)
 
-        val reports = allReports.filter { it.location != null }
+        val reports = reportRepository.getAllReports(uid).filter { it.location != null }
 
         _uiState.value = _uiState.value.copy(reports = reports)
       } catch (e: Exception) {
