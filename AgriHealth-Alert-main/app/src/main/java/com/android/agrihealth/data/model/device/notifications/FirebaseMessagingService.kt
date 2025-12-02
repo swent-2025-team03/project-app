@@ -13,12 +13,14 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 // Control panel imports
-/*
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -37,7 +39,7 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.authentification.USERS_COLLECTION_PATH
-*/
+
 
 @SuppressLint("MissingFirebaseInstanceTokenRefresh") // Tokens are handled in MainActivity
 class FirebaseMessagingService(
@@ -157,7 +159,7 @@ fun Map<String, String>.toNotification(): Notification? {
   }
 }
 
-/*
+
 @Composable
 @Preview
 fun NotificationTestControlPanel() {
@@ -194,8 +196,10 @@ fun NotificationTestControlPanel() {
     val reportTitle = "maldie animal"
     val answer = "unlucky bro unlucky"
 
-    //val testNotification = NewReport(destinationUid, reportTitle)
-    val testNotification = VetAnswer(destinationUid, answer)
+    val notificationNR = NewReport(destinationUid, reportTitle)
+    val notificationVA = VetAnswer(destinationUid, answer)
+
+    var actualNotification by remember { mutableStateOf<Notification>(notificationNR) }
 
     Box {
       Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface).fillMaxSize()) {
@@ -205,10 +209,28 @@ fun NotificationTestControlPanel() {
           Text("See messaging token", color = MaterialTheme.colorScheme.onPrimaryContainer)
         }
 
+        // Notification type switch
+
+          Row {
+            RadioButton(
+              selected = actualNotification == notificationNR,
+              onClick = { actualNotification = notificationNR }
+            )
+            Text("New report", color = MaterialTheme.colorScheme.onPrimaryContainer)
+          }
+
+          Row {
+            RadioButton(
+              selected = actualNotification == notificationVA,
+              onClick = { actualNotification = notificationVA }
+            )
+            Text("Vet answer", color = MaterialTheme.colorScheme.onPrimaryContainer)
+          }
+
         TextButton(
           onClick = {
             messagingService.uploadNotification(
-              testNotification,
+              actualNotification,
               onComplete = { success ->
                 debugText =
                   if (success) "Notification sent" else "Failed to send notification"
@@ -224,4 +246,4 @@ fun NotificationTestControlPanel() {
     }
   }
 }
-*/
+
