@@ -138,10 +138,10 @@ fun ManageOfficeScreen(
                     modifier = Modifier.fillMaxWidth().testTag(OFFICE_DESCRIPTION))
 
                 OutlinedTextField(
-                    value =
-                        if (isOwner) uiState.editableAddress
-                        else uiState.office!!.address?.toString() ?: "",
+                    value = uiState.office!!.address?.name ?: "",
                     onValueChange = { if (isOwner) manageOfficeVm.onAddressChange(it) },
+                    singleLine = true,
+                    readOnly = true,
                     label = { Text("Address") },
                     enabled = isOwner,
                     modifier = Modifier.fillMaxWidth().testTag(OFFICE_ADDRESS))

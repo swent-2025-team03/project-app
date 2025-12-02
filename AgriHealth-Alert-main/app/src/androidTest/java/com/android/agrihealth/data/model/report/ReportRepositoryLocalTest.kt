@@ -167,7 +167,7 @@ class ReportRepositoryLocalTest {
     repository.addReport(report2)
     repository.addReport(report3)
 
-    val farmerReports = repository.getReportsByFarmer("farmer123")
+    val farmerReports = repository.getAllReports("farmer123")
     assertEquals(2, farmerReports.size)
     assertTrue(farmerReports.contains(report))
     assertTrue(farmerReports.contains(report2))

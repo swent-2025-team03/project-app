@@ -139,10 +139,6 @@ class FakeReportRepository : ReportRepository {
   // --- Unused methods for this ViewModel test ---
   override suspend fun getAllReports(userId: String): List<Report> = emptyList()
 
-  override suspend fun getReportsByFarmer(farmerId: String): List<Report> = emptyList()
-
-  override suspend fun getReportsByOffice(officeId: String): List<Report> = emptyList()
-
   override suspend fun addReport(report: Report) {
     // not used
   }
