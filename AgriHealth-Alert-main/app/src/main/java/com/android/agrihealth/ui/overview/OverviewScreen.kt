@@ -350,7 +350,6 @@ fun ReportItem(
     snackbarHostState: SnackbarHostState,
     navigationActions: NavigationActions? = null
 ) {
-  val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
 
   Row(
