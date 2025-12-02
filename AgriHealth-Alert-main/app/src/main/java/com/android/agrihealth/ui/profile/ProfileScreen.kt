@@ -212,6 +212,8 @@ fun ProfileScreen(
               }
 
               Spacer(modifier = Modifier.height(24.dp))
+              CollectedSwitch(user.collected)
+              Spacer(modifier = Modifier.height(12.dp))
 
               if (user is Farmer) {
                 Button(
@@ -236,7 +238,6 @@ fun ProfileScreen(
                       Text("Manage My Office")
                     }
               }
-              CollectedSwitch(user.collected)
             }
       }
 }
