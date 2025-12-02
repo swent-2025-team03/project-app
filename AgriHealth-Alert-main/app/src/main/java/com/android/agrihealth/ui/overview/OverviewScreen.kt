@@ -26,7 +26,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import com.android.agrihealth.core.design.theme.statusColor
-import com.android.agrihealth.data.model.alert.Alert
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
@@ -156,12 +155,12 @@ fun OverviewScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 val pagerState =
-                    rememberPagerState(initialPage = 0, pageCount = { uiState.filteredAlerts.size })
+                    rememberPagerState(initialPage = 0, pageCount = { uiState.sortedAlerts.size })
                 val coroutineScope = rememberCoroutineScope()
                 val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                  if (uiState.filteredAlerts.isEmpty()) {
+                  if (uiState.sortedAlerts.isEmpty()) {
                     Text(
                         text = "No alerts available",
                         style = MaterialTheme.typography.bodyMedium,
@@ -172,11 +171,11 @@ fun OverviewScreen(
                         modifier = Modifier.fillMaxWidth(),
                         contentPadding = PaddingValues(horizontal = (screenWidth - 350.dp) / 2),
                         pageSpacing = 16.dp) { page ->
-                          val alert = uiState.filteredAlerts[page]
+                          val alertUiState = uiState.sortedAlerts[page]
                           AlertItem(
-                              alert = alert,
+                              alertUiState = alertUiState,
                               isCentered = pagerState.currentPage == page,
-                              onCenterClick = { onAlertClick(alert.id) },
+                              onCenterClick = { onAlertClick(alertUiState.alert.id) },
                               onNotCenterClick = {
                                 coroutineScope.launch { pagerState.animateScrollToPage(page) }
                               },
@@ -270,12 +269,14 @@ fun OverviewScreen(
  */
 @Composable
 fun AlertItem(
-    alert: Alert,
+    alertUiState: AlertUiState,
     isCentered: Boolean,
     onCenterClick: () -> Unit,
     onNotCenterClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+  val alert = alertUiState.alert
+  val distanceText = alertUiState.distanceToAddress?.let { "${it.toInt()} m" } ?: "Out of Zone"
   Card(
       onClick = {
         if (isCentered) {
@@ -303,6 +304,11 @@ fun AlertItem(
               Text(
                   text = "${alert.region} • ${alert.outbreakDate}",
                   style = MaterialTheme.typography.bodyMedium)
+              Spacer(modifier = Modifier.height(4.dp))
+              Text(
+                  text = "Distance: $distanceText",
+                  style = MaterialTheme.typography.labelMedium,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
       }
 }

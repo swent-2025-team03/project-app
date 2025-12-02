@@ -4,12 +4,13 @@ import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.agrihealth.data.model.alert.containsUser
+import com.android.agrihealth.data.model.alert.getDistanceInsideZone
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.ui.overview.AlertUiState
 import com.android.agrihealth.ui.overview.OverviewUIState
 import com.android.agrihealth.ui.overview.OverviewViewModelContract
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,16 +42,14 @@ class FakeOverviewViewModel(
               reports = fakeReports,
               filteredReports = fakeReports,
               alerts = alertRepository.allAlerts,
-              filteredAlerts =
-                  alertRepository.allAlerts.filter { alert ->
-                    if (alert.zones.isNullOrEmpty()) {
-                      true
-                    } else {
-                      user?.address?.let { address ->
-                        alert.containsUser(address.latitude, address.longitude)
-                      } ?: false
-                    }
-                  }))
+              sortedAlerts =
+                  alertRepository.allAlerts
+                      .map { alert ->
+                        val distance =
+                            user?.address?.let { address -> alert.getDistanceInsideZone(address) }
+                        AlertUiState(alert = alert, distanceToAddress = distance)
+                      }
+                      .sortedBy { it.distanceToAddress ?: Double.POSITIVE_INFINITY }))
 
   override val uiState: StateFlow<OverviewUIState> = _uiState
 
