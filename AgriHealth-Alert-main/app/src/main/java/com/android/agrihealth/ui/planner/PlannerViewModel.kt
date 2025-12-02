@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
-import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import java.time.DayOfWeek
@@ -58,11 +57,7 @@ class PlannerViewModel(
 
   suspend fun loadReports() {
     val user = _uiState.value.user
-    val reports =
-        when (user) {
-          is Farmer -> reportRepository.getReportsByFarmer(user.uid)
-          is Vet -> reportRepository.getReportsByOffice(user.officeId ?: "")
-        }.groupBy { it.startTime?.toLocalDate() }
+    val reports = reportRepository.getAllReports(user.uid).groupBy { it.startTime?.toLocalDate() }
     _uiState.value =
         _uiState.value.copy(
             reports = reports,

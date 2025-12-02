@@ -11,10 +11,8 @@ import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
-import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,11 +55,7 @@ class OverviewViewModel(
   override fun loadReports(user: User) {
     viewModelScope.launch {
       try {
-        val reports =
-            when (user) {
-              is Farmer -> reportRepository.getReportsByFarmer(user.uid)
-              is Vet -> reportRepository.getReportsByOffice(user.officeId ?: "")
-            }.sortedByDescending { it.createdAt }
+        val reports = reportRepository.getAllReports(user.uid).sortedByDescending { it.createdAt }
         val officeOptions = reports.map { it.officeId }.distinct()
         val farmerOptions = reports.map { it.farmerId }.distinct()
         val filtered =

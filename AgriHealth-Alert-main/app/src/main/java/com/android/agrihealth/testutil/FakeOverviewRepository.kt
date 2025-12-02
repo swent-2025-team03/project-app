@@ -47,14 +47,6 @@ class FakeOverviewRepository : ReportRepository {
     // no-op for test
   }
 
-  override suspend fun getReportsByOffice(officeId: String): List<Report> {
-    return emptyList()
-  }
-
-  override suspend fun getReportsByFarmer(farmerId: String): List<Report> {
-    return emptyList()
-  }
-
   override suspend fun getReportById(id: String): Report? = null
 
   override suspend fun editReport(id: String, report: Report) {}
