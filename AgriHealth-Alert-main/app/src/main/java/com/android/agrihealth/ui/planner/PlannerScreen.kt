@@ -1,6 +1,8 @@
 package com.android.agrihealth.ui.planner
 
+import android.annotation.SuppressLint
 import android.app.TimePickerDialog
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -9,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -488,6 +492,7 @@ fun HourScale(hourHeight: Dp = 60.dp) {
  * @param hourHeight the height attributed to each hours
  * @param navigateToReport called with report.id when a report is clicked
  */
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun DailyTasks(
     reports: List<Report>,
@@ -495,7 +500,9 @@ fun DailyTasks(
     showTimeLine: Boolean = false,
     navigateToReport: (String) -> Unit = {}
 ) {
-  Box(modifier = Modifier.fillMaxSize()) {
+  val minReportDuration = 30f
+  BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    Log.d("Planner Screen", "maxWidth: $maxWidth, maxHeight $maxHeight")
     // Hour lines
     for (hour in 0..24) {
       Box(
@@ -506,36 +513,155 @@ fun DailyTasks(
                   .background(MaterialTheme.colorScheme.surfaceVariant),
           contentAlignment = Alignment.TopStart) {}
     }
-    reports
-        .filter { it.startTime != null }
-        .forEach { report ->
-          val topOffset = localTimeToOffset(report.startTime!!.toLocalTime(), hourHeight)
-          val taskHeight =
-              report.duration
-                  .let {
-                    if (it == null) 30f
-                    else {
-                      max(localTimeToOffset(it, hourHeight).value, 30f)
-                    }
-                  }
-                  .dp
+    val items =
+        reports
+            .filter { it.startTime != null }
+            .map {
+              val start = it.startTime!!.toLocalTime()
+              val durationMinutes = (it.duration?.toSecondOfDay()?.div(60)) ?: minReportDuration
+              val end = start.plusMinutes(durationMinutes.toLong())
+              ReportLayoutItem(it, start, end)
+            }
+            .sortedBy { it.start }
 
-          ReportCard(report, taskHeight, topOffset, navigateToReport)
-        }
+    for (layoutItems in clusterEvents(items)) {
+      assignLanes(layoutItems)
+    }
+    items.forEach { (report, startTime, _, lane, totalLane) ->
+      val taskHeight =
+          report.duration
+              .let {
+                if (it == null) 30f
+                else {
+                  max(localTimeToOffset(it, hourHeight).value, minReportDuration)
+                }
+              }
+              .dp
+      val topOffset = localTimeToOffset(startTime, hourHeight)
+      val laneWidth = maxWidth / totalLane
+      val leftOffset = laneWidth * lane
+      ReportCard(report, taskHeight, topOffset, leftOffset, laneWidth, navigateToReport)
+    }
     if (showTimeLine) {
       CurrentTimeLine(hourHeight)
     }
   }
 }
 
-/** Todo */
+/**
+ * Coded using chatGPT 5.0 data class representing a ReportCard
+ *
+ * @param report The Report represented by the LayoutItem
+ * @param start the startTime of the report
+ * @param end the end time of the report found using startTime and duration
+ * @param lane the lane associated with the Layout item.
+ * @param totalLanes the minimum amount of lanes need for the cluster this report is part of.
+ */
+data class ReportLayoutItem(
+    val report: Report,
+    val start: LocalTime,
+    val end: LocalTime,
+    var lane: Int = 0,
+    var totalLanes: Int = 1
+)
+
+/**
+ * Coded using ChatGPT 5.0 cluster events into group of overlapping clusters. This assures that a
+ * cluster has minimum totalLanes after assignLane
+ *
+ * @param events list of ReportLayoutItem to split into cluster
+ * @see ReportLayoutItem
+ * @see assignLanes
+ */
+fun clusterEvents(events: List<ReportLayoutItem>): List<List<ReportLayoutItem>> {
+  if (events.isEmpty()) return emptyList()
+
+  val sorted = events.sortedBy { it.start }
+  val clusters = mutableListOf<MutableList<ReportLayoutItem>>()
+
+  var currentCluster = mutableListOf(sorted[0])
+  var currentEnd = sorted[0].end
+
+  for (i in 1 until sorted.size) {
+    val item = sorted[i]
+
+    // If event starts before or exactly at current cluster end → same cluster
+    if (item.start <= currentEnd) {
+      currentCluster.add(item)
+      if (item.end > currentEnd) currentEnd = item.end
+    } else {
+      // New cluster
+      clusters.add(currentCluster)
+      currentCluster = mutableListOf(item)
+      currentEnd = item.end
+    }
+  }
+
+  clusters.add(currentCluster)
+  return clusters
+}
+
+/**
+ * Coded using chatGPT 5.0 Split a cluster of overlapping Report to different lane to avoid
+ * overlapping
+ *
+ * @param cluster list of ReportLayout item to attribute to lanes
+ */
+fun assignLanes(cluster: List<ReportLayoutItem>) {
+  val lanes: MutableList<MutableList<ReportLayoutItem>> = mutableListOf()
+
+  fun overlaps(a: ReportLayoutItem, b: ReportLayoutItem) = a.start < b.end && b.start < a.end
+
+  for (event in cluster.sortedBy { it.start }) {
+    var laneIndex = -1
+
+    // find earliest lane that is free before this event starts
+    for (i in lanes.indices) {
+      if (lanes[i].isEmpty() || !overlaps(lanes[i].last(), event)) {
+        laneIndex = i
+        break
+      }
+    }
+
+    if (laneIndex == -1) {
+      // Need a new lane
+      laneIndex = lanes.size
+      lanes.add(mutableListOf())
+    }
+
+    lanes[laneIndex].add(event)
+    event.lane = laneIndex
+  }
+
+  // set width data
+  val maxLanes = lanes.size
+  cluster.forEach { it.totalLanes = maxLanes }
+}
+
+/**
+ * Composable showing a report with its title and location.
+ *
+ * @param report the Report this composable represents
+ * @param taskHeight the height of the composable.
+ * @param topOffset the offset to the top of the master composable
+ * @param leftOffset the offset to the left of the master composable
+ * @param width the width of the composable.
+ * @param navigateToReport function executed with report.id when clicking the composable.
+ */
 @Composable
-fun ReportCard(report: Report, taskHeight: Dp, topOffset: Dp, navigateToReport: (String) -> Unit) {
+fun ReportCard(
+    report: Report,
+    taskHeight: Dp,
+    topOffset: Dp,
+    leftOffset: Dp,
+    width: Dp,
+    navigateToReport: (String) -> Unit
+) {
   Column(
       modifier =
-          Modifier.fillMaxWidth()
+          Modifier.width(width)
               .height(taskHeight)
-              .offset(y = topOffset)
+              .offset(x = leftOffset, y = topOffset)
               .padding(horizontal = 0.dp)
               .background(color = statusColor(report.status), shape = MaterialTheme.shapes.medium)
               .clickable { navigateToReport(report.id) }
@@ -706,7 +832,7 @@ fun PlannerScreenPreview() {
           status = ReportStatus.IN_PROGRESS,
           answer = null,
           location = Location(latitude = 12.34, longitude = 56.78, name = "Farmhouse A"),
-          startTime = startOfDay,
+          startTime = startOfDay.plusHours(2).plusMinutes(30),
           duration = LocalTime.of(0, 0))
 
   val previewReport2 =
@@ -715,12 +841,21 @@ fun PlannerScreenPreview() {
   val previewReport3 =
       previewReport1.copy(
           id = "3",
-          startTime = startOfDay.plusHours(4),
+          startTime = startOfDay.plusHours(2),
           duration = LocalTime.of(2, 0),
           status = ReportStatus.RESOLVED)
   val previewReport4 =
       previewReport1.copy(
-          id = "4", startTime = startOfDay.plusDays(1), duration = LocalTime.of(2, 0))
+          id = "4",
+          status = ReportStatus.PENDING,
+          startTime = startOfDay.plusHours(3).plusMinutes(45),
+          duration = LocalTime.of(1, 30))
+
+  val previewReport5 =
+      previewReport1.copy(
+          id = "5",
+          startTime = startOfDay.plusHours(5).plusMinutes(45),
+          duration = LocalTime.of(3, 0))
 
   val user =
       Vet(
@@ -738,7 +873,8 @@ fun PlannerScreenPreview() {
   val reportRepo =
       object : ReportRepository {
         private val reports: MutableList<Report> =
-            mutableListOf(previewReport1, previewReport2, previewReport3, previewReport4)
+            mutableListOf(
+                previewReport1, previewReport2, previewReport3, previewReport4, previewReport5)
 
         private var nextId = 0
 
