@@ -28,6 +28,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -65,6 +66,15 @@ object PlannerTestReportsData {
   val report3 =
       report1.copy(
           id = "rep_id3", status = ReportStatus.IN_PROGRESS, duration = LocalTime.of(3, 10))
+  val report4 =
+      report1.copy(
+          id = "rep_id4", status = ReportStatus.IN_PROGRESS, duration = LocalTime.of(3, 10))
+  val report5 =
+      report1.copy(
+          id = "rep_id5", status = ReportStatus.IN_PROGRESS, duration = LocalTime.of(3, 10))
+  val report6 =
+      report1.copy(
+          id = "rep_id6", status = ReportStatus.IN_PROGRESS, duration = LocalTime.of(3, 10))
 }
 
 class PlannerScreenTest {
@@ -261,6 +271,44 @@ class PlannerScreenTest {
     composeTestRule
         .onNodeWithTag(PlannerScreenTestTags.reportCardTag(report1.id))
         .assertIsDisplayed()
+  }
+
+  @Test
+  fun eventClusteringTest() {
+    val layout1 =
+        ReportLayoutItem(PlannerTestReportsData.report1, LocalTime.of(1, 0), LocalTime.of(2, 0))
+    val layout2 =
+        ReportLayoutItem(PlannerTestReportsData.report2, LocalTime.of(1, 30), LocalTime.of(2, 0))
+    val layout3 =
+        ReportLayoutItem(PlannerTestReportsData.report3, LocalTime.of(1, 0), LocalTime.of(1, 30))
+    val layout4 =
+        ReportLayoutItem(PlannerTestReportsData.report4, LocalTime.of(3, 0), LocalTime.of(4, 0))
+    val layout5 =
+        ReportLayoutItem(PlannerTestReportsData.report5, LocalTime.of(3, 0), LocalTime.of(4, 0))
+    val layout6 =
+        ReportLayoutItem(PlannerTestReportsData.report6, LocalTime.of(5, 0), LocalTime.of(6, 0))
+
+    val clusters = clusterEvents(listOf(layout1, layout2, layout3, layout4, layout5, layout6))
+
+    for (i in clusters) {
+
+      Log.d("Planner Test", "cluster : $i")
+    }
+    assertEquals(3, clusters.size)
+    assertEquals(3, clusters[0].size)
+    assertEquals(2, clusters[1].size)
+    assertEquals(1, clusters[2].size)
+
+    for (c in clusters) {
+      assignLanes(c)
+    }
+    assertEquals(2, layout1.totalLanes)
+    assertNotEquals(layout1.lane, layout2.lane)
+    assertEquals(layout2.lane, layout3.lane)
+    assertEquals(2, layout4.totalLanes)
+    assertEquals(2, layout5.totalLanes)
+    assertNotEquals(layout4.lane, layout5.lane)
+    assertEquals(1, layout6.totalLanes)
   }
 
   fun assertReportNotInDailyScheduler(reportId: String) {
