@@ -26,6 +26,7 @@ data class Report(
     val createdAt: Instant = Instant.now(), // Auto-set creation timestamp
     val startTime: LocalDateTime? = null,
     val duration: LocalTime? = null,
+    val collected: Boolean = false
 )
 
 fun ReportStatus.displayString(): String =

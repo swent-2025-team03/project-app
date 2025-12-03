@@ -42,6 +42,7 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.MANAGE_OFFICE_BUT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
+import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
 
@@ -213,6 +214,8 @@ fun ProfileScreen(
               }
 
               Spacer(modifier = Modifier.height(24.dp))
+              CollectedSwitch(user.collected)
+              Spacer(modifier = Modifier.height(12.dp))
 
               if (user is Farmer) {
                 Button(

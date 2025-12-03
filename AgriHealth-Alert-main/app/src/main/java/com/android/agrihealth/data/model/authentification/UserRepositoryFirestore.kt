@@ -63,7 +63,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
                   is Vet -> "Vet"
                 },
             "isGoogleAccount" to user.isGoogleAccount,
-            "description" to user.description)
+            "description" to user.description,
+            "collected" to user.collected)
 
     // Add type-specific fields
     when (user) {
@@ -87,6 +88,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     val lastname = data["lastname"] as? String ?: throw Exception("Missing lastname")
     val email = data["email"] as? String ?: throw Exception("Missing email")
     val roleStr = data["role"] as? String ?: throw Exception("Missing role")
+    val collected = data["collected"] as? Boolean ?: throw Exception("Missing data collect flag")
     val isGoogleAccount = data["isGoogleAccount"] as? Boolean ?: false
     val description = data["description"] as? String?
     val addressData = data["address"] as? Map<*, *>
@@ -103,7 +105,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               linkedOffices = data["linkedOffices"] as? List<String> ?: emptyList(),
               defaultOffice = data["defaultOffice"] as? String,
               isGoogleAccount = isGoogleAccount,
-              description = description)
+              description = description,
+              collected = collected)
       "Vet" ->
           Vet(
               uid = uid,
@@ -114,7 +117,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               validCodes = data["validCodes"] as? List<String> ?: emptyList(),
               officeId = data["officeId"] as? String?,
               isGoogleAccount = isGoogleAccount,
-              description = description)
+              description = description,
+              collected = collected)
       else -> throw Exception("Unknown user type: $roleStr")
     }
   }
@@ -128,6 +132,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     if (old.email != new.email) changes["email"] = new.email
     if (old.isGoogleAccount != new.isGoogleAccount) changes["isGoogleAccount"] = new.isGoogleAccount
     if (old.description != new.description) changes["description"] = new.description
+    if (old.collected != new.collected) changes["collected"] = new.collected
 
     when {
       old is Farmer && new is Farmer -> {

@@ -106,6 +106,9 @@ fun AddReportScreen(
   }
 
   LaunchedEffect(pickedLocation) { addReportViewModel.setAddress(pickedLocation) }
+  LaunchedEffect(Unit) {
+    if (user.collected != uiState.collected) addReportViewModel.switchCollected()
+  }
 
   // For the dropdown menu
   var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
@@ -256,6 +259,8 @@ fun AddReportScreen(
                           }
                         }
                   }
+
+              CollectedSwitch(uiState.collected, { addReportViewModel.switchCollected() }, true)
 
               Button(
                   onClick = {
