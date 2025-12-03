@@ -9,7 +9,6 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
-import java.time.Instant
 import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
@@ -42,7 +41,7 @@ class ConnectionRepository(
 
   // Generates a unique connection code for an office, valid for a limited time (ttlMinutes).
   // Returns: Result<String> containing the generated code, or an exception if failed.
-  suspend fun generateCode(ttlMinutes: Long = 10): Result<String> = runCatching {
+  suspend fun generateCode(): Result<String> = runCatching {
     val officeId = getCurrentUserOfficeId()
     repeat(20) {
       val code = Random.nextInt(100_000, 1_000_000).toString()
@@ -60,8 +59,7 @@ class ConnectionRepository(
                           FirestoreSchema.ConnectCodes.CODE to code,
                           FirestoreSchema.ConnectCodes.OFFICE_ID to officeId,
                           FirestoreSchema.ConnectCodes.STATUS to STATUS_OPEN,
-                          FirestoreSchema.ConnectCodes.CREATED_AT to createdAt,
-                          FirestoreSchema.ConnectCodes.TTL_MINUTES to ttlMinutes))
+                          FirestoreSchema.ConnectCodes.CREATED_AT to createdAt))
                   code
                 }
               }
@@ -81,12 +79,6 @@ class ConnectionRepository(
 
     val createdAt = snap.getTimestamp(FirestoreSchema.ConnectCodes.CREATED_AT)
     requireNotNull(createdAt) { "Missing createdAt" }
-
-    val ttlMinutes = snap.getLong(FirestoreSchema.ConnectCodes.TTL_MINUTES)
-    requireNotNull(ttlMinutes) { "Missing TTL value" }
-
-    val expiresAtMs = createdAt.toDate().time + ttlMinutes * 60_000
-    if (Instant.now().toEpochMilli() > expiresAtMs) throw IllegalStateException("Code expired.")
   }
 
   // Claims a connection code for a farmer, and marks the code as used.
