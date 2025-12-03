@@ -147,5 +147,13 @@ class FakeReportRepository : ReportRepository {
     lastDeleted = reportId
   }
 
+  override suspend fun assignReportToVet(reportId: String, vetId: String) {
+    TODO("Not yet implemented")
+  }
+
+  override suspend fun unassignReport(reportId: String) {
+    TODO("Not yet implemented")
+  }
+
   override fun getNewReportId(): String = "FAKE_ID_123"
 }
