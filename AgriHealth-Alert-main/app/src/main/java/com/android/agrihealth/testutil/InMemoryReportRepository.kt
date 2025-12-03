@@ -1,8 +1,12 @@
-package com.android.agrihealth.data.repository
+package com.android.agrihealth.testutil
 
 import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.repository.ReportRepository
 
-/** Generic in-memory implementation of [ReportRepository] for local dev and tests. */
+/**
+ * Generic in-memory implementation of [com.android.agrihealth.data.repository.ReportRepository] for
+ * local dev and tests.
+ */
 open class InMemoryReportRepository(initialReports: List<Report> = emptyList()) : ReportRepository {
 
   private val reports: MutableList<Report> = initialReports.toMutableList()
@@ -12,12 +16,6 @@ open class InMemoryReportRepository(initialReports: List<Report> = emptyList()) 
 
   override suspend fun getAllReports(userId: String): List<Report> =
       reports.filter { it.farmerId == userId || it.officeId == userId }
-
-  override suspend fun getReportsByFarmer(farmerId: String): List<Report> =
-      reports.filter { it.farmerId == farmerId }
-
-  override suspend fun getReportsByOffice(officeId: String): List<Report> =
-      reports.filter { it.officeId == officeId }
 
   override suspend fun getReportById(reportId: String): Report? =
       reports.find { it.id == reportId }

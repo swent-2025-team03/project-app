@@ -18,8 +18,8 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.data.repository.InMemoryReportRepository
 import com.android.agrihealth.testutil.FakeUserRepository
+import com.android.agrihealth.testutil.InMemoryReportRepository
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.google.android.gms.maps.model.LatLng
@@ -202,7 +202,7 @@ class MapScreenTest {
 
     composeTestRule.waitForIdle()
 
-    val reports = reportRepository.getReportsByFarmer(userId)
+    val reports = reportRepository.getAllReports(userId)
 
     reports.forEach { report ->
       val markerTag = MapScreenTestTags.getTestTagForReportMarker(report.id)
@@ -220,7 +220,7 @@ class MapScreenTest {
 
     val report =
         reportRepository
-            .getReportsByFarmer(userId)
+            .getAllReports(userId)
             .last() // because of debug boxes, they stack so you have to take the last
     val reportId = report.id
     composeTestRule
@@ -268,16 +268,12 @@ class MapScreenTest {
           .onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU)
           .assertIsDisplayed()
           .performClick()
-
-      val filterTag = MapScreenTestTags.getTestTagForFilter(filter)
-
-      composeTestRule.onNodeWithTag(filterTag, useUnmergedTree = true).assertExists().performClick()
-
-      composeTestRule.waitForIdle()
-
+      composeTestRule
+          .onNodeWithTag(MapScreenTestTags.getTestTagForFilter(filter), useUnmergedTree = true)
+          .assertIsDisplayed()
+          .performClick()
       val (matches, nonMatches) =
-          reports.partition { r -> filter == null || r.status.displayString() == filter }
-
+          reports.partition { it -> filter == null || it.status.displayString() == filter }
       matches.forEach { report ->
         composeTestRule
             .onNodeWithTag(
@@ -285,7 +281,6 @@ class MapScreenTest {
             .assertExists()
             .assertIsDisplayed()
       }
-
       nonMatches.forEach { report ->
         composeTestRule
             .onNodeWithTag(
@@ -297,7 +292,7 @@ class MapScreenTest {
 
   @Test
   fun canNavigateFromMapToReport() = runTest {
-    val reports = reportRepository.getReportsByFarmer(userId)
+    val reports = reportRepository.getAllReports(userId)
     val report = reports.first()
     setContentToMapWithVM(selectedReportId = report.id)
 
@@ -319,6 +314,8 @@ class MapScreenTest {
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun spiderifyReportsTest() = runTest {
+    reportRepository.addReport(MapScreenTestReports.report1.copy(farmerId = userId))
+
     val mapViewModel =
         MapViewModel(
             reportRepository = reportRepository,

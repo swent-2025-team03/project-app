@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -103,7 +104,10 @@ fun ManageOfficeScreen(
         Column(
             modifier =
                 Modifier.padding(innerPadding).padding(16.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top) {
+              HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
+
               if (uiState.office == null) {
                 Button(
                     onClick = onCreateOffice,
@@ -142,6 +146,8 @@ fun ManageOfficeScreen(
                     enabled = isOwner,
                     modifier = Modifier.fillMaxWidth().testTag(OFFICE_ADDRESS))
 
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text("Vets in this office:", style = MaterialTheme.typography.titleMedium)
 
                 LazyColumn(
@@ -154,8 +160,16 @@ fun ManageOfficeScreen(
                       }
                     }
 
+                Spacer(modifier = Modifier.height(16.dp))
+
                 if (isOwner) {
-                  GenerateCode(codesViewModel = connectionVm, snackbarHostState = snackbarHostState)
+                  GenerateCode(
+                      codesViewModel = connectionVm,
+                      snackbarHostState = snackbarHostState,
+                      Modifier.align(Alignment.CenterHorizontally))
+
+                  Spacer(modifier = Modifier.height(8.dp))
+
                   Button(
                       onClick = { manageOfficeVm.updateOffice() },
                       modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),

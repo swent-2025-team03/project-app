@@ -9,8 +9,8 @@ import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.data.repository.InMemoryReportRepository
 import com.android.agrihealth.testutil.FakeAlertRepository
+import com.android.agrihealth.testutil.InMemoryReportRepository
 import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Rule

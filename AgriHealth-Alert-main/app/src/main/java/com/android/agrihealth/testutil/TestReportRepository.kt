@@ -1,7 +1,6 @@
 package com.android.agrihealth.testutil
 
 import com.android.agrihealth.data.model.report.Report
-import com.android.agrihealth.data.repository.InMemoryReportRepository
 
 class TestReportRepository(initialReports: List<Report> = emptyList()) :
     InMemoryReportRepository(initialReports) {

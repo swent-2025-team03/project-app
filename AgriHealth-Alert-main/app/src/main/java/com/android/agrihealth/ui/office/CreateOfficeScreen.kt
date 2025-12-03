@@ -56,6 +56,7 @@ fun CreateOfficeScreen(
             modifier =
                 Modifier.padding(padding).padding(16.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
+              HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
 
               // Input: Office Name
               OutlinedTextField(

@@ -9,6 +9,7 @@ import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.navigation.NavigationTestTags.TOP_BAR_TITLE
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.LOGOUT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_FARMER
@@ -47,6 +48,7 @@ class ProfileScreenTest {
             Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultOffice = null))
     setScreen(vm)
 
+    composeTestRule.onNodeWithTag(TOP_BAR_TITLE).assertExists()
     composeTestRule.onNodeWithTag(TOP_BAR).assertExists()
     composeTestRule.onNodeWithTag(GO_BACK_BUTTON).assertExists()
     composeTestRule.onNodeWithTag(LOGOUT_BUTTON).assertExists()
