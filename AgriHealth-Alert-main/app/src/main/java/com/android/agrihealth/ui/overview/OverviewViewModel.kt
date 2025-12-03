@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.alert.Alert
 import com.android.agrihealth.data.model.alert.AlertRepository
 import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
+import com.android.agrihealth.data.model.alert.getDistanceInsideZone
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.report.Report
@@ -20,12 +21,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/**
- * Represents the UI state for the Overview screen.
- *
- * @property reports A list of `Report` items to be displayed in the Overview screen. Defaults to an
- *   empty list if no items are available.
- */
+data class AlertUiState(val alert: Alert, val distanceToAddress: Double? = null)
+
 data class OverviewUIState(
     val reports: List<Report> = emptyList(),
     val alerts: List<Alert> = emptyList(),
@@ -34,7 +31,8 @@ data class OverviewUIState(
     val selectedFarmer: String? = null,
     val officeOptions: List<String> = emptyList(),
     val farmerOptions: List<String> = emptyList(),
-    val filteredReports: List<Report> = emptyList()
+    val filteredReports: List<Report> = emptyList(),
+    val sortedAlerts: List<AlertUiState> = emptyList()
 )
 
 /**
@@ -51,7 +49,10 @@ class OverviewViewModel(
 
   private lateinit var authRepository: AuthRepository
 
-  /** Loads reports based on user role and ID. */
+  /**
+   * Loads reports for the user based on role and updates UIState. Applies selected filters to
+   * generate filteredReports.
+   */
   override fun loadReports(user: User) {
     viewModelScope.launch {
       try {
@@ -59,7 +60,7 @@ class OverviewViewModel(
         val officeOptions = reports.map { it.officeId }.distinct()
         val farmerOptions = reports.map { it.farmerId }.distinct()
         val filtered =
-            applyFilters(
+            applyFiltersForReports(
                 reports,
                 _uiState.value.selectedStatus,
                 _uiState.value.selectedOffice,
@@ -78,19 +79,16 @@ class OverviewViewModel(
     }
   }
 
-  override fun loadAlerts() {
-    viewModelScope.launch {
-      try {
-        val alerts = alertRepository.getAlerts()
-        _uiState.value = _uiState.value.copy(alerts = alerts)
-      } catch (e: Exception) {
-        _uiState.value = _uiState.value.copy(alerts = emptyList())
-      }
-    }
-  }
-
-  override fun updateFilters(status: ReportStatus?, officeId: String?, farmerId: String?) {
-    val filtered = applyFilters(_uiState.value.reports, status, officeId, farmerId)
+  /**
+   * Updates the selected report filters in UIState and recalculates filteredReports. Each filter is
+   * optional; only non-null filters are applied.
+   */
+  override fun updateFiltersForReports(
+      status: ReportStatus?,
+      officeId: String?,
+      farmerId: String?
+  ) {
+    val filtered = applyFiltersForReports(_uiState.value.reports, status, officeId, farmerId)
     _uiState.value =
         _uiState.value.copy(
             selectedStatus = status,
@@ -99,7 +97,11 @@ class OverviewViewModel(
             filteredReports = filtered)
   }
 
-  private fun applyFilters(
+  /**
+   * Filters reports by optional status, office, and farmer. Only reports matching all non-null
+   * filters are returned.
+   */
+  private fun applyFiltersForReports(
       reports: List<Report>,
       status: ReportStatus?,
       officeId: String?,
@@ -122,6 +124,38 @@ class OverviewViewModel(
       UserRole.FARMER -> allReports.filter { it.farmerId == userId }
       UserRole.VET -> allReports
     }
+  }
+
+  /**
+   * Loads all alerts from the repository and updates UIState. Alerts are sorted based on the user's
+   * location.
+   */
+  override fun loadAlerts(user: User) {
+    viewModelScope.launch {
+      try {
+        val alerts = alertRepository.getAlerts()
+        _uiState.value = _uiState.value.copy(alerts = alerts)
+        updateSortedAlerts(user)
+      } catch (e: Exception) {
+        _uiState.value = _uiState.value.copy(alerts = emptyList(), sortedAlerts = emptyList())
+      }
+    }
+  }
+
+  /**
+   * Sorts alerts by distance to the given user's address (closest first) and wraps each in an
+   * AlertUiState. Alerts outside any zone or with null address will have distanceToAddress = null.
+   */
+  private fun updateSortedAlerts(user: User) {
+    val address = user.address
+    val sorted =
+        _uiState.value.alerts
+            .map { alert ->
+              val distance = address?.let { alert.getDistanceInsideZone(it) }
+              AlertUiState(alert = alert, distanceToAddress = distance)
+            }
+            .sortedBy { it.distanceToAddress ?: Double.POSITIVE_INFINITY }
+    _uiState.value = _uiState.value.copy(sortedAlerts = sorted)
   }
 
   override fun signOut(credentialManager: CredentialManager) {
