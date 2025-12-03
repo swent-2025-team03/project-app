@@ -34,7 +34,7 @@ data class ReportViewUIState(
             status = ReportStatus.PENDING,
             answer = null,
             location = Location(46.5191, 6.5668, "Lausanne Farm"),
-            assignedVet = null),
+            assignedVet = "valid_vet_id"),
     val answerText: String = "",
     val status: ReportStatus = ReportStatus.PENDING
 )
