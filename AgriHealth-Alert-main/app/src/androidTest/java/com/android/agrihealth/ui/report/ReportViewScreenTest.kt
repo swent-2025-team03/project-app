@@ -6,6 +6,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.FakeOverviewViewModel
@@ -31,7 +33,8 @@ class ReportViewScreenTest {
   /** Sets up the ReportViewScreen for a given role (Vet or Farmer). */
   private fun setReportViewScreen(
       role: UserRole,
-      viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
+      viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository()),
+      user: User? = null
   ) {
     composeTestRule.setContent {
       val navController = rememberNavController()
@@ -44,11 +47,33 @@ class ReportViewScreenTest {
   // --- Role-specific helpers (wrappers) ---
   private fun setVetScreen(
       viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
-  ) = setReportViewScreen(UserRole.VET, viewModel)
+  ) =
+      setReportViewScreen(
+          role = UserRole.VET,
+          viewModel,
+          user =
+              Vet(
+                  uid = "vet_id",
+                  firstname = "alice",
+                  lastname = "alice",
+                  email = "mail@mail",
+                  address = null,
+                  officeId = "OFF_456"))
 
   private fun setFarmerScreen(
       viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
-  ) = setReportViewScreen(UserRole.FARMER, viewModel)
+  ) =
+      setReportViewScreen(
+          role = UserRole.FARMER,
+          viewModel,
+          user =
+              Farmer(
+                  uid = "farmer_id",
+                  firstname = "bob",
+                  lastname = "bob",
+                  email = "mail@mail",
+                  address = null,
+                  defaultOffice = "OFF_456"))
 
   // --- TEST 1: Vet typing in answer field ---
   @Test
@@ -59,11 +84,11 @@ class ReportViewScreenTest {
     answerNode.assertTextContains("This is my diagnosis.")
   }
 
-  // --- TEST 2: Farmer sees read-only answer text ---
+  // --- TEST 2: Farmer doesn't see read-only answer text when report is not claimed---
   @Test
   fun farmer_seesReadOnlyAnswerText() {
     setFarmerScreen()
-    composeTestRule.onNodeWithText("No answer yet.").assertIsDisplayed()
+    composeTestRule.onNodeWithText("No answer yet.").assertIsNotDisplayed()
   }
 
   // --- TEST 3: Vet can open dropdown menu ---

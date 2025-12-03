@@ -32,10 +32,10 @@ class FakeReportRepository : ReportRepository {
   }
 
   override suspend fun assignReportToVet(reportId: String, vetId: String) {
-    TODO("Not yet implemented")
+    // no-op: not required in current tests.
   }
 
   override suspend fun unassignReport(reportId: String) {
-    TODO("Not yet implemented")
+    // no-op: not required in current tests.
   }
 }

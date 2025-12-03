@@ -33,7 +33,8 @@ data class ReportViewUIState(
             officeId = "OFF_456",
             status = ReportStatus.PENDING,
             answer = null,
-            location = Location(46.5191, 6.5668, "Lausanne Farm")),
+            location = Location(46.5191, 6.5668, "Lausanne Farm"),
+            assignedVet = null),
     val answerText: String = "",
     val status: ReportStatus = ReportStatus.PENDING
 )

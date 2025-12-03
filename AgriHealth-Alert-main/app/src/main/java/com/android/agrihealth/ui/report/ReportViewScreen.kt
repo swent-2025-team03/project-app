@@ -84,7 +84,7 @@ fun ReportViewScreen(
     userRole: UserRole,
     viewModel: ReportViewViewModel,
     reportId: String = "",
-    user: User
+    user: User? = null
 ) {
   LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
 
@@ -120,7 +120,7 @@ fun ReportViewScreen(
   var isUnsavedAlertOpen by remember { mutableStateOf(false) }
 
   // AssignedVet logic
-  val isAssignedToVet = (report.assignedVet == user.uid)
+  val isAssignedToVet = (userRole != UserRole.FARMER && (report.assignedVet == user?.uid))
   val isUnassigned = report.assignedVet == null
   val isAssignedToOther = !isUnassigned && !isAssignedToVet
 
@@ -262,7 +262,7 @@ fun ReportViewScreen(
                 // Vet can claim an unassigned report
                 if (userRole == UserRole.VET) {
                   Button(
-                      onClick = { viewModel.assignReportToVet(user.uid) },
+                      onClick = { viewModel.assignReportToVet(user?.uid ?: "") },
                       modifier = Modifier.fillMaxWidth()) {
                         Text("Claim Report")
                       }
