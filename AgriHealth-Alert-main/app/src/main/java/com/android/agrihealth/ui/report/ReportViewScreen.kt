@@ -34,6 +34,8 @@ import com.android.agrihealth.ui.common.OfficeName
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.report.ReportViewScreenTestTags.CLAIM_BUTTON
+import com.android.agrihealth.ui.report.ReportViewScreenTestTags.UNASSIGN_BUTTON
 import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.launch
@@ -42,6 +44,8 @@ object ReportViewScreenTestTags {
   const val STATUS_BADGE_BOX = "StatusBadgeBox"
   const val STATUS_BADGE_TEXT = "StatusBadgeText"
   const val ROLE_INFO_LINE = "roleInfoLine"
+  const val CLAIM_BUTTON = "ClaimButton"
+  const val UNASSIGN_BUTTON = "UnassignButton"
   const val ANSWER_FIELD = "AnswerField"
   const val STATUS_DROPDOWN_BOX = "StatusDropdownBox"
   const val STATUS_DROPDOWN_FIELD = "StatusDropdownField"
@@ -263,7 +267,7 @@ fun ReportViewScreen(
                 if (userRole == UserRole.VET) {
                   Button(
                       onClick = { viewModel.assignReportToVet(user?.uid ?: "") },
-                      modifier = Modifier.fillMaxWidth()) {
+                      modifier = Modifier.fillMaxWidth().testTag(CLAIM_BUTTON)) {
                         Text("Claim Report")
                       }
                 }
@@ -284,9 +288,11 @@ fun ReportViewScreen(
               }
               if (isAssignedToVet) {
                 Text("You have claimed this report. Please address it!")
-                Button(onClick = { viewModel.unassign() }, modifier = Modifier.fillMaxWidth()) {
-                  Text("Unassign Report")
-                }
+                Button(
+                    onClick = { viewModel.unassign() },
+                    modifier = Modifier.fillMaxWidth().testTag(UNASSIGN_BUTTON)) {
+                      Text("Unassign Report")
+                    }
               }
 
               if (isAssignedToOther) {
