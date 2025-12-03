@@ -23,12 +23,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/**
- * Represents the UI state for the Overview screen.
- *
- * @property reports A list of `Report` items to be displayed in the Overview screen. Defaults to an
- *   empty list if no items are available.
- */
 data class AlertUiState(val alert: Alert, val distanceToAddress: Double? = null)
 
 data class OverviewUIState(
