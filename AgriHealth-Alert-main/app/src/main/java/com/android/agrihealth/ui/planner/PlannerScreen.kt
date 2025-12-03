@@ -48,14 +48,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.core.design.theme.onStatusColor
 import com.android.agrihealth.core.design.theme.statusColor
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
@@ -207,7 +212,11 @@ fun PlannerScreen(
                 dayReportMap = uiState.reports)
             Row(modifier = Modifier.fillMaxWidth()) {
               Text(
-                  uiState.selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM")),
+                  if (uiState.selectedDate.year != LocalDate.now().year) {
+                    uiState.selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
+                  } else {
+                    uiState.selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM"))
+                  },
                   style = MaterialTheme.typography.titleLarge,
                   modifier = Modifier.testTag(PlannerScreenTestTags.SELECTED_DATE))
             }
@@ -602,7 +611,6 @@ fun TimePickerBox(
       }
 }
 
-/* Commented for sonar coverage
 @Preview
 @Composable
 fun PlannerScreenPreview() {
@@ -614,7 +622,7 @@ fun PlannerScreenPreview() {
           questionForms = emptyList(),
           photoUri = null,
           farmerId = "farmer1",
-          vetId = "vet1",
+          officeId = "vet1",
           status = ReportStatus.IN_PROGRESS,
           answer = null,
           location = Location(latitude = 12.34, longitude = 56.78, name = "Farmhouse A"),
@@ -634,6 +642,19 @@ fun PlannerScreenPreview() {
       previewReport1.copy(
           id = "4", startTime = LocalDateTime.now().plusDays(1), duration = LocalTime.of(2, 0))
 
+  val user =
+      Vet(
+          uid = "test",
+          firstname = "test",
+          lastname = "test",
+          email = "test",
+          address = null,
+          validCodes = emptyList(),
+          officeId = "test",
+          isGoogleAccount = false,
+          description = "test",
+          collected = false)
+
   val reportRepo =
       object : ReportRepository {
         private val reports: MutableList<Report> =
@@ -646,15 +667,7 @@ fun PlannerScreenPreview() {
         }
 
         override suspend fun getAllReports(userId: String): List<Report> {
-          return reports.filter { it.farmerId == userId || it.vetId == userId }
-        }
-
-        override suspend fun getReportsByFarmer(farmerId: String): List<Report> {
-          return reports.filter { it.farmerId == farmerId }
-        }
-
-        override suspend fun getReportsByVet(vetId: String): List<Report> {
-          return reports.filter { it.vetId == vetId }
+          return reports.filter { it.farmerId == userId || it.officeId == userId }
         }
 
         override suspend fun getReportById(reportId: String): Report? {
@@ -689,6 +702,5 @@ fun PlannerScreenPreview() {
         }
       }
   val fakePlannerVM = PlannerViewModel(reportRepo)
-  AgriHealthAppTheme { PlannerScreen(userId = "vet1", reportId = null, plannerVM = fakePlannerVM) }
+  AgriHealthAppTheme { PlannerScreen(user = user, reportId = null, plannerVM = fakePlannerVM) }
 }
-*/
