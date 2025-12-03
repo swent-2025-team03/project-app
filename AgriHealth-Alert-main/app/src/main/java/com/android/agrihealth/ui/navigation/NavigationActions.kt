@@ -98,13 +98,13 @@ sealed class Screen(
 
 open class NavigationActions(
     private val navController: NavHostController,
-) {
+) : NavigationActionsContract {
   /**
    * Navigate to the specified screen.
    *
    * @param screen The screen to navigate to
    */
-  open fun navigateTo(screen: Screen) {
+  override fun navigateTo(screen: Screen) {
     if (screen.isTopLevelDestination && currentRoute() == screen.route) {
       // If the user is already on the top-level destination, do nothing
       return
@@ -123,7 +123,7 @@ open class NavigationActions(
   }
 
   /** Navigate back to the previous screen. */
-  open fun goBack() {
+  override fun goBack() {
     navController.navigateUp()
   }
 
@@ -132,12 +132,12 @@ open class NavigationActions(
    *
    * @return The current route
    */
-  open fun currentRoute(): String {
+  override fun currentRoute(): String {
     return navController.currentDestination?.route ?: ""
   }
 
   /** Navigate to the sign in screen and clear the backstack. */
-  open fun navigateToAuthAndClear() {
+  override fun navigateToAuthAndClear() {
     navController.navigate(Screen.Auth.route) { popUpTo(0) }
   }
 }

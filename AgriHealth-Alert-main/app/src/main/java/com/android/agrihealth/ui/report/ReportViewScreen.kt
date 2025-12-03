@@ -30,7 +30,7 @@ import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.common.OfficeName
-import com.android.agrihealth.ui.navigation.NavigationActions
+import com.android.agrihealth.ui.navigation.NavigationActionsContract
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
@@ -79,7 +79,7 @@ private fun QuestionItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportViewScreen(
-    navigationActions: NavigationActions,
+    navigationActions: NavigationActionsContract,
     userRole: UserRole,
     viewModel: ReportViewViewModel,
     reportId: String = ""
