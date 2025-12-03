@@ -520,39 +520,44 @@ fun DailyTasks(
                   }
                   .dp
 
-          Column(
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .height(taskHeight)
-                      .offset(y = topOffset)
-                      .padding(horizontal = 0.dp)
-                      .background(
-                          color = statusColor(report.status), shape = MaterialTheme.shapes.medium)
-                      .clickable { navigateToReport(report.id) }
-                      .testTag(PlannerScreenTestTags.reportCardTag(report.id)),
-              verticalArrangement = Arrangement.Top) {
-                Text(
-                    report.title,
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = onStatusColor(report.status),
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = if (taskHeight >= 90.dp) 2 else 1)
-                if (taskHeight >= 54.dp)
-                    report.location?.name?.let {
-                      Text(
-                          it,
-                          modifier = Modifier.weight(1f, fill = false).padding(horizontal = 8.dp),
-                          style = MaterialTheme.typography.bodyMedium,
-                          color = onStatusColor(report.status),
-                          maxLines = 1)
-                    }
-              }
+          ReportCard(report, taskHeight, topOffset, navigateToReport)
         }
     if (showTimeLine) {
       CurrentTimeLine(hourHeight)
     }
   }
+}
+
+/** Todo */
+@Composable
+fun ReportCard(report: Report, taskHeight: Dp, topOffset: Dp, navigateToReport: (String) -> Unit) {
+  Column(
+      modifier =
+          Modifier.fillMaxWidth()
+              .height(taskHeight)
+              .offset(y = topOffset)
+              .padding(horizontal = 0.dp)
+              .background(color = statusColor(report.status), shape = MaterialTheme.shapes.medium)
+              .clickable { navigateToReport(report.id) }
+              .testTag(PlannerScreenTestTags.reportCardTag(report.id)),
+      verticalArrangement = Arrangement.Top) {
+        Text(
+            report.title,
+            modifier = Modifier.padding(horizontal = 8.dp),
+            style = MaterialTheme.typography.titleLarge,
+            color = onStatusColor(report.status),
+            overflow = TextOverflow.Ellipsis,
+            maxLines = if (taskHeight >= 90.dp) 2 else 1)
+        if (taskHeight >= 54.dp)
+            report.location?.name?.let {
+              Text(
+                  it,
+                  modifier = Modifier.weight(1f, fill = false).padding(horizontal = 8.dp),
+                  style = MaterialTheme.typography.bodyMedium,
+                  color = onStatusColor(report.status),
+                  maxLines = 1)
+            }
+      }
 }
 
 /**
