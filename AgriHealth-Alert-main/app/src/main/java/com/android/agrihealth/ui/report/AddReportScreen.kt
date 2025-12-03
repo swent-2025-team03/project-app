@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -157,7 +156,9 @@ fun AddReportScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp)
                     .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
-            verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            verticalArrangement = Arrangement.Top) {
+              HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
+
               Field(
                   uiState.title,
                   { addReportViewModel.setTitle(it) },
@@ -273,10 +274,8 @@ fun AddReportScreen(
                     }
                   },
                   modifier =
-                      Modifier.fillMaxWidth()
-                          .height(56.dp)
-                          .testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
-                    Text("Create Report", style = MaterialTheme.typography.titleLarge)
+                      Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
+                    Text("Create Report", style = MaterialTheme.typography.titleMedium)
                   }
             }
 
@@ -294,7 +293,7 @@ fun AddReportScreen(
                       onCreateReport()
                       onBack()
                     }) {
-                      Text("OK")
+                      Text(text = "OK", color = MaterialTheme.colorScheme.onSurface)
                     }
               },
               title = { Text("Success!") },

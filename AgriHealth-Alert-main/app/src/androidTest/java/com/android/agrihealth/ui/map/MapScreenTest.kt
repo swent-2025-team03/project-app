@@ -187,7 +187,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   fun displayReportsFromUser() = runTest {
     setContentToMapWithVM()
 
-    reportRepository.getReportsByFarmer(userId).forEach { report ->
+    reportRepository.getAllReports(userId).forEach { report ->
       composeTestRule
           .onNodeWithTag(
               MapScreenTestTags.getTestTagForReportMarker(report.id), useUnmergedTree = true)
@@ -201,7 +201,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
 
     val report =
         reportRepository
-            .getReportsByFarmer(userId)
+            .getAllReports(userId)
             .last() // because of debug boxes, they stack so you have to take the last
     val reportId = report.id
     composeTestRule
@@ -224,7 +224,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun filterReportsByStatus() = runTest {
     setContentToMapWithVM()
-    val reports = reportRepository.getReportsByFarmer(userId)
+    val reports = reportRepository.getAllReports(userId)
     val filters = listOf(null) + ReportStatus.entries.map { it.displayString() }
 
     filters.forEach { filter ->
@@ -253,7 +253,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
 
   @Test
   fun canNavigateFromMapToReport() = runTest {
-    val reports = reportRepository.getReportsByFarmer(userId)
+    val reports = reportRepository.getAllReports(userId)
     val report = reports.first()
     setContentToMapWithVM(selectedReportId = report.id)
 

@@ -32,6 +32,7 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.common.OfficeNameViewModel
+import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.office.ManageOfficeViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTTON
@@ -99,7 +100,12 @@ fun EditProfileScreen(
   Scaffold(
       topBar = {
         TopAppBar(
-            title = { Text("Edit Profile", style = MaterialTheme.typography.titleMedium) },
+            title = {
+              Text(
+                  text = "Edit Profile",
+                  style = MaterialTheme.typography.titleLarge,
+                  modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE))
+            },
             navigationIcon = {
               IconButton(onClick = onGoBack, modifier = Modifier.testTag(GO_BACK_BUTTON)) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Go back")
