@@ -178,12 +178,26 @@ class ReportViewScreenTest {
   }
 
   // --- TEST 13: Farmer can confirm delete ---
+
   @Test
   fun farmer_canConfirmDelete() {
-    setFarmerScreen()
+    val testReport = ReportViewUIState().report.copy(id = "RPT001")
+    val repo = TestReportRepository(initialReports = listOf(testReport))
+    val vm = ReportViewViewModel(repository = repo)
+
+    composeTestRule.setContent {
+      ReportViewScreen(
+          navigationActions = NavigationActions(rememberNavController()),
+          userRole = UserRole.FARMER,
+          viewModel = vm,
+          reportId = "RPT001")
+    }
+
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.DELETE_BUTTON).performClick()
     composeTestRule.onNodeWithText("Confirm").performClick()
+
     composeTestRule.waitForIdle()
+
     composeTestRule
         .onNodeWithTag(ReportViewScreenTestTags.DELETE_REPORT_ALERT_BOX)
         .assertDoesNotExist()
@@ -314,13 +328,15 @@ class ReportViewScreenTest {
 
   @Test
   fun vet_saveButton_navigatesBackAfterSuccessfulSave() {
-    val fakeRepo = TestReportRepository()
+
+    val TEST_REPORT_ID = "RPT001"
+    val sampleReport = ReportViewUIState().report.copy(id = TEST_REPORT_ID)
+    val fakeRepo = TestReportRepository(listOf(sampleReport))
     val viewModel = ReportViewViewModel(repository = fakeRepo)
 
     composeTestRule.setContent {
       val navController = rememberNavController()
       val navigation = NavigationActions(navController)
-      val TEST_REPORT_ID = "RPT001"
       val vet = Vet("mock_vet_id", "john", "john", "john@john.john", null)
 
       NavHost(navController = navController, startDestination = Screen.Overview.route) {
