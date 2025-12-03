@@ -120,6 +120,9 @@ fun ReportViewScreen(
   var isUnsavedAlertOpen by remember { mutableStateOf(false) }
 
   // AssignedVet logic
+  val isAssignedToVet = (report.assignedVet == user.uid)
+  val isUnassigned = report.assignedVet == null
+  val isAssignedToOther = !isUnassigned && !isAssignedToVet
 
   fun handleGoBack(force: Boolean = false) {
     if (unsavedChanges && !force) isUnsavedAlertOpen = true else navigationActions.goBack()
@@ -251,6 +254,19 @@ fun ReportViewScreen(
 
               uiState.report.questionForms.forEach { QuestionItem(it) }
 
+              // Check assignedVet Status
+              if (isUnassigned) {
+                // Check if Vet or Farmer
+                // TODO: display button claim report for vets
+              }
+              if (isAssignedToOther) {
+                // Check if vet or farmer
+                // TODO: I am not even sure what suppose to happen in that situation
+              }
+              if (isAssignedToVet) {
+                // TODO: proceed as normal
+              }
+
               // ---- Answer section ----
               Text(
                   text = "Answer:",
@@ -315,7 +331,9 @@ fun ReportViewScreen(
                           }
                     }
               }
+              // ---- Collected switch ----
               CollectedSwitch(report.collected)
+
               // ---- Set Time section ----
               Column {
                 Text(
