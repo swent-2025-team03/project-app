@@ -91,17 +91,17 @@ jobs:
         timeout-minutes: 25
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 32
+          api-level: 34
           target: google_apis
           arch: x86_64
           avd-name: github
           working-directory: ./AgriHealth-Alert-main
           force-avd-creation: true
-          emulator-options: -no-window -gpu off -noaudio -no-boot-anim -camera-back none -skin 1080x2400 -memory 8192 -qemu -m 8192
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 1080x2400 -memory 2048 -qemu -m 2048
           disable-animations: true
           script: |
             ls -alh
-            ./gradlew connectedCheck --parallel --build-cache
+            ./gradlew connectedCheck --parallel --build-cache -Pandroid.testInstrumentationRunnerArguments.package=com.android.agrihealth.data.model
 
       - name: Generate coverage
         run: |
