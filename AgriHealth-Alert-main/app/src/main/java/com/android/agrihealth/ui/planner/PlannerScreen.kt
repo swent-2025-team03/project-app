@@ -94,8 +94,6 @@ object PlannerScreenTestTags {
 }
 
 // Todo: implement task overlapping
-// Todo: show a line for current hour
-// Todo: Fix report title clipping onto background
 
 /**
  * Planner Screen lets the user see their Reports ordered by dates.
@@ -535,6 +533,7 @@ fun DailyTasks(
               verticalArrangement = Arrangement.Top) {
                 Text(
                     report.title,
+                    modifier = Modifier.padding(horizontal = 8.dp),
                     style = MaterialTheme.typography.titleLarge,
                     color = onStatusColor(report.status),
                     overflow = TextOverflow.Ellipsis,
@@ -543,7 +542,7 @@ fun DailyTasks(
                     report.location?.name?.let {
                       Text(
                           it,
-                          modifier = Modifier.weight(1f, fill = false),
+                          modifier = Modifier.weight(1f, fill = false).padding(horizontal = 8.dp),
                           style = MaterialTheme.typography.bodyMedium,
                           color = onStatusColor(report.status),
                           maxLines = 1)
@@ -689,6 +688,7 @@ fun TimePickerBox(
 @Preview
 @Composable
 fun PlannerScreenPreview() {
+  val startOfDay = LocalDate.now().atTime(0, 0)
   val previewReport1 =
       Report(
           id = "1",
@@ -701,31 +701,31 @@ fun PlannerScreenPreview() {
           status = ReportStatus.IN_PROGRESS,
           answer = null,
           location = Location(latitude = 12.34, longitude = 56.78, name = "Farmhouse A"),
-          startTime = LocalDate.now().atTime(0, 0),
+          startTime = startOfDay,
           duration = LocalTime.of(0, 0))
 
   val previewReport2 =
       previewReport1.copy(
-          id = "2", startTime = LocalDateTime.now().plusHours(2), duration = LocalTime.of(1, 0))
+          id = "2", startTime = startOfDay.plusHours(2), duration = LocalTime.of(1, 0))
   val previewReport3 =
       previewReport1.copy(
           id = "3",
-          startTime = LocalDateTime.now().plusHours(4),
+          startTime = startOfDay.plusHours(4),
           duration = LocalTime.of(2, 0),
           status = ReportStatus.RESOLVED)
   val previewReport4 =
       previewReport1.copy(
-          id = "4", startTime = LocalDateTime.now().plusDays(1), duration = LocalTime.of(2, 0))
+          id = "4", startTime = startOfDay.plusDays(1), duration = LocalTime.of(2, 0))
 
   val user =
       Vet(
-          uid = "test",
+          uid = "vet1",
           firstname = "test",
           lastname = "test",
           email = "test",
           address = null,
           validCodes = emptyList(),
-          officeId = "test",
+          officeId = "vet1",
           isGoogleAccount = false,
           description = "test",
           collected = false)
