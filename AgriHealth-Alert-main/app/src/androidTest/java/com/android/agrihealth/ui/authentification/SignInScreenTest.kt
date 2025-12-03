@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
@@ -20,10 +21,21 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
+import org.junit.rules.TestRule
 
 class SignInScreenTest : FirebaseEmulatorsTest() {
 
   @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+
+  @get:Rule
+  val ruleChain: TestRule =
+      RuleChain.outerRule(
+              GrantPermissionRule.grant(
+                  android.Manifest.permission.ACCESS_FINE_LOCATION,
+                  android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                  android.Manifest.permission.POST_NOTIFICATIONS))
+          .around(composeTestRule)
 
   private fun completeSignIn(email: String, password: String) {
     composeTestRule
