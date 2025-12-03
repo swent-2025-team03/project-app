@@ -46,4 +46,12 @@ class ReportRepositoryLocal : ReportRepository {
       throw NoSuchElementException("ReportRepositoryLocal: Report not found")
     }
   }
+
+  override suspend fun assignReportToVet(reportId: String, vetId: String) {
+    TODO("Not yet implemented")
+  }
+
+  override suspend fun unassignReport(reportId: String) {
+    TODO("Not yet implemented")
+  }
 }

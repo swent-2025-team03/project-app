@@ -257,7 +257,16 @@ fun ReportViewScreen(
               // Check assignedVet Status
               if (isUnassigned) {
                 // Check if Vet or Farmer
-                // TODO: display button claim report for vets
+                if (userRole == UserRole.VET) {
+                  Button(
+                      onClick = { viewModel.assignReportToVet(user.uid) },
+                      modifier = Modifier.fillMaxWidth()) {
+                        Text("Claim Report")
+                      }
+                }
+                if (userRole == UserRole.FARMER) {
+                  Text("This report is unassigned. A veterinarian will claim it soon.")
+                }
               }
               if (isAssignedToOther) {
                 // Check if vet or farmer
