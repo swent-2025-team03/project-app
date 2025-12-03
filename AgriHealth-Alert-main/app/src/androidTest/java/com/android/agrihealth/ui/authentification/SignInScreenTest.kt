@@ -26,7 +26,7 @@ import org.junit.rules.TestRule
 
 class SignInScreenTest : FirebaseEmulatorsTest() {
 
-  @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+  private val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
   @get:Rule
   val ruleChain: TestRule =
