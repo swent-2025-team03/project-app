@@ -2,6 +2,8 @@ package com.android.agrihealth.ui.planner
 
 import android.app.TimePickerDialog
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -91,8 +93,6 @@ object PlannerScreenTestTags {
   fun reportCardTag(reportId: String): String = "reportCard_$reportId"
 }
 
-// Todo: show year if different from current year (Report View and Planner)
-// Todo: scroll to first task of the day
 // Todo: implement task overlapping
 // Todo: show a line for current hour
 // Todo: Fix report title clipping onto background
@@ -220,7 +220,7 @@ fun PlannerScreen(
                   style = MaterialTheme.typography.titleLarge,
                   modifier = Modifier.testTag(PlannerScreenTestTags.SELECTED_DATE))
             }
-            DailyScheduler(uiState.selectedDateReports) { it -> reportClicked(it) }
+            DailyScheduler(uiState.selectedDateReports, reportId) { it -> reportClicked(it) }
           }
           if (reportId != null) {
 
@@ -417,10 +417,27 @@ fun DotGrid(
  * @param navigateToReport called when a report is clicked with the report.id
  */
 @Composable
-fun DailyScheduler(reports: List<Report>, navigateToReport: (String) -> Unit = {}) {
+fun DailyScheduler(
+    reports: List<Report>,
+    reportId: String? = null,
+    navigateToReport: (String) -> Unit = {}
+) {
   val scrollState = rememberScrollState(0)
 
   val hourHeight = 60.dp
+  val density = LocalDensity.current
+
+  LaunchedEffect(reports) {
+    if (reports.any { it.startTime != null }) {
+      val reportToEdit = reports.find { it.id == reportId }
+      val first = reportToEdit ?: reports.minBy { it.startTime?.hour ?: 24 }
+
+      val offsetPx = with(density) { (first.startTime!!.hour * hourHeight.toPx()).toInt() }
+
+      scrollState.animateScrollTo(
+          offsetPx, animationSpec = tween(800, easing = LinearOutSlowInEasing))
+    }
+  }
   Row(
       modifier =
           Modifier.fillMaxSize()
