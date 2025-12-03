@@ -56,6 +56,14 @@ class ReportViewViewModel(
   private val _saveCompleted = MutableStateFlow(false)
   val saveCompleted: StateFlow<Boolean> = _saveCompleted.asStateFlow()
 
+  // Used to store the current vet's ID when assigning a report to a vet
+  var currentVetId: String? = null
+    private set
+
+  fun setCurrentVetId(id: String) {
+    currentVetId = id
+  }
+
   /** Loads a report by its ID and updates the state. */
   fun loadReport(reportID: String) {
     viewModelScope.launch {
@@ -126,5 +134,33 @@ class ReportViewViewModel(
 
   fun consumeUnsavedChanges() {
     _unsavedChanges.value = false
+  }
+
+  /** Assigns the report to the current vet. */
+  fun assignReportToVet() {
+    val vetId = currentVetId ?: return
+    val reportId = _uiState.value.report.id
+
+    viewModelScope.launch {
+      repository.assignReportToVet(reportId, vetId)
+
+      // Refresh state after assignment
+      loadReport(reportId)
+    }
+  }
+
+  /** Unassigns the report from the current vet. */
+  fun unassign() {
+    val report = _uiState.value.report
+    val reportId = report.id
+
+    if (!report.answer.isNullOrEmpty()) return
+
+    viewModelScope.launch {
+      repository.unassignReport(reportId)
+
+      // Refresh state after unassignment
+      loadReport(reportId)
+    }
   }
 }
