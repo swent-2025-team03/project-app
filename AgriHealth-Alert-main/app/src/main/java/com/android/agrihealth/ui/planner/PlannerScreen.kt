@@ -220,7 +220,11 @@ fun PlannerScreen(
                   style = MaterialTheme.typography.titleLarge,
                   modifier = Modifier.testTag(PlannerScreenTestTags.SELECTED_DATE))
             }
-            DailyScheduler(uiState.selectedDateReports, reportId) { it -> reportClicked(it) }
+            DailyScheduler(
+                uiState.selectedDateReports, reportId, uiState.selectedDate == LocalDate.now()) { it
+                  ->
+                  reportClicked(it)
+                }
           }
           if (reportId != null) {
 
@@ -414,12 +418,14 @@ fun DotGrid(
  * The Scheduler containing the hour Scale and the Daily task representing the Reports
  *
  * @param reports the list of reports to show on the Scheduler
+ * @param reportId the id of the report to prioritize auto scroll to.
  * @param navigateToReport called when a report is clicked with the report.id
  */
 @Composable
 fun DailyScheduler(
     reports: List<Report>,
     reportId: String? = null,
+    showTimeLine: Boolean = false,
     navigateToReport: (String) -> Unit = {}
 ) {
   val scrollState = rememberScrollState(0)
@@ -446,7 +452,10 @@ fun DailyScheduler(
         HourScale(hourHeight = hourHeight)
         Box(modifier = Modifier.weight(1f)) {
           DailyTasks(
-              reports = reports, hourHeight = hourHeight, navigateToReport = navigateToReport)
+              reports = reports,
+              hourHeight = hourHeight,
+              showTimeLine = showTimeLine,
+              navigateToReport = navigateToReport)
         }
       }
 }
@@ -459,15 +468,17 @@ fun DailyScheduler(
 @Composable
 fun HourScale(hourHeight: Dp = 60.dp) {
   Column {
-    for (hour in 0..24) {
+    Box(modifier = Modifier.height(hourHeight / 2))
+    for (hour in 1..23) {
       Box(
           modifier = Modifier.height(hourHeight)
           // .fillMaxWidth()
           ,
-          contentAlignment = Alignment.TopStart) {
+          contentAlignment = Alignment.Center) {
             Text(text = "$hour:00", modifier = Modifier.padding(4.dp))
           }
     }
+    Box(modifier = Modifier.height(hourHeight / 2))
   }
 }
 
@@ -483,26 +494,39 @@ fun HourScale(hourHeight: Dp = 60.dp) {
 fun DailyTasks(
     reports: List<Report>,
     hourHeight: Dp = 60.dp,
+    showTimeLine: Boolean = false,
     navigateToReport: (String) -> Unit = {}
 ) {
   Box(modifier = Modifier.fillMaxSize()) {
+    // Hour lines
+    for (hour in 0..24) {
+      Box(
+          modifier =
+              Modifier.fillMaxWidth()
+                  .height(2.dp)
+                  .offset(y = hourToOffset(hour.toFloat(), hourHeight))
+                  .background(MaterialTheme.colorScheme.surfaceVariant),
+          contentAlignment = Alignment.TopStart) {}
+    }
     reports
         .filter { it.startTime != null }
         .forEach { report ->
-          val topOffset = report.startTime!!.hour.times(hourHeight.value)
+          val topOffset = localTimeToOffset(report.startTime!!.toLocalTime(), hourHeight)
           val taskHeight =
-              report.duration.let {
-                if (it == null) 30f
-                else {
-                  max((it.hour + (it.minute.div(60))).times(hourHeight.value), 30f)
-                }
-              }
+              report.duration
+                  .let {
+                    if (it == null) 30f
+                    else {
+                      max(localTimeToOffset(it, hourHeight).value, 30f)
+                    }
+                  }
+                  .dp
 
           Column(
               modifier =
                   Modifier.fillMaxWidth()
-                      .height(taskHeight.dp)
-                      .offset(y = topOffset.dp)
+                      .height(taskHeight)
+                      .offset(y = topOffset)
                       .padding(horizontal = 0.dp)
                       .background(
                           color = statusColor(report.status), shape = MaterialTheme.shapes.medium)
@@ -514,8 +538,8 @@ fun DailyTasks(
                     style = MaterialTheme.typography.titleLarge,
                     color = onStatusColor(report.status),
                     overflow = TextOverflow.Ellipsis,
-                    maxLines = if (taskHeight.dp >= 90.dp) 2 else 1)
-                if (taskHeight.dp >= 54.dp)
+                    maxLines = if (taskHeight >= 90.dp) 2 else 1)
+                if (taskHeight >= 54.dp)
                     report.location?.name?.let {
                       Text(
                           it,
@@ -526,7 +550,41 @@ fun DailyTasks(
                     }
               }
         }
+    if (showTimeLine) {
+      CurrentTimeLine(hourHeight)
+    }
   }
+}
+
+/**
+ * Time Line Display on the Scheduler at the current time.
+ *
+ * @param hourHeight size in Dp of each hour used to calculate the offset
+ */
+@Composable
+fun CurrentTimeLine(hourHeight: Dp) {
+  val now = LocalTime.now()
+  val offset = localTimeToOffset(now, hourHeight)
+  Row(
+      modifier = Modifier.fillMaxWidth().offset(y = offset),
+      verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier =
+                Modifier.size(12.dp)
+                    .background(MaterialTheme.colorScheme.primary, shape = CircleShape))
+        Box(
+            modifier =
+                Modifier.fillMaxWidth().height(3.dp).background(MaterialTheme.colorScheme.primary),
+        )
+      }
+}
+
+fun localTimeToOffset(time: LocalTime, hourHeight: Dp): Dp {
+  return hourToOffset((time.toSecondOfDay() / (60.0 * 60.0).toFloat()), hourHeight)
+}
+
+fun hourToOffset(hour: Float, hourHeight: Dp): Dp {
+  return (hour * hourHeight.value).dp
 }
 
 /**
