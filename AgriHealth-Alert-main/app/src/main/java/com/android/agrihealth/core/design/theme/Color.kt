@@ -29,3 +29,10 @@ data class StatusColors(
 )
 
 val LocalStatusColors = staticCompositionLocalOf { StatusColors() }
+
+data class AlertZoneColors(
+    val inZone: Color = Color(0xFFA5D6A7),
+    val outOfZone: Color = Color(0xFFBDBDBD)
+)
+
+val LocalAlertZoneColors = staticCompositionLocalOf { AlertZoneColors() }

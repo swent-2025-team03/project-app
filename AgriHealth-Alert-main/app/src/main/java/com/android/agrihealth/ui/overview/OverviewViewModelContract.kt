@@ -10,9 +10,9 @@ interface OverviewViewModelContract {
 
   fun loadReports(user: User)
 
-  fun loadAlerts()
+  fun updateFiltersForReports(status: ReportStatus?, officeId: String?, farmerId: String?)
 
-  fun updateFilters(status: ReportStatus?, officeId: String?, farmerId: String?)
+  fun loadAlerts(user: User)
 
   fun signOut(credentialManager: CredentialManager)
 }

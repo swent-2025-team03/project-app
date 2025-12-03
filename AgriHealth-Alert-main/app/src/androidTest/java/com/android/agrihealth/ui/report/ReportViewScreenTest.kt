@@ -411,4 +411,12 @@ class ReportViewScreenTest {
     backButton.performClick()
     alertBox.assertIsNotDisplayed()
   }
+
+  @Test
+  fun vet_collectedSwitch() {
+    setVetScreen()
+    composeTestRule
+        .onNodeWithTag(ReportComposableCommonsTestTags.COLLECTED_SWITCH)
+        .assertIsDisplayed()
+  }
 }

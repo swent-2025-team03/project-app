@@ -105,6 +105,8 @@ fun AgriHealthApp(
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
 
+  val overviewViewModel: OverviewViewModel = viewModel()
+
   // Location services: Use the ViewModel and not the repository
   LocationRepositoryProvider.repository = LocationRepository(context)
   val locationViewModel: LocationViewModel = viewModel()
@@ -166,8 +168,6 @@ fun AgriHealthApp(
         route = Screen.Overview.name,
     ) {
       composable(Screen.Overview.route) {
-        val overviewViewModel: OverviewViewModel = viewModel()
-
         OverviewScreen(
             credentialManager = credentialManager,
             userRole = currentUserRole,
@@ -252,10 +252,11 @@ fun AgriHealthApp(
             ->
             val alertId = backStackEntry.arguments?.getString("alertId") ?: ""
 
-            val viewModel: AlertViewModel = viewModel()
+            val overviewUiState by overviewViewModel.uiState.collectAsState()
+            val sortedAlerts = overviewUiState.sortedAlerts
+            val alertViewModel = AlertViewModel(sortedAlerts, alertId)
 
-            AlertViewScreen(
-                navigationActions = navigationActions, viewModel = viewModel, alertId = alertId)
+            AlertViewScreen(navigationActions = navigationActions, viewModel = alertViewModel)
           }
       composable(
           route = Screen.ViewUser.route,

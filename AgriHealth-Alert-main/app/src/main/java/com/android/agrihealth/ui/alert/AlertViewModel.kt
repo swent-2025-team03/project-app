@@ -1,64 +1,45 @@
 package com.android.agrihealth.ui.alert
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.alert.Alert
-import com.android.agrihealth.data.model.alert.AlertRepository
-import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
+import com.android.agrihealth.ui.overview.AlertUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
-/**
- * Represents the UI state for viewing a single alert.
- *
- * @property alert The currently loaded `Alert`. Null if not loaded yet.
- */
 data class AlertViewUIState(val alert: Alert? = null, val errorMessage: String? = null)
 
-class AlertViewModel(private val repository: AlertRepository = AlertRepositoryProvider.repository) :
+/**
+ * ViewModel for alert navigation. Tracks current index and exposes the selected alert via
+ * [uiState].
+ */
+class AlertViewModel(private val sortedAlerts: List<AlertUiState>, startAlertId: String) :
     ViewModel() {
 
-  private val _uiState = MutableStateFlow(AlertViewUIState())
-  val uiState: StateFlow<AlertViewUIState> = _uiState.asStateFlow()
-
-  private val _currentAlertIndex = MutableStateFlow(0)
+  private val _currentAlertIndex =
+      MutableStateFlow(sortedAlerts.indexOfFirst { it.alert.id == startAlertId }.coerceAtLeast(0))
   val currentAlertIndex: StateFlow<Int> = _currentAlertIndex.asStateFlow()
 
-  /** Loads an alert by its ID and updates the state. */
-  fun loadAlert(alertId: String) {
-    viewModelScope.launch {
-      try {
-        val fetchedAlert = repository.getAlertById(alertId)
-        if (fetchedAlert != null) {
-          _uiState.value = AlertViewUIState(alert = fetchedAlert)
-          val index = repository.getAlerts().indexOfFirst { it.id == alertId }
-          if (index != -1) _currentAlertIndex.value = index
-        } else {
-          _uiState.value = _uiState.value.copy(errorMessage = "Alert with ID $alertId not found.")
-        }
-      } catch (e: Exception) {
-        _uiState.value = _uiState.value.copy(errorMessage = "Error loading Alert: ${e.message}")
-      }
+  private val _uiState =
+      MutableStateFlow(
+          AlertViewUIState(alert = sortedAlerts.getOrNull(_currentAlertIndex.value)?.alert))
+  val uiState: StateFlow<AlertViewUIState> = _uiState.asStateFlow()
+
+  fun loadPreviousAlert() {
+    if (_currentAlertIndex.value > 0) {
+      _currentAlertIndex.value -= 1
+      _uiState.value = AlertViewUIState(alert = sortedAlerts[_currentAlertIndex.value].alert)
     }
   }
 
-  fun loadPreviousAlert(currentId: String) {
-    viewModelScope.launch {
-      val previous = repository.getPreviousAlert(currentId)
-      previous?.let { loadAlert(it.id) }
+  fun loadNextAlert() {
+    if (_currentAlertIndex.value < sortedAlerts.size - 1) {
+      _currentAlertIndex.value += 1
+      _uiState.value = AlertViewUIState(alert = sortedAlerts[_currentAlertIndex.value].alert)
     }
   }
 
-  fun loadNextAlert(currentId: String) {
-    viewModelScope.launch {
-      val next = repository.getNextAlert(currentId)
-      next?.let { loadAlert(it.id) }
-    }
-  }
+  fun hasPrevious() = _currentAlertIndex.value > 0
 
-  fun hasPrevious(currentId: String) = repository.getPreviousAlert(currentId) != null
-
-  fun hasNext(currentId: String) = repository.getNextAlert(currentId) != null
+  fun hasNext() = _currentAlertIndex.value < sortedAlerts.size - 1
 }

@@ -18,6 +18,7 @@ data class AddReportUiState(
     val title: String = "",
     val description: String = "",
     val chosenOffice: String = "",
+    val collected: Boolean = false,
     val address: Location? = null,
     val questionForms: List<QuestionForm> = emptyList(),
 )
@@ -32,6 +33,10 @@ class AddReportViewModel(
   init {
     _uiState.value =
         _uiState.value.copy(questionForms = HealthQuestionFactory.animalHealthQuestions())
+  }
+
+  override fun switchCollected() {
+    _uiState.value = _uiState.value.copy(collected = !uiState.value.collected)
   }
 
   override fun setTitle(newTitle: String) {
@@ -77,6 +82,7 @@ class AddReportViewModel(
             officeId = uiState.chosenOffice,
             status = ReportStatus.PENDING,
             answer = null,
+            collected = uiState.collected,
             location = uiState.address)
 
     viewModelScope.launch { reportRepository.addReport(newReport) }

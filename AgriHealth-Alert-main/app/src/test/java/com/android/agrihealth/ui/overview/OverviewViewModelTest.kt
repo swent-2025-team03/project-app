@@ -74,7 +74,7 @@ class OverviewViewModelTest {
     advanceUntilIdle()
 
     val officeId = viewModel.uiState.value.officeOptions.firstOrNull()
-    viewModel.updateFilters(status = null, officeId = officeId, farmerId = null)
+    viewModel.updateFiltersForReports(status = null, officeId = officeId, farmerId = null)
     val state = viewModel.uiState.value
 
     Assert.assertEquals(officeId, state.selectedOffice)

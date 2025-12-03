@@ -311,6 +311,7 @@ fun ReportViewScreen(
                           }
                     }
               }
+              CollectedSwitch(report.collected)
               // ---- Set Time section ----
               Column {
                 Text(

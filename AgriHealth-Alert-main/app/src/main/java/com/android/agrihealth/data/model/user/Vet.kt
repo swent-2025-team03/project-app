@@ -13,5 +13,16 @@ data class Vet(
     val validCodes: List<String> = emptyList(),
     val officeId: String? = null, // Which office the vet belongs to (unique)
     override val isGoogleAccount: Boolean = false,
-    override val description: String? = null
-) : User(uid, firstname, lastname, UserRole.VET, email, address, isGoogleAccount, description)
+    override val description: String? = null,
+    override val collected: Boolean = false
+) :
+    User(
+        uid,
+        firstname,
+        lastname,
+        UserRole.VET,
+        email,
+        address,
+        isGoogleAccount,
+        description,
+        collected)
