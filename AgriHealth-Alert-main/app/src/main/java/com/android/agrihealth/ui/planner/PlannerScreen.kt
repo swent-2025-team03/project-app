@@ -2,7 +2,6 @@ package com.android.agrihealth.ui.planner
 
 import android.annotation.SuppressLint
 import android.app.TimePickerDialog
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -54,19 +53,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.core.design.theme.onStatusColor
 import com.android.agrihealth.core.design.theme.statusColor
-import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.User
-import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
@@ -96,8 +90,6 @@ object PlannerScreenTestTags {
 
   fun reportCardTag(reportId: String): String = "reportCard_$reportId"
 }
-
-// Todo: implement task overlapping
 
 /**
  * Planner Screen lets the user see their Reports ordered by dates.
@@ -502,7 +494,6 @@ fun DailyTasks(
 ) {
   val minReportDuration = 30f
   BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-    Log.d("Planner Screen", "maxWidth: $maxWidth, maxHeight $maxHeight")
     // Hour lines
     for (hour in 0..24) {
       Box(
@@ -816,6 +807,7 @@ fun TimePickerBox(
       }
 }
 
+/* Commented for sonar coverage
 @Preview
 @Composable
 fun PlannerScreenPreview() {
@@ -920,3 +912,4 @@ fun PlannerScreenPreview() {
   val fakePlannerVM = PlannerViewModel(reportRepo)
   AgriHealthAppTheme { PlannerScreen(user = user, reportId = null, plannerVM = fakePlannerVM) }
 }
+*/
