@@ -81,7 +81,7 @@ jobs:
 
       - name: Start Firebase emulators
         run: |
-          firebase emulators:start --only auth,firestore,storage --project agrihealth-alert & 
+          firebase emulators:start --only auth,firestore,storage,functions --project agrihealth-alert & 
           sleep 15 
           curl -X PATCH "http://localhost:9099/emulator/v1/projects/agrihealth-alert/config" \
           -H "Content-Type: application/json" \
@@ -97,11 +97,11 @@ jobs:
           avd-name: github
           working-directory: ./AgriHealth-Alert-main
           force-avd-creation: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 1080x2400 -memory 2048 -qemu -m 2048
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 1080x2400
           disable-animations: true
           script: |
             ls -alh
-            ./gradlew connectedCheck --parallel --build-cache -Pandroid.testInstrumentationRunnerArguments.package=com.android.agrihealth.data.model
+            ./gradlew connectedCheck --parallel --build-cache
 
       - name: Generate coverage
         run: |
