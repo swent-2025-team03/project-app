@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.overview
 
-import FakeReportRepository
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -10,6 +9,7 @@ import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.data.repository.InMemoryReportRepository
 import com.android.agrihealth.testutil.FakeAlertRepository
 import junit.framework.TestCase.assertEquals
 import org.junit.Before
@@ -39,7 +39,7 @@ class OverviewStableUITest {
       OverviewScreen(
           userRole = UserRole.FARMER,
           user = farmer,
-          overviewViewModel = OverviewViewModel(FakeReportRepository()))
+          overviewViewModel = OverviewViewModel(InMemoryReportRepository()))
     }
   }
 
@@ -48,7 +48,7 @@ class OverviewStableUITest {
       OverviewScreen(
           userRole = UserRole.VET,
           user = vet,
-          overviewViewModel = OverviewViewModel(FakeReportRepository()))
+          overviewViewModel = OverviewViewModel(InMemoryReportRepository()))
     }
   }
 

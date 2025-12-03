@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.map
 
-import FakeReportRepository
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
@@ -19,6 +18,7 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.repository.InMemoryReportRepository
 import com.android.agrihealth.testutil.FakeUserRepository
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -103,7 +103,7 @@ class MapScreenTest {
 
   private lateinit var locationViewModel: LocationViewModel
   private lateinit var locationRepository: LocationRepository
-  val reportRepository = FakeReportRepository()
+  val reportRepository = InMemoryReportRepository()
   private lateinit var userId: String
 
   @Before
