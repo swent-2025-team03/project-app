@@ -69,10 +69,6 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      - name: Increase Gradle JVM memory
-        run: echo "org.gradle.jvmargs=-Xmx4g" >> gradle.properties
-        working-directory: ./AgriHealth-Alert-main
-
       - name: Assemble
         run: ./gradlew assembleDebug lint --parallel --build-cache
 
