@@ -27,6 +27,7 @@ import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.QuestionForm
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
+import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.common.OfficeName
@@ -82,7 +83,8 @@ fun ReportViewScreen(
     navigationActions: NavigationActions,
     userRole: UserRole,
     viewModel: ReportViewViewModel,
-    reportId: String = ""
+    reportId: String = "",
+    user: User
 ) {
   LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
 
@@ -116,6 +118,8 @@ fun ReportViewScreen(
   var isSpamDialogOpen by remember { mutableStateOf(false) }
   var isDeleteDialogOpen by remember { mutableStateOf(false) }
   var isUnsavedAlertOpen by remember { mutableStateOf(false) }
+
+  // AssignedVet logic
 
   fun handleGoBack(force: Boolean = false) {
     if (unsavedChanges && !force) isUnsavedAlertOpen = true else navigationActions.goBack()
