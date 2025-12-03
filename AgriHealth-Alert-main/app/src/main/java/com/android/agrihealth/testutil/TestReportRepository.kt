@@ -5,7 +5,6 @@ import com.android.agrihealth.data.model.report.Report
 class TestReportRepository(initialReports: List<Report> = emptyList()) :
     InMemoryReportRepository(initialReports) {
 
-  // Hooks de test
   var editCalled: Boolean = false
   var lastAddedReport: Report? = null
 
