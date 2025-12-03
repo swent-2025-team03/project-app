@@ -58,6 +58,14 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
   override suspend fun deleteReport(reportId: String) {
     db.collection(REPORTS_COLLECTION_PATH).document(reportId).delete().await()
   }
+
+  override suspend fun assignReportToVet(reportId: String, vetId: String) {
+    db.collection(REPORTS_COLLECTION_PATH).document(reportId).update("assignedVet", vetId).await()
+  }
+
+  override suspend fun unassignReport(reportId: String) {
+    db.collection(REPORTS_COLLECTION_PATH).document(reportId).update("assignedVet", null).await()
+  }
 }
 
 /**
