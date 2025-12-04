@@ -128,6 +128,13 @@ fun ReportViewScreen(
   val isUnassigned = report.assignedVet == null
   val isAssignedToOther = !isUnassigned && !isAssignedToCurrentVet
 
+  val canBeUnassigned =
+      isAssignedToCurrentVet &&
+          (report.answer.isNullOrEmpty()) &&
+          (report.status == ReportStatus.PENDING) &&
+          (report.startTime == null) &&
+          (report.duration == null)
+
   fun handleGoBack(force: Boolean = false) {
     if (unsavedChanges && !force) isUnsavedAlertOpen = true else navigationActions.goBack()
   }
@@ -288,11 +295,13 @@ fun ReportViewScreen(
               }
               if (isAssignedToCurrentVet) {
                 Text("You have claimed this report. Please address it!")
-                Button(
-                    onClick = { viewModel.unassign() },
-                    modifier = Modifier.fillMaxWidth().testTag(UNASSIGN_BUTTON)) {
-                      Text("Unassign Report")
-                    }
+                if (canBeUnassigned) {
+                  Button(
+                      onClick = { viewModel.unassign() },
+                      modifier = Modifier.fillMaxWidth().testTag(UNASSIGN_BUTTON)) {
+                        Text("Unassign Report")
+                      }
+                }
               }
 
               if (isAssignedToOther) {
