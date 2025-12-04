@@ -71,7 +71,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import kotlin.math.max
 
 object PlannerScreenTestTags {
   const val SCREEN = "plannerScreen"
@@ -433,7 +432,10 @@ fun DailyScheduler(
       val reportToEdit = reports.find { it.id == reportId }
       val first = reportToEdit ?: reports.minBy { it.startTime?.hour ?: 24 }
 
-      val offsetPx = with(density) { (first.startTime!!.hour * hourHeight.toPx()).toInt() }
+      val offsetPx =
+          with(density) {
+            localTimeToOffset(first.startTime!!.toLocalTime(), hourHeight).toPx().toInt()
+          }
 
       scrollState.animateScrollTo(
           offsetPx, animationSpec = tween(800, easing = LinearOutSlowInEasing))
@@ -463,7 +465,7 @@ fun DailyScheduler(
 @Composable
 fun HourScale(hourHeight: Dp = 60.dp) {
   Column {
-    Box(modifier = Modifier.height(hourHeight / 2))
+    Spacer(modifier = Modifier.height(hourHeight / 2))
     for (hour in 1..23) {
       Box(
           modifier = Modifier.height(hourHeight)
@@ -473,7 +475,7 @@ fun HourScale(hourHeight: Dp = 60.dp) {
             Text(text = "$hour:00", modifier = Modifier.padding(4.dp))
           }
     }
-    Box(modifier = Modifier.height(hourHeight / 2))
+    Spacer(modifier = Modifier.height(hourHeight / 2))
   }
 }
 
@@ -526,7 +528,7 @@ fun DailyTasks(
               .let {
                 if (it == null) 30f
                 else {
-                  max(localTimeToOffset(it, hourHeight).value, minReportDuration)
+                  localTimeToOffset(it, hourHeight).value.coerceAtLeast(minReportDuration)
                 }
               }
               .dp

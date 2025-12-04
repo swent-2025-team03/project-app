@@ -4,7 +4,9 @@ import com.android.agrihealth.data.model.report.Report
 import java.time.LocalTime
 
 /**
- * Coded using chatGPT 5.0 data class representing a tha layout for a ReportCard
+ * Coded using chatGPT 5.0
+ *
+ * Data class representing a the layout for a ReportCard
  *
  * @param report The Report represented by the LayoutItem
  * @param start the startTime of the report
@@ -21,8 +23,10 @@ data class ReportLayoutItem(
 )
 
 /**
- * Coded using ChatGPT 5.0 cluster events into group of overlapping clusters. This assures that a
- * cluster has minimum totalLanes after assignLane
+ * Coded using ChatGPT 5.0
+ *
+ * Cluster events into group of overlapping clusters. This assures that a cluster has minimum
+ * totalLanes after assignLane
  *
  * @param events list of ReportLayoutItem to split into cluster
  * @see ReportLayoutItem
@@ -40,7 +44,7 @@ fun clusterEvents(events: List<ReportLayoutItem>): List<List<ReportLayoutItem>> 
   for (i in 1 until sorted.size) {
     val item = sorted[i]
 
-    // If event starts before or exactly at current cluster end → same cluster
+    // If event starts before current cluster end → same cluster
     if (item.start < currentEnd) {
       currentCluster.add(item)
       if (item.end > currentEnd) currentEnd = item.end
@@ -57,8 +61,9 @@ fun clusterEvents(events: List<ReportLayoutItem>): List<List<ReportLayoutItem>> 
 }
 
 /**
- * Coded using chatGPT 5.0 Split a cluster of overlapping Report to different lane to avoid
- * overlapping
+ * Coded using chatGPT 5.0
+ *
+ * Split a cluster of overlapping Report to different lane to avoid overlapping
  *
  * @param cluster list of ReportLayout item to attribute to lanes
  */
