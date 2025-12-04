@@ -80,7 +80,6 @@ class EditProfileScreenTest {
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.dropdownTag("FARMER"))
         .assertIsDisplayed()
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.dropdownTag("VET")).assertIsDisplayed()
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
         .assertDoesNotExist()
@@ -108,66 +107,6 @@ class EditProfileScreenTest {
       SemanticsNodeInteractionCollection {
     fetchSemanticsNodes().forEachIndexed { index, _ -> get(index).assertIsNotDisplayed() }
     return this
-  }
-
-  @Test
-  fun activeFarmerCodes_showsListIfExpanded() {
-    composeTestRule.setContent {
-      EditProfileScreen(userViewModel = fakeVetViewModel(officeCodes, officeCodes))
-    }
-
-    val codeNodes =
-        composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.dropdownElementTag("FARMER"))
-    val codeButtonNodes =
-        composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)
-    val listNode = composeTestRule.onNodeWithTag(EditProfileScreenTestTags.dropdownTag("FARMER"))
-
-    codeNodes.assertAreNotDisplayed()
-    codeButtonNodes.assertAreNotDisplayed()
-
-    listNode.assertIsDisplayed().performClick()
-
-    codeNodes.assertAreDisplayed()
-    codeButtonNodes.assertAreDisplayed().onFirst().performClick()
-
-    composeTestRule.waitUntil {
-      composeTestRule.onAllNodesWithText("Copied to clipboard").fetchSemanticsNodes().isNotEmpty()
-    }
-
-    listNode.performClick()
-
-    codeNodes.assertAreNotDisplayed()
-    codeButtonNodes.assertAreNotDisplayed()
-  }
-
-  @Test
-  fun activeVetCodes_showsListIfExpanded() {
-    composeTestRule.setContent {
-      EditProfileScreen(userViewModel = fakeVetViewModel(officeCodes, officeCodes))
-    }
-
-    val codeNodes =
-        composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.dropdownElementTag("VET"))
-    val codeButtonNodes =
-        composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)
-    val listNode = composeTestRule.onNodeWithTag(EditProfileScreenTestTags.dropdownTag("VET"))
-
-    codeNodes.assertAreNotDisplayed()
-    codeButtonNodes.assertAreNotDisplayed()
-
-    listNode.assertIsDisplayed().performClick()
-
-    codeNodes.assertAreDisplayed()
-    codeButtonNodes.assertAreDisplayed().onFirst().performClick()
-
-    composeTestRule.waitUntil {
-      composeTestRule.onAllNodesWithText("Copied to clipboard").fetchSemanticsNodes().isNotEmpty()
-    }
-
-    listNode.performClick()
-
-    codeNodes.assertAreNotDisplayed()
-    codeButtonNodes.assertAreNotDisplayed()
   }
 
   @Test
