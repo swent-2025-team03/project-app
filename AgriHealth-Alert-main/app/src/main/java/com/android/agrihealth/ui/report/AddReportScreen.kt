@@ -106,24 +106,16 @@ object AddReportDialogTexts {
   const val TITLE_FAILURE = "Error!"
 }
 
-/** This **MUST** be the same as in: AndroidManifest.xml --> <provider --> android:authorities */
-fun getFileProviderAuthority(context: Context): String =
+// This **MUST** be the same as in: AndroidManifest.xml --> <provider --> android:authorities
+private fun getFileProviderAuthority(context: Context): String =
   context.packageName + ".fileprovider" // TODO: Maybe move this into its own object
 
 // Helper function to format the error message shown in the error dialog when creating a report
 // failed
 private fun generateCreateReportErrorMessage(e: Throwable?): String {
-  val baseMessage = AddReportFeedbackTexts.FAILURE
   val errorMessage = e?.message ?: AddReportFeedbackTexts.UNKNOWN
 
-  val fullMessage =
-      """
-        $baseMessage
-
-        Details:
-        $errorMessage
-    """
-          .trimIndent()
+  val fullMessage = "${AddReportFeedbackTexts.FAILURE}\n\nDetails:\n${errorMessage}"
 
   return fullMessage
 }
