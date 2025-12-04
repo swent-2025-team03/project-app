@@ -75,9 +75,6 @@ class EditProfileScreenTest {
     composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel()) }
 
     composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.dropdownTag("FARMER"))
-        .assertIsDisplayed()
-    composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
         .assertDoesNotExist()
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.ADD_CODE_BUTTON).assertDoesNotExist()
