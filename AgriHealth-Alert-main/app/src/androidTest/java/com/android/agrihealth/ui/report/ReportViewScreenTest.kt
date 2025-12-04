@@ -241,7 +241,7 @@ class ReportViewScreenTest {
   }
 
   @Test
-  fun vet_canClaimAndUnassignReport() {
+  fun vet_unassignButton_IsDisplayed() {
     setValidVetScreen()
 
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.UNASSIGN_BUTTON).assertIsDisplayed()

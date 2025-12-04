@@ -124,9 +124,9 @@ fun ReportViewScreen(
   var isUnsavedAlertOpen by remember { mutableStateOf(false) }
 
   // AssignedVet logic
-  val isAssignedToVet = (userRole != UserRole.FARMER && (report.assignedVet == user?.uid))
+  val isAssignedToCurrentVet = (userRole != UserRole.FARMER && (report.assignedVet == user?.uid))
   val isUnassigned = report.assignedVet == null
-  val isAssignedToOther = !isUnassigned && !isAssignedToVet
+  val isAssignedToOther = !isUnassigned && !isAssignedToCurrentVet
 
   fun handleGoBack(force: Boolean = false) {
     if (unsavedChanges && !force) isUnsavedAlertOpen = true else navigationActions.goBack()
@@ -286,7 +286,7 @@ fun ReportViewScreen(
                       })
                 }
               }
-              if (isAssignedToVet) {
+              if (isAssignedToCurrentVet) {
                 Text("You have claimed this report. Please address it!")
                 Button(
                     onClick = { viewModel.unassign() },
@@ -307,7 +307,7 @@ fun ReportViewScreen(
                     text = report.answer ?: "No answer yet.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
-              } else if (isAssignedToVet) {
+              } else if (isAssignedToCurrentVet) {
                 // ---- Answer section ----
                 Text(
                     text = "Answer:",
@@ -326,7 +326,7 @@ fun ReportViewScreen(
               }
 
               // ---- Status dropdown (assignedVet only) ----
-              if (isAssignedToVet) {
+              if (isAssignedToCurrentVet) {
                 var expanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(
                     expanded = expanded,
@@ -367,16 +367,16 @@ fun ReportViewScreen(
               }
 
               // ---- Set Time section ----
-              if (isAssignedToVet || (userRole == UserRole.FARMER)) {
+              if (isAssignedToCurrentVet || (userRole == UserRole.FARMER)) {
                 Column {
                   Text(
                       text = "Veterinarian visit: ",
                       style = MaterialTheme.typography.titleMedium,
                       fontWeight = FontWeight.SemiBold)
                   Spacer(modifier = Modifier.width(8.dp))
-                  Row {
+                  Row(modifier = Modifier.padding(start = 12.dp)) {
                     Text(
-                        "    Start time: ",
+                        "Start time: ",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold)
                     Text(
@@ -392,9 +392,9 @@ fun ReportViewScreen(
                                   navigationActions.navigateTo(Screen.Planner(reportId = report.id))
                                 }))
                   }
-                  Row {
+                  Row(modifier = Modifier.padding(start = 12.dp)) {
                     Text(
-                        "    Duration: ",
+                        "Duration: ",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold)
                     Text(
@@ -433,7 +433,7 @@ fun ReportViewScreen(
                                 Text("View on Map")
                               }
 
-                          if (isAssignedToVet) {
+                          if (isAssignedToCurrentVet) {
                             val isAlreadySpam = selectedStatus == ReportStatus.SPAM
                             if (!isAlreadySpam) {
                               val color = StatusColors().spam
@@ -479,7 +479,7 @@ fun ReportViewScreen(
                         }
 
                     // Save button (assignedVet only)
-                    if (isAssignedToVet) {
+                    if (isAssignedToCurrentVet) {
                       Button(
                           onClick = { viewModel.onSave() },
                           modifier =
