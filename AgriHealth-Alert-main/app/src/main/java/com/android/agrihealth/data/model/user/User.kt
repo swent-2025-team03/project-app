@@ -27,29 +27,25 @@ fun User.copyCommon(
 ): User {
   return when (this) {
     is Farmer ->
-        Farmer(
+        this.copy(
             uid,
             firstname,
             lastname,
             email,
             address,
-            this.linkedOffices,
-            this.defaultOffice,
-            isGoogleAccount,
-            description,
-            deviceTokensFCM)
+            isGoogleAccount = isGoogleAccount,
+            description = description,
+            deviceTokensFCM = deviceTokensFCM)
     is Vet ->
-        Vet(
+        this.copy(
             uid,
             firstname,
             lastname,
             email,
             address,
-            this.validCodes,
-            this.officeId,
-            isGoogleAccount,
-            description,
-            deviceTokensFCM)
+            isGoogleAccount = isGoogleAccount,
+            description = description,
+            deviceTokensFCM = deviceTokensFCM)
   }
 }
 

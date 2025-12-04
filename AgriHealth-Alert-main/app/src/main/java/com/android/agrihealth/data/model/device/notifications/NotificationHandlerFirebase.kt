@@ -42,9 +42,9 @@ import com.android.agrihealth.data.model.authentification.USERS_COLLECTION_PATH
 */
 
 @SuppressLint("MissingFirebaseInstanceTokenRefresh") // Tokens are handled in MainActivity
-class FirebaseMessagingService(
-    private val tokenResolver: NotificationTokenResolver = FirebaseTokenResolver(),
-    private val sender: NotificationSender = FirebaseNotificationSender()
+class NotificationHandlerFirebase(
+    private val tokenResolver: NotificationTokenResolver = NotificationTokenResolverFirebase(),
+    private val sender: NotificationSender = NotificationSenderFirebase()
 ) : NotificationHandler, FirebaseMessagingService() {
 
   private val channelNewReport = "new_report_channel"

@@ -23,6 +23,7 @@ enum class NotificationType {
 
   companion object {
     /** Tries to convert a type name into a NotificationType. To use when receiving from Firebase */
-    fun fromName(name: String): NotificationType? = entries.firstOrNull { it.toName() == name }
+    fun fromName(name: String): NotificationType? =
+        entries.firstOrNull { it.toName() == name.lowercase() }
   }
 }

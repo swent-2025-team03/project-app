@@ -11,8 +11,8 @@ import okhttp3.Request
 import org.junit.Before
 
 open class FirebaseEmulatorsTest() {
-  open val userRepository = UserRepositoryProvider.repository
-  open val authRepository = AuthRepositoryProvider.repository
+  val userRepository = UserRepositoryProvider.repository
+  val authRepository = AuthRepositoryProvider.repository
   // from bootcamp
   val httpClient = OkHttpClient()
 

@@ -39,7 +39,7 @@
         </activity>
 
         <service
-            android:name=".data.model.device.notifications.FirebaseMessagingService"
+            android:name=".data.model.device.notifications.NotificationHandlerFirebase"
             android:exported="false"
             android:directBootAware="true">
             <intent-filter>

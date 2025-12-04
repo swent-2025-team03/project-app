@@ -1,6 +1,6 @@
 package com.android.agrihealth.data.model.device.notifications
 
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
+import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.testutil.FakeNotificationSender
 import com.android.agrihealth.testutil.FakeNotificationTokenResolver
 import com.android.agrihealth.testutil.FakeUserRepository
@@ -19,18 +19,28 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-class NotificationsTest : FirebaseEmulatorsTest() {
+class NotificationsTest {
   private val fakeToken = "1234"
-  override val userRepository = FakeUserRepository()
+  private val userRepository = FakeUserRepository()
   private val tokenResolver = FakeNotificationTokenResolver(fakeToken)
   private val sender = FakeNotificationSender(userRepository)
 
-  val messagingService = FirebaseMessagingService(tokenResolver, sender)
+  val messagingService = NotificationHandlerFirebase(tokenResolver, sender)
+
+  private val user1 =
+      Farmer(
+          "uid1",
+          "dreamy",
+          "bull",
+          "ambatu@farm.com",
+          null,
+          defaultOffice = null,
+          deviceTokensFCM = setOf(fakeToken))
+  private val user2 =
+      Farmer("uid2", "just", "jo", "uhoh@turbulence.com", null, defaultOffice = null)
 
   @Before
-  override fun setUp() = runTest {
-    userRepository.addUser(user1.copy(deviceTokensFCM = setOf(fakeToken)))
-  }
+  fun setUp() = runTest { userRepository.addUser(user1.copy(deviceTokensFCM = setOf(fakeToken))) }
 
   @Test
   fun getToken_succeedsWithTokenProvider() = runTest {
@@ -40,7 +50,7 @@ class NotificationsTest : FirebaseEmulatorsTest() {
   @Test
   fun getToken_failsWithBadTokenProvider() = runTest {
     val badTokenResolver = FakeNotificationTokenResolver(null)
-    val badMessagingService = FirebaseMessagingService(badTokenResolver)
+    val badMessagingService = NotificationHandlerFirebase(badTokenResolver)
 
     badMessagingService.getToken { token -> assertEquals(null, token) }
   }
@@ -79,7 +89,7 @@ class NotificationsTest : FirebaseEmulatorsTest() {
   @Test
   // Cannot use showNotification directly because it's a service and it crashes the app
   fun onMessageReceived_callsShowNotificationWithCorrectInfo() = runTest {
-    val spy = spyk(FirebaseMessagingService(tokenResolver, sender))
+    val spy = spyk(NotificationHandlerFirebase(tokenResolver, sender))
     val slot = slot<Notification>()
 
     every { spy.showNotification(capture(slot)) } just Runs
@@ -106,7 +116,7 @@ class NotificationsTest : FirebaseEmulatorsTest() {
 
   @Test
   fun onMessageReceived_handlesBadMessageProperly() = runTest {
-    val spy = spyk(FirebaseMessagingService(tokenResolver, sender))
+    val spy = spyk(NotificationHandlerFirebase(tokenResolver, sender))
 
     every { spy.showNotification(any()) } just Runs
 

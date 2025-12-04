@@ -3,7 +3,7 @@ package com.android.agrihealth.data.model.device.notifications
 import android.util.Log
 import com.google.firebase.functions.FirebaseFunctions
 
-class FirebaseNotificationSender : NotificationSender {
+class NotificationSenderFirebase : NotificationSender {
   private val functions = FirebaseFunctions.getInstance()
 
   @Suppress("UNCHECKED_CAST")
@@ -15,9 +15,8 @@ class FirebaseNotificationSender : NotificationSender {
         .addOnSuccessListener { result ->
           val data = result.data as Map<String, Any>
           val success = data["success"] as Boolean
-          val message = data["message"] as String
+          // val message = data["message"] as String // For debugging
 
-          Log.d("FirebaseNotificationSender", "Response: Success: $success, message: $message")
           onComplete(success)
         }
         .addOnFailureListener { exception ->
