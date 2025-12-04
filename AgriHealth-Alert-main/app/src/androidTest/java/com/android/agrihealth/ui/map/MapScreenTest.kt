@@ -5,23 +5,24 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.rule.GrantPermissionRule
+import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
-import com.android.agrihealth.data.repository.ReportRepositoryLocal
+import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.testutil.FakeUserRepository
+import com.android.agrihealth.testutil.InMemoryReportRepository
+import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.navigation.NavigationTestTags
-import com.android.agrihealth.ui.user.UserViewModel
 import com.google.android.gms.maps.model.LatLng
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -88,7 +89,7 @@ object MapScreenTestReports {
           Location(46.9491, 7.4474))
 }
 
-class MapScreenTest : FirebaseEmulatorsTest() {
+class MapScreenTest {
 
   private val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
@@ -102,17 +103,28 @@ class MapScreenTest : FirebaseEmulatorsTest() {
 
   private lateinit var locationViewModel: LocationViewModel
   private lateinit var locationRepository: LocationRepository
-  val reportRepository = ReportRepositoryLocal()
+  val reportRepository = InMemoryReportRepository()
   private lateinit var userId: String
 
   @Before
-  override fun setUp() {
-    super.setUp()
-    runTest { authRepository.signUpWithEmailAndPassword(user1.email, "123456", user1) }
-    assert(Firebase.auth.currentUser != null)
-    UserViewModel().refreshCurrentUser()
-    userId = UserViewModel().user.value.uid
+  fun setUp() = runTest {
+    // Fake user
+    userId = "TEST_USER"
+    val fakeUser =
+        Farmer(
+            uid = userId,
+            firstname = "Test",
+            lastname = "User",
+            email = "test@example.com",
+            address = Location(46.9485, 7.4479),
+            linkedOffices = emptyList(),
+            defaultOffice = null,
+            isGoogleAccount = false,
+            description = null)
 
+    val fakeUserRepository = FakeUserRepository(fakeUser)
+    UserRepositoryProvider.repository = fakeUserRepository
+    // Fake location repository
     locationRepository = mockk(relaxed = true)
 
     coEvery { locationRepository.getLastKnownLocation() } returns Location(46.9481, 7.4474, "Bern")
@@ -125,12 +137,12 @@ class MapScreenTest : FirebaseEmulatorsTest() {
 
     LocationRepositoryProvider.repository = locationRepository
     locationViewModel = LocationViewModel()
-    runTest {
-      reportRepository.addReport(MapScreenTestReports.report1.copy(farmerId = userId))
-      reportRepository.addReport(MapScreenTestReports.report2.copy(farmerId = userId))
-      reportRepository.addReport(MapScreenTestReports.report3.copy(farmerId = userId))
-      reportRepository.addReport(MapScreenTestReports.report4.copy(farmerId = userId))
-    }
+
+    // Inject test reports
+    reportRepository.addReport(MapScreenTestReports.report1.copy(farmerId = userId))
+    reportRepository.addReport(MapScreenTestReports.report2.copy(farmerId = userId))
+    reportRepository.addReport(MapScreenTestReports.report3.copy(farmerId = userId))
+    reportRepository.addReport(MapScreenTestReports.report4.copy(farmerId = userId))
   }
 
   // Sets composeTestRule to the map screen with a predefined MapViewModel, using the local report
@@ -143,7 +155,8 @@ class MapScreenTest : FirebaseEmulatorsTest() {
         MapViewModel(
             reportRepository = reportRepository,
             locationViewModel = locationViewModel,
-            selectedReportId = selectedReportId)
+            selectedReportId = selectedReportId,
+            userId = userId)
     composeTestRule.setContent {
       MaterialTheme {
         MapScreen(mapViewModel = mapViewModel, isViewedFromOverview = isViewedFromOverview)
@@ -187,10 +200,16 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   fun displayReportsFromUser() = runTest {
     setContentToMapWithVM()
 
-    reportRepository.getAllReports(userId).forEach { report ->
+    composeTestRule.waitForIdle()
+
+    val reports = reportRepository.getAllReports(userId)
+
+    reports.forEach { report ->
+      val markerTag = MapScreenTestTags.getTestTagForReportMarker(report.id)
+
       composeTestRule
-          .onNodeWithTag(
-              MapScreenTestTags.getTestTagForReportMarker(report.id), useUnmergedTree = true)
+          .onNodeWithTag(markerTag, useUnmergedTree = true)
+          .assertExists()
           .assertIsDisplayed()
     }
   }
@@ -224,8 +243,25 @@ class MapScreenTest : FirebaseEmulatorsTest() {
   @Test
   fun filterReportsByStatus() = runTest {
     setContentToMapWithVM()
+
+    composeTestRule.waitForIdle()
+
     val reports = reportRepository.getAllReports(userId)
-    val filters = listOf(null) + ReportStatus.entries.map { it.displayString() }
+
+    composeTestRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
+      val count =
+          reports.sumOf { r ->
+            val tag = MapScreenTestTags.getTestTagForReportMarker(r.id)
+            composeTestRule
+                .onAllNodesWithTag(tag, useUnmergedTree = true)
+                .fetchSemanticsNodes()
+                .size
+          }
+      count == reports.size
+    }
+
+    val filters: List<String?> =
+        listOf<String?>(null) + ReportStatus.entries.map { it.displayString() }
 
     filters.forEach { filter ->
       composeTestRule
@@ -233,20 +269,23 @@ class MapScreenTest : FirebaseEmulatorsTest() {
           .assertIsDisplayed()
           .performClick()
       composeTestRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForFilter(filter))
+          .onNodeWithTag(MapScreenTestTags.getTestTagForFilter(filter), useUnmergedTree = true)
           .assertIsDisplayed()
           .performClick()
       val (matches, nonMatches) =
           reports.partition { it -> filter == null || it.status.displayString() == filter }
       matches.forEach { report ->
         composeTestRule
-            .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+            .onNodeWithTag(
+                MapScreenTestTags.getTestTagForReportMarker(report.id), useUnmergedTree = true)
+            .assertExists()
             .assertIsDisplayed()
       }
       nonMatches.forEach { report ->
         composeTestRule
-            .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
-            .assertIsNotDisplayed()
+            .onNodeWithTag(
+                MapScreenTestTags.getTestTagForReportMarker(report.id), useUnmergedTree = true)
+            .assertDoesNotExist()
       }
     }
   }
@@ -281,6 +320,7 @@ class MapScreenTest : FirebaseEmulatorsTest() {
         MapViewModel(
             reportRepository = reportRepository,
             locationViewModel = locationViewModel,
+            userId = userId,
             selectedReportId = MapScreenTestReports.report1.id)
 
     val reports1 = List(10) { index -> MapScreenTestReports.report1.copy(id = "report1$index") }

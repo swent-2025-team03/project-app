@@ -206,7 +206,8 @@ fun AgriHealthApp(
         val createMapViewModel =
             object : androidx.lifecycle.ViewModelProvider.Factory {
               override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return MapViewModel(locationViewModel = locationViewModel) as T
+                return MapViewModel(locationViewModel = locationViewModel, userId = currentUserId)
+                    as T
               }
             }
         val mapViewModel: MapViewModel =
@@ -376,7 +377,8 @@ fun AgriHealthApp(
               MapViewModel(
                   locationViewModel = locationViewModel,
                   selectedReportId = sourceReport,
-                  startingPosition = location)
+                  startingPosition = location,
+                  userId = currentUserId)
           MapScreen(
               mapViewModel = mapViewModel,
               navigationActions = navigationActions,

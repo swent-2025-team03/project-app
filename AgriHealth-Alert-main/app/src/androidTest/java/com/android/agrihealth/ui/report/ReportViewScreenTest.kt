@@ -9,8 +9,8 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.FakeOverviewViewModel
-import com.android.agrihealth.testutil.FakeReportRepository
 import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
+import com.android.agrihealth.testutil.TestReportRepository
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
@@ -28,11 +28,10 @@ class ReportViewScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
+  private val fakeRepo = TestReportRepository()
+
   /** Sets up the ReportViewScreen for a given role (Vet or Farmer). */
-  private fun setReportViewScreen(
-      role: UserRole,
-      viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
-  ) {
+  private fun setReportViewScreen(role: UserRole, viewModel: ReportViewViewModel) {
     composeTestRule.setContent {
       val navController = rememberNavController()
       val navigationActions = NavigationActions(navController)
@@ -42,13 +41,11 @@ class ReportViewScreenTest {
   }
 
   // --- Role-specific helpers (wrappers) ---
-  private fun setVetScreen(
-      viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
-  ) = setReportViewScreen(UserRole.VET, viewModel)
+  private fun setVetScreen(viewModel: ReportViewViewModel = ReportViewViewModel(fakeRepo)) =
+      setReportViewScreen(UserRole.VET, viewModel)
 
-  private fun setFarmerScreen(
-      viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
-  ) = setReportViewScreen(UserRole.FARMER, viewModel)
+  private fun setFarmerScreen(viewModel: ReportViewViewModel = ReportViewViewModel(fakeRepo)) =
+      setReportViewScreen(UserRole.FARMER, viewModel)
 
   // --- TEST 1: Vet typing in answer field ---
   @Test
@@ -178,12 +175,26 @@ class ReportViewScreenTest {
   }
 
   // --- TEST 13: Farmer can confirm delete ---
+
   @Test
   fun farmer_canConfirmDelete() {
-    setFarmerScreen()
+    val testReport = ReportViewUIState().report.copy(id = "RPT001")
+    val repo = TestReportRepository(initialReports = listOf(testReport))
+    val vm = ReportViewViewModel(repository = repo)
+
+    composeTestRule.setContent {
+      ReportViewScreen(
+          navigationActions = NavigationActions(rememberNavController()),
+          userRole = UserRole.FARMER,
+          viewModel = vm,
+          reportId = "RPT001")
+    }
+
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.DELETE_BUTTON).performClick()
     composeTestRule.onNodeWithText("Confirm").performClick()
+
     composeTestRule.waitForIdle()
+
     composeTestRule
         .onNodeWithTag(ReportViewScreenTestTags.DELETE_REPORT_ALERT_BOX)
         .assertDoesNotExist()
@@ -314,13 +325,15 @@ class ReportViewScreenTest {
 
   @Test
   fun vet_saveButton_navigatesBackAfterSuccessfulSave() {
-    val fakeRepo = FakeReportRepository()
-    val viewModel = ReportViewViewModel(repository = fakeRepo)
+
+    val TEST_REPORT_ID = "RPT001"
+    val sampleReport = ReportViewUIState().report.copy(id = TEST_REPORT_ID)
+    val fakeRepoWithReport = TestReportRepository(listOf(sampleReport))
+    val viewModel = ReportViewViewModel(repository = fakeRepoWithReport)
 
     composeTestRule.setContent {
       val navController = rememberNavController()
       val navigation = NavigationActions(navController)
-      val TEST_REPORT_ID = "RPT001"
       val vet = Vet("mock_vet_id", "john", "john", "john@john.john", null)
 
       NavHost(navController = navController, startDestination = Screen.Overview.route) {
@@ -376,7 +389,7 @@ class ReportViewScreenTest {
           .isNotEmpty()
     }
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).assertIsDisplayed()
-    assertTrue(fakeRepo.editCalled)
+    assertTrue(fakeRepoWithReport.editCalled)
   }
 
   @Test
