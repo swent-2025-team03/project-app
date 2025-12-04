@@ -44,6 +44,17 @@ class ConnectionRepository(
   // Returns: Result<String> containing the generated code, or an exception if failed.
   suspend fun generateCode(type: String): Result<String> = runCatching {
     val officeId = getCurrentUserOfficeId()
+
+    val currentUser =
+        userRepository.getUserFromId(getCurrentUserId()).getOrNull()
+            ?: throw IllegalStateException("User not found")
+    val vet = currentUser as? Vet ?: throw IllegalStateException("Only vets can generate codes")
+
+    val activeCount = getActiveCodesCount(vet, type)
+    if (activeCount >= 10) {
+      throw IllegalStateException("Cannot generate more than 10 active $type codes")
+    }
+
     repeat(20) {
       val code = Random.nextInt(100_000, 1_000_000).toString()
       val maybeCode =
@@ -133,6 +144,30 @@ class ConnectionRepository(
       snapshot.documents.map { it.id }
     } catch (e: Exception) {
       emptyList()
+    }
+  }
+
+  suspend fun getActiveCodesCount(vet: Vet, type: String): Int {
+    val (targetList, collectionName) =
+        when (type) {
+          "FARMER" -> vet.farmerConnectCodes to "farmerToOfficeConnectCodes"
+          "VET" -> vet.vetConnectCodes to "vetToOfficeConnectCodes"
+          else -> return 0
+        }
+
+    if (targetList.isEmpty()) return 0
+
+    return try {
+      val snapshot =
+          db.collection(collectionName)
+              .whereIn(FieldPath.documentId(), targetList)
+              .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
+              .get()
+              .await()
+
+      snapshot.size()
+    } catch (e: Exception) {
+      0
     }
   }
 }
