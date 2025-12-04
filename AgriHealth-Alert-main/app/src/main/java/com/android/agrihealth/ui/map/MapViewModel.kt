@@ -78,7 +78,6 @@ class MapViewModel(
   private fun fetchLocalizableReports(uid: String) {
     viewModelScope.launch {
       try {
-
         val reports = reportRepository.getAllReports(uid).filter { it.location != null }
 
         _uiState.value = _uiState.value.copy(reports = reports)

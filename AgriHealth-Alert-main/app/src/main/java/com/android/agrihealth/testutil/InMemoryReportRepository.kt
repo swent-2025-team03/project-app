@@ -19,7 +19,7 @@ open class InMemoryReportRepository(initialReports: List<Report> = emptyList()) 
 
   override suspend fun getReportById(reportId: String): Report? =
       reports.find { it.id == reportId }
-          ?: throw NoSuchElementException("ReportRepositoryLocal: Report not found")
+          ?: throw NoSuchElementException("InMemoryReportRepository: Report not found")
 
   override suspend fun addReport(report: Report) {
     reports.removeAll { it.id == report.id }
@@ -38,7 +38,7 @@ open class InMemoryReportRepository(initialReports: List<Report> = emptyList()) 
   override suspend fun deleteReport(reportId: String) {
     val removed = reports.removeIf { it.id == reportId }
     if (!removed) {
-      throw NoSuchElementException("ReportRepositoryLocal: Report not found")
+      throw NoSuchElementException("InMemoryReportRepository: Report not found")
     }
   }
 

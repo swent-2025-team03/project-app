@@ -29,9 +29,12 @@ class ReportViewScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   /** Sets up the ReportViewScreen for a given role (Vet or Farmer). */
+  private fun createReportViewViewModel(): ReportViewViewModel =
+      ReportViewViewModel(TestReportRepository())
+
   private fun setReportViewScreen(
       role: UserRole,
-      viewModel: ReportViewViewModel = ReportViewViewModel(TestReportRepository())
+      viewModel: ReportViewViewModel = createReportViewViewModel()
   ) {
     composeTestRule.setContent {
       val navController = rememberNavController()
@@ -42,13 +45,11 @@ class ReportViewScreenTest {
   }
 
   // --- Role-specific helpers (wrappers) ---
-  private fun setVetScreen(
-      viewModel: ReportViewViewModel = ReportViewViewModel(TestReportRepository())
-  ) = setReportViewScreen(UserRole.VET, viewModel)
+  private fun setVetScreen(viewModel: ReportViewViewModel = createReportViewViewModel()) =
+      setReportViewScreen(UserRole.VET, viewModel)
 
-  private fun setFarmerScreen(
-      viewModel: ReportViewViewModel = ReportViewViewModel(TestReportRepository())
-  ) = setReportViewScreen(UserRole.FARMER, viewModel)
+  private fun setFarmerScreen(viewModel: ReportViewViewModel = createReportViewViewModel()) =
+      setReportViewScreen(UserRole.FARMER, viewModel)
 
   // --- TEST 1: Vet typing in answer field ---
   @Test
