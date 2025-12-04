@@ -53,5 +53,13 @@ class FakeOverviewRepository : ReportRepository {
 
   override suspend fun deleteReport(reportId: String) {}
 
+  override suspend fun assignReportToVet(reportId: String, vetId: String) {
+    TODO("Not yet implemented")
+  }
+
+  override suspend fun unassignReport(reportId: String) {
+    TODO("Not yet implemented")
+  }
+
   override fun getNewReportId(): String = "FAKE_ID_OVERVIEW"
 }

@@ -58,6 +58,14 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
   override suspend fun deleteReport(reportId: String) {
     db.collection(REPORTS_COLLECTION_PATH).document(reportId).delete().await()
   }
+
+  override suspend fun assignReportToVet(reportId: String, vetId: String) {
+    db.collection(REPORTS_COLLECTION_PATH).document(reportId).update("assignedVet", vetId).await()
+  }
+
+  override suspend fun unassignReport(reportId: String) {
+    db.collection(REPORTS_COLLECTION_PATH).document(reportId).update("assignedVet", null).await()
+  }
 }
 
 /**
@@ -124,6 +132,7 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
               (it["second"] as? Long ?: 0).toInt())
         }
     val collected = doc.get("collected") as? Boolean ?: false
+    val assignedVet = doc.getString("assignedVet")
 
     Report(
         id = id,
@@ -139,7 +148,8 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
         createdAt = createdAt,
         startTime = startTime,
         duration = duration,
-        collected = collected)
+        collected = collected,
+        assignedVet = assignedVet)
   } catch (e: Exception) {
     Log.e("ReportRepositoryFirestore", "Error converting document ${doc.id} to Report", e)
     null
