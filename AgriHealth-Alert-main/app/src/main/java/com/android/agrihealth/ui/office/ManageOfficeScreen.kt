@@ -166,6 +166,7 @@ fun ManageOfficeScreen(
                   GenerateCode(
                       codesViewModel = connectionVm,
                       snackbarHostState = snackbarHostState,
+                      codeType = "VET",
                       Modifier.align(Alignment.CenterHorizontally))
 
                   Spacer(modifier = Modifier.height(8.dp))

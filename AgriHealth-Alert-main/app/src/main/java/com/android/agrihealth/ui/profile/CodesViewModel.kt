@@ -22,19 +22,26 @@ class CodesViewModel(
 
   private val _generatedCode = MutableStateFlow<String?>(null)
   private val _claimMessage = MutableStateFlow<String?>(null)
+  private val _activeCodes = MutableStateFlow<List<String>>(emptyList())
   val generatedCode: StateFlow<String?> = _generatedCode
   val claimMessage: StateFlow<String?> = _claimMessage
+  val activeCodes: StateFlow<List<String>> = _activeCodes
 
-  fun generateCode() {
+  fun generateCode(type: String) {
     val currentUser = userViewModel.user.value
     val vet = currentUser as? Vet ?: return
 
     viewModelScope.launch {
-      val result = connectionRepository.generateCode()
+      val result = connectionRepository.generateCode(type)
       result.fold(
           onSuccess = { code ->
             _generatedCode.value = code
-            val updatedVet = vet.copy(validCodes = vet.validCodes + code)
+            val updatedVet =
+                when (type) {
+                  "FARMER" -> vet.copy(farmerConnectCodes = vet.farmerConnectCodes + code)
+                  "VET" -> vet.copy(vetConnectCodes = vet.vetConnectCodes + code)
+                  else -> vet
+                }
             userViewModel.updateUser(updatedVet)
           },
           onFailure = { e -> _generatedCode.value = "Error: ${e.message}" })

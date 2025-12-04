@@ -14,6 +14,7 @@ object FirestoreSchema {
     const val CREATED_AT = "createdAt"
     const val USED_AT = "usedAt"
     const val CLAIMED_BY = "claimedBy"
+    const val TYPE = "type"
   }
 
   object Status {

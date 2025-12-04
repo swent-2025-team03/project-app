@@ -279,8 +279,11 @@ fun EditProfileScreen(
               // Active Codes (Vets only)
               if (user is Vet) {
                 Spacer(modifier = Modifier.height(16.dp))
-                val codes = (user as Vet).validCodes
-                if (codes.isNotEmpty()) ActiveCodeList(codes, snackbarHostState)
+                val farmerCodes = (user as Vet).farmerConnectCodes
+                val vetCodes = (user as Vet).vetConnectCodes
+                if (farmerCodes.isNotEmpty())
+                    ActiveCodeList("Farmer Codes", farmerCodes, snackbarHostState)
+                if (vetCodes.isNotEmpty()) ActiveCodeList("Vet Codes", vetCodes, snackbarHostState)
               }
 
               Spacer(modifier = Modifier.weight(1f))
@@ -366,7 +369,7 @@ fun EditProfileScreenPreviewVet() {
 
 @Composable
 /** Creates an expandable list of every given code, along a "copy to clipboard" button */
-fun ActiveCodeList(codes: List<String>, snackbarHostState: SnackbarHostState) {
+fun ActiveCodeList(title: String, codes: List<String>, snackbarHostState: SnackbarHostState) {
   var expanded by remember { mutableStateOf(false) }
 
   Column(modifier = Modifier.fillMaxWidth()) {
@@ -379,7 +382,7 @@ fun ActiveCodeList(codes: List<String>, snackbarHostState: SnackbarHostState) {
                 .testTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically) {
-          Text(text = "Active codes")
+          Text(text = title)
           Icon(
               imageVector =
                   if (expanded) Icons.Default.KeyboardArrowDown

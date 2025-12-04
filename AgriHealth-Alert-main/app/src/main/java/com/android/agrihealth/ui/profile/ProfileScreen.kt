@@ -228,7 +228,10 @@ fun ProfileScreen(
 
               if (user is Vet) {
                 GenerateCode(
-                    codesViewModel, snackbarHostState, Modifier.align(Alignment.CenterHorizontally))
+                    codesViewModel,
+                    snackbarHostState,
+                    "FARMER",
+                    Modifier.align(Alignment.CenterHorizontally))
 
                 Spacer(modifier = Modifier.height(12.dp))
 

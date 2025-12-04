@@ -104,11 +104,12 @@ fun ClaimCodeScreen(
 fun GenerateCode(
     codesViewModel: CodesViewModel,
     snackbarHostState: SnackbarHostState,
+    codeType: String,
     modifier: Modifier = Modifier
 ) {
   val code by codesViewModel.generatedCode.collectAsState()
   Button(
-      onClick = { codesViewModel.generateCode() },
+      onClick = { codesViewModel.generateCode(codeType) },
       modifier = modifier.testTag(CodeComposableComponentsTestTags.GENERATE_BUTTON)) {
         Text("Generate new Connection Code")
       }

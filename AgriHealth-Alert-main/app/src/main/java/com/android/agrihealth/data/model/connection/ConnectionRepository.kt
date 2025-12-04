@@ -41,7 +41,7 @@ class ConnectionRepository(
 
   // Generates a unique connection code for an office, valid for a limited time (ttlMinutes).
   // Returns: Result<String> containing the generated code, or an exception if failed.
-  suspend fun generateCode(): Result<String> = runCatching {
+  suspend fun generateCode(type: String): Result<String> = runCatching {
     val officeId = getCurrentUserOfficeId()
     repeat(20) {
       val code = Random.nextInt(100_000, 1_000_000).toString()
@@ -59,7 +59,8 @@ class ConnectionRepository(
                           FirestoreSchema.ConnectCodes.CODE to code,
                           FirestoreSchema.ConnectCodes.OFFICE_ID to officeId,
                           FirestoreSchema.ConnectCodes.STATUS to STATUS_OPEN,
-                          FirestoreSchema.ConnectCodes.CREATED_AT to createdAt))
+                          FirestoreSchema.ConnectCodes.CREATED_AT to createdAt,
+                          FirestoreSchema.ConnectCodes.TYPE to type))
                   code
                 }
               }
