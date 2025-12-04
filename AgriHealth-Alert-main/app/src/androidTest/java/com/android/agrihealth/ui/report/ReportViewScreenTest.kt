@@ -28,14 +28,10 @@ class ReportViewScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  /** Sets up the ReportViewScreen for a given role (Vet or Farmer). */
-  private fun createReportViewViewModel(): ReportViewViewModel =
-      ReportViewViewModel(TestReportRepository())
+  private val fakeRepo = TestReportRepository()
 
-  private fun setReportViewScreen(
-      role: UserRole,
-      viewModel: ReportViewViewModel = createReportViewViewModel()
-  ) {
+  /** Sets up the ReportViewScreen for a given role (Vet or Farmer). */
+  private fun setReportViewScreen(role: UserRole, viewModel: ReportViewViewModel) {
     composeTestRule.setContent {
       val navController = rememberNavController()
       val navigationActions = NavigationActions(navController)
@@ -45,10 +41,10 @@ class ReportViewScreenTest {
   }
 
   // --- Role-specific helpers (wrappers) ---
-  private fun setVetScreen(viewModel: ReportViewViewModel = createReportViewViewModel()) =
+  private fun setVetScreen(viewModel: ReportViewViewModel = ReportViewViewModel(fakeRepo)) =
       setReportViewScreen(UserRole.VET, viewModel)
 
-  private fun setFarmerScreen(viewModel: ReportViewViewModel = createReportViewViewModel()) =
+  private fun setFarmerScreen(viewModel: ReportViewViewModel = ReportViewViewModel(fakeRepo)) =
       setReportViewScreen(UserRole.FARMER, viewModel)
 
   // --- TEST 1: Vet typing in answer field ---
@@ -332,8 +328,8 @@ class ReportViewScreenTest {
 
     val TEST_REPORT_ID = "RPT001"
     val sampleReport = ReportViewUIState().report.copy(id = TEST_REPORT_ID)
-    val fakeRepo = TestReportRepository(listOf(sampleReport))
-    val viewModel = ReportViewViewModel(repository = fakeRepo)
+    val fakeRepoWithReport = TestReportRepository(listOf(sampleReport))
+    val viewModel = ReportViewViewModel(repository = fakeRepoWithReport)
 
     composeTestRule.setContent {
       val navController = rememberNavController()
@@ -393,7 +389,7 @@ class ReportViewScreenTest {
           .isNotEmpty()
     }
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).assertIsDisplayed()
-    assertTrue(fakeRepo.editCalled)
+    assertTrue(fakeRepoWithReport.editCalled)
   }
 
   @Test
