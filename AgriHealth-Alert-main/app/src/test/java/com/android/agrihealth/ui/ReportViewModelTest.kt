@@ -101,6 +101,68 @@ class ReportViewModelTest {
     advanceUntilIdle() // should not crash
   }
 
+  @Test
+  fun `assignReportToVet assigns when none assigned`() = runTest {
+    repository.sampleReport = repository.sampleReport.copy(assignedVet = null)
+
+    viewModel.loadReport(repository.sampleReport.id)
+    advanceUntilIdle()
+
+    viewModel.assignReportToVet("VET_123")
+    advanceUntilIdle()
+
+    assertEquals("VET_123", repository.sampleReport.assignedVet)
+    assertEquals("VET_123", viewModel.uiState.value.report.assignedVet)
+  }
+
+  @Test
+  fun `assignReportToVet does nothing when already assigned`() = runTest {
+    repository.sampleReport = repository.sampleReport.copy(assignedVet = "EXISTING")
+
+    viewModel.loadReport(repository.sampleReport.id)
+    advanceUntilIdle()
+
+    viewModel.assignReportToVet("NEW_VET")
+    advanceUntilIdle()
+
+    // remains unchanged
+    assertEquals("EXISTING", repository.sampleReport.assignedVet)
+    assertEquals("EXISTING", viewModel.uiState.value.report.assignedVet)
+  }
+
+  @Test
+  fun `unassign clears assignedVet when answer is empty`() = runTest {
+    repository.sampleReport =
+        repository.sampleReport.copy(
+            assignedVet = "VET_777", answer = "" // empty answer → allowed
+            )
+
+    viewModel.loadReport(repository.sampleReport.id)
+    advanceUntilIdle()
+
+    viewModel.unassign()
+    advanceUntilIdle()
+
+    assertNull(repository.sampleReport.assignedVet)
+    assertNull(viewModel.uiState.value.report.assignedVet)
+  }
+
+  @Test
+  fun `unassign does nothing when answer is not empty`() = runTest {
+    repository.sampleReport =
+        repository.sampleReport.copy(assignedVet = "VET_777", answer = "Already answered")
+
+    viewModel.loadReport(repository.sampleReport.id)
+    advanceUntilIdle()
+
+    viewModel.unassign()
+    advanceUntilIdle()
+
+    // Should NOT change
+    assertEquals("VET_777", repository.sampleReport.assignedVet)
+    assertEquals("VET_777", viewModel.uiState.value.report.assignedVet)
+  }
+
   @After
   fun tearDown() {
     Dispatchers.resetMain()
@@ -108,7 +170,7 @@ class ReportViewModelTest {
 }
 
 class FakeReportRepository : ReportRepository {
-  val sampleReport =
+  var sampleReport =
       Report(
           id = "RPT001",
           title = "Test report",
@@ -119,7 +181,8 @@ class FakeReportRepository : ReportRepository {
           officeId = "OFF1",
           status = ReportStatus.PENDING,
           answer = "old answer",
-          location = Location(0.0, 0.0, "Nowhere"))
+          location = Location(0.0, 0.0, "Nowhere"),
+          assignedVet = null)
 
   val savedReports = mutableListOf<Report>()
   var throwOnGet = false
@@ -148,11 +211,11 @@ class FakeReportRepository : ReportRepository {
   }
 
   override suspend fun assignReportToVet(reportId: String, vetId: String) {
-    TODO("Not yet implemented")
+    sampleReport = sampleReport.copy(assignedVet = vetId)
   }
 
   override suspend fun unassignReport(reportId: String) {
-    TODO("Not yet implemented")
+    sampleReport = sampleReport.copy(assignedVet = null)
   }
 
   override fun getNewReportId(): String = "FAKE_ID_123"
