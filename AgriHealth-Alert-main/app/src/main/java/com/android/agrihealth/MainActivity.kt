@@ -35,15 +35,15 @@ import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.FARMER_TO_OFFICE
 import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.VET_TO_OFFICE
+import com.android.agrihealth.data.model.device.location.LocationPermissionsRequester
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.device.notifications.NotificationHandlerProvider
 import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
-import com.android.agrihealth.data.model.device.location.LocationPermissionsRequester
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.user.copyCommon
 import com.android.agrihealth.data.model.location.LocationPicker
+import com.android.agrihealth.data.model.user.copyCommon
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.alert.AlertViewModel
 import com.android.agrihealth.ui.alert.AlertViewScreen
@@ -234,11 +234,9 @@ fun AgriHealthApp(
         val mapViewModel: MapViewModel =
             viewModel(factory = createMapViewModel, key = pickedLocation.value.toString())
 
-        LocationPermissionsRequester(onGranted = {
-          mapViewModel.refreshMapPermission()
-        }, onComplete = {
-          mapViewModel.setStartingLocation(pickedLocation.value)
-        })
+        LocationPermissionsRequester(
+            onGranted = { mapViewModel.refreshMapPermission() },
+            onComplete = { mapViewModel.setStartingLocation(pickedLocation.value) })
 
         LocationPicker(
             navigationActions = navigationActions,

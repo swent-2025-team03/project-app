@@ -13,7 +13,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 // Control panel imports
-
+/*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,7 +39,7 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.authentification.USERS_COLLECTION_PATH
-
+*/
 
 @SuppressLint("MissingFirebaseInstanceTokenRefresh") // Tokens are handled in MainActivity
 class NotificationHandlerFirebase(
@@ -158,7 +158,7 @@ fun Map<String, String>.toNotification(): Notification? {
   }
 }
 
-
+/*
 @Composable
 @Preview
 fun NotificationTestControlPanel() {
@@ -172,24 +172,25 @@ fun NotificationTestControlPanel() {
 
     val notificationHandler = NotificationHandlerProvider.handler
     NotificationsPermissionsRequester(
-      onDenied = { debugText = "You need to grant notifications access for this screen to work" },
-      onGranted = {
-        notificationHandler.getToken { token ->
-          if(uid == null) return@getToken
+        onDenied = { debugText = "You need to grant notifications access for this screen to work" },
+        onGranted = {
+          notificationHandler.getToken { token ->
+            if (uid == null) return@getToken
 
-          if (token == null) {
-            debugText = "Could not get token for some reason, try again maybe"
-            return@getToken
+            if (token == null) {
+              debugText = "Could not get token for some reason, try again maybe"
+              return@getToken
+            }
+
+            val map = mapOf("deviceTokensFCM" to listOf(token))
+            CoroutineScope(Dispatchers.IO).launch {
+              Firebase.firestore.collection(USERS_COLLECTION_PATH).document(uid).update(map).await()
+            }
           }
+        })
 
-          val map = mapOf("deviceTokensFCM" to listOf(token))
-          CoroutineScope(Dispatchers.IO).launch {
-            Firebase.firestore.collection(USERS_COLLECTION_PATH).document(uid).update(map).await()
-          }
-        }
-      })
-
-    val messagingService = com.android.agrihealth.data.model.device.notifications.NotificationHandlerFirebase()
+    val messagingService =
+        com.android.agrihealth.data.model.device.notifications.NotificationHandlerFirebase()
 
     val destinationUid = uid ?: ""
     val reportTitle = "maldie animal"
@@ -203,45 +204,43 @@ fun NotificationTestControlPanel() {
     Box {
       Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface).fillMaxSize()) {
         TextButton(
-          onClick = { messagingService.getToken { debugText = it!! } },
-          modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer)) {
-          Text("See messaging token", color = MaterialTheme.colorScheme.onPrimaryContainer)
-        }
+            onClick = { messagingService.getToken { debugText = it!! } },
+            modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer)) {
+              Text("See messaging token", color = MaterialTheme.colorScheme.onPrimaryContainer)
+            }
 
         // Notification type switch
 
-          Row {
-            RadioButton(
+        Row {
+          RadioButton(
               selected = actualNotification == notificationNR,
-              onClick = { actualNotification = notificationNR }
-            )
-            Text("New report", color = MaterialTheme.colorScheme.onPrimaryContainer)
-          }
+              onClick = { actualNotification = notificationNR })
+          Text("New report", color = MaterialTheme.colorScheme.onPrimaryContainer)
+        }
 
-          Row {
-            RadioButton(
+        Row {
+          RadioButton(
               selected = actualNotification == notificationVA,
-              onClick = { actualNotification = notificationVA }
-            )
-            Text("Vet answer", color = MaterialTheme.colorScheme.onPrimaryContainer)
-          }
+              onClick = { actualNotification = notificationVA })
+          Text("Vet answer", color = MaterialTheme.colorScheme.onPrimaryContainer)
+        }
 
         TextButton(
-          onClick = {
-            messagingService.uploadNotification(
-              actualNotification,
-              onComplete = { success ->
-                debugText =
-                  if (success) "Notification sent" else "Failed to send notification"
-              })
-            debugText = "Uploading..."
-          },
-          modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer)) {
-          Text("Upload test notification", color = MaterialTheme.colorScheme.onPrimaryContainer)
-        }
+            onClick = {
+              messagingService.uploadNotification(
+                  actualNotification,
+                  onComplete = { success ->
+                    debugText = if (success) "Notification sent" else "Failed to send notification"
+                  })
+              debugText = "Uploading..."
+            },
+            modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer)) {
+              Text("Upload test notification", color = MaterialTheme.colorScheme.onPrimaryContainer)
+            }
 
         Text(debugText, color = MaterialTheme.colorScheme.onSurface)
       }
     }
   }
 }
+*/
