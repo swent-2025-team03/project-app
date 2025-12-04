@@ -12,6 +12,9 @@ import io.mockk.just
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -42,17 +45,39 @@ class NotificationsTest {
   @Before
   fun setUp() = runTest { userRepository.addUser(user1.copy(deviceTokensFCM = setOf(fakeToken))) }
 
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun getToken_succeedsWithTokenProvider() = runTest {
-    messagingService.getToken { token -> assertEquals(fakeToken, token) }
+    var newToken: String? = null
+    val latch = CountDownLatch(1)
+
+    messagingService.getToken { token ->
+      newToken = token
+      latch.countDown()
+    }
+
+    assertTrue(latch.await(2, TimeUnit.SECONDS)) // wait for lambda to execute
+
+    assertEquals(fakeToken, newToken)
   }
 
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun getToken_failsWithBadTokenProvider() = runTest {
     val badTokenResolver = FakeNotificationTokenResolver(null)
     val badMessagingService = NotificationHandlerFirebase(badTokenResolver)
 
-    badMessagingService.getToken { token -> assertEquals(null, token) }
+    var newToken: String? = ""
+    val latch = CountDownLatch(1)
+
+    badMessagingService.getToken { token ->
+      newToken = token
+      latch.countDown()
+    }
+
+    assertTrue(latch.await(2, TimeUnit.SECONDS))
+
+    assertEquals(null, newToken)
   }
 
   @Test

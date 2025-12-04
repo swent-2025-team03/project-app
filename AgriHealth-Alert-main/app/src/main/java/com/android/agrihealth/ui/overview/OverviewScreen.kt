@@ -79,7 +79,7 @@ fun OverviewScreen(
     onAddReport: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
     onAlertClick: (String) -> Unit = {},
-    onLaunch: () -> Unit = {},
+    onLogin: () -> Unit = {},
     navigationActions: NavigationActions? = null
 ) {
 
@@ -88,11 +88,10 @@ fun OverviewScreen(
   var lazySpace by remember { mutableStateOf(0.dp) }
   val minLazySpace = remember { 150.dp }
 
-  LaunchedEffect(Unit) { onLaunch() }
-
   LaunchedEffect(user) {
     overviewViewModel.loadReports(user)
     overviewViewModel.loadAlerts()
+    onLogin()
   }
   Scaffold(
       // -- Top App Bar with logout icon --

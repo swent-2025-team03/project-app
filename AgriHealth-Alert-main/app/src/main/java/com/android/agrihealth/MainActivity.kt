@@ -181,7 +181,7 @@ fun AgriHealthApp(
               navigationActions.navigateTo(Screen.ViewReport(reportId))
             },
             onAlertClick = { alertId -> navigationActions.navigateTo(Screen.ViewAlert(alertId)) },
-            onLaunch = { canSendNotificationToken = true },
+            onLogin = { canSendNotificationToken = true },
             navigationActions = navigationActions,
         )
       }
