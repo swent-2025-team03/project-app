@@ -6,6 +6,7 @@ import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
@@ -104,5 +105,34 @@ class ConnectionRepository(
           officeId
         }
         .await()
+  }
+
+  suspend fun getValidCodes(vet: Vet, type: String): List<String> {
+    val targetList =
+        when (type) {
+          "FARMER" -> vet.farmerConnectCodes
+          "VET" -> vet.vetConnectCodes
+          else -> return emptyList()
+        }
+
+    val collectionName =
+        when (type) {
+          "FARMER" -> "farmerToOfficeConnectCodes"
+          "VET" -> "vetToOfficeConnectCodes"
+          else -> return emptyList()
+        }
+
+    return try {
+      val snapshot =
+          db.collection(collectionName)
+              .whereIn(FieldPath.documentId(), targetList)
+              .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
+              .get()
+              .await()
+
+      snapshot.documents.map { it.id }
+    } catch (e: Exception) {
+      emptyList()
+    }
   }
 }

@@ -97,4 +97,12 @@ class CodesViewModel(
           })
     }
   }
+
+  fun loadActiveCodesForVet(vet: Vet) {
+    viewModelScope.launch {
+      val farmerCodes = connectionRepository.getValidCodes(vet, "FARMER")
+      val vetCodes = connectionRepository.getValidCodes(vet, "VET")
+      _activeCodes.value = farmerCodes + vetCodes
+    }
+  }
 }

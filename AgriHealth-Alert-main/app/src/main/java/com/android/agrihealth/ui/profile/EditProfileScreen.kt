@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.profile
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.connection.ConnectionRepository
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.*
@@ -68,8 +70,21 @@ fun EditProfileScreen(
     onSave: (User) -> Unit = { userViewModel.updateUser(it) },
     onPasswordChange: () -> Unit = {}
 ) {
+
+  val connectionRepository = remember { ConnectionRepository(connectionType = "") }
+  val codesViewModel = remember { CodesViewModel(userViewModel, connectionRepository) }
+
   val user by userViewModel.user.collectAsState()
   val userRole = user.role
+  val currentUser = user
+
+  LaunchedEffect(user) {
+    if (currentUser is Vet) {
+      codesViewModel.loadActiveCodesForVet(currentUser)
+    }
+  }
+
+  val activeCodes by codesViewModel.activeCodes.collectAsState()
 
   val createManageOfficeViewModel =
       object : androidx.lifecycle.ViewModelProvider.Factory {
@@ -279,8 +294,10 @@ fun EditProfileScreen(
               // Active Codes (Vets only)
               if (user is Vet) {
                 Spacer(modifier = Modifier.height(16.dp))
-                val farmerCodes = (user as Vet).farmerConnectCodes
-                val vetCodes = (user as Vet).vetConnectCodes
+                val farmerCodes =
+                    activeCodes.filter { (user as Vet).farmerConnectCodes.contains(it) }
+                val vetCodes = activeCodes.filter { (user as Vet).vetConnectCodes.contains(it) }
+                Log.d("DEBUG", "farmerCodes=$farmerCodes, vetCodes=$vetCodes")
                 if (farmerCodes.isNotEmpty())
                     ActiveCodeList("Farmer Codes", farmerCodes, snackbarHostState)
                 if (vetCodes.isNotEmpty()) ActiveCodeList("Vet Codes", vetCodes, snackbarHostState)
