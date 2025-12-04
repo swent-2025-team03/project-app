@@ -413,6 +413,7 @@ fun DotGrid(
  *
  * @param reports the list of reports to show on the Scheduler
  * @param reportId the id of the report to prioritize auto scroll to.
+ * @param showTimeLine weather or not to show the current time Line on the Scheduler
  * @param navigateToReport called when a report is clicked with the report.id
  */
 @Composable
@@ -482,6 +483,7 @@ fun HourScale(hourHeight: Dp = 60.dp) {
  *
  * @param reports the reports to show on the scheduler
  * @param hourHeight the height attributed to each hours
+ * @param showTimeLine weather or not to show the current time Line on the Scheduler
  * @param navigateToReport called with report.id when a report is clicked
  */
 @SuppressLint("UnusedBoxWithConstraintsScope")
