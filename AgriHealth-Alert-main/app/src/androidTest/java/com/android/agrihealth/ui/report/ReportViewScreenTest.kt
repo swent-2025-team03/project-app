@@ -246,6 +246,14 @@ class ReportViewScreenTest {
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.DELETE_BUTTON).assertIsDisplayed()
   }
 
+    @Test
+    fun invalidVet_doesNotSeeUnassign() {
+        setVetScreen()
+        composeTestRule.onNodeWithTag(ReportViewScreenTestTags.CLAIM_BUTTON).assertIsNotDisplayed()
+        composeTestRule.onNodeWithTag(ReportViewScreenTestTags.UNASSIGN_BUTTON).assertIsNotDisplayed()
+        composeTestRule.onNodeWithText("This report was claimed by: ").assertIsDisplayed()
+    }
+
   // -------------------- Additional tests to increase coverage --------------------
 
   @Test

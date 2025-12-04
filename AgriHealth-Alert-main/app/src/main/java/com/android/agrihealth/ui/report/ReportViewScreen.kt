@@ -130,10 +130,10 @@ fun ReportViewScreen(
 
   val canBeUnassigned =
       isAssignedToCurrentVet &&
-          (report.answer.isNullOrEmpty()) &&
-          (report.status == ReportStatus.PENDING) &&
-          (report.startTime == null) &&
-          (report.duration == null)
+          ((report.answer.isNullOrEmpty()) ||
+              (report.status == ReportStatus.PENDING) ||
+              (report.startTime == null) ||
+              (report.duration == null))
 
   fun handleGoBack(force: Boolean = false) {
     if (unsavedChanges && !force) isUnsavedAlertOpen = true else navigationActions.goBack()
