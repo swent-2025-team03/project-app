@@ -11,7 +11,8 @@ sealed class User(
     open val address: Location?,
     open val isGoogleAccount: Boolean = false,
     open val description: String? = null,
-    open val deviceTokensFCM: Set<String> = emptySet() // Notifications/Firebase messaging service
+    open val collected: Boolean = false,
+    open val deviceTokensFCM: Set<String> = emptySet()
 )
 
 /** Copies fields common to farmers and vets, because User is a sealed class */

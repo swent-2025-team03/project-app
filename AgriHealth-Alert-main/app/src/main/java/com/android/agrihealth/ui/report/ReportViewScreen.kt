@@ -31,9 +31,11 @@ import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.common.OfficeName
 import com.android.agrihealth.ui.navigation.NavigationActions
+import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.launch
 
 object ReportViewScreenTestTags {
   const val STATUS_BADGE_BOX = "StatusBadgeBox"
@@ -44,12 +46,14 @@ object ReportViewScreenTestTags {
   const val STATUS_DROPDOWN_FIELD = "StatusDropdownField"
   const val STATUS_DROPDOWN_MENU = "StatusDropdownMenu"
   const val SPAM_BUTTON = "SpamButton"
+  const val DELETE_BUTTON = "DeleteButton"
   const val VIEW_ON_MAP = "viewReportOnMap"
   const val SAVE_BUTTON = "SaveButton"
   const val SCROLL_CONTAINER = "ReportViewScrollContainer"
   const val UNSAVED_ALERT_BOX = "UnsavedChangesAlertBox"
   const val UNSAVED_ALERT_BOX_DISCARD = "UnsavedChangesAlertDiscardButton"
   const val UNSAVED_ALERT_BOX_CANCEL = "UnsavedChangesAlertCancelButton"
+  const val DELETE_REPORT_ALERT_BOX = "DeleteReportAlertBox"
 
   fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
 }
@@ -87,6 +91,9 @@ fun ReportViewScreen(
   val saveCompleted by viewModel.saveCompleted.collectAsState()
   val unsavedChanges by viewModel.unsavedChanges.collectAsState()
 
+  val snackbarHostState = remember { SnackbarHostState() }
+  val coroutineScope = rememberCoroutineScope()
+
   // --- Auto-change PENDING -> IN_PROGRESS for vets ---
   LaunchedEffect(userRole, uiState.report.status) {
     if (userRole == UserRole.VET && uiState.report.status == ReportStatus.PENDING) {
@@ -107,6 +114,7 @@ fun ReportViewScreen(
   val selectedStatus = uiState.status
 
   var isSpamDialogOpen by remember { mutableStateOf(false) }
+  var isDeleteDialogOpen by remember { mutableStateOf(false) }
   var isUnsavedAlertOpen by remember { mutableStateOf(false) }
 
   fun handleGoBack(force: Boolean = false) {
@@ -160,15 +168,14 @@ fun ReportViewScreen(
             navigationIcon = {
               IconButton(
                   onClick = { handleGoBack() },
-                  modifier =
-                      Modifier.testTag(
-                          com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON)) {
+                  modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back")
                   }
             })
-      }) { padding ->
+      },
+      snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { padding ->
 
         // Main scrollable content
         Column(
@@ -202,7 +209,17 @@ fun ReportViewScreen(
                           })
                     } else {
                       // Farmer views office
-                      OfficeName(uid = report.officeId, onClick = { /* TODO("add ViewOffice") */})
+                      OfficeName(
+                          uid = report.officeId,
+                          onClick = {
+                            if (report.officeId.isNotBlank()) {
+                              navigationActions.navigateTo(Screen.ViewOffice(report.officeId))
+                            } else {
+                              coroutineScope.launch {
+                                snackbarHostState.showSnackbar("This office no longer exists.")
+                              }
+                            }
+                          })
                     }
                   }
 
@@ -294,6 +311,7 @@ fun ReportViewScreen(
                           }
                     }
               }
+              CollectedSwitch(report.collected)
               // ---- Set Time section ----
               Column {
                 Text(
@@ -389,6 +407,18 @@ fun ReportViewScreen(
                                     Text("Reported as spam")
                                   }
                             }
+                          } else {
+                            val color = StatusColors().spam
+                            OutlinedButton(
+                                onClick = { isDeleteDialogOpen = true },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = color),
+                                border = BorderStroke(1.dp, color),
+                                shape = MaterialTheme.shapes.medium,
+                                modifier =
+                                    Modifier.weight(1f)
+                                        .testTag(ReportViewScreenTestTags.DELETE_BUTTON)) {
+                                  Text("Delete report")
+                                }
                           }
                         }
 
@@ -423,6 +453,26 @@ fun ReportViewScreen(
                     },
                     dismissButton = {
                       TextButton(onClick = { isSpamDialogOpen = false }) { Text("Cancel") }
+                    })
+              }
+              if (isDeleteDialogOpen) {
+                AlertDialog(
+                    modifier = Modifier.testTag(ReportViewScreenTestTags.DELETE_REPORT_ALERT_BOX),
+                    onDismissRequest = { isDeleteDialogOpen = false },
+                    title = { Text("Delete report?") },
+                    text = { Text("This will delete the report. This action cannot be undone") },
+                    confirmButton = {
+                      TextButton(
+                          onClick = {
+                            isDeleteDialogOpen = false
+                            viewModel.onDelete()
+                            navigationActions.goBack()
+                          }) {
+                            Text("Confirm", color = MaterialTheme.colorScheme.error)
+                          }
+                    },
+                    dismissButton = {
+                      TextButton(onClick = { isDeleteDialogOpen = false }) { Text("Cancel") }
                     })
               }
             }

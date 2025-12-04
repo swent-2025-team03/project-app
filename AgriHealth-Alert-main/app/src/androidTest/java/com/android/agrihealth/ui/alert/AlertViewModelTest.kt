@@ -1,12 +1,11 @@
 package com.android.agrihealth.ui.alert
 
 import com.android.agrihealth.testutil.FakeAlertRepository
+import com.android.agrihealth.ui.overview.AlertUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.*
@@ -24,7 +23,6 @@ class AlertViewModelTest {
   fun setup() {
     Dispatchers.setMain(dispatcher)
     repository = FakeAlertRepository()
-    viewModel = AlertViewModel(repository)
   }
 
   @After
@@ -33,98 +31,81 @@ class AlertViewModelTest {
   }
 
   @Test
-  fun initial_state_isEmpty() {
+  fun initial_state_isFirstAlert_ifExists() {
+    val sortedAlerts = repository.allAlerts.map { AlertUiState(it) }
+    viewModel = AlertViewModel(sortedAlerts, repository.allAlerts.first().id)
+
     val state = viewModel.uiState.value
-    assertNull(state.alert)
+    assertNotNull(state.alert)
+    assertEquals(repository.allAlerts.first().id, state.alert!!.id)
     assertEquals(0, viewModel.currentAlertIndex.value)
   }
 
   @Test
-  fun loadAlert_updatesUiState_andIndex() =
-      runTest(dispatcher) {
-        val targetId = repository.allAlerts[1].id
+  fun startAtMiddleAlert_initializesCorrectly() {
+    val sortedAlerts = repository.allAlerts.map { AlertUiState(it) }
+    val middleId = repository.allAlerts[1].id
+    viewModel = AlertViewModel(sortedAlerts, middleId)
 
-        viewModel.loadAlert(targetId)
-        advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        assertNotNull(state.alert)
-        assertEquals(targetId, state.alert!!.id)
-        assertEquals(1, viewModel.currentAlertIndex.value)
-      }
-
-  @Test
-  fun loadAlert_withInvalidId_keepsStateUnchanged() =
-      runTest(dispatcher) {
-        viewModel.loadAlert("invalid-id")
-        advanceUntilIdle()
-
-        assertNull(viewModel.uiState.value.alert)
-        assertEquals(0, viewModel.currentAlertIndex.value)
-      }
-
-  @Test
-  fun loadNextAlert_movesToNext() =
-      runTest(dispatcher) {
-        val firstId = repository.allAlerts[0].id
-        viewModel.loadAlert(firstId)
-        advanceUntilIdle()
-
-        viewModel.loadNextAlert(firstId)
-        advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        assertEquals(repository.allAlerts[1].id, state.alert!!.id)
-        assertEquals(1, viewModel.currentAlertIndex.value)
-      }
-
-  @Test
-  fun loadPreviousAlert_movesToPrevious() =
-      runTest(dispatcher) {
-        val secondId = repository.allAlerts[1].id
-
-        viewModel.loadAlert(secondId)
-        advanceUntilIdle()
-
-        viewModel.loadPreviousAlert(secondId)
-        advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        assertEquals(repository.allAlerts[0].id, state.alert!!.id)
-        assertEquals(0, viewModel.currentAlertIndex.value)
-      }
-
-  @Test
-  fun hasNext_and_hasPrevious_areCorrect() {
-    val first = repository.allAlerts.first().id
-    val last = repository.allAlerts.last().id
-
-    assertFalse(viewModel.hasPrevious(first))
-    assertTrue(viewModel.hasNext(first))
-
-    assertTrue(viewModel.hasPrevious(last))
-    assertFalse(viewModel.hasNext(last))
+    val state = viewModel.uiState.value
+    assertNotNull(state.alert)
+    assertEquals(middleId, state.alert!!.id)
+    assertEquals(1, viewModel.currentAlertIndex.value)
   }
 
   @Test
-  fun nextPrevious_doNothing_atBoundaries() =
-      runTest(dispatcher) {
-        val firstId = repository.allAlerts[0].id
-        viewModel.loadAlert(firstId)
-        advanceUntilIdle()
+  fun loadNextAlert_movesToNext() {
+    val sortedAlerts = repository.allAlerts.map { AlertUiState(it) }
+    val firstId = repository.allAlerts[0].id
+    viewModel = AlertViewModel(sortedAlerts, firstId)
 
-        viewModel.loadPreviousAlert(firstId)
-        advanceUntilIdle()
+    viewModel.loadNextAlert()
 
-        assertEquals(firstId, viewModel.uiState.value.alert!!.id)
+    val state = viewModel.uiState.value
+    assertEquals(repository.allAlerts[1].id, state.alert!!.id)
+    assertEquals(1, viewModel.currentAlertIndex.value)
+  }
 
-        val lastId = repository.allAlerts.last().id
-        viewModel.loadAlert(lastId)
-        advanceUntilIdle()
+  @Test
+  fun loadPreviousAlert_movesToPrevious() {
+    val sortedAlerts = repository.allAlerts.map { AlertUiState(it) }
+    val secondId = repository.allAlerts[1].id
+    viewModel = AlertViewModel(sortedAlerts, secondId)
 
-        viewModel.loadNextAlert(lastId)
-        advanceUntilIdle()
+    viewModel.loadPreviousAlert()
 
-        assertEquals(lastId, viewModel.uiState.value.alert!!.id)
-      }
+    val state = viewModel.uiState.value
+    assertEquals(repository.allAlerts[0].id, state.alert!!.id)
+    assertEquals(0, viewModel.currentAlertIndex.value)
+  }
+
+  @Test
+  fun hasNext_and_hasPrevious_areCorrect() {
+    val sortedAlerts = repository.allAlerts.map { AlertUiState(it) }
+    val first = repository.allAlerts.first().id
+    val last = repository.allAlerts.last().id
+
+    viewModel = AlertViewModel(sortedAlerts, first)
+    assertFalse(viewModel.hasPrevious())
+    assertTrue(viewModel.hasNext())
+
+    viewModel = AlertViewModel(sortedAlerts, last)
+    assertTrue(viewModel.hasPrevious())
+    assertFalse(viewModel.hasNext())
+  }
+
+  @Test
+  fun nextPrevious_doNothing_atBoundaries() {
+    val sortedAlerts = repository.allAlerts.map { AlertUiState(it) }
+    val firstId = repository.allAlerts[0].id
+    viewModel = AlertViewModel(sortedAlerts, firstId)
+
+    viewModel.loadPreviousAlert()
+    assertEquals(firstId, viewModel.uiState.value.alert!!.id)
+
+    val lastId = repository.allAlerts.last().id
+    viewModel = AlertViewModel(sortedAlerts, lastId)
+    viewModel.loadNextAlert()
+    assertEquals(lastId, viewModel.uiState.value.alert!!.id)
+  }
 }

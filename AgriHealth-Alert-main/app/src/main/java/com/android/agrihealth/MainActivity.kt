@@ -1,14 +1,17 @@
 package com.android.agrihealth
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,8 +40,10 @@ import com.android.agrihealth.data.model.device.location.LocationRepositoryProvi
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.device.notifications.NotificationHandlerProvider
 import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
+import com.android.agrihealth.data.model.device.location.LocationPermissionsRequester
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.copyCommon
+import com.android.agrihealth.data.model.location.LocationPicker
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.alert.AlertViewModel
 import com.android.agrihealth.ui.alert.AlertViewScreen
@@ -51,6 +56,8 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.office.CreateOfficeScreen
 import com.android.agrihealth.ui.office.ManageOfficeScreen
+import com.android.agrihealth.ui.office.ViewOfficeScreen
+import com.android.agrihealth.ui.office.ViewOfficeViewModel
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewViewModel
 import com.android.agrihealth.ui.planner.PlannerScreen
@@ -71,6 +78,7 @@ import com.android.agrihealth.ui.user.defaultUser
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -88,6 +96,7 @@ class MainActivity : ComponentActivity() {
   }
 }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun AgriHealthApp(
     context: Context = LocalContext.current,
@@ -98,6 +107,8 @@ fun AgriHealthApp(
 
   // Shared ViewModel (lives across navigation destinations)
   val userViewModel: UserViewModel = viewModel()
+
+  val overviewViewModel: OverviewViewModel = viewModel()
 
   // Location services: Use the ViewModel and not the repository
   LocationRepositoryProvider.repository = LocationRepository(context)
@@ -125,6 +136,13 @@ fun AgriHealthApp(
           }
         }
       })
+
+  var pickedLat = remember { 0.0 }
+  var pickedLng = remember { 0.0 }
+
+  val pickedLocation = remember { mutableStateOf(currentUser.address) }
+
+  LaunchedEffect(currentUser.address) { pickedLocation.value = currentUser.address }
 
   val startDestination = remember {
     if (Firebase.auth.currentUser == null) Screen.Auth.name
@@ -159,7 +177,8 @@ fun AgriHealthApp(
         RoleSelectionScreen(
             credentialManager = credentialManager,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onButtonPressed = { navigationActions.navigateTo(Screen.EditProfile) })
+            onButtonPressed = { navigationActions.navigateTo(Screen.EditProfile) },
+            userViewModel = userViewModel)
       }
     }
 
@@ -169,8 +188,6 @@ fun AgriHealthApp(
         route = Screen.Overview.name,
     ) {
       composable(Screen.Overview.route) {
-        val overviewViewModel: OverviewViewModel = viewModel()
-
         OverviewScreen(
             credentialManager = credentialManager,
             userRole = currentUserRole,
@@ -195,11 +212,47 @@ fun AgriHealthApp(
         val addReportViewModel: AddReportViewModel = viewModel(factory = createReportViewModel)
 
         AddReportScreen(
-            onBack = { navigationActions.goBack() },
+            onBack = {
+              pickedLocation.value = currentUser.address
+              navigationActions.goBack()
+            },
             userViewModel = userViewModel,
             onCreateReport = { reloadReports = !reloadReports },
+            pickedLocation = pickedLocation.value,
+            onChangeLocation = { navigationActions.navigateTo(Screen.LocationPicker) },
             addReportViewModel = addReportViewModel,
         )
+      }
+      composable(route = Screen.LocationPicker.route) {
+        val createMapViewModel =
+            object : androidx.lifecycle.ViewModelProvider.Factory {
+              override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return MapViewModel(locationViewModel = locationViewModel, userId = currentUserId)
+                    as T
+              }
+            }
+        val mapViewModel: MapViewModel =
+            viewModel(factory = createMapViewModel, key = pickedLocation.value.toString())
+
+        LocationPermissionsRequester(onGranted = {
+          mapViewModel.refreshMapPermission()
+        }, onComplete = {
+          mapViewModel.setStartingLocation(pickedLocation.value)
+        })
+
+        LocationPicker(
+            navigationActions = navigationActions,
+            mapViewModel = mapViewModel,
+            onLatLng = { lat, lng ->
+              pickedLat = lat
+              pickedLng = lng
+            },
+            onAddress = { address ->
+              if (address != null) {
+                pickedLocation.value = Location(pickedLat, pickedLng, address)
+                navigationActions.goBack()
+              }
+            })
       }
       composable(
           route = Screen.ViewReport.route,
@@ -222,10 +275,11 @@ fun AgriHealthApp(
             ->
             val alertId = backStackEntry.arguments?.getString("alertId") ?: ""
 
-            val viewModel: AlertViewModel = viewModel()
+            val overviewUiState by overviewViewModel.uiState.collectAsState()
+            val sortedAlerts = overviewUiState.sortedAlerts
+            val alertViewModel = AlertViewModel(sortedAlerts, alertId)
 
-            AlertViewScreen(
-                navigationActions = navigationActions, viewModel = viewModel, alertId = alertId)
+            AlertViewScreen(navigationActions = navigationActions, viewModel = alertViewModel)
           }
       composable(
           route = Screen.ViewUser.route,
@@ -235,6 +289,19 @@ fun AgriHealthApp(
                 viewModel(factory = ViewUserViewModel.provideFactory(targetUserId = userId))
 
             ViewUserScreen(viewModel = viewModel, onBack = { navigationActions.goBack() })
+          }
+      composable(
+          route = Screen.ViewOffice.route,
+          arguments = listOf(navArgument("officeId") { type = NavType.StringType })) {
+              backStackEntry ->
+            val officeId = backStackEntry.arguments?.getString("officeId") ?: ""
+            val viewModel: ViewOfficeViewModel =
+                viewModel(factory = ViewOfficeViewModel.provideFactory(officeId))
+
+            ViewOfficeScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+                onOpenUser = { uid -> navigationActions.navigateTo(Screen.ViewUser(uid)) })
           }
     }
 
@@ -279,11 +346,16 @@ fun AgriHealthApp(
       composable(route = Screen.EditProfile.route) {
         EditProfileScreen(
             userViewModel = userViewModel,
-            onGoBack = { navigationActions.navigateTo(Screen.Profile) },
+            onGoBack = {
+              pickedLocation.value = currentUser.address
+              navigationActions.navigateTo(Screen.Profile)
+            },
             onSave = { updatedUser ->
               userViewModel.updateUser(updatedUser)
               navigationActions.navigateTo(Screen.Profile)
             },
+            pickedLocation = pickedLocation.value,
+            onChangeLocation = { navigationActions.navigateTo(Screen.LocationPicker) },
             onPasswordChange = { navigationActions.navigateTo(Screen.ChangePassword) })
       }
     }
@@ -328,7 +400,8 @@ fun AgriHealthApp(
               MapViewModel(
                   locationViewModel = locationViewModel,
                   selectedReportId = sourceReport,
-                  startingPosition = location)
+                  startingPosition = location,
+                  userId = currentUserId)
           MapScreen(
               mapViewModel = mapViewModel,
               navigationActions = navigationActions,
@@ -389,6 +462,7 @@ fun AgriHealthApp(
   }
 }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Preview(showBackground = true)
 @Composable
 fun AgriHealthPreview() {

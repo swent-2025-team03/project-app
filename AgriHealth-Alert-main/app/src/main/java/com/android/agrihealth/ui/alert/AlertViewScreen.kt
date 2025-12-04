@@ -49,13 +49,8 @@ object AlertViewScreenTestTags {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlertViewScreen(
-    navigationActions: NavigationActions,
-    viewModel: AlertViewModel,
-    alertId: String = ""
-) {
+fun AlertViewScreen(navigationActions: NavigationActions, viewModel: AlertViewModel) {
   val snackbarHostState = remember { SnackbarHostState() }
-  LaunchedEffect(alertId) { viewModel.loadAlert(alertId) }
 
   val uiState by viewModel.uiState.collectAsState()
   val alert = uiState.alert ?: return
@@ -139,14 +134,14 @@ fun AlertViewScreen(
               horizontalArrangement = Arrangement.SpaceBetween,
               verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
-                    onClick = { viewModel.loadPreviousAlert(alert.id) },
-                    enabled = viewModel.hasPrevious(alert.id),
+                    onClick = { viewModel.loadPreviousAlert() },
+                    enabled = viewModel.hasPrevious(),
                     modifier = Modifier.testTag(AlertViewScreenTestTags.PREVIOUS_ALERT_ARROW)) {
                       Icon(Icons.Default.ChevronLeft, contentDescription = "Previous Alert")
                     }
                 IconButton(
-                    onClick = { viewModel.loadNextAlert(alert.id) },
-                    enabled = viewModel.hasNext(alert.id),
+                    onClick = { viewModel.loadNextAlert() },
+                    enabled = viewModel.hasNext(),
                     modifier = Modifier.testTag(AlertViewScreenTestTags.NEXT_ALERT_ARROW)) {
                       Icon(Icons.Default.ChevronRight, contentDescription = "Next Alert")
                     }

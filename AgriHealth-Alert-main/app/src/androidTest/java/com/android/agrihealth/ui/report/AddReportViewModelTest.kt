@@ -1,11 +1,12 @@
 package com.android.agrihealth.ui.report
 
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
-import com.android.agrihealth.testutil.FakeReportRepository
+import com.android.agrihealth.testutil.TestReportRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -23,13 +24,13 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddReportViewModelTest {
 
-  private lateinit var repository: FakeReportRepository
+  private lateinit var repository: TestReportRepository
   private lateinit var viewModel: AddReportViewModel
 
   @Before
   fun setup() {
     Dispatchers.setMain(StandardTestDispatcher()) // Necessary for scheduling coroutines
-    repository = FakeReportRepository()
+    repository = TestReportRepository()
     viewModel = AddReportViewModel(userId = "fake-user-id", reportRepository = repository)
   }
 
@@ -96,6 +97,7 @@ class AddReportViewModelTest {
           }
         }
 
+        viewModel.setAddress(Location(3.1234, 2.7167, "wherever this is"))
         viewModel.setOffice(AddReportConstants.officeOptions[0])
         val result = viewModel.createReport()
         advanceUntilIdle() // To avoid errors of synchronization which would make this test

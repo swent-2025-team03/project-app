@@ -38,6 +38,7 @@ class LocationPickerTest {
     val mapViewModel =
         MapViewModel(
             locationViewModel = LocationViewModel(),
+            userId = "test-user",
             startingPosition = position,
             showReports = false)
 
