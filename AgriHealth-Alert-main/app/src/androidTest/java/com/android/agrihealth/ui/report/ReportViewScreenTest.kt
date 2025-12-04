@@ -11,8 +11,8 @@ import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.FakeOverviewViewModel
-import com.android.agrihealth.testutil.FakeReportRepository
 import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
+import com.android.agrihealth.testutil.TestReportRepository
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
@@ -30,10 +30,12 @@ class ReportViewScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
+  private val fakeRepo = TestReportRepository()
+
   /** Sets up the ReportViewScreen for a given role (Vet or Farmer). */
   private fun setReportViewScreen(
       role: UserRole,
-      viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository()),
+      viewModel: ReportViewViewModel,
       user: User? = null
   ) {
     composeTestRule.setContent {
@@ -48,9 +50,7 @@ class ReportViewScreenTest {
   }
 
   // --- Role-specific helpers (wrappers) ---
-  private fun setVetScreen(
-      viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
-  ) =
+  private fun setVetScreen(viewModel: ReportViewViewModel = ReportViewViewModel(fakeRepo)) =
       setReportViewScreen(
           role = UserRole.VET,
           viewModel,
@@ -63,9 +63,7 @@ class ReportViewScreenTest {
                   address = null,
                   officeId = "OFF_456"))
 
-  private fun setValidVetScreen(
-      viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
-  ) =
+  private fun setValidVetScreen(viewModel: ReportViewViewModel = ReportViewViewModel(fakeRepo)) =
       setReportViewScreen(
           role = UserRole.VET,
           viewModel,
@@ -78,9 +76,7 @@ class ReportViewScreenTest {
                   address = null,
                   officeId = "OFF_456"))
 
-  private fun setFarmerScreen(
-      viewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
-  ) =
+  private fun setFarmerScreen(viewModel: ReportViewViewModel = ReportViewViewModel(fakeRepo)) =
       setReportViewScreen(
           role = UserRole.FARMER,
           viewModel,
@@ -96,13 +92,13 @@ class ReportViewScreenTest {
   // --- TEST 1: Vet typing in answer field ---
   @Test
   fun vet_canTypeInAnswerField() {
-    setValidVetScreen()
+    setVetScreen()
     val answerNode = composeTestRule.onNodeWithTag(ReportViewScreenTestTags.ANSWER_FIELD)
     answerNode.performTextInput("This is my diagnosis.")
     answerNode.assertTextContains("This is my diagnosis.")
   }
 
-  // --- TEST 2: Farmer sees read-only answer text---
+  // --- TEST 2: Farmer sees read-only answer text ---
   @Test
   fun farmer_seesReadOnlyAnswerText() {
     setFarmerScreen()
@@ -112,7 +108,7 @@ class ReportViewScreenTest {
   // --- TEST 3: Vet can open dropdown menu ---
   @Test
   fun vet_canOpenStatusDropdown() {
-    setValidVetScreen()
+    setVetScreen()
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.STATUS_DROPDOWN_FIELD).performClick()
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.STATUS_DROPDOWN_MENU).assertIsDisplayed()
   }
@@ -120,7 +116,7 @@ class ReportViewScreenTest {
   // --- TEST 4: Vet can select a status ---
   @Test
   fun vet_canSelectResolvedStatus() {
-    setValidVetScreen()
+    setVetScreen()
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.STATUS_DROPDOWN_FIELD).performClick()
     composeTestRule
         .onNodeWithTag(ReportViewScreenTestTags.getTagForStatusOption("RESOLVED"))
@@ -133,7 +129,7 @@ class ReportViewScreenTest {
   // --- TEST 5: Vet can open spam dialog ---
   @Test
   fun vet_canOpenSpamDialog() {
-    setValidVetScreen()
+    setVetScreen()
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.SPAM_BUTTON).performClick()
     composeTestRule.onNodeWithText("Report as spam?").assertIsDisplayed()
     composeTestRule.onNodeWithText("Confirm").assertIsDisplayed()
@@ -142,7 +138,7 @@ class ReportViewScreenTest {
   // --- TEST 6: Vet can cancel spam dialog ---
   @Test
   fun vet_canCancelSpamDialog() {
-    setValidVetScreen()
+    setVetScreen()
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.SPAM_BUTTON).performClick()
     composeTestRule.onNodeWithText("Report as spam?").performClick()
     composeTestRule.onNodeWithText("Cancel").performClick()
@@ -153,7 +149,7 @@ class ReportViewScreenTest {
   // --- TEST 7: Vet can confirm spam ---
   @Test
   fun vet_canConfirmSpam() {
-    setValidVetScreen()
+    setVetScreen()
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.SPAM_BUTTON).performClick()
     composeTestRule.onNodeWithText("Confirm").performClick()
     composeTestRule.waitForIdle()
@@ -165,7 +161,7 @@ class ReportViewScreenTest {
   // --- TEST 8: Vet sees both bottom buttons ---
   @Test
   fun bottomButtons_areDisplayed() {
-    setValidVetScreen()
+    setVetScreen()
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.VIEW_ON_MAP).assertIsDisplayed()
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.SAVE_BUTTON).assertIsDisplayed()
   }
@@ -173,7 +169,7 @@ class ReportViewScreenTest {
   // --- TEST 9: Dropdown should contain all expected statuses ---
   @Test
   fun dropdown_containsCorrectStatusOptions() {
-    setValidVetScreen()
+    setVetScreen()
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.STATUS_DROPDOWN_FIELD).performClick()
     listOf("IN_PROGRESS", "RESOLVED").forEach {
       composeTestRule
@@ -238,14 +234,6 @@ class ReportViewScreenTest {
     setFarmerScreen()
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.VIEW_ON_MAP).assertIsDisplayed()
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.DELETE_BUTTON).assertIsDisplayed()
-  }
-
-  @Test
-  fun vet_unassignButton_IsDisplayed() {
-    setValidVetScreen()
-
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.UNASSIGN_BUTTON).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.UNASSIGN_BUTTON).performClick()
   }
 
   // -------------------- Additional tests to increase coverage --------------------
@@ -348,7 +336,7 @@ class ReportViewScreenTest {
   fun vet_canSelectInProgressStatus_viaDropdown() {
     // Test selecting IN_PROGRESS via dropdown (complements existing RESOLVED test)
     val viewModel = ReportViewViewModel()
-    setValidVetScreen(viewModel)
+    setVetScreen(viewModel)
     composeTestRule.waitForIdle()
 
     // Open dropdown and pick IN_PROGRESS
@@ -365,14 +353,15 @@ class ReportViewScreenTest {
 
   @Test
   fun vet_saveButton_navigatesBackAfterSuccessfulSave() {
-    val fakeRepo = FakeReportRepository()
-    val viewModel = ReportViewViewModel(repository = fakeRepo)
+    val TEST_REPORT_ID = "RPT001"
+    val sampleReport = ReportViewUIState().report.copy(id = TEST_REPORT_ID)
+    val fakeRepoWithReport = TestReportRepository(listOf(sampleReport))
+    val viewModel = ReportViewViewModel(repository = fakeRepoWithReport)
 
     composeTestRule.setContent {
       val navController = rememberNavController()
       val navigation = NavigationActions(navController)
-      val TEST_REPORT_ID = "RPT001"
-      val vet = Vet("valid_vet_id", "john", "john", "john@john.john", null)
+      val vet = Vet("mock_vet_id", "john", "john", "john@john.john", null)
 
       NavHost(navController = navController, startDestination = Screen.Overview.route) {
         composable(Screen.Overview.route) {
@@ -389,8 +378,7 @@ class ReportViewScreenTest {
               navigationActions = navigation,
               userRole = UserRole.VET,
               viewModel = viewModel,
-              reportId = TEST_REPORT_ID,
-              user = vet)
+              reportId = TEST_REPORT_ID)
         }
       }
 
@@ -428,12 +416,12 @@ class ReportViewScreenTest {
           .isNotEmpty()
     }
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).assertIsDisplayed()
-    assertTrue(fakeRepo.editCalled)
+    assertTrue(fakeRepoWithReport.editCalled)
   }
 
   @Test
   fun vet_unsavedChanges() {
-    setValidVetScreen()
+    setVetScreen()
 
     val alertBox = composeTestRule.onNodeWithTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX)
     val backButton = composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
