@@ -27,12 +27,15 @@ import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.QuestionForm
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
+import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.common.OfficeName
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.report.ReportViewScreenTestTags.CLAIM_BUTTON
+import com.android.agrihealth.ui.report.ReportViewScreenTestTags.UNASSIGN_BUTTON
 import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.launch
@@ -41,6 +44,8 @@ object ReportViewScreenTestTags {
   const val STATUS_BADGE_BOX = "StatusBadgeBox"
   const val STATUS_BADGE_TEXT = "StatusBadgeText"
   const val ROLE_INFO_LINE = "roleInfoLine"
+  const val CLAIM_BUTTON = "ClaimButton"
+  const val UNASSIGN_BUTTON = "UnassignButton"
   const val ANSWER_FIELD = "AnswerField"
   const val STATUS_DROPDOWN_BOX = "StatusDropdownBox"
   const val STATUS_DROPDOWN_FIELD = "StatusDropdownField"
@@ -82,7 +87,8 @@ fun ReportViewScreen(
     navigationActions: NavigationActions,
     userRole: UserRole,
     viewModel: ReportViewViewModel,
-    reportId: String = ""
+    reportId: String = "",
+    user: User? = null
 ) {
   LaunchedEffect(reportId) { viewModel.loadReport(reportId) }
 
@@ -116,6 +122,18 @@ fun ReportViewScreen(
   var isSpamDialogOpen by remember { mutableStateOf(false) }
   var isDeleteDialogOpen by remember { mutableStateOf(false) }
   var isUnsavedAlertOpen by remember { mutableStateOf(false) }
+
+  // AssignedVet logic
+  val isAssignedToCurrentVet = (userRole != UserRole.FARMER && (report.assignedVet == user?.uid))
+  val isUnassigned = report.assignedVet == null
+  val isAssignedToOther = !isUnassigned && !isAssignedToCurrentVet
+
+  val canBeUnassigned =
+      isAssignedToCurrentVet &&
+          ((report.answer.isNullOrEmpty()) ||
+              (report.status == ReportStatus.PENDING) ||
+              (report.startTime == null) ||
+              (report.duration == null))
 
   fun handleGoBack(force: Boolean = false) {
     if (unsavedChanges && !force) isUnsavedAlertOpen = true else navigationActions.goBack()
@@ -247,19 +265,64 @@ fun ReportViewScreen(
 
               uiState.report.questionForms.forEach { QuestionItem(it) }
 
-              // ---- Answer section ----
-              Text(
-                  text = "Answer:",
-                  style = MaterialTheme.typography.titleMedium,
-                  fontWeight = FontWeight.SemiBold)
+              // ---- Collected switch ----
+              CollectedSwitch(report.collected)
 
-              if (userRole == UserRole.FARMER) {
+              // Check assignedVet Status
+              if (isUnassigned) {
+                // Vet can claim an unassigned report
+                if (userRole == UserRole.VET) {
+                  Button(
+                      onClick = { viewModel.assignReportToVet(user?.uid ?: "") },
+                      modifier = Modifier.fillMaxWidth().testTag(CLAIM_BUTTON)) {
+                        Text("Claim Report")
+                      }
+                }
+                // Farmer sees if the report is unassigned
+                if (userRole == UserRole.FARMER) {
+                  Text("This report is unassigned. A veterinarian will claim it soon.")
+                }
+              }
+              if (isAssignedToOther) {
+                Row {
+                  Text("This report was claimed by: ")
+                  AuthorName(
+                      uid = report.assignedVet,
+                      onClick = {
+                        navigationActions.navigateTo(Screen.ViewUser(report.assignedVet))
+                      })
+                }
+              }
+              if (isAssignedToCurrentVet) {
+                Text("You have claimed this report. Please address it!")
+                if (canBeUnassigned) {
+                  Button(
+                      onClick = { viewModel.unassign() },
+                      modifier = Modifier.fillMaxWidth().testTag(UNASSIGN_BUTTON)) {
+                        Text("Unassign Report")
+                      }
+                }
+              }
+
+              if (isAssignedToOther) {
+                // ---- Answer section ----
+                Text(
+                    text = "Answer:",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold)
+
                 // Farmer: read-only answer
                 Text(
                     text = report.answer ?: "No answer yet.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
-              } else if (userRole == UserRole.VET) {
+              } else if (isAssignedToCurrentVet) {
+                // ---- Answer section ----
+                Text(
+                    text = "Answer:",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold)
+
                 // Vet: editable TextField
                 OutlinedTextField(
                     value = answerText,
@@ -271,8 +334,8 @@ fun ReportViewScreen(
                             .testTag(ReportViewScreenTestTags.ANSWER_FIELD))
               }
 
-              // ---- Status dropdown (Vet only) ----
-              if (userRole == UserRole.VET) {
+              // ---- Status dropdown (assignedVet only) ----
+              if (isAssignedToCurrentVet) {
                 var expanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(
                     expanded = expanded,
@@ -311,48 +374,50 @@ fun ReportViewScreen(
                           }
                     }
               }
-              CollectedSwitch(report.collected)
+
               // ---- Set Time section ----
-              Column {
-                Text(
-                    text = "Veterinarian visit: ",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold)
-                Spacer(modifier = Modifier.width(8.dp))
-                Row {
+              if (isAssignedToCurrentVet || (userRole == UserRole.FARMER)) {
+                Column {
                   Text(
-                      "    Start time: ",
+                      text = "Veterinarian visit: ",
                       style = MaterialTheme.typography.titleMedium,
                       fontWeight = FontWeight.SemiBold)
-                  Text(
-                      text =
-                          report.startTime?.format(
-                              DateTimeFormatter.ofPattern("HH:mm ' on ' dd MMM yyyy"))
-                              ?: "  Not set",
-                      style = MaterialTheme.typography.bodyLarge,
-                      color = MaterialTheme.colorScheme.primaryContainer,
-                      modifier =
-                          Modifier.clickable(
-                              onClick = {
-                                navigationActions.navigateTo(Screen.Planner(reportId = report.id))
-                              }))
-                }
-                Row {
-                  Text(
-                      "    Duration: ",
-                      style = MaterialTheme.typography.titleMedium,
-                      fontWeight = FontWeight.SemiBold)
-                  Text(
-                      text =
-                          report.duration?.format(DateTimeFormatter.ofPattern("HH:mm"))
-                              ?: "  Not set",
-                      style = MaterialTheme.typography.bodyLarge,
-                      color = MaterialTheme.colorScheme.primaryContainer,
-                      modifier =
-                          Modifier.clickable(
-                              onClick = {
-                                navigationActions.navigateTo(Screen.Planner(reportId = report.id))
-                              }))
+                  Spacer(modifier = Modifier.width(8.dp))
+                  Row(modifier = Modifier.padding(start = 12.dp)) {
+                    Text(
+                        "Start time: ",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold)
+                    Text(
+                        text =
+                            report.startTime?.format(
+                                DateTimeFormatter.ofPattern("HH:mm ' on ' dd MMM yyyy"))
+                                ?: "  Not set",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier =
+                            Modifier.clickable(
+                                onClick = {
+                                  navigationActions.navigateTo(Screen.Planner(reportId = report.id))
+                                }))
+                  }
+                  Row(modifier = Modifier.padding(start = 12.dp)) {
+                    Text(
+                        "Duration: ",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold)
+                    Text(
+                        text =
+                            report.duration?.format(DateTimeFormatter.ofPattern("HH:mm"))
+                                ?: "  Not set",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier =
+                            Modifier.clickable(
+                                onClick = {
+                                  navigationActions.navigateTo(Screen.Planner(reportId = report.id))
+                                }))
+                  }
                 }
               }
 
@@ -377,7 +442,7 @@ fun ReportViewScreen(
                                 Text("View on Map")
                               }
 
-                          if (userRole == UserRole.VET) {
+                          if (isAssignedToCurrentVet) {
                             val isAlreadySpam = selectedStatus == ReportStatus.SPAM
                             if (!isAlreadySpam) {
                               val color = StatusColors().spam
@@ -407,7 +472,7 @@ fun ReportViewScreen(
                                     Text("Reported as spam")
                                   }
                             }
-                          } else {
+                          } else if (userRole == UserRole.FARMER) {
                             val color = StatusColors().spam
                             OutlinedButton(
                                 onClick = { isDeleteDialogOpen = true },
@@ -422,8 +487,8 @@ fun ReportViewScreen(
                           }
                         }
 
-                    // Save button (Vet only)
-                    if (userRole == UserRole.VET) {
+                    // Save button (assignedVet only)
+                    if (isAssignedToCurrentVet) {
                       Button(
                           onClick = { viewModel.onSave() },
                           modifier =

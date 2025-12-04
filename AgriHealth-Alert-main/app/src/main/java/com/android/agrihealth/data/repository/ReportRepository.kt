@@ -44,4 +44,10 @@ interface ReportRepository {
    * @param reportId The ID of the report to be deleted.
    */
   suspend fun deleteReport(reportId: String)
+
+  /** Assigns a report to a vet. */
+  suspend fun assignReportToVet(reportId: String, vetId: String)
+
+  /** Unassigns a report from a vet. */
+  suspend fun unassignReport(reportId: String)
 }
