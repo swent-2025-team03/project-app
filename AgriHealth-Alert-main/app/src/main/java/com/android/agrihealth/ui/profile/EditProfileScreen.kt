@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.profile
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -299,7 +298,6 @@ fun EditProfileScreen(
                 val farmerCodes =
                     activeCodes.filter { (user as Vet).farmerConnectCodes.contains(it) }
                 val vetCodes = activeCodes.filter { (user as Vet).vetConnectCodes.contains(it) }
-                Log.d("DEBUG", "farmerCodes=$farmerCodes, vetCodes=$vetCodes")
                 if (farmerCodes.isNotEmpty())
                     ActiveCodeList("FARMER", farmerCodes, snackbarHostState)
                 if (vetCodes.isNotEmpty()) ActiveCodeList("VET", vetCodes, snackbarHostState)
@@ -390,7 +388,7 @@ fun EditProfileScreenPreviewVet() {
 /** Creates an expandable list of every given code, along a "copy to clipboard" button */
 fun ActiveCodeList(type: String, codes: List<String>, snackbarHostState: SnackbarHostState) {
   var expanded by remember { mutableStateOf(false) }
-  val title = type.lowercase().replaceFirstChar { it.uppercase() } + "Codes"
+  val title = type.lowercase().replaceFirstChar { it.uppercase() } + " Codes"
 
   Column(modifier = Modifier.fillMaxWidth()) {
     // Title bar

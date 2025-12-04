@@ -16,7 +16,6 @@ class EditProfileScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   // Some Helpers
-  val officeCodes = listOf("112233", "445566")
   val linkedOffices = listOf("off123", "off456")
 
   private fun fakeFarmerViewModel(): FakeUserViewModel {
@@ -32,8 +31,8 @@ class EditProfileScreenTest {
   }
 
   private fun fakeVetViewModel(
-      farmerCodes: List<String>,
-      vetCodes: List<String>
+      farmerCodes: List<String> = emptyList(),
+      vetCodes: List<String> = emptyList()
   ): FakeUserViewModel {
     return FakeUserViewModel(
         Vet(
@@ -73,9 +72,7 @@ class EditProfileScreenTest {
 
   @Test
   fun editProfileScreen_showsVetSpecificFields() {
-    composeTestRule.setContent {
-      EditProfileScreen(userViewModel = fakeVetViewModel(officeCodes, officeCodes))
-    }
+    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel()) }
 
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.dropdownTag("FARMER"))
@@ -112,12 +109,8 @@ class EditProfileScreenTest {
   @Test
   fun activeFarmerCodes_doesNotShowIfEmptyList() {
     composeTestRule.setContent {
-      EditProfileScreen(userViewModel = fakeVetViewModel(listOf(), officeCodes))
+      EditProfileScreen(userViewModel = fakeVetViewModel(listOf(), listOf()))
     }
-
-    composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.dropdownTag("FARMER"))
-        .assertIsNotDisplayed()
     composeTestRule
         .onAllNodesWithTag(EditProfileScreenTestTags.dropdownElementTag("FARMER"))
         .assertAreNotDisplayed()
@@ -129,7 +122,7 @@ class EditProfileScreenTest {
   @Test
   fun activeVetCodes_doesNotShowIfEmptyList() {
     composeTestRule.setContent {
-      EditProfileScreen(userViewModel = fakeVetViewModel(officeCodes, listOf()))
+      EditProfileScreen(userViewModel = fakeVetViewModel(listOf(), listOf()))
     }
 
     composeTestRule

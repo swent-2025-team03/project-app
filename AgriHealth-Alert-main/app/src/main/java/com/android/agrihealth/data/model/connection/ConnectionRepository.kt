@@ -118,6 +118,10 @@ class ConnectionRepository(
         .await()
   }
 
+  /**
+   * Retrieves the list of valid (OPEN) connection codes for the given vet and code type. Used by
+   * the EditProfileScreen to display only active and usable codes to the user.
+   */
   suspend fun getValidCodes(vet: Vet, type: String): List<String> {
     val targetList =
         when (type) {
@@ -147,6 +151,10 @@ class ConnectionRepository(
     }
   }
 
+  /**
+   * Returns the number of active (OPEN) connection codes for the given vet and code type. This is
+   * used to determine whether the vet can generate additional codes based on the limit.
+   */
   suspend fun getActiveCodesCount(vet: Vet, type: String): Int {
     val (targetList, collectionName) =
         when (type) {
