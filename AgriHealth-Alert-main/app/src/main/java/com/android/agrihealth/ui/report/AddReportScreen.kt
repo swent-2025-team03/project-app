@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -26,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
@@ -50,6 +50,8 @@ object AddReportScreenTestTags {
   const val TITLE_FIELD = "titleField"
   const val DESCRIPTION_FIELD = "descriptionField"
   const val OFFICE_DROPDOWN = "officeDropDown"
+  const val ADDRESS_FIELD = "addressField"
+  const val LOCATION_BUTTON = "locationButton"
   const val CREATE_BUTTON = "createButton"
   const val SCROLL_CONTAINER = "AddReportScrollContainer"
 
@@ -81,6 +83,8 @@ fun AddReportScreen(
     userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
     onBack: () -> Unit = {},
     onCreateReport: () -> Unit = {},
+    pickedLocation: Location? = null,
+    onChangeLocation: () -> Unit = {},
     addReportViewModel: AddReportViewModelContract
 ) {
 
@@ -99,6 +103,11 @@ fun AddReportScreen(
     }
 
     offices[officeId] = label
+  }
+
+  LaunchedEffect(pickedLocation) { addReportViewModel.setAddress(pickedLocation) }
+  LaunchedEffect(Unit) {
+    if (user.collected != uiState.collected) addReportViewModel.switchCollected()
   }
 
   // For the dropdown menu
@@ -149,7 +158,9 @@ fun AddReportScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp)
                     .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
-            verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            verticalArrangement = Arrangement.Top) {
+              HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
+
               Field(
                   uiState.title,
                   { addReportViewModel.setTitle(it) },
@@ -203,6 +214,21 @@ fun AddReportScreen(
                 }
               }
 
+              OutlinedTextField(
+                  value = uiState.address?.name ?: "Select a Location",
+                  placeholder = { Text("Select a Location") },
+                  onValueChange = {},
+                  readOnly = true,
+                  singleLine = true,
+                  label = { Text("Selected Location") },
+                  modifier = Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.ADDRESS_FIELD))
+              Button(
+                  onClick = onChangeLocation,
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.LOCATION_BUTTON)) {
+                    Text("Select Location")
+                  }
+
               var selectedOfficeName = offices[selectedOption] ?: selectedOption
               ExposedDropdownMenuBox(
                   expanded = expanded, onExpandedChange = { expanded = !expanded }) {
@@ -236,6 +262,8 @@ fun AddReportScreen(
                         }
                   }
 
+              CollectedSwitch(uiState.collected, { addReportViewModel.switchCollected() }, true)
+
               Button(
                   onClick = {
                     scope.launch {
@@ -248,10 +276,8 @@ fun AddReportScreen(
                     }
                   },
                   modifier =
-                      Modifier.fillMaxWidth()
-                          .height(56.dp)
-                          .testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
-                    Text("Create Report", style = MaterialTheme.typography.titleLarge)
+                      Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
+                    Text("Create Report", style = MaterialTheme.typography.titleMedium)
                   }
             }
 
@@ -269,7 +295,7 @@ fun AddReportScreen(
                       onCreateReport()
                       onBack()
                     }) {
-                      Text("OK")
+                      Text(text = "OK", color = MaterialTheme.colorScheme.onSurface)
                     }
               },
               title = { Text("Success!") },

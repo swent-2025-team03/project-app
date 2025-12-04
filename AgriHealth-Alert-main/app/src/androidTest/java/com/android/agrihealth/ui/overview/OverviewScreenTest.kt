@@ -5,25 +5,37 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.testutil.FakeOverviewRepository
+import com.android.agrihealth.testutil.FakeAlertRepository
+import com.android.agrihealth.testutil.FakeOverviewViewModel
+import com.android.agrihealth.testutil.InMemoryReportRepository
 import junit.framework.TestCase.assertEquals
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-/**
- * UI tests for [OverviewScreen]. This test class verifies the presence of stable UI elements in the
- * Overview screen. It DOES NOT check the presence of dynamic data such as report items.
- */
-class OverviewStableUITest {
+class OverviewScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   // --- Helper functions to set up screens ---
 
+  @Before
+  fun setup() {
+    AlertRepositoryProvider.repository = FakeAlertRepository()
+  }
+
   private val farmer =
-      Farmer("mock_farmer_id", "john", "john", "john@john.john", null, defaultOffice = null)
+      Farmer(
+          uid = "mock_farmer_id",
+          firstname = "John",
+          lastname = "Doe",
+          email = "john@john.john",
+          address = Location(latitude = 46.5191, longitude = 6.5668),
+          defaultOffice = null)
   private val vet = Vet("mock_vet_id", "john", "john", "john@john.john", null)
 
   private fun setFarmerScreen() {
@@ -31,7 +43,7 @@ class OverviewStableUITest {
       OverviewScreen(
           userRole = UserRole.FARMER,
           user = farmer,
-          overviewViewModel = OverviewViewModel(FakeOverviewRepository()))
+          overviewViewModel = OverviewViewModel(InMemoryReportRepository()))
     }
   }
 
@@ -40,7 +52,7 @@ class OverviewStableUITest {
       OverviewScreen(
           userRole = UserRole.VET,
           user = vet,
-          overviewViewModel = OverviewViewModel(FakeOverviewRepository()))
+          overviewViewModel = OverviewViewModel(InMemoryReportRepository()))
     }
   }
 
@@ -105,10 +117,24 @@ class OverviewStableUITest {
     assertEquals("Option 1", selectedOption)
   }
 
-  // --- TEST 8: Verify the first alert item is displayed ---
+  // --- TEST 8: Verify that alerts are sorted correctly by proximity ---
   @Test
-  fun firstAlertItem_isDisplayed() {
+  fun firstAlert_isCloseForFarmer_flagCheck() {
+    val fakeOverviewVM = FakeOverviewViewModel(user = farmer)
+    val sortedAlerts = fakeOverviewVM.uiState.value.sortedAlerts
+
     setFarmerScreen()
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.alertItemTag(0)).assertIsDisplayed()
+
+    var inZoneFlag = true
+    var changeCount = 0
+
+    for (alertUiState in sortedAlerts) {
+      val isInZone = alertUiState.distanceToAddress != null
+      if (isInZone != inZoneFlag) {
+        changeCount++
+        assert(changeCount <= 1) { "Alert list is not properly sorted by proximity" }
+        inZoneFlag = false
+      }
+    }
   }
 }

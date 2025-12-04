@@ -30,6 +30,7 @@ import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
 import com.android.agrihealth.ui.common.OfficeNameViewModel
+import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.LOGOUT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
@@ -41,6 +42,7 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.MANAGE_OFFICE_BUT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
+import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
 
@@ -89,7 +91,8 @@ fun ProfileScreen(
             title = {
               Text(
                   text = "Profile - ${userRole.displayString()}",
-                  style = MaterialTheme.typography.titleMedium)
+                  style = MaterialTheme.typography.titleLarge,
+                  modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE))
             },
             navigationIcon = {
               IconButton(onClick = onGoBack, modifier = Modifier.testTag(GO_BACK_BUTTON)) {
@@ -177,7 +180,8 @@ fun ProfileScreen(
 
               // Address (Location)
               OutlinedTextField(
-                  value = user.address?.toString() ?: "",
+                  value = user.address?.name ?: "",
+                  singleLine = true,
                   onValueChange = {},
                   label = {
                     when (userRole) {
@@ -210,6 +214,8 @@ fun ProfileScreen(
               }
 
               Spacer(modifier = Modifier.height(24.dp))
+              CollectedSwitch(user.collected)
+              Spacer(modifier = Modifier.height(12.dp))
 
               if (user is Farmer) {
                 Button(
