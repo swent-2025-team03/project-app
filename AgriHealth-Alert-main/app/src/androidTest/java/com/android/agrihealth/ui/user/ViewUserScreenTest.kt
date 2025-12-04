@@ -172,7 +172,8 @@ class ViewUserScreenTest {
             lastname = "Borden",
             email = "vet@vet.com",
             address = null,
-            validCodes = emptyList(),
+            farmerConnectCodes = emptyList(),
+            vetConnectCodes = emptyList(),
             officeId = null,
             isGoogleAccount = false,
             description = null)

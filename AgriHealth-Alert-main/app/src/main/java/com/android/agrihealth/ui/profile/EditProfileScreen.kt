@@ -55,9 +55,11 @@ object EditProfileScreenTestTags {
   const val ADD_CODE_BUTTON = "AddVetButton"
   const val SAVE_BUTTON = "SaveButton"
   const val PASSWORD_BUTTON = "PasswordButton"
-  const val ACTIVE_CODES_DROPDOWN = "ActiveCodesDropdown"
-  const val ACTIVE_CODE_ELEMENT = "ActiveCodeListElement"
   const val COPY_CODE_BUTTON = "CopyActiveCodeListElementButton"
+
+  fun dropdownTag(type: String) = "ACTIVE_CODES_DROPDOWN_$type"
+
+  fun dropdownElementTag(type: String) = "ACTIVE_CODE_ELEMENT_$type"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -299,8 +301,8 @@ fun EditProfileScreen(
                 val vetCodes = activeCodes.filter { (user as Vet).vetConnectCodes.contains(it) }
                 Log.d("DEBUG", "farmerCodes=$farmerCodes, vetCodes=$vetCodes")
                 if (farmerCodes.isNotEmpty())
-                    ActiveCodeList("Farmer Codes", farmerCodes, snackbarHostState)
-                if (vetCodes.isNotEmpty()) ActiveCodeList("Vet Codes", vetCodes, snackbarHostState)
+                    ActiveCodeList("FARMER", farmerCodes, snackbarHostState)
+                if (vetCodes.isNotEmpty()) ActiveCodeList("VET", vetCodes, snackbarHostState)
               }
 
               Spacer(modifier = Modifier.weight(1f))
@@ -386,8 +388,9 @@ fun EditProfileScreenPreviewVet() {
 
 @Composable
 /** Creates an expandable list of every given code, along a "copy to clipboard" button */
-fun ActiveCodeList(title: String, codes: List<String>, snackbarHostState: SnackbarHostState) {
+fun ActiveCodeList(type: String, codes: List<String>, snackbarHostState: SnackbarHostState) {
   var expanded by remember { mutableStateOf(false) }
+  val title = type.lowercase().replaceFirstChar { it.uppercase() } + "Codes"
 
   Column(modifier = Modifier.fillMaxWidth()) {
     // Title bar
@@ -396,7 +399,7 @@ fun ActiveCodeList(title: String, codes: List<String>, snackbarHostState: Snackb
             Modifier.fillMaxWidth()
                 .clickable { expanded = !expanded }
                 .padding(horizontal = 12.dp, vertical = 10.dp)
-                .testTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN),
+                .testTag(EditProfileScreenTestTags.dropdownTag(type)),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically) {
           Text(text = title)
@@ -417,7 +420,7 @@ fun ActiveCodeList(title: String, codes: List<String>, snackbarHostState: Snackb
                 Text(
                     text = code,
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.testTag(EditProfileScreenTestTags.ACTIVE_CODE_ELEMENT))
+                    modifier = Modifier.testTag(EditProfileScreenTestTags.dropdownElementTag(type)))
                 CopyToClipboardButton(code, snackbarHostState)
               }
         }

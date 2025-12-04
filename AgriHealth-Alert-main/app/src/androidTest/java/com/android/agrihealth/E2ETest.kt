@@ -241,7 +241,8 @@ class E2ETest : FirebaseEmulatorsTest() {
             lastname = "Vet",
             email = "vet@test.com",
             address = null,
-            validCodes = emptyList(),
+            farmerConnectCodes = emptyList(),
+            vetConnectCodes = emptyList(),
             officeId = "off1")
     val userViewModel = UserViewModel(initialUser = vet)
     runTest {
@@ -249,7 +250,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     }
     val codesViewModel =
         CodesViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
-    codesViewModel.generateCode()
+    codesViewModel.generateCode("FARMER")
     // Wait for the code to appear in StateFlow
     val officeCode = runBlocking { codesViewModel.generatedCode.first { it != null } }
 

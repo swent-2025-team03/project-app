@@ -31,7 +31,10 @@ class EditProfileScreenTest {
             defaultOffice = linkedOffices.first()))
   }
 
-  private fun fakeVetViewModel(vetCodes: List<String> = listOf()): FakeUserViewModel {
+  private fun fakeVetViewModel(
+      farmerCodes: List<String>,
+      vetCodes: List<String>
+  ): FakeUserViewModel {
     return FakeUserViewModel(
         Vet(
             uid = "vet_1",
@@ -39,7 +42,8 @@ class EditProfileScreenTest {
             lastname = "Smith",
             email = "bob@vetcare.com",
             address = Location(0.0, 0.0, "Clinic Address"),
-            validCodes = vetCodes))
+            farmerConnectCodes = farmerCodes,
+            vetConnectCodes = vetCodes))
   }
 
   @Test
@@ -69,11 +73,14 @@ class EditProfileScreenTest {
 
   @Test
   fun editProfileScreen_showsVetSpecificFields() {
-    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel(officeCodes)) }
+    composeTestRule.setContent {
+      EditProfileScreen(userViewModel = fakeVetViewModel(officeCodes, officeCodes))
+    }
 
     composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN)
+        .onNodeWithTag(EditProfileScreenTestTags.dropdownTag("FARMER"))
         .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.dropdownTag("VET")).assertIsDisplayed()
     composeTestRule
         .onNodeWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
         .assertDoesNotExist()
@@ -104,13 +111,16 @@ class EditProfileScreenTest {
   }
 
   @Test
-  fun activeCodes_showsListIfExpanded() {
-    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel(officeCodes)) }
+  fun activeFarmerCodes_showsListIfExpanded() {
+    composeTestRule.setContent {
+      EditProfileScreen(userViewModel = fakeVetViewModel(officeCodes, officeCodes))
+    }
 
-    val codeNodes = composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.ACTIVE_CODE_ELEMENT)
+    val codeNodes =
+        composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.dropdownElementTag("FARMER"))
     val codeButtonNodes =
         composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)
-    val listNode = composeTestRule.onNodeWithTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN)
+    val listNode = composeTestRule.onNodeWithTag(EditProfileScreenTestTags.dropdownTag("FARMER"))
 
     codeNodes.assertAreNotDisplayed()
     codeButtonNodes.assertAreNotDisplayed()
@@ -131,14 +141,63 @@ class EditProfileScreenTest {
   }
 
   @Test
-  fun activeCodes_doesNotShowIfEmptyList() {
-    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel(listOf())) }
+  fun activeVetCodes_showsListIfExpanded() {
+    composeTestRule.setContent {
+      EditProfileScreen(userViewModel = fakeVetViewModel(officeCodes, officeCodes))
+    }
+
+    val codeNodes =
+        composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.dropdownElementTag("VET"))
+    val codeButtonNodes =
+        composeTestRule.onAllNodesWithTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)
+    val listNode = composeTestRule.onNodeWithTag(EditProfileScreenTestTags.dropdownTag("VET"))
+
+    codeNodes.assertAreNotDisplayed()
+    codeButtonNodes.assertAreNotDisplayed()
+
+    listNode.assertIsDisplayed().performClick()
+
+    codeNodes.assertAreDisplayed()
+    codeButtonNodes.assertAreDisplayed().onFirst().performClick()
+
+    composeTestRule.waitUntil {
+      composeTestRule.onAllNodesWithText("Copied to clipboard").fetchSemanticsNodes().isNotEmpty()
+    }
+
+    listNode.performClick()
+
+    codeNodes.assertAreNotDisplayed()
+    codeButtonNodes.assertAreNotDisplayed()
+  }
+
+  @Test
+  fun activeFarmerCodes_doesNotShowIfEmptyList() {
+    composeTestRule.setContent {
+      EditProfileScreen(userViewModel = fakeVetViewModel(listOf(), officeCodes))
+    }
 
     composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN)
+        .onNodeWithTag(EditProfileScreenTestTags.dropdownTag("FARMER"))
         .assertIsNotDisplayed()
     composeTestRule
-        .onAllNodesWithTag(EditProfileScreenTestTags.ACTIVE_CODE_ELEMENT)
+        .onAllNodesWithTag(EditProfileScreenTestTags.dropdownElementTag("FARMER"))
+        .assertAreNotDisplayed()
+    composeTestRule
+        .onAllNodesWithTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)
+        .assertAreNotDisplayed()
+  }
+
+  @Test
+  fun activeVetCodes_doesNotShowIfEmptyList() {
+    composeTestRule.setContent {
+      EditProfileScreen(userViewModel = fakeVetViewModel(officeCodes, listOf()))
+    }
+
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.dropdownTag("VET"))
+        .assertIsNotDisplayed()
+    composeTestRule
+        .onAllNodesWithTag(EditProfileScreenTestTags.dropdownElementTag("VET"))
         .assertAreNotDisplayed()
     composeTestRule
         .onAllNodesWithTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)
