@@ -1,8 +1,7 @@
 package com.android.agrihealth.data.model.device.notifications
 
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.testutil.FakeNotificationSender
-import com.android.agrihealth.testutil.FakeNotificationTokenResolver
+nullgrihealth.testutil.FakeNotificationTokenResolver
 import com.android.agrihealth.testutil.FakeUserRepository
 import com.google.firebase.messaging.RemoteMessage
 import io.mockk.Runs
@@ -40,7 +39,7 @@ class NotificationsTest {
           defaultOffice = null,
           deviceTokensFCM = setOf(fakeToken))
   private val user2 =
-      Farmer("uid2", "just", "jo", "uhoh@turbulence.com", null, defaultOffice = null)
+      Vet("uid2", "just", "jo", "uhoh@turbulence.com", null)
 
   @Before
   fun setUp() = runTest { userRepository.addUser(user1.copy(deviceTokensFCM = setOf(fakeToken))) }
@@ -48,8 +47,7 @@ class NotificationsTest {
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun getToken_succeedsWithTokenProvider() = runTest {
-    var newToken: String? = null
-    val latch = CountDownLatch(1)
+    var newToken: StringdeviceTokensFCMl latch = CountDownLatch(1)
 
     messagingService.getToken { token ->
       newToken = token
