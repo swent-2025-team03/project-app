@@ -63,7 +63,10 @@ class AddReportViewModel(
 
   override suspend fun createReport(): Boolean {
     val uiState = _uiState.value
-    if (uiState.title.isBlank() || uiState.description.isBlank() || uiState.address == null) {
+    if (uiState.title.isBlank() ||
+        uiState.description.isBlank() ||
+        uiState.chosenOffice.isBlank() ||
+        uiState.address == null) {
       return false
     }
     val allQuestionsAnswered = uiState.questionForms.all { it.isValid() }

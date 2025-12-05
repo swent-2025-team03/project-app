@@ -121,6 +121,8 @@ fun AddReportScreen(
   // For the dialog when adding a report is successful
   var showSuccessDialog by remember { mutableStateOf(false) }
 
+  LaunchedEffect(Unit) { addReportViewModel.setOffice(selectedOption) }
+
   Scaffold(
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       topBar = {
