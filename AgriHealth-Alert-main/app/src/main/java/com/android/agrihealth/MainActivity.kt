@@ -265,7 +265,8 @@ fun AgriHealthApp(
                 navigationActions = navigationActions,
                 userRole = currentUserRole,
                 viewModel = viewModel,
-                reportId = reportId)
+                reportId = reportId,
+                user = currentUser)
           }
       composable(
           route = Screen.ViewAlert.route,
