@@ -76,7 +76,8 @@ class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository 
   ): Result<String> {
     if (isOnline) {
       if (credentials[email] != null) {
-        return Result.failure(FirebaseAuthException("already used email", ""))
+        return Result.failure(
+            FirebaseAuthException("already used email", "this throws if I leave it empty"))
       }
       credentials[email] = password
       return Result.success("testUser")

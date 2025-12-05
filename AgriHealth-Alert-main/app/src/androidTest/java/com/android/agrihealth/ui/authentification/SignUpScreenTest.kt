@@ -1,7 +1,6 @@
 package com.android.agrihealth.ui.authentification
 
 import androidx.activity.ComponentActivity
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.isDisplayed
@@ -10,8 +9,9 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import androidx.test.platform.app.InstrumentationRegistry
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
+import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.testutil.FakeAuthRepository
 import com.android.agrihealth.testutil.TestConstants
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -19,16 +19,21 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class SignUpScreenTest : FirebaseEmulatorsTest() {
+class SignUpScreenTest {
+
+  private val authRepository = FakeAuthRepository()
+  private val user =
+      Farmer(
+          uid = "test_user",
+          firstname = "Farmer",
+          lastname = "Joe",
+          email = "valid@email.com",
+          address = Location(0.0, 0.0, "123 Farm Lane"),
+          linkedOffices = emptyList(),
+          defaultOffice = null,
+      )
 
   @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
-
-  private fun setNetworkEnabled(enabled: Boolean) {
-    val state = if (enabled) "enable" else "disable"
-    val uiAutomation = InstrumentationRegistry.getInstrumentation().uiAutomation
-    uiAutomation.executeShellCommand("svc wifi $state").close()
-    uiAutomation.executeShellCommand("svc data $state").close()
-  }
 
   private fun completeSignUp(email: String, password: String) {
     composeTestRule
@@ -68,18 +73,16 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
   }
 
   @Before
-  override fun setUp() {
-    super.setUp()
+  fun setUp() {
     runTest {
-      authRepository.signUpWithEmailAndPassword(user1.email, password1, user1)
+      authRepository.signUpWithEmailAndPassword("valid@email.com", "password1", user)
       authRepository.signOut()
     }
-    composeTestRule.setContent { MaterialTheme { SignUpScreen() } }
   }
 
   @Test
   fun displayAllComponents() {
-
+    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.BACK_BUTTON).assertIsDisplayed()
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.TITLE).assertIsDisplayed()
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD).assertIsDisplayed()
@@ -95,6 +98,7 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
 
   @Test
   fun signUpWithEmptyFieldsFails() {
+    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).performClick()
     composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.EMPTY_FIELDS).isDisplayed()
@@ -103,6 +107,7 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
 
   @Test
   fun signUpWithoutRoleFails() {
+    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
     composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD)
         .assertIsDisplayed()
@@ -116,17 +121,17 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
     composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.EMAIL_FIELD)
         .assertIsDisplayed()
-        .performTextInput(user2.email)
+        .performTextInput(user.email)
 
     composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.PASSWORD_FIELD)
         .assertIsDisplayed()
-        .performTextInput(password2)
+        .performTextInput("password1")
 
     composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD)
         .assertIsDisplayed()
-        .performTextInput(password2)
+        .performTextInput("password1")
 
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).performClick()
 
@@ -137,7 +142,8 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
 
   @Test
   fun signUpWithMalformedEmailFails() {
-    completeSignUp(user4.email, password4)
+    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
+    completeSignUp("bad", "credentials")
     composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.BAD_EMAIL_FORMAT).isDisplayed()
     }
@@ -145,7 +151,8 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
 
   @Test
   fun signUpWithWeakPasswordFails() {
-    completeSignUp(user3.email, password4)
+    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
+    completeSignUp("realvalid@email.gmail", "bad")
     composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.WEAK_PASSWORD).isDisplayed()
     }
@@ -153,6 +160,7 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
 
   @Test
   fun signUpWithMismatchedPasswordsFails() {
+    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
     composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD)
         .assertIsDisplayed()
@@ -166,17 +174,17 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
     composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.EMAIL_FIELD)
         .assertIsDisplayed()
-        .performTextInput(user2.email)
+        .performTextInput("great@email.yeah")
 
     composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.PASSWORD_FIELD)
         .assertIsDisplayed()
-        .performTextInput(password2)
+        .performTextInput("password2")
 
     composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD)
         .assertIsDisplayed()
-        .performTextInput(password3)
+        .performTextInput("password3")
 
     composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.FARMER_PILL)
@@ -195,7 +203,8 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
 
   @Test
   fun signUpWithAlreadyUsedEmailFails() {
-    completeSignUp(user1.email, password3)
+    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
+    completeSignUp(user.email, "password1")
 
     composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.ALREADY_USED_EMAIL).isDisplayed()
@@ -204,8 +213,9 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
 
   @Test
   fun signUpWithoutInternetFails() {
-    setNetworkEnabled(false)
-    completeSignUp(user2.email, password2)
+    authRepository.switchConnection(false)
+    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
+    completeSignUp(user.email, "password2")
     composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.TIMEOUT).isDisplayed()
     }
@@ -213,6 +223,6 @@ class SignUpScreenTest : FirebaseEmulatorsTest() {
 
   @After
   fun turnOnInternet() {
-    setNetworkEnabled(true)
+    authRepository.switchConnection(true)
   }
 }
