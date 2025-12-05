@@ -24,6 +24,7 @@ fun User.copyCommon(
     address: Location? = this.address,
     isGoogleAccount: Boolean = this.isGoogleAccount,
     description: String? = this.description,
+    collected: Boolean = this.collected,
     deviceTokensFCM: Set<String> = this.deviceTokensFCM
 ): User {
   return when (this) {
@@ -34,6 +35,7 @@ fun User.copyCommon(
             lastname,
             email,
             address,
+            collected = collected,
             isGoogleAccount = isGoogleAccount,
             description = description,
             deviceTokensFCM = deviceTokensFCM)
@@ -44,6 +46,7 @@ fun User.copyCommon(
             lastname,
             email,
             address,
+            collected = collected,
             isGoogleAccount = isGoogleAccount,
             description = description,
             deviceTokensFCM = deviceTokensFCM)

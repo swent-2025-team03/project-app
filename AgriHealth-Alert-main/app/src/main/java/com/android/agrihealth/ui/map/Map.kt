@@ -99,7 +99,6 @@ const val AllFilterText = "All reports"
 @Composable
 fun MapScreen(
     mapViewModel: MapViewModel = viewModel(),
-    locationViewModel: LocationViewModel = viewModel(),
     navigationActions: NavigationActions? = null,
     isViewedFromOverview: Boolean = true,
     forceStartingPosition: Boolean = false
