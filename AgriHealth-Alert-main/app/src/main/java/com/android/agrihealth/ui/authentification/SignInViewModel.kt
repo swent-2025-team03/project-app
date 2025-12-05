@@ -76,7 +76,7 @@ class SignInViewModel(
       viewModelScope.launch {
         authRepository
             .signInWithEmailAndPassword(_uiState.value.email, _uiState.value.password)
-            .fold({ uid -> _uiState.update { it.copy(uid = null) } }) { failure ->
+            .fold({ uid -> _uiState.update { it.copy(uid = uid) } }) { failure ->
               when (failure) {
                 is FirebaseAuthException -> setErrorMsg(SignInErrorMsg.INVALID_CREDENTIALS)
                 else -> setErrorMsg(SignInErrorMsg.TIMEOUT)
