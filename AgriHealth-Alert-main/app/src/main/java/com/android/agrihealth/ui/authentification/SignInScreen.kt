@@ -68,8 +68,8 @@ fun SignInScreen(
 
   val context = LocalContext.current
 
-  LaunchedEffect(signInUIState.user) {
-    signInUIState.user?.let { if (signInUIState.isNewGoogle) onNewGoogle() else onSignedIn() }
+  LaunchedEffect(signInUIState.uid) {
+    signInUIState.uid?.let { if (signInUIState.isNewGoogle) onNewGoogle() else onSignedIn() }
   }
 
   Scaffold(

@@ -23,7 +23,6 @@ import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.user.UserViewModel
-import com.google.firebase.auth.FirebaseUser
 
 object SignUpScreenTestTags {
   const val SCREEN = "SignUpScreen"
@@ -58,9 +57,9 @@ fun SignUpScreen(
     }
   }
 
-  LaunchedEffect(signUpUIState.user) {
-    signUpUIState.user?.let { firebaseUser ->
-      val newUser = signUpViewModel.createLocalUser(firebaseUser)
+  LaunchedEffect(signUpUIState.uid) {
+    signUpUIState.uid?.let { uid ->
+      val newUser = signUpViewModel.createLocalUser(uid)
 
       if (newUser != null) {
         userViewModel.setUser(newUser)
@@ -220,7 +219,7 @@ private fun SignUpScreenPreview() {
         override suspend fun signInWithEmailAndPassword(
             email: String,
             password: String
-        ): Result<FirebaseUser> {
+        ): Result<String> {
           TODO("Not yet implemented")
         }
 
@@ -232,7 +231,7 @@ private fun SignUpScreenPreview() {
           TODO("Not yet implemented")
         }
 
-        override suspend fun signInWithGoogle(credential: Credential): Result<FirebaseUser> {
+        override suspend fun signInWithGoogle(credential: Credential): Result<String> {
           TODO("Not yet implemented")
         }
 
@@ -240,7 +239,7 @@ private fun SignUpScreenPreview() {
             email: String,
             password: String,
             userData: User
-        ): Result<FirebaseUser> {
+        ): Result<String> {
           TODO("Not yet implemented")
         }
 
