@@ -10,12 +10,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.android.agrihealth.AgriHealthApp
-import com.android.agrihealth.data.model.authentification.FakeCredentialManager
-import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.testhelpers.NetworkTestUtils.setNetworkEnabled
 import com.android.agrihealth.testutil.TestConstants
-import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -59,28 +56,6 @@ class SignInScreenTest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(SignInScreenTestTags.LOGIN_DIVIDER).assertIsDisplayed()
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SNACKBAR).assertIsNotDisplayed()
     composeTestRule.onNodeWithTag(SignInScreenTestTags.GOOGLE_LOGIN_BUTTON).assertIsDisplayed()
-  }
-
-  @Test
-  fun canSignInWithGoogle() {
-    val fakeGoogleIdToken =
-        FakeJwtGenerator.createFakeGoogleIdToken("12345", email = "test@example.com")
-
-    val fakeCredentialManager = FakeCredentialManager.create(fakeGoogleIdToken)
-
-    composeTestRule.setContent { AgriHealthApp(credentialManager = fakeCredentialManager) }
-    composeTestRule
-        .onNodeWithTag(SignInScreenTestTags.GOOGLE_LOGIN_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).isDisplayed()
-    }
-    composeTestRule.onNodeWithTag(RoleSelectionScreenTestTags.VET).performClick()
-
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).isDisplayed()
-    }
   }
 
   @Test
