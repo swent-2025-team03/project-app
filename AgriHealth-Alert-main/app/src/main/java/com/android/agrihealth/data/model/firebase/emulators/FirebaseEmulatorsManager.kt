@@ -3,6 +3,7 @@ package com.android.agrihealth.data.model.firebase.emulators
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
+import com.google.firebase.functions.functions
 import com.google.firebase.storage.storage
 import java.net.Inet4Address
 import java.net.InetAddress
@@ -15,7 +16,8 @@ data class FirebaseEnvironment(
     val host: String,
     val firestorePort: Int,
     val authPort: Int,
-    val storagePort: Int
+    val storagePort: Int,
+    val functionsPort: Int
 )
 
 /** Handles which Firebase emulator to run, and makes sure useEmulators() isn't called twice */
@@ -25,6 +27,7 @@ object FirebaseEmulatorsManager {
   private const val FIRESTORE_PORT = 8081
   private const val AUTH_PORT = 9099
   private const val STORAGE_PORT = 9199
+  private const val FUNCTIONS_PORT = 5001
 
   lateinit var environment: FirebaseEnvironment
     private set
@@ -47,12 +50,14 @@ object FirebaseEmulatorsManager {
             host = emulatorHost,
             firestorePort = FIRESTORE_PORT,
             authPort = AUTH_PORT,
-            storagePort = STORAGE_PORT)
+            storagePort = STORAGE_PORT,
+            functionsPort = FUNCTIONS_PORT)
 
     with(environment) {
       Firebase.firestore.useEmulator(host, firestorePort)
       Firebase.auth.useEmulator(host, authPort)
       Firebase.storage.useEmulator(host, storagePort)
+      Firebase.functions.useEmulator(host, functionsPort)
     }
 
     emulatorInitialized = true
@@ -76,7 +81,8 @@ object FirebaseEmulatorsManager {
   fun shouldUseLocal(): Boolean {
     return isLocalRunning(FIRESTORE_PORT) &&
         isLocalRunning(AUTH_PORT) &&
-        isLocalRunning(STORAGE_PORT)
+        isLocalRunning(STORAGE_PORT) &&
+        isLocalRunning(FUNCTIONS_PORT)
   }
 
   // Find emulator on the local network, this only runs once per "run all tests" so it's fine if it
@@ -85,7 +91,7 @@ object FirebaseEmulatorsManager {
     val netInfo = getNetworkInfo() ?: return null // subnet ip + prefix
     val hosts = getHostRange(netInfo.ip, netInfo.prefix) // list of i.e. 192.168.1.XXX
 
-    val ports = listOf(FIRESTORE_PORT, AUTH_PORT, STORAGE_PORT)
+    val ports = listOf(FIRESTORE_PORT, AUTH_PORT, STORAGE_PORT, FUNCTIONS_PORT)
     val testPort = ports.first()
 
     val timeout = System.currentTimeMillis() + (90 * 1000)

@@ -82,6 +82,7 @@ fun OverviewScreen(
     onAddReport: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
     onAlertClick: (String) -> Unit = {},
+    onLogin: () -> Unit = {},
     navigationActions: NavigationActions? = null
 ) {
 
@@ -94,6 +95,7 @@ fun OverviewScreen(
   LaunchedEffect(user) {
     overviewViewModel.loadReports(user)
     overviewViewModel.loadAlerts(user)
+    onLogin()
   }
   Scaffold(
       // -- Top App Bar with logout icon --
