@@ -250,7 +250,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     }
     val codesViewModel =
         CodesViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
-    codesViewModel.generateCode("FARMER")
+    codesViewModel.generateCode()
     // Wait for the code to appear in StateFlow
     val officeCode = runBlocking { codesViewModel.generatedCode.first { it != null } }
 
@@ -285,7 +285,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     }
     val codesViewModel =
         CodesViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
-    codesViewModel.generateCode("FARMER")
+    codesViewModel.generateCode()
     val farmerCode = runBlocking { codesViewModel.generatedCode.first { it != null } }
 
     completeSignIn(email, password)

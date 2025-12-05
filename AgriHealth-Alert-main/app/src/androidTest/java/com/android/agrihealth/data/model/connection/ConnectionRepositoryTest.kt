@@ -54,7 +54,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   // fields.
   fun generateCode_createsOpenDoc() = runTest {
     val officeId = user3.officeId!!
-    val code = repo.generateCode("FARMER").getOrThrow()
+    val code = repo.generateCode().getOrThrow()
     assertTrue(code.matches(Regex("\\d{6}")))
 
     val snap = db.collection(FARMER_TO_OFFICE + CONNECT_CODES).document(code).get().await()
@@ -68,7 +68,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   fun generateCodeForOfficeWorks() = runTest {
     repo = ConnectionRepository(db, connectionType = VET_TO_OFFICE)
     val officeId = user3.officeId!!
-    val code = repo.generateCode("VET").getOrThrow()
+    val code = repo.generateCode().getOrThrow()
     assertTrue(code.matches(Regex("\\d{6}")))
 
     val snap = db.collection(VET_TO_OFFICE + CONNECT_CODES).document(code).get().await()
@@ -83,7 +83,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   // USED.
   fun claimCodeAndMarksUsed() = runTest {
     val officeId = user3.officeId!!
-    val code = repo.generateCode("FARMER").getOrThrow()
+    val code = repo.generateCode().getOrThrow()
 
     authRepository.signOut()
     authRepository.signInWithEmailAndPassword(user1.email, password1)
@@ -98,7 +98,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   @Test
   // Verifies that claimCode fails when the code has already been used.
   fun claimCode_failsWhenUsed() = runTest {
-    val code = repo.generateCode("FARMER").getOrThrow()
+    val code = repo.generateCode().getOrThrow()
 
     authRepository.signOut()
     authRepository.signInWithEmailAndPassword(user1.email, password1)
@@ -119,14 +119,14 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   @Test
   // Verifies that multiple generated codes are unique.
   fun generateCode_many_areUnique() = runTest {
-    val codes = (1..200).map { repo.generateCode("FARMER").getOrThrow() }
+    val codes = (1..200).map { repo.generateCode().getOrThrow() }
     assertEquals(codes.size, codes.toSet().size)
   }
 
   @Test
   // Verifies that only one farmer can successfully claim a code in a race condition scenario.
   fun claimCode_raceTwoFarmers_oneSucceeds() = runTest {
-    val code = repo.generateCode("FARMER").getOrThrow()
+    val code = repo.generateCode().getOrThrow()
 
     val r1 = async {
       authRepository.signOut()
@@ -152,7 +152,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
     io.mockk.every { kotlin.random.Random.nextInt(100_000, 1_000_000) } returnsMany
         listOf(123456, 234567)
 
-    val out = repo.generateCode("FARMER").getOrThrow()
+    val out = repo.generateCode().getOrThrow()
     assertEquals("234567", out)
 
     io.mockk.unmockkObject(kotlin.random.Random)

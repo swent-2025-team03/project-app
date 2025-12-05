@@ -25,6 +25,16 @@ class ConnectionRepository(
     private const val STATUS_USED = FirestoreSchema.Status.USED
   }
 
+  val type: String
+    get() = connectionType
+
+  private fun humanReadableConnectionType(): String =
+      when (connectionType) {
+        "farmerToOffice" -> "farmer connection"
+        "vetToOffice" -> "vet connection"
+        else -> "connection"
+      }
+
   private fun getCurrentUserId(): String {
     return Firebase.auth.currentUser?.uid
         ?: throw java.lang.IllegalStateException("User not logged in")
@@ -40,9 +50,8 @@ class ConnectionRepository(
     }
   }
 
-  // Generates a unique connection code for an office, valid for a limited time (ttlMinutes).
   // Returns: Result<String> containing the generated code, or an exception if failed.
-  suspend fun generateCode(type: String): Result<String> = runCatching {
+  suspend fun generateCode(): Result<String> = runCatching {
     val officeId = getCurrentUserOfficeId()
 
     val currentUser =
@@ -50,9 +59,10 @@ class ConnectionRepository(
             ?: throw IllegalStateException("User not found")
     val vet = currentUser as? Vet ?: throw IllegalStateException("Only vets can generate codes")
 
-    val activeCount = getActiveCodesCount(vet, type)
+    val activeCount = getActiveCodesCount(vet)
     if (activeCount >= 10) {
-      throw IllegalStateException("Cannot generate more than 10 active $type codes")
+      throw IllegalStateException(
+          "Cannot generate more than 10 active ${humanReadableConnectionType()} codes")
     }
 
     repeat(20) {
@@ -71,8 +81,7 @@ class ConnectionRepository(
                           FirestoreSchema.ConnectCodes.CODE to code,
                           FirestoreSchema.ConnectCodes.OFFICE_ID to officeId,
                           FirestoreSchema.ConnectCodes.STATUS to STATUS_OPEN,
-                          FirestoreSchema.ConnectCodes.CREATED_AT to createdAt,
-                          FirestoreSchema.ConnectCodes.TYPE to type))
+                          FirestoreSchema.ConnectCodes.CREATED_AT to createdAt))
                   code
                 }
               }
@@ -155,11 +164,11 @@ class ConnectionRepository(
    * Returns the number of active (OPEN) connection codes for the given vet and code type. This is
    * used to determine whether the vet can generate additional codes based on the limit.
    */
-  suspend fun getActiveCodesCount(vet: Vet, type: String): Int {
+  suspend fun getActiveCodesCount(vet: Vet): Int {
     val (targetList, collectionName) =
-        when (type) {
-          "FARMER" -> vet.farmerConnectCodes to "farmerToOfficeConnectCodes"
-          "VET" -> vet.vetConnectCodes to "vetToOfficeConnectCodes"
+        when (connectionType) {
+          "farmerToOffice" -> vet.farmerConnectCodes to "farmerToOfficeConnectCodes"
+          "vetToOffice" -> vet.vetConnectCodes to "vetToOfficeConnectCodes"
           else -> return 0
         }
 
@@ -172,7 +181,6 @@ class ConnectionRepository(
               .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
               .get()
               .await()
-
       snapshot.size()
     } catch (e: Exception) {
       0

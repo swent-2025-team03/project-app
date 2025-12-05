@@ -27,19 +27,19 @@ class CodesViewModel(
   val claimMessage: StateFlow<String?> = _claimMessage
   val activeCodes: StateFlow<List<String>> = _activeCodes
 
-  fun generateCode(type: String) {
+  fun generateCode() {
     val currentUser = userViewModel.user.value
     val vet = currentUser as? Vet ?: return
 
     viewModelScope.launch {
-      val result = connectionRepository.generateCode(type)
+      val result = connectionRepository.generateCode()
       result.fold(
           onSuccess = { code ->
             _generatedCode.value = code
             val updatedVet =
-                when (type) {
-                  "FARMER" -> vet.copy(farmerConnectCodes = vet.farmerConnectCodes + code)
-                  "VET" -> vet.copy(vetConnectCodes = vet.vetConnectCodes + code)
+                when (connectionRepository.type) {
+                  "farmerToOffice" -> vet.copy(farmerConnectCodes = vet.farmerConnectCodes + code)
+                  "vetToOffice" -> vet.copy(vetConnectCodes = vet.vetConnectCodes + code)
                   else -> vet
                 }
             userViewModel.updateUser(updatedVet)
