@@ -3,6 +3,7 @@ package com.android.agrihealth.data.model.connection
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.ui.profile.CodeType
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -131,19 +132,17 @@ class ConnectionRepository(
    * Retrieves the list of valid (OPEN) connection codes for the given vet and code type. Used by
    * the EditProfileScreen to display only active and usable codes to the user.
    */
-  suspend fun getValidCodes(vet: Vet, type: String): List<String> {
+  suspend fun getValidCodes(vet: Vet, type: CodeType): List<String> {
     val targetList =
         when (type) {
-          "FARMER" -> vet.farmerConnectCodes
-          "VET" -> vet.vetConnectCodes
-          else -> return emptyList()
+          CodeType.FARMER -> vet.farmerConnectCodes
+          CodeType.VET -> vet.vetConnectCodes
         }
 
     val collectionName =
         when (type) {
-          "FARMER" -> "farmerToOfficeConnectCodes"
-          "VET" -> "vetToOfficeConnectCodes"
-          else -> return emptyList()
+          CodeType.FARMER -> "farmerToOfficeConnectCodes"
+          CodeType.VET -> "vetToOfficeConnectCodes"
         }
 
     return try {

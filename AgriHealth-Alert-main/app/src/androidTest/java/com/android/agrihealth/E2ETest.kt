@@ -286,7 +286,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     val codesViewModel =
         CodesViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
     codesViewModel.generateCode()
-    val farmerCode = runBlocking { codesViewModel.generatedCode.first { it != null } }
 
     completeSignIn(email, password)
     checkOverviewScreenIsDisplayed()

@@ -43,6 +43,17 @@ import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
 
+enum class CodeType {
+  FARMER,
+  VET;
+
+  fun displayName(): String =
+      when (this) {
+        FARMER -> "Farmer"
+        VET -> "Vet"
+      }
+}
+
 object EditProfileScreenTestTags {
   const val FIRSTNAME_FIELD = "FirstNameField"
   const val LASTNAME_FIELD = "LastNameField"
@@ -85,7 +96,8 @@ fun EditProfileScreen(
     }
   }
 
-  val activeCodes by codesViewModel.activeCodes.collectAsState()
+  val farmerCodes by codesViewModel.farmerCodes.collectAsState()
+  val vetCodes by codesViewModel.vetCodes.collectAsState()
 
   val createManageOfficeViewModel =
       object : androidx.lifecycle.ViewModelProvider.Factory {
@@ -295,12 +307,9 @@ fun EditProfileScreen(
               // Active Codes (Vets only)
               if (user is Vet) {
                 Spacer(modifier = Modifier.height(16.dp))
-                val farmerCodes =
-                    activeCodes.filter { (user as Vet).farmerConnectCodes.contains(it) }
-                val vetCodes = activeCodes.filter { (user as Vet).vetConnectCodes.contains(it) }
                 if (farmerCodes.isNotEmpty())
-                    ActiveCodeList("Farmer", farmerCodes, snackbarHostState)
-                if (vetCodes.isNotEmpty()) ActiveCodeList("Vet", vetCodes, snackbarHostState)
+                    ActiveCodeList(CodeType.FARMER, farmerCodes, snackbarHostState)
+                if (vetCodes.isNotEmpty()) ActiveCodeList(CodeType.VET, vetCodes, snackbarHostState)
               }
 
               Spacer(modifier = Modifier.weight(1f))
@@ -386,7 +395,7 @@ fun EditProfileScreenPreviewVet() {
 
 @Composable
 /** Creates an expandable list of every given code, along a "copy to clipboard" button */
-fun ActiveCodeList(type: String, codes: List<String>, snackbarHostState: SnackbarHostState) {
+fun ActiveCodeList(type: CodeType, codes: List<String>, snackbarHostState: SnackbarHostState) {
   var expanded by remember { mutableStateOf(false) }
 
   Column(modifier = Modifier.fillMaxWidth()) {
@@ -396,10 +405,10 @@ fun ActiveCodeList(type: String, codes: List<String>, snackbarHostState: Snackba
             Modifier.fillMaxWidth()
                 .clickable { expanded = !expanded }
                 .padding(horizontal = 12.dp, vertical = 10.dp)
-                .testTag(EditProfileScreenTestTags.dropdownTag(type)),
+                .testTag(EditProfileScreenTestTags.dropdownTag(type.name)),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically) {
-          Text(text = type)
+          Text(text = type.displayName())
           Icon(
               imageVector =
                   if (expanded) Icons.Default.KeyboardArrowDown
@@ -417,7 +426,8 @@ fun ActiveCodeList(type: String, codes: List<String>, snackbarHostState: Snackba
                 Text(
                     text = code,
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.testTag(EditProfileScreenTestTags.dropdownElementTag(type)))
+                    modifier =
+                        Modifier.testTag(EditProfileScreenTestTags.dropdownElementTag(type.name)))
                 CopyToClipboardButton(code, snackbarHostState)
               }
         }

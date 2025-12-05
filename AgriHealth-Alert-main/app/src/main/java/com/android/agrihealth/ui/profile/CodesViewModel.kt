@@ -22,10 +22,12 @@ class CodesViewModel(
 
   private val _generatedCode = MutableStateFlow<String?>(null)
   private val _claimMessage = MutableStateFlow<String?>(null)
-  private val _activeCodes = MutableStateFlow<List<String>>(emptyList())
+  private val _farmerCodes = MutableStateFlow<List<String>>(emptyList())
+  val farmerCodes: StateFlow<List<String>> = _farmerCodes
+  private val _vetCodes = MutableStateFlow<List<String>>(emptyList())
+  val vetCodes: StateFlow<List<String>> = _vetCodes
   val generatedCode: StateFlow<String?> = _generatedCode
   val claimMessage: StateFlow<String?> = _claimMessage
-  val activeCodes: StateFlow<List<String>> = _activeCodes
 
   fun generateCode() {
     val currentUser = userViewModel.user.value
@@ -100,9 +102,8 @@ class CodesViewModel(
 
   fun loadActiveCodesForVet(vet: Vet) {
     viewModelScope.launch {
-      val farmerCodes = connectionRepository.getValidCodes(vet, "FARMER")
-      val vetCodes = connectionRepository.getValidCodes(vet, "VET")
-      _activeCodes.value = farmerCodes + vetCodes
+      _farmerCodes.value = connectionRepository.getValidCodes(vet, CodeType.FARMER)
+      _vetCodes.value = connectionRepository.getValidCodes(vet, CodeType.VET)
     }
   }
 }
