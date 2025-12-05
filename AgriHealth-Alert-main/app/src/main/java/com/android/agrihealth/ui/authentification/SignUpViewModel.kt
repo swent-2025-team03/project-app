@@ -119,7 +119,7 @@ open class SignUpViewModel(
           authRepository
               .signUpWithEmailAndPassword(state.email, state.password, user)
               .fold(
-                  { uid -> _uiState.update { it.copy(uid = null) } },
+                  { uid -> _uiState.update { it.copy(uid = uid) } },
                   { failure ->
                     setErrorMsg(
                         when (failure) {
