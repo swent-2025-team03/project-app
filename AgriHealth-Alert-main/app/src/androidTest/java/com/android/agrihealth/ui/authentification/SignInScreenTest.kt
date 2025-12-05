@@ -70,8 +70,8 @@ class SignInScreenTest {
 
   @Test
   fun signInWithNoInternetFails() {
-    val offlineRepo = FakeAuthRepository(false)
-    composeTestRule.setContent { SignInScreen(signInViewModel = SignInViewModel(offlineRepo)) }
+    authRepository.switchConnection(false)
+    composeTestRule.setContent { SignInScreen(signInViewModel = SignInViewModel(authRepository)) }
     completeSignIn("bad", "credentials")
     composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignInErrorMsg.TIMEOUT).isDisplayed()

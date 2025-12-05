@@ -5,11 +5,15 @@ import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.user.User
 import com.google.firebase.auth.FirebaseAuthException
 
-class FakeAuthRepository(private val isOnline: Boolean = true) : AuthRepository {
+class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository {
 
   private val credentials = mutableMapOf<String, String>()
 
   private var currentUser: String? = null
+
+  fun switchConnection(state: Boolean) {
+    isOnline = state
+  }
 
   override suspend fun changePassword(password: String): Result<Unit> {
     if (isOnline) {
