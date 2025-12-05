@@ -35,12 +35,15 @@ import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.FARMER_TO_OFFICE
 import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.VET_TO_OFFICE
+import com.android.agrihealth.data.model.device.location.LocationPermissionsRequester
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
-import com.android.agrihealth.data.model.device.location.locationPermissionsRequester
+import com.android.agrihealth.data.model.device.notifications.NotificationHandlerProvider
+import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.location.LocationPicker
+import com.android.agrihealth.data.model.user.copyCommon
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.alert.AlertViewModel
 import com.android.agrihealth.ui.alert.AlertViewScreen
@@ -75,8 +78,8 @@ import com.android.agrihealth.ui.user.defaultUser
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class MainActivity : ComponentActivity() {
-  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -116,6 +119,23 @@ fun AgriHealthApp(
   val currentUserId = currentUser.uid
   val currentUserRole = currentUser.role
   val currentUserEmail = currentUser.email
+
+  // Notification handling, setup device
+  val notificationHandler = NotificationHandlerProvider.handler
+  var canSendNotificationToken by remember { mutableStateOf(false) }
+  NotificationsPermissionsRequester(
+      onGranted = {
+        // Fires on each recomposition of Overview, but it's a set so it's fine
+        if (canSendNotificationToken) {
+          notificationHandler.getToken { token ->
+            if (token == null) return@getToken
+
+            val newUser =
+                currentUser.copyCommon(deviceTokensFCM = currentUser.deviceTokensFCM + token)
+            userViewModel.updateUser(newUser)
+          }
+        }
+      })
 
   var pickedLat = remember { 0.0 }
   var pickedLng = remember { 0.0 }
@@ -178,6 +198,7 @@ fun AgriHealthApp(
               navigationActions.navigateTo(Screen.ViewReport(reportId))
             },
             onAlertClick = { alertId -> navigationActions.navigateTo(Screen.ViewAlert(alertId)) },
+            onLogin = { canSendNotificationToken = true },
             navigationActions = navigationActions,
         )
       }
@@ -212,11 +233,11 @@ fun AgriHealthApp(
             }
         val mapViewModel: MapViewModel =
             viewModel(factory = createMapViewModel, key = pickedLocation.value.toString())
-        if (locationPermissionsRequester(locationViewModel)) {
-          mapViewModel.refreshMapPermission()
-          mapViewModel.setStartingLocation(pickedLocation.value)
-        }
-        mapViewModel.setStartingLocation(pickedLocation.value)
+
+        LocationPermissionsRequester(
+            onGranted = { mapViewModel.refreshMapPermission() },
+            onComplete = { mapViewModel.setStartingLocation(pickedLocation.value) })
+
         LocationPicker(
             navigationActions = navigationActions,
             mapViewModel = mapViewModel,

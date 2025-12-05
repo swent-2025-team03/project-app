@@ -15,7 +15,8 @@ data class Farmer(
         String?, // Default office ID for quick access, can be changed in profile screen
     override val isGoogleAccount: Boolean = false,
     override val description: String? = null,
-    override val collected: Boolean = false
+    override val collected: Boolean = false,
+    override val deviceTokensFCM: Set<String> = emptySet()
 ) :
     User(
         uid,
@@ -26,4 +27,5 @@ data class Farmer(
         address,
         isGoogleAccount,
         description,
-        collected)
+        collected,
+        deviceTokensFCM)
