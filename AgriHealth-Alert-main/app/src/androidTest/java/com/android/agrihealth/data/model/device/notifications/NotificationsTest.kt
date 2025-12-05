@@ -40,8 +40,7 @@ class NotificationsTest {
           null,
           defaultOffice = null,
           deviceTokensFCM = setOf(fakeToken))
-  private val user2 =
-      Vet("uid2", "just", "jo", "uhoh@turbulence.com", null)
+  private val user2 = Vet("uid2", "just", "jo", "uhoh@turbulence.com", null)
 
   @Before
   fun setUp() = runTest { userRepository.addUser(user1.copy(deviceTokensFCM = setOf(fakeToken))) }

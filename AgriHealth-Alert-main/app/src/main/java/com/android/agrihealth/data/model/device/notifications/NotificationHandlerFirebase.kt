@@ -96,7 +96,7 @@ class NotificationHandlerFirebase(
 
     val systemNotification =
         NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.test)
+            .setSmallIcon(R.drawable.temp_notification_icon)
             .setContentTitle(title)
             .setContentText(body)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
