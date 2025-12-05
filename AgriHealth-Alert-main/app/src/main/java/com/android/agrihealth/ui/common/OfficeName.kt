@@ -54,3 +54,19 @@ fun OfficeName(
       textDecoration = if (onClick != null) TextDecoration.Underline else TextDecoration.None,
       modifier = if (onClick != null) Modifier.clickable { onClick() } else Modifier)
 }
+
+/**
+ * String composable in case you need to display the Office Name in a context that requires a String
+ */
+@Composable
+fun rememberOfficeName(officeId: String?): String {
+  val vm: OfficeNameViewModel = viewModel(key = officeId)
+  val name by vm.uiState.collectAsState()
+
+  LaunchedEffect(officeId) {
+    vm.loadOffice(
+        uid = officeId, deletedOffice = "Deleted office", noneOffice = "Not assigned to an office")
+  }
+
+  return name
+}
