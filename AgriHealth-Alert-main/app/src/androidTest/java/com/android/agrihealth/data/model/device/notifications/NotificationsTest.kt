@@ -2,6 +2,7 @@ package com.android.agrihealth.data.model.device.notifications
 
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.data.model.user.copyCommon
 import com.android.agrihealth.testutil.FakeNotificationSender
 import com.android.agrihealth.testutil.FakeNotificationTokenResolver
 import com.android.agrihealth.testutil.FakeUserRepository
@@ -43,7 +44,9 @@ class NotificationsTest {
   private val user2 = Vet("uid2", "just", "jo", "uhoh@turbulence.com", null)
 
   @Before
-  fun setUp() = runTest { userRepository.addUser(user1.copy(deviceTokensFCM = setOf(fakeToken))) }
+  fun setUp() = runTest {
+    userRepository.addUser(user1.copyCommon(deviceTokensFCM = setOf(fakeToken)))
+  }
 
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
@@ -103,7 +106,7 @@ class NotificationsTest {
 
   @Test
   fun uploadNotification_failsWhenUserHasNoTokens() = runTest {
-    userRepository.addUser(user2.copy(deviceTokensFCM = setOf()))
+    userRepository.addUser(user2.copyCommon(deviceTokensFCM = setOf()))
 
     val notif =
         Notification.NewReport(destinationUid = user2.uid, reportTitle = "every night every day")
