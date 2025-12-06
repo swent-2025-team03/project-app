@@ -1,9 +1,6 @@
 package com.android.agrihealth.ui.report
 
-import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -100,7 +97,6 @@ object AddReportDialogTexts {
   const val TITLE_SUCCESS = "Success!"
   const val TITLE_FAILURE = "Error!"
 }
-
 
 // Helper function to format the error message shown in the error dialog when creating a report
 // failed
