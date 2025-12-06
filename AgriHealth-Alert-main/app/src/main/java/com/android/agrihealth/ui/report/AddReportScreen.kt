@@ -517,7 +517,7 @@ fun UploadRemovePhotoButton(
       onClick = { if (photoAlreadyPicked) onClickRemove() else onClickUpload() },
       modifier =
           Modifier.fillMaxWidth()
-              .padding(vertical = 8.dp)
+              .padding(vertical = 16.dp)
               .testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
       colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
   ) {
@@ -545,7 +545,7 @@ fun UploadedImagePreview(photoUri: Uri?, modifier: Modifier = Modifier) {
         modifier =
             modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp)
+                .padding(top = 16.dp, bottom = 16.dp)
                 .testTag(AddReportScreenTestTags.IMAGE_PREVIEW),
         contentScale = ContentScale.Fit)
   }
