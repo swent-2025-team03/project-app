@@ -23,12 +23,8 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.testutil.TestConstants
-import com.android.agrihealth.ui.user.UserViewModelContract
 import com.android.agrihealth.ui.loading.LoadingTestTags
-import com.android.agrihealth.ui.user.UserViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.android.agrihealth.ui.user.UserViewModelContract
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test

@@ -44,16 +44,6 @@ class MapViewModel(
   private val _uiState = MutableStateFlow(MapUIState())
   val uiState: StateFlow<MapUIState> = _uiState.asStateFlow()
 
-  private suspend fun <T> withLoading(block: suspend () -> T): T {
-    _uiState.update { it.copy(isLoading = true) }
-    return try {
-      block()
-    } finally {
-      _uiState.update { it.copy(isLoading = false) }
-    }
-  }
-
-  private val _startingLocation = MutableStateFlow(Location(46.9481, 7.4474, null)) // Bern
   private val _startingLocation =
       MutableStateFlow(startingPosition ?: Location(46.9481, 7.4474)) // Bern
   val startingLocation = _startingLocation.asStateFlow()
@@ -89,6 +79,7 @@ class MapViewModel(
     viewModelScope.launch {
       try {
         val reports = reportRepository.getAllReports(uid).filter { it.location != null }
+
         _uiState.value = _uiState.value.copy(reports = reports)
       } catch (e: Exception) {
         Log.e("MapScreen", "Failed to load todos: ${e.message}")

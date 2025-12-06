@@ -8,6 +8,7 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
+import com.android.agrihealth.ui.loading.withLoadingState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -58,33 +59,25 @@ class ReportViewViewModel(
   private val _saveCompleted = MutableStateFlow(false)
   val saveCompleted: StateFlow<Boolean> = _saveCompleted.asStateFlow()
 
-  private suspend fun <T> withLoading(block: suspend () -> T): T {
-    _uiState.value = _uiState.value.copy(isLoading = true)
-    return try {
-      block()
-    } finally {
-      _uiState.value = _uiState.value.copy(isLoading = false)
-    }
-  }
-
   /** Loads a report by its ID and updates the state. */
   fun loadReport(reportID: String) {
     viewModelScope.launch {
-      withLoading {
-        try {
-          val fetchedReport = repository.getReportById(reportID)
-          if (fetchedReport != null) {
-            _uiState.value =
-                _uiState.value.copy(
-                    report = fetchedReport,
-                    answerText = fetchedReport.answer ?: "",
-                    status = fetchedReport.status,
-                )
+      _uiState.withLoadingState(
+          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+            try {
+              val fetchedReport = repository.getReportById(reportID)
+              if (fetchedReport != null) {
+                _uiState.value =
+                    _uiState.value.copy(
+                        report = fetchedReport,
+                        answerText = fetchedReport.answer ?: "",
+                        status = fetchedReport.status,
+                    )
+              }
+            } catch (e: Exception) {
+              Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
+            }
           }
-        } catch (e: Exception) {
-          Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
-        }
-      }
     }
   }
 
@@ -118,20 +111,21 @@ class ReportViewViewModel(
   /** Saves the modified report, then triggers the saveCompleted flag on success. */
   fun onSave() {
     viewModelScope.launch {
-      withLoading {
-        try {
-          val current = _uiState.value
-          val updatedReport =
-              current.report.copy(
-                  answer = current.answerText,
-                  status = current.status,
-              )
-          repository.editReport(updatedReport.id, updatedReport)
-          _saveCompleted.value = true
-        } catch (e: Exception) {
-          Log.e("ReportViewModel", "Error saving report", e)
-        }
-      }
+      _uiState.withLoadingState(
+          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+            try {
+              val current = _uiState.value
+              val updatedReport =
+                  current.report.copy(
+                      answer = current.answerText,
+                      status = current.status,
+                  )
+              repository.editReport(updatedReport.id, updatedReport)
+              _saveCompleted.value = true
+            } catch (e: Exception) {
+              Log.e("ReportViewModel", "Error saving report", e)
+            }
+          }
     }
   }
 

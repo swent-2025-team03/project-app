@@ -16,6 +16,7 @@ import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
+import com.android.agrihealth.ui.loading.withLoadingState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,7 +33,8 @@ data class OverviewUIState(
     val officeOptions: List<String> = emptyList(),
     val farmerOptions: List<String> = emptyList(),
     val filteredReports: List<Report> = emptyList(),
-    val sortedAlerts: List<AlertUiState> = emptyList()
+    val sortedAlerts: List<AlertUiState> = emptyList(),
+    val isLoading: Boolean = false,
 )
 
 /**
@@ -47,15 +49,6 @@ class OverviewViewModel(
   private val _uiState = MutableStateFlow(OverviewUIState())
   override val uiState: StateFlow<OverviewUIState> = _uiState.asStateFlow()
 
-  private suspend fun <T> withLoading(block: suspend () -> T): T {
-    _uiState.value = _uiState.value.copy(isLoading = true)
-    return try {
-      block()
-    } finally {
-      _uiState.value = _uiState.value.copy(isLoading = false)
-    }
-  }
-
   private lateinit var authRepository: AuthRepository
 
   /**
@@ -64,27 +57,31 @@ class OverviewViewModel(
    */
   override fun loadReports(user: User) {
     viewModelScope.launch {
-      try {
-        val reports = reportRepository.getAllReports(user.uid).sortedByDescending { it.createdAt }
-        val officeOptions = reports.map { it.officeId }.distinct()
-        val farmerOptions = reports.map { it.farmerId }.distinct()
-        val filtered =
-            applyFiltersForReports(
-                reports,
-                _uiState.value.selectedStatus,
-                _uiState.value.selectedOffice,
-                _uiState.value.selectedFarmer,
-            )
+      _uiState.withLoadingState(
+          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+            try {
+              val reports =
+                  reportRepository.getAllReports(user.uid).sortedByDescending { it.createdAt }
+              val officeOptions = reports.map { it.officeId }.distinct()
+              val farmerOptions = reports.map { it.farmerId }.distinct()
+              val filtered =
+                  applyFiltersForReports(
+                      reports,
+                      _uiState.value.selectedStatus,
+                      _uiState.value.selectedOffice,
+                      _uiState.value.selectedFarmer,
+                  )
 
-        _uiState.value =
-            _uiState.value.copy(
-                reports = reports,
-                officeOptions = officeOptions,
-                farmerOptions = farmerOptions,
-                filteredReports = filtered)
-      } catch (e: Exception) {
-        _uiState.value = _uiState.value.copy(reports = emptyList())
-      }
+              _uiState.value =
+                  _uiState.value.copy(
+                      reports = reports,
+                      officeOptions = officeOptions,
+                      farmerOptions = farmerOptions,
+                      filteredReports = filtered)
+            } catch (e: Exception) {
+              _uiState.value = _uiState.value.copy(reports = emptyList())
+            }
+          }
     }
   }
 
@@ -141,13 +138,16 @@ class OverviewViewModel(
    */
   override fun loadAlerts(user: User) {
     viewModelScope.launch {
-      try {
-        val alerts = alertRepository.getAlerts()
-        _uiState.value = _uiState.value.copy(alerts = alerts)
-        updateSortedAlerts(user)
-      } catch (e: Exception) {
-        _uiState.value = _uiState.value.copy(alerts = emptyList(), sortedAlerts = emptyList())
-      }
+      _uiState.withLoadingState(
+          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+            try {
+              val alerts = alertRepository.getAlerts()
+              _uiState.value = _uiState.value.copy(alerts = alerts)
+              updateSortedAlerts(user)
+            } catch (e: Exception) {
+              _uiState.value = _uiState.value.copy(alerts = emptyList(), sortedAlerts = emptyList())
+            }
+          }
     }
   }
 

@@ -11,6 +11,7 @@ import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.ui.loading.withLoadingState
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuthException
@@ -35,6 +36,7 @@ data class SignInUIState(
     val uid: String? = Firebase.auth.uid,
     val isNewGoogle: Boolean = false,
     val errorMsg: String? = null,
+    val isLoading: Boolean = false,
 ) {
   val isValid: Boolean
     get() = email.isNotEmpty() && password.isNotEmpty()
@@ -74,13 +76,16 @@ class SignInViewModel(
   fun signInWithEmailAndPassword() {
     if (_uiState.value.isValid) {
       viewModelScope.launch {
-        authRepository
-            .signInWithEmailAndPassword(_uiState.value.email, _uiState.value.password)
-            .fold({ uid -> _uiState.update { it.copy(uid = uid) } }) { failure ->
-              when (failure) {
-                is FirebaseAuthException -> setErrorMsg(SignInErrorMsg.INVALID_CREDENTIALS)
-                else -> setErrorMsg(SignInErrorMsg.TIMEOUT)
-              }
+        _uiState.withLoadingState(
+            applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+              authRepository
+                  .signInWithEmailAndPassword(_uiState.value.email, _uiState.value.password)
+                  .fold({ uid -> _uiState.update { it.copy(uid = uid) } }) { failure ->
+                    when (failure) {
+                      is FirebaseAuthException -> setErrorMsg(SignInErrorMsg.INVALID_CREDENTIALS)
+                      else -> setErrorMsg(SignInErrorMsg.TIMEOUT)
+                    }
+                  }
             }
       }
     } else {
@@ -112,28 +117,27 @@ class SignInViewModel(
   fun signInWithGoogle(context: Context, credentialManager: CredentialManager) {
 
     viewModelScope.launch {
-      val signInOptions = getSignInOptions(context)
-      val signInRequest = signInRequest(signInOptions)
+      _uiState.withLoadingState(
+          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+            val signInOptions = getSignInOptions(context)
+            val signInRequest = signInRequest(signInOptions)
 
-      try {
-        // Launch Credential Manager UI safely
-        val credential = getCredential(context, signInRequest, credentialManager)
+            try {
+              val credential = getCredential(context, signInRequest, credentialManager)
 
-        // Pass the credential to your repository
-        authRepository.signInWithGoogle(credential).fold({ uid ->
-          if (userRepository.getUserFromId(uid).isFailure)
-              _uiState.update { it.copy(uid = uid, isNewGoogle = true) }
-          else _uiState.update { it.copy(uid = uid) }
-        }) { failure ->
-          _uiState.update { it.copy(uid = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
-        }
-      } catch (e: GetCredentialCancellationException) {
-        // User cancelled the sign-in flow
-        _uiState.update { it.copy(uid = null) }
-      } catch (e: Exception) {
-        // Unexpected errors
-        _uiState.update { it.copy(uid = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
-      }
+              authRepository.signInWithGoogle(credential).fold({ uid ->
+                if (userRepository.getUserFromId(uid).isFailure)
+                    _uiState.update { it.copy(uid = uid, isNewGoogle = true) }
+                else _uiState.update { it.copy(uid = uid) }
+              }) { failure ->
+                _uiState.update { it.copy(uid = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
+              }
+            } catch (e: GetCredentialCancellationException) {
+              _uiState.update { it.copy(uid = null) }
+            } catch (e: Exception) {
+              _uiState.update { it.copy(uid = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
+            }
+          }
     }
   }
 }
