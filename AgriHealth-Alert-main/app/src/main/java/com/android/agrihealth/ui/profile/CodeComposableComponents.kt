@@ -107,6 +107,7 @@ fun GenerateCode(
     modifier: Modifier = Modifier
 ) {
   val code by codesViewModel.generatedCode.collectAsState()
+  val isError = code?.startsWith("Error:") == true
   Button(
       onClick = { codesViewModel.generateCode() },
       modifier = modifier.testTag(CodeComposableComponentsTestTags.GENERATE_BUTTON)) {
@@ -120,20 +121,30 @@ fun GenerateCode(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center) {
-          Text(
-              "Generated Code: $code",
-              style = MaterialTheme.typography.bodyLarge,
-              modifier =
-                  modifier
-                      .padding(end = 8.dp)
-                      .testTag(CodeComposableComponentsTestTags.GENERATE_FIELD))
-          IconButton(
-              onClick = {
-                clipboard.setText(AnnotatedString(code!!))
-                scope.launch { snackbarHostState.showSnackbar("Code copied!") }
-              }) {
-                Icon(imageVector = Icons.Filled.ContentCopy, contentDescription = "Copy Code")
-              }
+          if (!isError) {
+            Text(
+                "Generated Code: $code",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier =
+                    modifier
+                        .padding(end = 8.dp)
+                        .testTag(CodeComposableComponentsTestTags.GENERATE_FIELD))
+            IconButton(
+                onClick = {
+                  clipboard.setText(AnnotatedString(code!!))
+                  scope.launch { snackbarHostState.showSnackbar("Code copied!") }
+                }) {
+                  Icon(imageVector = Icons.Filled.ContentCopy, contentDescription = "Copy Code")
+                }
+          } else {
+            Text(
+                "$code",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier =
+                    modifier
+                        .padding(end = 8.dp)
+                        .testTag(CodeComposableComponentsTestTags.GENERATE_FIELD))
+          }
         }
   }
 }

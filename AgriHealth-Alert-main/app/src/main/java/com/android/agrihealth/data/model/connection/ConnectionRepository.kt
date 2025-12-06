@@ -3,13 +3,14 @@ package com.android.agrihealth.data.model.connection
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.ui.profile.CodeType
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
-import java.time.Instant
 import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
@@ -24,6 +25,16 @@ class ConnectionRepository(
     private const val STATUS_OPEN = FirestoreSchema.Status.OPEN
     private const val STATUS_USED = FirestoreSchema.Status.USED
   }
+
+  val type: String
+    get() = connectionType
+
+  private fun humanReadableConnectionType(): String =
+      when (connectionType) {
+        "farmerToOffice" -> "farmer connection"
+        "vetToOffice" -> "vet connection"
+        else -> "connection"
+      }
 
   private fun getCurrentUserId(): String {
     return Firebase.auth.currentUser?.uid
@@ -40,10 +51,21 @@ class ConnectionRepository(
     }
   }
 
-  // Generates a unique connection code for an office, valid for a limited time (ttlMinutes).
   // Returns: Result<String> containing the generated code, or an exception if failed.
-  suspend fun generateCode(ttlMinutes: Long = 10): Result<String> = runCatching {
+  suspend fun generateCode(): Result<String> = runCatching {
     val officeId = getCurrentUserOfficeId()
+
+    val currentUser =
+        userRepository.getUserFromId(getCurrentUserId()).getOrNull()
+            ?: throw IllegalStateException("User not found")
+    val vet = currentUser as? Vet ?: throw IllegalStateException("Only vets can generate codes")
+
+    val activeCount = getActiveCodesCount(vet)
+    if (activeCount >= 10) {
+      throw IllegalStateException(
+          "Cannot generate more than 10 active ${humanReadableConnectionType()} codes")
+    }
+
     repeat(20) {
       val code = Random.nextInt(100_000, 1_000_000).toString()
       val maybeCode =
@@ -60,8 +82,7 @@ class ConnectionRepository(
                           FirestoreSchema.ConnectCodes.CODE to code,
                           FirestoreSchema.ConnectCodes.OFFICE_ID to officeId,
                           FirestoreSchema.ConnectCodes.STATUS to STATUS_OPEN,
-                          FirestoreSchema.ConnectCodes.CREATED_AT to createdAt,
-                          FirestoreSchema.ConnectCodes.TTL_MINUTES to ttlMinutes))
+                          FirestoreSchema.ConnectCodes.CREATED_AT to createdAt))
                   code
                 }
               }
@@ -81,12 +102,6 @@ class ConnectionRepository(
 
     val createdAt = snap.getTimestamp(FirestoreSchema.ConnectCodes.CREATED_AT)
     requireNotNull(createdAt) { "Missing createdAt" }
-
-    val ttlMinutes = snap.getLong(FirestoreSchema.ConnectCodes.TTL_MINUTES)
-    requireNotNull(ttlMinutes) { "Missing TTL value" }
-
-    val expiresAtMs = createdAt.toDate().time + ttlMinutes * 60_000
-    if (Instant.now().toEpochMilli() > expiresAtMs) throw IllegalStateException("Code expired.")
   }
 
   // Claims a connection code for a farmer, and marks the code as used.
@@ -111,5 +126,63 @@ class ConnectionRepository(
           officeId
         }
         .await()
+  }
+
+  /**
+   * Retrieves the list of valid (OPEN) connection codes for the given vet and code type. Used by
+   * the EditProfileScreen to display only active and usable codes to the user.
+   */
+  suspend fun getValidCodes(vet: Vet, type: CodeType): List<String> {
+    val targetList =
+        when (type) {
+          CodeType.FARMER -> vet.farmerConnectCodes
+          CodeType.VET -> vet.vetConnectCodes
+        }
+
+    val collectionName =
+        when (type) {
+          CodeType.FARMER -> "farmerToOfficeConnectCodes"
+          CodeType.VET -> "vetToOfficeConnectCodes"
+        }
+
+    return try {
+      val snapshot =
+          db.collection(collectionName)
+              .whereIn(FieldPath.documentId(), targetList)
+              .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
+              .get()
+              .await()
+
+      snapshot.documents.map { it.id }
+    } catch (e: Exception) {
+      emptyList()
+    }
+  }
+
+  /**
+   * Returns the number of active (OPEN) connection codes for the given vet and code type. This is
+   * used to determine whether the vet can generate additional codes based on the limit.
+   */
+  suspend fun getActiveCodesCount(vet: Vet): Int {
+    val (targetList, collectionName) =
+        when (connectionType) {
+          "farmerToOffice" -> vet.farmerConnectCodes to "farmerToOfficeConnectCodes"
+          "vetToOffice" -> vet.vetConnectCodes to "vetToOfficeConnectCodes"
+          else -> return 0
+        }
+
+    if (targetList.isEmpty()) return 0
+
+    return try {
+      val snapshot =
+          db.collection(collectionName)
+              .whereIn(FieldPath.documentId(), targetList)
+              .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
+              .get()
+              .await()
+      snapshot.size()
+    } catch (e: Exception) {
+      0
+    }
   }
 }

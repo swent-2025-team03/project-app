@@ -22,6 +22,10 @@ class CodesViewModel(
 
   private val _generatedCode = MutableStateFlow<String?>(null)
   private val _claimMessage = MutableStateFlow<String?>(null)
+  private val _farmerCodes = MutableStateFlow<List<String>>(emptyList())
+  val farmerCodes: StateFlow<List<String>> = _farmerCodes
+  private val _vetCodes = MutableStateFlow<List<String>>(emptyList())
+  val vetCodes: StateFlow<List<String>> = _vetCodes
   val generatedCode: StateFlow<String?> = _generatedCode
   val claimMessage: StateFlow<String?> = _claimMessage
 
@@ -34,7 +38,12 @@ class CodesViewModel(
       result.fold(
           onSuccess = { code ->
             _generatedCode.value = code
-            val updatedVet = vet.copy(validCodes = vet.validCodes + code)
+            val updatedVet =
+                when (connectionRepository.type) {
+                  "farmerToOffice" -> vet.copy(farmerConnectCodes = vet.farmerConnectCodes + code)
+                  "vetToOffice" -> vet.copy(vetConnectCodes = vet.vetConnectCodes + code)
+                  else -> vet
+                }
             userViewModel.updateUser(updatedVet)
           },
           onFailure = { e -> _generatedCode.value = "Error: ${e.message}" })
@@ -88,6 +97,13 @@ class CodesViewModel(
                 }
             _claimMessage.value = msg
           })
+    }
+  }
+
+  fun loadActiveCodesForVet(vet: Vet) {
+    viewModelScope.launch {
+      _farmerCodes.value = connectionRepository.getValidCodes(vet, CodeType.FARMER)
+      _vetCodes.value = connectionRepository.getValidCodes(vet, CodeType.VET)
     }
   }
 }

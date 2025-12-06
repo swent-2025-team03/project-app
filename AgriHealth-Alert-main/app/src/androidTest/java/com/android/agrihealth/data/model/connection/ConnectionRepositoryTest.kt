@@ -61,7 +61,6 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
     assertTrue(snap.exists())
     assertEquals("OPEN", snap.getString("status"))
     assertEquals(officeId, snap.getString("officeId"))
-    assertNotNull(snap.getLong("ttlMinutes"))
     assertNotNull(snap.getTimestamp("createdAt"))
   }
 
@@ -76,7 +75,6 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
     assertTrue(snap.exists())
     assertEquals("OPEN", snap.getString("status"))
     assertEquals(officeId, snap.getString("officeId"))
-    assertNotNull(snap.getLong("ttlMinutes"))
     assertNotNull(snap.getTimestamp("createdAt"))
   }
 
@@ -95,20 +93,6 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
 
     val codeDoc = db.collection(FARMER_TO_OFFICE + CONNECT_CODES).document(code).get().await()
     assertEquals("USED", codeDoc.getString("status"))
-  }
-
-  @Test
-  // Verifies that claimCode fails when the code is expired by simulating a past createdAt
-  // timestamp.
-  fun claimCode_failsForExpired() = runTest {
-    val code = repo.generateCode(ttlMinutes = -1).getOrThrow() // immediate expiry
-
-    authRepository.signOut()
-    authRepository.signInWithEmailAndPassword(user2.email, password2)
-
-    val res = repo.claimCode(code)
-    assertTrue(res.isFailure)
-    assertTrue(res.exceptionOrNull()!!.message!!.lowercase().contains("expired"))
   }
 
   @Test
@@ -159,16 +143,6 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  // Verifies that claimCode succeeds if claimed just before expiry when ttlMinutes is small.
-  fun claimCode_succeedsRightBeforeExpiry() = runTest {
-    val code = repo.generateCode(ttlMinutes = 1).getOrThrow()
-    authRepository.signOut()
-    authRepository.signInWithEmailAndPassword(user1.email, password1)
-    val res = repo.claimCode(code)
-    assertTrue(res.isSuccess)
-  }
-
-  @Test
   // Verifies that generateCode retries if a collision occurs on the first generated code.
   fun generateCode_collidesOnce_thenSucceeds() = runTest {
     val taken = "123456"
@@ -192,7 +166,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
         .document(code)
         .set(
             mapOf(
-                "code" to code, "officeId" to user3.uid, "status" to "OPEN", "ttlMinutes" to 10L
+                "code" to code, "officeId" to user3.uid, "status" to "OPEN"
                 // createdAt ABSENT
                 ))
         .await()
@@ -211,27 +185,6 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  // Verifies that claimCode fails when ttlMinutes is missing in the code document.
-  fun claimCode_fails_whenMissingTtl() = runTest {
-    val code = "222333"
-    db.collection(FARMER_TO_OFFICE + CONNECT_CODES)
-        .document(code)
-        .set(
-            mapOf(
-                "code" to code,
-                "officeId" to user3.uid,
-                "status" to "OPEN",
-                "createdAt" to Timestamp.now()
-                // ttlMinutes ABSENT
-                ))
-        .await()
-
-    val res = repo.claimCode(code)
-    assertTrue(res.isFailure)
-    assertTrue(res.exceptionOrNull()!!.message!!.contains("Missing TTL"))
-  }
-
-  @Test
   // Verifies that claimCode fails when officeId is missing in the code document.
   fun claimCode_fails_whenMissingOfficeId() = runTest {
     val code = "333444"
@@ -239,10 +192,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
         .document(code)
         .set(
             mapOf(
-                "code" to code,
-                "status" to "OPEN",
-                "createdAt" to Timestamp.now(),
-                "ttlMinutes" to 60L
+                "code" to code, "status" to "OPEN", "createdAt" to Timestamp.now()
                 // officeId MISSING
                 ))
         .await()
