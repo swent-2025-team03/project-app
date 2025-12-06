@@ -4,9 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,10 +29,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.android.agrihealth.data.model.report.MCQ
@@ -44,13 +39,12 @@ import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.QuestionForm
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.ui.common.ImagePickerDialog
 import com.android.agrihealth.ui.common.OfficeNameViewModel
-import com.android.agrihealth.ui.common.rememberImagePickerLauncher
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
-import java.io.File
 import kotlin.collections.forEachIndexed
 import kotlinx.coroutines.launch
 
@@ -488,31 +482,23 @@ fun UploadRemovePhotoSection(
   onPhotoPicked: (Uri?) -> Unit,
   onPhotoRemoved: () -> Unit,
 ) {
-  var showDialog by remember { mutableStateOf(false) }
-
-  val imagePickerState = rememberImagePickerLauncher(
-    onImageSelected = onPhotoPicked
-  )
+  var showImagePicker by remember { mutableStateOf(false) }
 
   UploadRemovePhotoButton(
     photoAlreadyPicked = photoAlreadyPicked,
-    onClickUpload = { showDialog = true },
+    onClickUpload = { showImagePicker = true },
     onClickRemove = onPhotoRemoved,
   )
 
-  if (showDialog) {
-    PhotoSourceDialog(
-      onDismiss = { showDialog = false },
-      onGalleryClick = {
-        showDialog = false
-        imagePickerState.launchGallery()
-      },
-      onCameraClick = {
-        showDialog = false
-        imagePickerState.launchCamera()
-      },
+  if (showImagePicker) {
+    ImagePickerDialog(
+      onDismiss = { showImagePicker = false },
+      onImageSelected = { uri ->
+        onPhotoPicked(uri)
+      }
     )
   }
+
 }
 
 /**
