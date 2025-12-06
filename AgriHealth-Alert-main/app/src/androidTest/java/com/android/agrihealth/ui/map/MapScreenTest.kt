@@ -328,10 +328,10 @@ class MapScreenTest {
     val reports = reports1 + reports2
     reports.forEach { it -> reportRepository.addReport(it.copy(farmerId = userId)) }
     advanceUntilIdle()
-    mapViewModel.refreshReports(userId)
+    mapViewModel.refreshReports()
     mapViewModel.uiState.map { it.reports }.first { it.isNotEmpty() }
     advanceUntilIdle()
-    val spiderifiedReport = mapViewModel.spiderifiedReports()
+    val spiderifiedReport = mapViewModel.uiState.value.reports
     val groups = spiderifiedReport.groupBy { it.center }
 
     val group1 =
