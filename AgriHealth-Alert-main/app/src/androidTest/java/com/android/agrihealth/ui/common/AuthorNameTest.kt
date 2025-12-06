@@ -1,6 +1,7 @@
 package com.android.agrihealth.ui.common
 
 import androidx.activity.ComponentActivity
+import androidx.compose.material3.Text
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -60,6 +61,38 @@ class AuthorNameTest {
     composeRule.waitUntil(WAIT_TIMEOUT) {
       composeRule.onAllNodes(hasText("Deleted user")).fetchSemanticsNodes().isNotEmpty()
     }
+    composeRule.onNodeWithText("Deleted user").assertIsDisplayed()
+  }
+
+  private fun setRememberUserNameContent(uid: String?) {
+    val repo = FakeUserDirectoryDataSource()
+    composeRule.setContent {
+      // Manually inject ViewModel
+      val vm = AuthorNameViewModel(repo)
+      val name = with(vm) { rememberUserName(uid) }
+      Text(name)
+    }
+  }
+
+  @Test
+  fun rememberUserName_showsUnassigned_whenUidNull() {
+    setRememberUserNameContent(null)
+
+    composeRule.waitUntil(WAIT_TIMEOUT) {
+      composeRule.onAllNodes(hasText("Unassigned")).fetchSemanticsNodes().isNotEmpty()
+    }
+
+    composeRule.onNodeWithText("Unassigned").assertIsDisplayed()
+  }
+
+  @Test
+  fun rememberUserName_showsDeletedUser_whenMissing() {
+    setRememberUserNameContent("missing")
+
+    composeRule.waitUntil(WAIT_TIMEOUT) {
+      composeRule.onAllNodes(hasText("Deleted user")).fetchSemanticsNodes().isNotEmpty()
+    }
+
     composeRule.onNodeWithText("Deleted user").assertIsDisplayed()
   }
 }
