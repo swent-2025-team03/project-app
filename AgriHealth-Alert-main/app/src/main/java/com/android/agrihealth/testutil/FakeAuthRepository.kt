@@ -48,6 +48,7 @@ class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository 
       if (currentUser != null) {
         return Result.failure(IllegalStateException("user $currentUser already logged in"))
       } else if (credentials[email] == password) {
+        currentUser = "testUser"
         return Result.success("testUser")
       } else
           return Result.failure(
@@ -80,6 +81,7 @@ class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository 
             FirebaseAuthException("already used email", "this throws if I leave it empty"))
       }
       credentials[email] = password
+      currentUser = "testUser"
       return Result.success("testUser")
     }
     return Result.failure(IllegalStateException("timeout"))
