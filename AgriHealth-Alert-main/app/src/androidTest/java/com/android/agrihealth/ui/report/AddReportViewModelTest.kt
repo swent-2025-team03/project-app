@@ -123,7 +123,8 @@ class AddReportViewModelTest {
         }
 
         viewModel.setAddress(Location(3.1234, 2.7167, "wherever this is"))
-        viewModel.setOffice(AddReportConstants.officeOptions[0])
+        val officeID = "Some office"
+        viewModel.setOffice(officeID)
         val result = viewModel.createReport()
         advanceUntilIdle() // To avoid errors of synchronization which would make this test
         // non-deterministic

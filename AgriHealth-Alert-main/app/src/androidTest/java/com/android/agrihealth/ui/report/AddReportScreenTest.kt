@@ -71,11 +71,15 @@ private class ResultFakeAddReportViewModel(
           ))
   override val uiState = _uiState
 
+  override fun switchCollected() {}
+
   override fun setTitle(newTitle: String) {}
 
   override fun setDescription(newDescription: String) {}
 
   override fun setOffice(officeId: String) {}
+
+  override fun setAddress(address: Location?) {}
 
   override fun setPhoto(uri: Uri?) {}
 
