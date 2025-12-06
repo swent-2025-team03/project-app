@@ -16,7 +16,7 @@ class FakeOverviewRepository : ReportRepository {
               questionForms = emptyList(),
               photoUri = null,
               farmerId = "FARMER_001",
-              vetId = "VET_001",
+              officeId = "OFF_001",
               status = ReportStatus.IN_PROGRESS,
               answer = null,
               location = Location(46.5191, 6.5668, "Lausanne Farm")),
@@ -27,7 +27,7 @@ class FakeOverviewRepository : ReportRepository {
               questionForms = emptyList(),
               photoUri = null,
               farmerId = "FARMER_001",
-              vetId = "VET_001",
+              officeId = "OFF_001",
               status = ReportStatus.PENDING,
               answer = null,
               location = Location(46.5210, 6.5650, "Vaud Farm")))
@@ -47,19 +47,19 @@ class FakeOverviewRepository : ReportRepository {
     // no-op for test
   }
 
-  override suspend fun getReportsByVet(vetId: String): List<Report> {
-    return emptyList()
-  }
-
-  override suspend fun getReportsByFarmer(farmerId: String): List<Report> {
-    return emptyList()
-  }
-
   override suspend fun getReportById(id: String): Report? = null
 
   override suspend fun editReport(id: String, report: Report) {}
 
   override suspend fun deleteReport(reportId: String) {}
+
+  override suspend fun assignReportToVet(reportId: String, vetId: String) {
+    TODO("Not yet implemented")
+  }
+
+  override suspend fun unassignReport(reportId: String) {
+    TODO("Not yet implemented")
+  }
 
   override fun getNewReportId(): String = "FAKE_ID_OVERVIEW"
 }

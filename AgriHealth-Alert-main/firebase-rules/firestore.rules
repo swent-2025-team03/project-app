@@ -1,0 +1,97 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+
+    function hasRole(role) {
+      return isSignedIn()
+          && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+
+    // ---- Users ----
+    match /users/{userID} {
+      // Read own document OR another user's doc if they work in an office related to you in some capacity.
+      allow get: if  (userID == request.auth.uid || (
+        (hasRole("Vet") && (
+            (resource.data.role == "Vet" && resource.data.officeId ==
+                get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId)
+            ||
+            (resource.data.role == "Farmer" &&
+                get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId
+                in resource.data.linkedOffices)
+        )) ||
+            (hasRole("Farmer") && resource.data.role == "Vet" &&
+                resource.data.officeId in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.linkedOffices)));
+
+      // Disallow listing to prevent user enumeration
+      allow list: if false;
+
+      // Create and delete only own document
+      allow create, delete: if isSignedIn() && request.auth.uid == userID;
+
+      // Prevent privilege escalation (cannot change 'role' or 'uid')
+      allow update: if isSignedIn() &&
+        request.auth.uid == userID &&
+        !(request.resource.data.diff(resource.data).changedKeys().hasAny(['role','uid']));
+    }
+
+    // ---- Connection Codes ----
+
+    match /farmerToOfficeConnectCodes/{code} {
+        allow create: if hasRole("Vet");
+        allow update: if hasRole("Farmer");
+        allow read: if isSignedIn();
+    }
+
+    match /vetToOfficeConnectCodes/{code} {
+        allow create: if hasRole("Vet")
+          && get(/databases/$(database)/documents/offices/$(request.resource.data.officeId)).data.ownerId
+          == request.auth.uid;
+        allow update: if hasRole("Vet");
+        allow read: if isSignedIn();
+    }
+
+    // ---- Reports ----
+    match /reports/{reportID} {
+      // Read and delete allowed only for the office or the farmer
+      allow read, delete: if ((hasRole("Vet") && resource.data.officeId ==
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId) ||
+         (hasRole("Farmer") && request.auth.uid == resource.data.farmerId));
+
+      // Updates allowed for both, but they cannot change officeId/farmerId
+      allow update: if (((hasRole("Vet") && resource.data.officeId ==
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId) ||
+        (hasRole("Farmer") && request.auth.uid == resource.data.farmerId)) &&
+        !(request.resource.data.diff(resource.data).changedKeys().hasAny(['officeId','farmerId'])));
+
+      // Only the farmer can create a new report
+      allow create: if isSignedIn() &&
+        request.auth.uid == request.resource.data.farmerId;
+    }
+
+    // ---- Offices ----
+    match /offices/{officeId} {
+
+      // Only vets in the office and farmers connected to the office can read.
+      allow get: if ((hasRole("Vet") &&
+       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.officeId == officeId) ||
+     (hasRole("Farmer") && officeId in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.linkedOffices));
+
+      // Only vets can create an office, and only if they set themselves as owner
+      allow create: if hasRole("Vet")
+                    && request.resource.data.ownerId == request.auth.uid;
+
+      // Owner may update their office (but cannot change the ownerId), vets can change member list to join and leave
+      // Could be less flexible but good enough.
+      allow update: if hasRole("Vet")
+                    && ((resource.data.ownerId == request.auth.uid
+                    && !(request.resource.data.diff(resource.data).changedKeys().hasAny(['ownerId']))) ||
+                    (request.resource.data.diff(resource.data).changedKeys().hasOnly(['vets'])));
+
+      // No deletes for now
+      allow delete: if false;
+    }
+  }
+}

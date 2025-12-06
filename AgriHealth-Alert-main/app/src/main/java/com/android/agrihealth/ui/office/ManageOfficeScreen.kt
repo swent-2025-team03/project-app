@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -18,9 +19,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.StatusColors
+import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.ui.common.AuthorName
+import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.CONFIRM_LEAVE
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.JOIN_OFFICE_BUTTON
@@ -30,6 +34,8 @@ import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_DESCRI
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_NAME
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_VET_LIST
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
+import com.android.agrihealth.ui.profile.CodesViewModel
+import com.android.agrihealth.ui.profile.GenerateCode
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
 
@@ -49,12 +55,14 @@ object ManageOfficeScreenTestTags {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManageOfficeScreen(
+    navigationActions: NavigationActions,
     userViewModel: UserViewModel = viewModel(),
     onGoBack: () -> Unit = {},
     onCreateOffice: () -> Unit = {},
     onJoinOffice: () -> Unit = {},
 ) {
-  val vm: ManageOfficeViewModel =
+  val snackbarHostState = remember { SnackbarHostState() }
+  val manageOfficeVm: ManageOfficeViewModel =
       viewModel(
           factory =
               object : ViewModelProvider.Factory {
@@ -62,14 +70,24 @@ fun ManageOfficeScreen(
                   return ManageOfficeViewModel(userViewModel, OfficeRepositoryFirestore()) as T
                 }
               })
+  val connectionVm: CodesViewModel =
+      viewModel(
+          factory =
+              object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return CodesViewModel(
+                      userViewModel, ConnectionRepositoryProvider.vetToOfficeRepository)
+                      as T
+                }
+              })
 
-  val uiState by vm.uiState.collectAsState()
+  val uiState by manageOfficeVm.uiState.collectAsState()
 
   var showLeaveDialog by remember { mutableStateOf(false) }
 
   val isOwner = uiState.office?.ownerId == userViewModel.user.value.uid
 
-  LaunchedEffect(userViewModel.user.value) { vm.loadOffice() }
+  LaunchedEffect(userViewModel.user.value) { manageOfficeVm.loadOffice() }
 
   Scaffold(
       topBar = {
@@ -81,11 +99,15 @@ fun ManageOfficeScreen(
               }
             },
             modifier = Modifier.testTag(TOP_BAR))
-      }) { innerPadding ->
+      },
+      snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
         Column(
             modifier =
                 Modifier.padding(innerPadding).padding(16.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top) {
+              HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
+
               if (uiState.office == null) {
                 Button(
                     onClick = onCreateOffice,
@@ -101,7 +123,7 @@ fun ManageOfficeScreen(
               } else {
                 OutlinedTextField(
                     value = if (isOwner) uiState.editableName else uiState.office!!.name,
-                    onValueChange = { if (isOwner) vm.onNameChange(it) },
+                    onValueChange = { if (isOwner) manageOfficeVm.onNameChange(it) },
                     label = { Text("Office Name") },
                     enabled = isOwner,
                     modifier = Modifier.fillMaxWidth().testTag(OFFICE_NAME))
@@ -110,41 +132,54 @@ fun ManageOfficeScreen(
                     value =
                         if (isOwner) uiState.editableDescription
                         else (uiState.office!!.description ?: ""),
-                    onValueChange = { if (isOwner) vm.onDescriptionChange(it) },
+                    onValueChange = { if (isOwner) manageOfficeVm.onDescriptionChange(it) },
                     label = { Text("Description") },
                     enabled = isOwner,
                     modifier = Modifier.fillMaxWidth().testTag(OFFICE_DESCRIPTION))
 
                 OutlinedTextField(
-                    value =
-                        if (isOwner) uiState.editableAddress
-                        else uiState.office!!.address?.toString() ?: "",
-                    onValueChange = { if (isOwner) vm.onAddressChange(it) },
+                    value = uiState.office!!.address?.name ?: "",
+                    onValueChange = { if (isOwner) manageOfficeVm.onAddressChange(it) },
+                    singleLine = true,
+                    readOnly = true,
                     label = { Text("Address") },
                     enabled = isOwner,
                     modifier = Modifier.fillMaxWidth().testTag(OFFICE_ADDRESS))
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Text("Vets in this office:", style = MaterialTheme.typography.titleMedium)
 
                 LazyColumn(
                     modifier =
                         Modifier.fillMaxWidth().heightIn(max = 300.dp).testTag(OFFICE_VET_LIST)) {
-                      items(uiState.office!!.vets) { vetId -> AuthorName(vetId) }
+                      items(uiState.office!!.vets) { vetId ->
+                        AuthorName(
+                            vetId,
+                            onClick = { navigationActions.navigateTo(Screen.ViewUser(vetId)) })
+                      }
                     }
 
+                Spacer(modifier = Modifier.height(16.dp))
+
                 if (isOwner) {
+                  GenerateCode(
+                      codesViewModel = connectionVm,
+                      snackbarHostState = snackbarHostState,
+                      Modifier.align(Alignment.CenterHorizontally))
+
+                  Spacer(modifier = Modifier.height(8.dp))
+
                   Button(
-                      onClick = { vm.updateOffice() },
+                      onClick = { manageOfficeVm.updateOffice() },
                       modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),
                   ) {
                     Text("Save Changes")
                   }
                 }
 
-                val leaveButtonEnabled = isOwner
                 OutlinedButton(
-                    onClick = { if (leaveButtonEnabled) showLeaveDialog = true },
-                    enabled = leaveButtonEnabled,
+                    onClick = { showLeaveDialog = true },
                     colors =
                         ButtonDefaults.outlinedButtonColors(contentColor = StatusColors().spam),
                     border = BorderStroke(1.dp, StatusColors().spam),
@@ -162,7 +197,7 @@ fun ManageOfficeScreen(
                         TextButton(
                             onClick = {
                               showLeaveDialog = false
-                              vm.leaveOffice(onSuccess = onGoBack)
+                              manageOfficeVm.leaveOffice(onSuccess = onGoBack)
                             },
                             modifier = Modifier.testTag(CONFIRM_LEAVE)) {
                               Text("Leave")

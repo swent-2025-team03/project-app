@@ -1,17 +1,21 @@
 package com.android.agrihealth.data.repository
 
 import android.util.Log
-import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.data.model.location.locationFromMap
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
+import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
 import java.time.Instant
+import java.time.LocalDateTime
 import kotlinx.coroutines.tasks.await
 
 const val REPORTS_COLLECTION_PATH = "reports"
@@ -24,23 +28,14 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
 
   override suspend fun getAllReports(userId: String): List<Report> {
 
-    // Build an OR filter: (vetId == userId) OR (farmerId == userId)
-    val filter = Filter.or(Filter.equalTo("vetId", userId), Filter.equalTo("farmerId", userId))
+    val user = UserRepositoryProvider.repository.getUserFromId(userId).getOrNull()!!
+    val filter =
+        when (user) {
+          is Vet -> Filter.equalTo("officeId", user.officeId)
+          is Farmer -> Filter.equalTo("farmerId", userId)
+        }
 
     val snapshot = db.collection(REPORTS_COLLECTION_PATH).where(filter).get().await()
-
-    return snapshot.documents.mapNotNull { docToReport(it) }
-  }
-
-  override suspend fun getReportsByFarmer(farmerId: String): List<Report> {
-    val snapshot =
-        db.collection(REPORTS_COLLECTION_PATH).whereEqualTo("farmerId", farmerId).get().await()
-
-    return snapshot.documents.mapNotNull { docToReport(it) }
-  }
-
-  override suspend fun getReportsByVet(vetId: String): List<Report> {
-    val snapshot = db.collection(REPORTS_COLLECTION_PATH).whereEqualTo("vetId", vetId).get().await()
 
     return snapshot.documents.mapNotNull { docToReport(it) }
   }
@@ -62,6 +57,14 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
 
   override suspend fun deleteReport(reportId: String) {
     db.collection(REPORTS_COLLECTION_PATH).document(reportId).delete().await()
+  }
+
+  override suspend fun assignReportToVet(reportId: String, vetId: String) {
+    db.collection(REPORTS_COLLECTION_PATH).document(reportId).update("assignedVet", vetId).await()
+  }
+
+  override suspend fun unassignReport(reportId: String) {
+    db.collection(REPORTS_COLLECTION_PATH).document(reportId).update("assignedVet", null).await()
   }
 }
 
@@ -99,22 +102,37 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
         }
     val photoUri = doc.getString("photoUri")
     val farmerId = doc.getString("farmerId") ?: return null
-    val vetId = doc.getString("vetId") ?: return null
+    val officeId = doc.getString("officeId") ?: return null
     val statusStr = doc.getString("status") ?: return null
     val status = ReportStatus.valueOf(statusStr)
     val answer = doc.getString("answer")
     val locationData = doc.get("location") as? Map<*, *>
-    val location =
-        locationData?.let {
-          Location(
-              latitude = it["latitude"] as? Double ?: 0.0,
-              longitude = it["longitude"] as? Double ?: 0.0,
-              name = it["name"] as? String ?: "")
-        }
+    val location = locationFromMap(locationData)
     val createdAtData = doc.get("createdAt") as? Map<*, *>
     val createdAt =
         createdAtData?.let { Instant.ofEpochSecond(it["epochSecond"] as? Long ?: 0) }
             ?: Instant.now()
+    val startTimeData = doc.get("startTime") as? Map<*, *>
+    val startTime =
+        startTimeData?.let {
+          LocalDateTime.of(
+              (it["year"] as? Long ?: 0).toInt(),
+              (it["monthValue"] as? Long ?: 0).toInt(),
+              (it["dayOfMonth"] as? Long ?: 0).toInt(),
+              (it["hour"] as? Long ?: 0).toInt(),
+              (it["minute"] as? Long ?: 0).toInt(),
+              (it["second"] as? Long ?: 0).toInt())
+        }
+    val durationData = doc.get("duration") as? Map<*, *>
+    val duration =
+        durationData?.let {
+          java.time.LocalTime.of(
+              (it["hour"] as? Long ?: 0).toInt(),
+              (it["minute"] as? Long ?: 0).toInt(),
+              (it["second"] as? Long ?: 0).toInt())
+        }
+    val collected = doc.get("collected") as? Boolean ?: false
+    val assignedVet = doc.getString("assignedVet")
 
     Report(
         id = id,
@@ -123,11 +141,15 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
         questionForms = questionForms,
         photoUri = photoUri,
         farmerId = farmerId,
-        vetId = vetId,
+        officeId = officeId,
         status = status,
         answer = answer,
         location = location,
-        createdAt = createdAt)
+        createdAt = createdAt,
+        startTime = startTime,
+        duration = duration,
+        collected = collected,
+        assignedVet = assignedVet)
   } catch (e: Exception) {
     Log.e("ReportRepositoryFirestore", "Error converting document ${doc.id} to Report", e)
     null

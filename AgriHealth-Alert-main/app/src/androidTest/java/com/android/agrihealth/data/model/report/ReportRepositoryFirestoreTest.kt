@@ -30,7 +30,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
           questionForms = listOf(openQuestion),
           photoUri = null,
           farmerId = user1.uid,
-          vetId = user3.uid,
+          officeId = user3.uid,
           status = ReportStatus.PENDING,
           answer = null,
           location = null,
@@ -44,7 +44,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
           questionForms = listOf(openQuestion),
           photoUri = "url to the photo",
           farmerId = user2.uid,
-          vetId = "Vet2",
+          officeId = "Off2",
           status = ReportStatus.RESOLVED,
           answer = "this is the answer",
           location = Location(42.0, 6.7, "the nice farm were all the dogs go when they are old"),
@@ -72,7 +72,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   @Test
   fun canAddReportToRepository() = runTest {
     repository.addReport(report1.fixUID())
-    val reports = repository.getReportsByFarmer(user1.uid)
+    val reports = repository.getAllReports(user1.uid)
     assertEquals(1, reports.size)
     assertEquals(report1, reports.first().copy(farmerId = report1.farmerId, createdAt = now))
   }
@@ -82,7 +82,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     repository.addReport(report1.fixUID())
     repository.addReport(report3.fixUID())
 
-    val reports = repository.getReportsByFarmer(user1.uid)
+    val reports = repository.getAllReports(user1.uid)
 
     assertEquals(2, reports.size)
     assertEquals(
@@ -104,7 +104,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     repository.addReport(report3.fixUID())
 
     assertEquals(
-        3, repository.getReportsByFarmer(Firebase.auth.currentUser?.uid ?: "no current user").size)
+        3, repository.getAllReports(Firebase.auth.currentUser?.uid ?: "no current user").size)
   }
 
   @Test
@@ -112,15 +112,15 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     authRepository.signOut()
     authRepository.signUpWithEmailAndPassword(user3.email, password3, user3)
 
-    repository.addReport(report1.copy(farmerId = user3.uid, vetId = user3.uid))
+    repository.addReport(report1.copy(farmerId = user3.uid, officeId = user3.officeId!!))
     repository.addReport(report2.copy(farmerId = user3.uid))
-    repository.addReport(report3.copy(farmerId = user3.uid, vetId = user3.uid))
+    repository.addReport(report3.copy(farmerId = user3.uid, officeId = user3.officeId))
 
-    var reports = repository.getReportsByVet(user3.uid)
+    var reports = repository.getAllReports(user3.uid)
     assertEquals(2, reports.size)
 
     reports.forEach {
-      assertEquals(user3.uid, it.vetId)
+      assertEquals(user3.officeId, it.officeId)
       assertEquals(listOf(openQuestion), it.questionForms)
     }
 
@@ -128,7 +128,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
         reports.map {
           it.copy(
               farmerId = report1.farmerId,
-              vetId = report1.vetId,
+              officeId = report1.officeId,
               createdAt = now,
               questionForms = listOf(openQuestion))
         }
@@ -145,7 +145,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     repository.addReport(report3.fixUID())
 
     assertEquals(
-        3, repository.getReportsByFarmer(Firebase.auth.currentUser?.uid ?: "no current user").size)
+        3, repository.getAllReports(Firebase.auth.currentUser?.uid ?: "no current user").size)
     val report = repository.getReportById(report1.id)
     assertEquals(report1, report?.copy(farmerId = report1.farmerId, createdAt = now))
   }
@@ -156,7 +156,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     repository.addReport(report1.fixUID())
     repository.editReport(report1.id, editedReport1.fixUID())
 
-    val reports = repository.getReportsByFarmer(user1.uid)
+    val reports = repository.getAllReports(user1.uid)
     assertEquals(1, reports.size)
     assertEquals(
         editedReport1, reports.first().copy(farmerId = editedReport1.farmerId, createdAt = now))
@@ -167,7 +167,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     repository.addReport(report1.fixUID())
 
     repository.deleteReport(report1.id)
-    val reports = repository.getReportsByFarmer(user1.uid)
+    val reports = repository.getAllReports(user1.uid)
     assertEquals(0, reports.size)
   }
 
@@ -178,7 +178,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     repository.addReport(report3.fixUID())
 
     repository.deleteReport(report1.id)
-    var reports = repository.getReportsByFarmer(user1.uid)
+    var reports = repository.getAllReports(user1.uid)
     assertEquals(2, reports.size)
 
     reports =

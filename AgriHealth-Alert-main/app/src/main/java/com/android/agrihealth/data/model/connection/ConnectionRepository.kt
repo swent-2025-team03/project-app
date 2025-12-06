@@ -1,39 +1,76 @@
 package com.android.agrihealth.data.model.connection
 
+import com.android.agrihealth.data.model.authentification.UserRepository
+import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.ui.profile.CodeType
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Transaction
 import com.google.firebase.firestore.firestore
-import java.time.Instant
 import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 
-class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestore) {
+class ConnectionRepository(
+    private val db: FirebaseFirestore = Firebase.firestore,
+    private val userRepository: UserRepository = UserRepositoryProvider.repository,
+    private val connectionType: String
+) {
   private companion object {
     private const val CODES_COLLECTION = FirestoreSchema.Collections.CONNECT_CODES
-    private const val CONNECTIONS_COLLECTION = FirestoreSchema.Collections.CONNECTIONS
     private const val STATUS_OPEN = FirestoreSchema.Status.OPEN
     private const val STATUS_USED = FirestoreSchema.Status.USED
   }
+
+  val type: String
+    get() = connectionType
+
+  private fun humanReadableConnectionType(): String =
+      when (connectionType) {
+        "farmerToOffice" -> "farmer connection"
+        "vetToOffice" -> "vet connection"
+        else -> "connection"
+      }
 
   private fun getCurrentUserId(): String {
     return Firebase.auth.currentUser?.uid
         ?: throw java.lang.IllegalStateException("User not logged in")
   }
 
-  // Generates a unique connection code for a vet, valid for a limited time (ttlMinutes).
+  private suspend fun getCurrentUserOfficeId(): String {
+    val currentUid = getCurrentUserId()
+    return userRepository.getUserFromId(currentUid).fold({ user ->
+      (user as Vet).officeId
+          ?: throw IllegalStateException("You need to join an office before generating a code")
+    }) { throwable ->
+      throw throwable
+    }
+  }
+
   // Returns: Result<String> containing the generated code, or an exception if failed.
-  suspend fun generateCode(ttlMinutes: Long = 10): Result<String> = runCatching {
-    val vetId = getCurrentUserId()
+  suspend fun generateCode(): Result<String> = runCatching {
+    val officeId = getCurrentUserOfficeId()
+
+    val currentUser =
+        userRepository.getUserFromId(getCurrentUserId()).getOrNull()
+            ?: throw IllegalStateException("User not found")
+    val vet = currentUser as? Vet ?: throw IllegalStateException("Only vets can generate codes")
+
+    val activeCount = getActiveCodesCount(vet)
+    if (activeCount >= 10) {
+      throw IllegalStateException(
+          "Cannot generate more than 10 active ${humanReadableConnectionType()} codes")
+    }
+
     repeat(20) {
       val code = Random.nextInt(100_000, 1_000_000).toString()
       val maybeCode =
           db.runTransaction { tx ->
-                val ref = db.collection(CODES_COLLECTION).document(code)
+                val ref = db.collection(connectionType + CODES_COLLECTION).document(code)
                 val snap = tx.get(ref)
                 if (snap.exists()) {
                   null
@@ -43,10 +80,9 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
                       ref,
                       mapOf(
                           FirestoreSchema.ConnectCodes.CODE to code,
-                          FirestoreSchema.ConnectCodes.VET_ID to vetId,
+                          FirestoreSchema.ConnectCodes.OFFICE_ID to officeId,
                           FirestoreSchema.ConnectCodes.STATUS to STATUS_OPEN,
-                          FirestoreSchema.ConnectCodes.CREATED_AT to createdAt,
-                          FirestoreSchema.ConnectCodes.TTL_MINUTES to ttlMinutes))
+                          FirestoreSchema.ConnectCodes.CREATED_AT to createdAt))
                   code
                 }
               }
@@ -65,62 +101,88 @@ class ConnectionRepository(private val db: FirebaseFirestore = Firebase.firestor
     if (status != STATUS_OPEN) throw IllegalStateException("Code already used.")
 
     val createdAt = snap.getTimestamp(FirestoreSchema.ConnectCodes.CREATED_AT)
-    if (createdAt == null) throw IllegalArgumentException("Missing createdAt")
-
-    val ttlMinutes = snap.getLong(FirestoreSchema.ConnectCodes.TTL_MINUTES)
-    if (ttlMinutes == null) throw IllegalArgumentException("Missing TTL value")
-
-    val expiresAtMs = createdAt.toDate().time + ttlMinutes * 60_000
-    if (Instant.now().toEpochMilli() > expiresAtMs) throw IllegalStateException("Code expired.")
+    requireNotNull(createdAt) { "Missing createdAt" }
   }
 
-  // Claims a connection code for a farmer, links the vet and farmer, and marks the code as used.
+  // Claims a connection code for a farmer, and marks the code as used.
   // Returns: Result<String> containing the vetId if successful, or an exception if failed.
   suspend fun claimCode(code: String): Result<String> = runCatching {
-    val farmerId = getCurrentUserId()
-    val docRef = db.collection(CODES_COLLECTION).document(code)
+    val userId = getCurrentUserId()
+    val docRef = db.collection(connectionType + CODES_COLLECTION).document(code)
     db.runTransaction { tx ->
           val snap = tx.get(docRef)
           checkCodeValidity(snap)
 
-          val vetId = snap.getString(FirestoreSchema.ConnectCodes.VET_ID)
-          if (vetId == null) throw IllegalArgumentException("Invalid vet ID.")
-
-          linkUsers(tx, vetId, farmerId)
+          val officeId = snap.getString(FirestoreSchema.ConnectCodes.OFFICE_ID)
+          requireNotNull(officeId) { "Invalid office ID." }
 
           tx.update(
               docRef,
               mapOf(
                   FirestoreSchema.ConnectCodes.STATUS to STATUS_USED,
                   FirestoreSchema.ConnectCodes.USED_AT to FieldValue.serverTimestamp(),
-                  FirestoreSchema.ConnectCodes.CLAIMED_BY to farmerId))
+                  FirestoreSchema.ConnectCodes.CLAIMED_BY to userId))
 
-          vetId
+          officeId
         }
         .await()
   }
 
-  // Creates a connection document between vet and farmer if it does not already exist.
-  // Returns: Unit. No value is returned.
-  private fun linkUsers(tx: Transaction, vetId: String, farmerId: String) {
-    val connId = connectionId(vetId, farmerId)
-    val ref = db.collection(CONNECTIONS_COLLECTION).document(connId)
-    // Assume the connection doesn't exist. If not, only the timestamp changes, is it really that
-    // bad?
-    tx.set(
-        ref,
-        mapOf(
-            FirestoreSchema.Connections.VET_ID to vetId,
-            FirestoreSchema.Connections.FARMER_ID to farmerId,
-            FirestoreSchema.Connections.CREATED_AT to FieldValue.serverTimestamp(),
-            FirestoreSchema.Connections.ACTIVE to true)) // this line NEEDS to be here or tests fail
+  /**
+   * Retrieves the list of valid (OPEN) connection codes for the given vet and code type. Used by
+   * the EditProfileScreen to display only active and usable codes to the user.
+   */
+  suspend fun getValidCodes(vet: Vet, type: CodeType): List<String> {
+    val targetList =
+        when (type) {
+          CodeType.FARMER -> vet.farmerConnectCodes
+          CodeType.VET -> vet.vetConnectCodes
+        }
+
+    val collectionName =
+        when (type) {
+          CodeType.FARMER -> "farmerToOfficeConnectCodes"
+          CodeType.VET -> "vetToOfficeConnectCodes"
+        }
+
+    return try {
+      val snapshot =
+          db.collection(collectionName)
+              .whereIn(FieldPath.documentId(), targetList)
+              .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
+              .get()
+              .await()
+
+      snapshot.documents.map { it.id }
+    } catch (e: Exception) {
+      emptyList()
+    }
   }
 
-  // Generates a unique connection ID by sorting and joining vet and farmer IDs.
-  // Returns: String representing the connection ID.
-  // Rationale: sorting the two IDs before joining ensures the produced ID is symmetric
-  // and order-independent. This guarantees that connectionId(vet, farmer) ==
-  // connectionId(farmer, vet) so the same Firestore document is used for a pair
-  // of users regardless of call order, avoiding duplicate connection documents.
-  private fun connectionId(a: String, b: String): String = listOf(a, b).sorted().joinToString("__")
+  /**
+   * Returns the number of active (OPEN) connection codes for the given vet and code type. This is
+   * used to determine whether the vet can generate additional codes based on the limit.
+   */
+  suspend fun getActiveCodesCount(vet: Vet): Int {
+    val (targetList, collectionName) =
+        when (connectionType) {
+          "farmerToOffice" -> vet.farmerConnectCodes to "farmerToOfficeConnectCodes"
+          "vetToOffice" -> vet.vetConnectCodes to "vetToOfficeConnectCodes"
+          else -> return 0
+        }
+
+    if (targetList.isEmpty()) return 0
+
+    return try {
+      val snapshot =
+          db.collection(collectionName)
+              .whereIn(FieldPath.documentId(), targetList)
+              .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
+              .get()
+              .await()
+      snapshot.size()
+    } catch (e: Exception) {
+      0
+    }
+  }
 }

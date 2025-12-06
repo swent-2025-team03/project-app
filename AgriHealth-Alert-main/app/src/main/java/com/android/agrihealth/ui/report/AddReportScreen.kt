@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -16,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -25,16 +25,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.ui.loading.LoadingOverlay
+import com.android.agrihealth.ui.common.OfficeNameViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.UserViewModelContract
 import kotlinx.coroutines.launch
 
 // -- imports for preview --
@@ -48,11 +49,13 @@ import com.android.agrihealth.testutil.FakeAddReportViewModel
 object AddReportScreenTestTags {
   const val TITLE_FIELD = "titleField"
   const val DESCRIPTION_FIELD = "descriptionField"
-  const val VET_DROPDOWN = "vetDropDown"
+  const val OFFICE_DROPDOWN = "officeDropDown"
+  const val ADDRESS_FIELD = "addressField"
+  const val LOCATION_BUTTON = "locationButton"
   const val CREATE_BUTTON = "createButton"
   const val SCROLL_CONTAINER = "AddReportScrollContainer"
 
-  fun getTestTagForVet(vetId: String): String = "vetOption_$vetId"
+  fun getTestTagForOffice(vetId: String): String = "officeOption_$vetId"
 }
 
 /** Texts for the report creation feedback. For testing purposes */
@@ -63,7 +66,7 @@ object AddReportFeedbackTexts {
 
 // Used for testing purposes
 object AddReportConstants {
-  val vetOptions = listOf("Best Vet Ever!", "Meh Vet", "Great Vet")
+  val officeOptions = listOf("Best Office Ever!", "Meh Office", "Great Office")
 }
 
 /**
@@ -77,22 +80,39 @@ object AddReportConstants {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddReportScreen(
-    userViewModel: UserViewModel = viewModel(),
+    userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
     onBack: () -> Unit = {},
-    userRole: UserRole,
-    userId: String,
     onCreateReport: () -> Unit = {},
+    pickedLocation: Location? = null,
+    onChangeLocation: () -> Unit = {},
     addReportViewModel: AddReportViewModelContract
 ) {
 
   val uiState by addReportViewModel.uiState.collectAsState()
   val user by userViewModel.user.collectAsState()
-  val vets = (user as Farmer).linkedVets
+
+  val offices = remember { mutableStateMapOf<String, String>() }
+
+  // For each linked office, load their name
+  (user as Farmer).linkedOffices.forEach { officeId ->
+    val vm: OfficeNameViewModel = viewModel(key = officeId)
+    val label by vm.uiState.collectAsState()
+
+    LaunchedEffect(officeId) {
+      vm.loadOffice(uid = officeId, deletedOffice = "Deleted office", noneOffice = "Unknown office")
+    }
+
+    offices[officeId] = label
+  }
+
+  LaunchedEffect(pickedLocation) { addReportViewModel.setAddress(pickedLocation) }
+  LaunchedEffect(Unit) {
+    if (user.collected != uiState.collected) addReportViewModel.switchCollected()
+  }
 
   // For the dropdown menu
   var expanded by remember { mutableStateOf(false) } // For menu expanded/collapsed tracking
-  var selectedOption by remember { mutableStateOf((user as Farmer).defaultVet ?: "") }
-  LaunchedEffect(selectedOption) { addReportViewModel.setVet(selectedOption) }
+  var selectedOption by remember { mutableStateOf((user as Farmer).defaultOffice ?: "") }
 
   // For the confirmation snackbar (i.e alter window)
   val snackbarHostState = remember { SnackbarHostState() }
@@ -100,169 +120,188 @@ fun AddReportScreen(
 
   // For the dialog when adding a report is successful
   var showSuccessDialog by remember { mutableStateOf(false) }
-  LoadingOverlay(isLoading = uiState.isLoading) {
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        topBar = {
-          // Top bar with back arrow and title/status
-          TopAppBar(
-              title = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically) {
-                      Text(
-                          text = Screen.AddReport.name,
-                          style = MaterialTheme.typography.titleLarge,
-                          modifier = Modifier.weight(1f).testTag(NavigationTestTags.TOP_BAR_TITLE))
-                    }
-              },
-              navigationIcon = {
-                IconButton(
-                    onClick = onBack,
-                    modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
-                      Icon(
-                          imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                          contentDescription = "Back")
-                    }
-              })
-        }) { padding ->
 
-          // Main scrollable content
-          Column(
-              modifier =
-                  Modifier.padding(padding)
-                      .fillMaxSize()
-                      .verticalScroll(rememberScrollState())
-                      .padding(16.dp)
-                      .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
-              verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Field(
-                    uiState.title,
-                    { addReportViewModel.setTitle(it) },
-                    "Title",
-                    AddReportScreenTestTags.TITLE_FIELD)
-                Field(
-                    uiState.description,
-                    { addReportViewModel.setDescription(it) },
-                    "Description",
-                    AddReportScreenTestTags.DESCRIPTION_FIELD)
+  LaunchedEffect(Unit) { addReportViewModel.setOffice(selectedOption) }
 
-                // Questions
-                uiState.questionForms.forEachIndexed { index, question ->
-                  when (question) {
-                    is OpenQuestion -> {
-                      OpenQuestionItem(
-                          question = question,
-                          onAnswerChange = { updated ->
-                            addReportViewModel.updateQuestion(index, updated)
-                          },
-                          enabled = true,
-                          modifier = Modifier.testTag("QUESTION_${index}_OPEN"))
-                    }
-                    is YesOrNoQuestion -> {
-                      YesOrNoQuestionItem(
-                          question = question,
-                          onAnswerChange = { updated ->
-                            addReportViewModel.updateQuestion(index, updated)
-                          },
-                          enabled = true,
-                          modifier = Modifier.testTag("QUESTION_${index}_YESORNO"))
-                    }
-                    is MCQ -> {
-                      MCQItem(
-                          question = question,
-                          onAnswerChange = { updated ->
-                            addReportViewModel.updateQuestion(index, updated)
-                          },
-                          enabled = true,
-                          modifier = Modifier.testTag("QUESTION_${index}_MCQ"))
-                    }
-                    is MCQO -> {
-                      MCQOItem(
-                          question = question,
-                          onAnswerChange = { updated ->
-                            addReportViewModel.updateQuestion(index, updated)
-                          },
-                          enabled = true,
-                          modifier = Modifier.testTag("QUESTION_${index}_MCQO"))
-                    }
+  Scaffold(
+      snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+      topBar = {
+        // Top bar with back arrow and title/status
+        TopAppBar(
+            title = {
+              Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = Screen.AddReport.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.weight(1f).testTag(NavigationTestTags.TOP_BAR_TITLE))
+                  }
+            },
+            navigationIcon = {
+              IconButton(
+                  onClick = onBack,
+                  modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back")
+                  }
+            })
+      }) { padding ->
+
+        // Main scrollable content
+        Column(
+            modifier =
+                Modifier.padding(padding)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
+                    .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
+            verticalArrangement = Arrangement.Top) {
+              HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
+
+              Field(
+                  uiState.title,
+                  { addReportViewModel.setTitle(it) },
+                  "Title",
+                  AddReportScreenTestTags.TITLE_FIELD)
+              Field(
+                  uiState.description,
+                  { addReportViewModel.setDescription(it) },
+                  "Description",
+                  AddReportScreenTestTags.DESCRIPTION_FIELD)
+
+              // Questions
+              uiState.questionForms.forEachIndexed { index, question ->
+                when (question) {
+                  is OpenQuestion -> {
+                    OpenQuestionItem(
+                        question = question,
+                        onAnswerChange = { updated ->
+                          addReportViewModel.updateQuestion(index, updated)
+                        },
+                        enabled = true,
+                        modifier = Modifier.testTag("QUESTION_${index}_OPEN"))
+                  }
+                  is YesOrNoQuestion -> {
+                    YesOrNoQuestionItem(
+                        question = question,
+                        onAnswerChange = { updated ->
+                          addReportViewModel.updateQuestion(index, updated)
+                        },
+                        enabled = true,
+                        modifier = Modifier.testTag("QUESTION_${index}_YESORNO"))
+                  }
+                  is MCQ -> {
+                    MCQItem(
+                        question = question,
+                        onAnswerChange = { updated ->
+                          addReportViewModel.updateQuestion(index, updated)
+                        },
+                        enabled = true,
+                        modifier = Modifier.testTag("QUESTION_${index}_MCQ"))
+                  }
+                  is MCQO -> {
+                    MCQOItem(
+                        question = question,
+                        onAnswerChange = { updated ->
+                          addReportViewModel.updateQuestion(index, updated)
+                        },
+                        enabled = true,
+                        modifier = Modifier.testTag("QUESTION_${index}_MCQO"))
                   }
                 }
-
-                ExposedDropdownMenuBox(
-                    expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-                      OutlinedTextField(
-                          value = selectedOption,
-                          onValueChange = {}, // No direct text editing
-                          readOnly = true,
-                          label = { Text("Choose a Vet") },
-                          trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                          },
-                          modifier =
-                              Modifier.menuAnchor() // Needed for M3 dropdown alignment
-                                  .fillMaxWidth()
-                                  .testTag(AddReportScreenTestTags.VET_DROPDOWN))
-
-                      ExposedDropdownMenu(
-                          expanded = expanded, onDismissRequest = { expanded = false }) {
-                            vets.forEach { option ->
-                              DropdownMenuItem(
-                                  text = { Text(option) },
-                                  onClick = {
-                                    selectedOption = option
-                                    addReportViewModel.setVet(option)
-                                    expanded = false
-                                  },
-                                  modifier =
-                                      Modifier.testTag(
-                                          AddReportScreenTestTags.getTestTagForVet(option)))
-                            }
-                          }
-                    }
-
-                Button(
-                    onClick = {
-                      scope.launch {
-                        val created = addReportViewModel.createReport()
-                        if (created) {
-                          showSuccessDialog = true
-                        } else {
-                          snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
-                        }
-                      }
-                    },
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .height(56.dp)
-                            .testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
-                      Text("Create Report", style = MaterialTheme.typography.titleLarge)
-                    }
               }
 
-          // If adding the report was successful
-          if (showSuccessDialog) {
-            AlertDialog(
-                onDismissRequest = {
-                  showSuccessDialog = false
-                  onBack()
-                },
-                confirmButton = {
-                  TextButton(
-                      onClick = {
-                        showSuccessDialog = false
-                        onCreateReport()
-                        onBack()
-                      }) {
-                        Text("OK")
+              OutlinedTextField(
+                  value = uiState.address?.name ?: "Select a Location",
+                  placeholder = { Text("Select a Location") },
+                  onValueChange = {},
+                  readOnly = true,
+                  singleLine = true,
+                  label = { Text("Selected Location") },
+                  modifier = Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.ADDRESS_FIELD))
+              Button(
+                  onClick = onChangeLocation,
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.LOCATION_BUTTON)) {
+                    Text("Select Location")
+                  }
+
+              var selectedOfficeName = offices[selectedOption] ?: selectedOption
+              ExposedDropdownMenuBox(
+                  expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                    OutlinedTextField(
+                        value = selectedOfficeName,
+                        onValueChange = {}, // No direct text editing
+                        readOnly = true,
+                        label = { Text("Choose an Office") },
+                        trailingIcon = {
+                          ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                        },
+                        modifier =
+                            Modifier.menuAnchor() // Needed for M3 dropdown alignment
+                                .fillMaxWidth()
+                                .testTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
+
+                    ExposedDropdownMenu(
+                        expanded = expanded, onDismissRequest = { expanded = false }) {
+                          offices.forEach { (option, displayName) ->
+                            DropdownMenuItem(
+                                text = { Text(displayName) },
+                                onClick = {
+                                  selectedOfficeName = displayName
+                                  addReportViewModel.setOffice(option)
+                                  expanded = false
+                                },
+                                modifier =
+                                    Modifier.testTag(
+                                        AddReportScreenTestTags.getTestTagForOffice(option)))
+                          }
+                        }
+                  }
+
+              CollectedSwitch(uiState.collected, { addReportViewModel.switchCollected() }, true)
+
+              Button(
+                  onClick = {
+                    scope.launch {
+                      val created = addReportViewModel.createReport()
+                      if (created) {
+                        showSuccessDialog = true
+                      } else {
+                        snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
                       }
-                },
-                title = { Text("Success!") },
-                text = { Text(AddReportFeedbackTexts.SUCCESS) })
-          }
+                    }
+                  },
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
+                    Text("Create Report", style = MaterialTheme.typography.titleMedium)
+                  }
+            }
+
+        // If adding the report was successful
+        if (showSuccessDialog) {
+          AlertDialog(
+              onDismissRequest = {
+                showSuccessDialog = false
+                onBack()
+              },
+              confirmButton = {
+                TextButton(
+                    onClick = {
+                      showSuccessDialog = false
+                      onCreateReport()
+                      onBack()
+                    }) {
+                      Text(text = "OK", color = MaterialTheme.colorScheme.onSurface)
+                    }
+              },
+              title = { Text("Success!") },
+              text = { Text(AddReportFeedbackTexts.SUCCESS) })
         }
-  }
+      }
 }
 
 @Composable
@@ -282,7 +321,7 @@ private fun Field(
 }
 
 /**
- * Preview of the ReportViewScreen for both farmer and vet roles. Allows testing of layout and
+ * Preview of the ReportViewScreen for both farmer and office roles. Allows testing of layout and
  * colors directly in Android Studio.
  */
 /*

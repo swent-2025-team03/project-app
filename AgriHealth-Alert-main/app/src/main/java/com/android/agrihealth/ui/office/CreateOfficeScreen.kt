@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.ADDRESS_FIELD
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.CREATE_BUTTON
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.DESCRIPTION_FIELD
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.NAME_FIELD
@@ -23,7 +22,6 @@ import com.android.agrihealth.ui.user.UserViewModel
 object CreateOfficeScreenTestTags {
   const val NAME_FIELD = "CreateOfficeNameField"
   const val DESCRIPTION_FIELD = "CreateOfficeDescriptionField"
-  const val ADDRESS_FIELD = "CreateOfficeAddressField"
   const val CREATE_BUTTON = "CreateOfficeButtonConfirm"
 }
 
@@ -58,6 +56,7 @@ fun CreateOfficeScreen(
             modifier =
                 Modifier.padding(padding).padding(16.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
+              HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
 
               // Input: Office Name
               OutlinedTextField(
@@ -72,13 +71,6 @@ fun CreateOfficeScreen(
                   onValueChange = vm::onDescriptionChange,
                   label = { Text("Description (optional)") },
                   modifier = Modifier.fillMaxWidth().testTag(DESCRIPTION_FIELD))
-
-              // Input: Office Address TODO: currently unused
-              OutlinedTextField(
-                  value = uiState.address,
-                  onValueChange = vm::onAddressChange,
-                  label = { Text("Address (optional)") },
-                  modifier = Modifier.fillMaxWidth().testTag(ADDRESS_FIELD))
 
               // Error text (only shown when not null)
               if (uiState.error != null) {

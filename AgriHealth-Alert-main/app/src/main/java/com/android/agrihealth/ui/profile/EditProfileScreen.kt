@@ -28,13 +28,31 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.connection.ConnectionRepository
+import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.*
+import com.android.agrihealth.ui.common.OfficeNameViewModel
+import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.office.ManageOfficeViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
+import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
-import kotlinx.coroutines.launch
+import com.android.agrihealth.ui.user.UserViewModelContract
+
+enum class CodeType {
+  FARMER,
+  VET;
+
+  fun displayName(): String =
+      when (this) {
+        FARMER -> "Farmer"
+        VET -> "Vet"
+      }
+}
 
 object EditProfileScreenTestTags {
   const val FIRSTNAME_FIELD = "FirstNameField"
@@ -42,58 +60,80 @@ object EditProfileScreenTestTags {
   const val DESCRIPTION_FIELD = "Description"
   const val PASSWORD_FIELD = "PasswordField"
   const val ADDRESS_FIELD = "EditAddressField"
+  const val LOCATION_BUTTON = "LocationButton"
   const val DEFAULT_VET_DROPDOWN = "DefaultVetDropdown"
-  const val CODE_FIELD = "VetCodeField"
   const val ADD_CODE_BUTTON = "AddVetButton"
   const val SAVE_BUTTON = "SaveButton"
   const val PASSWORD_BUTTON = "PasswordButton"
-  const val ACTIVE_CODES_DROPDOWN = "ActiveCodesDropdown"
-  const val ACTIVE_CODE_ELEMENT = "ActiveCodeListElement"
   const val COPY_CODE_BUTTON = "CopyActiveCodeListElementButton"
+
+  fun dropdownTag(type: String) = "ACTIVE_CODES_DROPDOWN_$type"
+
+  fun dropdownElementTag(type: String) = "ACTIVE_CODE_ELEMENT_$type"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
-    userViewModel: UserViewModel = viewModel(),
+    userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
+    pickedLocation: Location? = null,
+    onChangeLocation: () -> Unit = {},
     onGoBack: () -> Unit = {},
     onSave: (User) -> Unit = { userViewModel.updateUser(it) },
-    onPasswordChange: () -> Unit = {},
-    showOnlyVetField: Boolean = false
+    onPasswordChange: () -> Unit = {}
 ) {
+
+  val connectionRepository = remember { ConnectionRepository(connectionType = "") }
+  val codesViewModel = remember { CodesViewModel(userViewModel, connectionRepository) }
+
   val user by userViewModel.user.collectAsState()
   val userRole = user.role
+  val currentUser = user
 
-  val factory = remember {
-    object : androidx.lifecycle.ViewModelProvider.Factory {
-      override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return ProfileViewModel(userViewModel) as T
-      }
+  LaunchedEffect(user) {
+    if (currentUser is Vet) {
+      codesViewModel.loadActiveCodesForVet(currentUser)
     }
   }
-  val profileViewModel: ProfileViewModel = viewModel(factory = factory)
 
-  val scope = rememberCoroutineScope()
+  val farmerCodes by codesViewModel.farmerCodes.collectAsState()
+  val vetCodes by codesViewModel.vetCodes.collectAsState()
+
+  val createManageOfficeViewModel =
+      object : androidx.lifecycle.ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+          return ManageOfficeViewModel(
+              userViewModel = userViewModel, officeRepository = OfficeRepositoryProvider.get())
+              as T
+        }
+      }
+
+  val manageOfficeVm: ManageOfficeViewModel = viewModel(factory = createManageOfficeViewModel)
+
+  val isOwner = manageOfficeVm.uiState.collectAsState().value.office?.ownerId == user.uid
+
   val snackbarHostState = remember { SnackbarHostState() }
-
-  val vetClaimMessage by profileViewModel.vetClaimMessage.collectAsState()
-  LaunchedEffect(vetClaimMessage) { vetClaimMessage?.let { snackbarHostState.showSnackbar(it) } }
 
   // Local mutable states
   var firstname by remember { mutableStateOf(user.firstname) }
   var lastname by remember { mutableStateOf(user.lastname) }
   var description by remember { mutableStateOf(user.description ?: "") }
-  var address by remember { mutableStateOf(user.address?.toString() ?: "") }
+  var address by remember { mutableStateOf(pickedLocation?.name ?: "") }
 
   // Farmer-specific states
-  var selectedDefaultVet by remember { mutableStateOf((user as? Farmer)?.defaultVet ?: "") }
+  var selectedDefaultOffice by remember { mutableStateOf((user as? Farmer)?.defaultOffice) }
   var expandedVetDropdown by remember { mutableStateOf(false) }
-  var vetCode by remember { mutableStateOf("") }
+  var collected by remember { mutableStateOf(user.collected) }
 
   Scaffold(
       topBar = {
         TopAppBar(
-            title = { Text("Edit Profile", style = MaterialTheme.typography.titleMedium) },
+            title = {
+              Text(
+                  text = "Edit Profile",
+                  style = MaterialTheme.typography.titleLarge,
+                  modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE))
+            },
             navigationIcon = {
               IconButton(onClick = onGoBack, modifier = Modifier.testTag(GO_BACK_BUTTON)) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Go back")
@@ -112,162 +152,164 @@ fun EditProfileScreen(
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
 
-              if (!showOnlyVetField) {
+              // Profile Image Placeholder
+              Icon(
+                  imageVector = Icons.Default.AccountCircle,
+                  contentDescription = "Profile Picture",
+                  modifier = Modifier.size(120.dp).clip(CircleShape).testTag(PROFILE_IMAGE),
+                  tint = MaterialTheme.colorScheme.primary)
 
-                // Profile Image Placeholder
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier.size(120.dp).clip(CircleShape).testTag(PROFILE_IMAGE),
-                    tint = MaterialTheme.colorScheme.primary)
+              Spacer(modifier = Modifier.height(24.dp))
 
-                Spacer(modifier = Modifier.height(24.dp))
+              // First name
+              OutlinedTextField(
+                  value = firstname,
+                  onValueChange = { firstname = it },
+                  label = { Text("First Name") },
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.FIRSTNAME_FIELD))
 
-                // First name
-                OutlinedTextField(
-                    value = firstname,
-                    onValueChange = { firstname = it },
-                    label = { Text("First Name") },
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.FIRSTNAME_FIELD))
+              Spacer(modifier = Modifier.height(12.dp))
 
+              // Last name
+              OutlinedTextField(
+                  value = lastname,
+                  onValueChange = { lastname = it },
+                  label = { Text("Last Name") },
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LASTNAME_FIELD))
+
+              Spacer(modifier = Modifier.height(12.dp))
+
+              // Description
+              OutlinedTextField(
+                  value = description,
+                  onValueChange = { description = it },
+                  label = { Text("Description") },
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.DESCRIPTION_FIELD))
+
+              if (!user.isGoogleAccount) {
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Last name
+                // Password
                 OutlinedTextField(
-                    value = lastname,
-                    onValueChange = { lastname = it },
-                    label = { Text("Last Name") },
+                    value = "********",
+                    onValueChange = {},
+                    label = { Text("Password") },
+                    enabled = true,
+                    readOnly = true,
                     modifier =
-                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LASTNAME_FIELD))
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Description
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text("Description") },
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .testTag(EditProfileScreenTestTags.DESCRIPTION_FIELD))
-
-                if (!user.isGoogleAccount) {
-                  Spacer(modifier = Modifier.height(12.dp))
-
-                  // Password
-                  OutlinedTextField(
-                      value = "********",
-                      onValueChange = {},
-                      label = { Text("Password") },
-                      enabled = true,
-                      readOnly = true,
-                      modifier =
-                          Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
-                      keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                      trailingIcon = {
-                        IconButton(
-                            onClick = { onPasswordChange() },
-                            modifier = Modifier.testTag(PASSWORD_BUTTON)) {
-                              Icon(Icons.Default.Edit, contentDescription = "Edit Password")
-                            }
-                      })
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Address
-                OutlinedTextField(
-                    value = address,
-                    onValueChange = { address = it },
-                    label = {
-                      when (userRole) {
-                        UserRole.FARMER -> Text("Farm Address")
-                        UserRole.VET -> Text("Clinic Address")
-                      }
-                    },
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
-                // TODO: right now addresses are displayed as Location(...), I think we will change
-                // this once we work on the implementation of Location in more details.
-
-                // Default Vet Selection and Code Input (Farmers only)
-                if (user is Farmer) {
-                  Spacer(modifier = Modifier.height(12.dp))
-
-                  if ((user as Farmer).linkedVets.isEmpty()) {
-                    Text(
-                        text = "You need to add vets before choosing your default one.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(vertical = 4.dp))
-                  }
-
-                  ExposedDropdownMenuBox(
-                      expanded = expandedVetDropdown,
-                      onExpandedChange = { expandedVetDropdown = !expandedVetDropdown }) {
-                        OutlinedTextField(
-                            value = selectedDefaultVet,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Default Vet") },
-                            trailingIcon = {
-                              ExposedDropdownMenuDefaults.TrailingIcon(
-                                  expanded = expandedVetDropdown)
-                            },
-                            modifier =
-                                Modifier.menuAnchor()
-                                    .fillMaxWidth()
-                                    .testTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN))
-                        ExposedDropdownMenu(
-                            expanded = expandedVetDropdown,
-                            onDismissRequest = { expandedVetDropdown = false }) {
-                              (user as Farmer).linkedVets.forEach { vetId ->
-                                DropdownMenuItem(
-                                    text = { Text("Vet $vetId") }, // Placeholder name display
-                                    onClick = {
-                                      selectedDefaultVet = vetId
-                                      expandedVetDropdown = false
-                                    })
-                              }
-                            }
-                      }
-                }
+                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    trailingIcon = {
+                      IconButton(
+                          onClick = { onPasswordChange() },
+                          modifier = Modifier.testTag(PASSWORD_BUTTON)) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit Password")
+                          }
+                    })
               }
 
-              if (user is Farmer) {
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                OutlinedTextField(
-                    value = vetCode,
-                    onValueChange = { vetCode = it },
-                    label = { Text("Enter Vet Code") },
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.CODE_FIELD))
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Button(
-                    onClick = {
-                      if (vetCode.isBlank()) {
-                        scope.launch { snackbarHostState.showSnackbar("Please enter a code.") }
-                      } else {
-                        profileViewModel.claimVetCode(vetCode)
-                      }
-                    },
-                    modifier =
-                        Modifier.align(Alignment.CenterHorizontally)
-                            .testTag(EditProfileScreenTestTags.ADD_CODE_BUTTON)) {
-                      Text("Add Vet")
+              Spacer(modifier = Modifier.height(12.dp))
+              if (user is Vet && !isOwner) {
+                Text(
+                    text = "Only office owners can change their address.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 4.dp))
+              }
+              // Address
+              OutlinedTextField(
+                  value = address,
+                  onValueChange = { address = it },
+                  readOnly = true,
+                  singleLine = true,
+                  label = {
+                    when (userRole) {
+                      UserRole.FARMER -> Text("Farm Address")
+                      UserRole.VET -> Text("Clinic Address")
                     }
+                  },
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
+              Button(
+                  onClick = onChangeLocation,
+                  enabled = user !is Vet || isOwner,
+                  modifier =
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LOCATION_BUTTON)) {
+                    Text("Change Location")
+                  }
+
+              // Default Vet Selection and Code Input (Farmers only)
+              if (user is Farmer) {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if ((user as Farmer).linkedOffices.isEmpty()) {
+                  Text(
+                      text = "You need to add offices before choosing your default one.",
+                      style = MaterialTheme.typography.bodySmall,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
+                      modifier = Modifier.padding(vertical = 4.dp))
+                }
+
+                val officeNames = remember { mutableStateMapOf<String, String>() }
+
+                // For each linked office, load their name
+                (user as Farmer).linkedOffices.forEach { officeId ->
+                  val vm: OfficeNameViewModel = viewModel(key = officeId)
+                  val uiState by vm.uiState.collectAsState()
+
+                  LaunchedEffect(officeId) {
+                    vm.loadOffice(
+                        uid = officeId, deletedOffice = "Deleted office", noneOffice = "Unassigned")
+                  }
+
+                  officeNames[officeId] = uiState
+                }
+
+                val selectedOfficeName = officeNames[selectedDefaultOffice] ?: "Unassigned"
+
+                ExposedDropdownMenuBox(
+                    expanded = expandedVetDropdown,
+                    onExpandedChange = { expandedVetDropdown = !expandedVetDropdown }) {
+                      OutlinedTextField(
+                          value = selectedOfficeName,
+                          onValueChange = {},
+                          readOnly = true,
+                          label = { Text("Default Office") },
+                          trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVetDropdown)
+                          },
+                          modifier =
+                              Modifier.menuAnchor()
+                                  .fillMaxWidth()
+                                  .testTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN))
+
+                      ExposedDropdownMenu(
+                          expanded = expandedVetDropdown,
+                          onDismissRequest = { expandedVetDropdown = false }) {
+                            (user as Farmer).linkedOffices.forEach { officeId ->
+                              val displayName = officeNames[officeId] ?: officeId
+
+                              DropdownMenuItem(
+                                  text = { Text(displayName) },
+                                  onClick = {
+                                    selectedDefaultOffice = officeId
+                                    expandedVetDropdown = false
+                                  })
+                            }
+                          }
+                    }
+                CollectedSwitch(collected, { collected = !collected }, true)
               }
 
               // Active Codes (Vets only)
               if (user is Vet) {
                 Spacer(modifier = Modifier.height(16.dp))
-                val codes = (user as Vet).validCodes
-                if (codes.isNotEmpty()) ActiveCodeList(codes, snackbarHostState)
+                if (farmerCodes.isNotEmpty())
+                    ActiveCodeList(CodeType.FARMER, farmerCodes, snackbarHostState)
+                if (vetCodes.isNotEmpty()) ActiveCodeList(CodeType.VET, vetCodes, snackbarHostState)
               }
 
               Spacer(modifier = Modifier.weight(1f))
@@ -283,15 +325,19 @@ fun EditProfileScreen(
                               (user as? Farmer)?.copy(
                                   firstname = firstname,
                                   lastname = lastname,
-                                  address = user.address?.copy(name = address),
-                                  defaultVet = selectedDefaultVet,
-                                  description = updatedDescription)
-                          UserRole.VET ->
-                              (user as? Vet)?.copy(
-                                  firstname = firstname,
-                                  lastname = lastname,
-                                  address = user.address?.copy(name = address),
-                                  description = updatedDescription)
+                                  address = pickedLocation,
+                                  defaultOffice = selectedDefaultOffice,
+                                  description = updatedDescription,
+                                  collected = collected)
+                          UserRole.VET -> {
+                            manageOfficeVm.updateOffice(newAddress = pickedLocation)
+                            (user as? Vet)?.copy(
+                                firstname = firstname,
+                                lastname = lastname,
+                                address = pickedLocation,
+                                description = updatedDescription,
+                                collected = collected)
+                          }
                         }
                     updatedUser?.let { onSave(it) }
                   },
@@ -349,7 +395,7 @@ fun EditProfileScreenPreviewVet() {
 
 @Composable
 /** Creates an expandable list of every given code, along a "copy to clipboard" button */
-fun ActiveCodeList(codes: List<String>, snackbarHostState: SnackbarHostState) {
+fun ActiveCodeList(type: CodeType, codes: List<String>, snackbarHostState: SnackbarHostState) {
   var expanded by remember { mutableStateOf(false) }
 
   Column(modifier = Modifier.fillMaxWidth()) {
@@ -359,10 +405,10 @@ fun ActiveCodeList(codes: List<String>, snackbarHostState: SnackbarHostState) {
             Modifier.fillMaxWidth()
                 .clickable { expanded = !expanded }
                 .padding(horizontal = 12.dp, vertical = 10.dp)
-                .testTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN),
+                .testTag(EditProfileScreenTestTags.dropdownTag(type.name)),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically) {
-          Text(text = "Active codes")
+          Text(text = type.displayName())
           Icon(
               imageVector =
                   if (expanded) Icons.Default.KeyboardArrowDown
@@ -380,7 +426,8 @@ fun ActiveCodeList(codes: List<String>, snackbarHostState: SnackbarHostState) {
                 Text(
                     text = code,
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.testTag(EditProfileScreenTestTags.ACTIVE_CODE_ELEMENT))
+                    modifier =
+                        Modifier.testTag(EditProfileScreenTestTags.dropdownElementTag(type.name)))
                 CopyToClipboardButton(code, snackbarHostState)
               }
         }

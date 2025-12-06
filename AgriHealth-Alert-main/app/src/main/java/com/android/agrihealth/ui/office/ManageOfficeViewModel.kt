@@ -2,10 +2,11 @@ package com.android.agrihealth.ui.office
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.UserViewModelContract
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -20,7 +21,7 @@ data class ManageOfficeUiState(
 )
 
 class ManageOfficeViewModel(
-    private val userViewModel: UserViewModel,
+    private val userViewModel: UserViewModelContract,
     private val officeRepository: OfficeRepository
 ) : ViewModel() {
 
@@ -71,7 +72,7 @@ class ManageOfficeViewModel(
 
         try {
           // Remove officeId from vet first
-          userViewModel.updateVetOfficeId(null)
+          userViewModel.updateUser(user.copy(officeId = null, address = null))
 
           // Remove vet from office list
           val updatedOffice = office.copy(vets = office.vets.filterNot { it == user.uid })
@@ -84,15 +85,14 @@ class ManageOfficeViewModel(
         }
       }
 
-  fun updateOffice(onSuccess: () -> Unit = {}) =
+  fun updateOffice(onSuccess: () -> Unit = {}, newAddress: Location? = null) =
       viewModelScope.launch {
         val office = _uiState.value.office ?: return@launch
         val updatedOffice =
             office.copy(
                 name = _uiState.value.editableName,
                 description = _uiState.value.editableDescription,
-                // TODO: convert editableAddress back to Location when ready
-            )
+                address = newAddress)
         officeRepository.updateOffice(updatedOffice)
         _uiState.value = _uiState.value.copy(office = updatedOffice)
         onSuccess()

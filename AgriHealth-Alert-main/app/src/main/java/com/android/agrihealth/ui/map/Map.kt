@@ -5,7 +5,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Preview
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.DropdownMenuItem
@@ -34,7 +32,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -49,41 +46,30 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.R
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.core.design.theme.statusColor
-import com.android.agrihealth.data.model.device.location.LocationViewModel
-import com.android.agrihealth.data.model.device.location.locationPermissionsRequester
-import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.device.location.LocationPermissionsRequester
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
-import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
-import com.android.agrihealth.ui.user.UserViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
@@ -112,21 +98,18 @@ const val AllFilterText = "All reports"
 @Composable
 fun MapScreen(
     mapViewModel: MapViewModel = viewModel(),
-    userViewModel: UserViewModel = viewModel(),
-    locationViewModel: LocationViewModel = viewModel(),
     navigationActions: NavigationActions? = null,
     isViewedFromOverview: Boolean = true,
-    startingPosition: Location? = null
+    forceStartingPosition: Boolean = false
 ) {
   val uiState by mapViewModel.uiState.collectAsState()
-  val user by userViewModel.user.collectAsState()
   var selectedFilter by remember { mutableStateOf<String?>(null) }
 
   val mapInitialLocation by mapViewModel.startingLocation.collectAsState()
   val mapInitialZoom by mapViewModel.zoom.collectAsState()
   val cameraPositionState = rememberCameraPositionState {}
 
-  LaunchedEffect(startingPosition) { mapViewModel.setStartingLocation(startingPosition) }
+  if (forceStartingPosition) mapViewModel.setStartingLocation(mapInitialLocation)
 
   LaunchedEffect(mapInitialLocation) {
     cameraPositionState.position =
@@ -134,21 +117,9 @@ fun MapScreen(
             LatLng(mapInitialLocation.latitude, mapInitialLocation.longitude), mapInitialZoom)
   }
 
-  LaunchedEffect(user.uid) { mapViewModel.refreshReports(user.uid) }
-
   val selectedReport = mapViewModel.selectedReport.collectAsState()
 
-  val googleMapUiSettings = remember {
-    MapUiSettings(
-        zoomControlsEnabled = false,
-    )
-  }
-  val context = LocalContext.current
-  val darkTheme = isSystemInDarkTheme()
-  val styleRes = if (darkTheme) R.raw.map_style_dark else R.raw.map_style_light
-  val style = MapStyleOptions.loadRawResourceStyle(context, styleRes)
-
-  val googleMapMapProperties = remember(style) { MapProperties(mapStyleOptions = style) }
+  val (googleMapUiSettings, googleMapMapProperties) = getUISettingsAndTheme()
 
   // Floating button Position
   var reportBoxHeightPx by remember { mutableIntStateOf(0) }
@@ -156,138 +127,112 @@ fun MapScreen(
 
   // Convert pixels to dp for layout use
   val reportBoxHeightDp = with(density) { reportBoxHeightPx.toDp() }
-  LoadingOverlay(isLoading = uiState.isLoading) {
-    Scaffold(
-        topBar = { if (!isViewedFromOverview) MapTopBar(onBack = { navigationActions?.goBack() }) },
-        bottomBar = {
-          if (isViewedFromOverview)
-              BottomNavigationMenu(
-                  selectedTab = Tab.Map,
-                  onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
-                  modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
-        },
-        content = { pd ->
-          Box(modifier = Modifier.fillMaxSize().padding(pd)) {
-            if (!uiState.locationPermission) {
-              if (locationPermissionsRequester(locationViewModel)) {
-                mapViewModel.refreshMapPermission()
+
+  Scaffold(
+      topBar = { if (!isViewedFromOverview) MapTopBar(onBack = { navigationActions?.goBack() }) },
+      bottomBar = {
+        if (isViewedFromOverview)
+            BottomNavigationMenu(
+                selectedTab = Tab.Map,
+                onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
+                modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
+      },
+      content = { pd ->
+        Box(modifier = Modifier.fillMaxSize().padding(pd)) {
+          if (!uiState.locationPermission) {
+            LocationPermissionsRequester(onComplete = { mapViewModel.refreshMapPermission() })
+          }
+          GoogleMap(
+              cameraPositionState = cameraPositionState,
+              properties = googleMapMapProperties,
+              uiSettings = googleMapUiSettings,
+              modifier = Modifier.testTag(MapScreenTestTags.GOOGLE_MAP_SCREEN),
+              onMapClick = { mapViewModel.setSelectedReport(null) }) {
+                mapViewModel
+                    .spiderifiedReports()
+                    .filter { it ->
+                      selectedFilter == null || it.report.status.displayString() == selectedFilter
+                    }
+                    .forEach { it ->
+                      val report = it.report
+                      val markerSize = if (report.id == selectedReport.value?.id) 60f else 40f
+                      val markerIcon =
+                          createCircleMarker(statusColor(report.status).toArgb(), markerSize)
+                      Marker(
+                          state = MarkerState(position = it.position),
+                          anchor = Offset(0.5f, 0.5f),
+                          title = report.title,
+                          snippet = report.description,
+                          icon = markerIcon,
+                          onClick = {
+                            mapViewModel.setSelectedReport(
+                                if (selectedReport.value == report) null else report)
+                            true
+                          },
+                      /*tag = testTag*/ )
+                      Polyline(points = listOf(it.position, it.center), width = 5f)
+                    }
               }
-            }
-            GoogleMap(
-                cameraPositionState = cameraPositionState,
-                properties = googleMapMapProperties,
-                uiSettings = googleMapUiSettings,
-                modifier = Modifier.testTag(MapScreenTestTags.GOOGLE_MAP_SCREEN),
-                onMapClick = { mapViewModel.setSelectedReport(null) }) {
-                  mapViewModel
-                      .spiderifiedReports()
-                      .filter { it ->
-                        selectedFilter == null || it.report.status.displayString() == selectedFilter
-                      }
-                      .forEach { it ->
-                        val report = it.report
-                        val markerSize = if (report.id == selectedReport.value?.id) 60f else 40f
-                        val markerIcon =
-                            createCircleMarker(statusColor(report.status).toArgb(), markerSize)
-                        Marker(
-                            state = MarkerState(position = it.position),
-                            anchor = Offset(0.5f, 0.5f),
-                            title = report.title,
-                            snippet = report.description,
-                            icon = markerIcon,
-                            onClick = {
+
+          // Debug box to make tests work
+          // Because Google map markers aren't accessible in compose tests, so I have to make this
+          // item
+          // If the box is empty or has size 0, the composable doesn't exist and tests fail
+          // Yes, this sucks
+          uiState.reports
+              .filter { report ->
+                selectedFilter == null || report.status.displayString() == selectedFilter
+              }
+              .forEach { report ->
+                Box(
+                    modifier =
+                        Modifier.testTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
+                            .clickable {
                               mapViewModel.setSelectedReport(
                                   if (selectedReport.value == report) null else report)
-                              true
-                            },
-                        /*tag = testTag*/ )
-                        Polyline(points = listOf(it.position, it.center), width = 5f)
-                      }
-                }
+                            }
+                            .alpha(0f)
+                            .size(1.dp)) {
+                      Text(":)")
+                    }
+              }
 
-            // Debug box to make tests work
-            // Because Google map markers aren't accessible in compose tests, so I have to make this
-            // item
-            // If the box is empty or has size 0, the composable doesn't exist and tests fail
-            // Yes, this sucks
-            uiState.reports
-                .filter { report ->
-                  selectedFilter == null || report.status.displayString() == selectedFilter
-                }
-                .forEach { report ->
-                  Box(
-                      modifier =
-                          Modifier.testTag(MapScreenTestTags.getTestTagForReportMarker(report.id))
-                              .clickable {
-                                mapViewModel.setSelectedReport(
-                                    if (selectedReport.value == report) null else report)
-                              }
-                              .alpha(0f)
-                              .size(1.dp)) {
-                        Text(":)")
-                      }
-                }
-
-            if (isViewedFromOverview) {
-              val options = listOf(null) + ReportStatus.entries.map { it.displayString() }
-              FilterDropdown(options, selectedFilter) { selectedFilter = it }
-            }
-
-            FloatingActionButton(
-                modifier =
-                    Modifier.align(Alignment.BottomEnd)
-                        .padding(
-                            end = 16.dp,
-                            bottom =
-                                if (selectedReport.value != null) reportBoxHeightDp + 16.dp
-                                else 16.dp)
-                        .testTag(MapScreenTestTags.REFRESH_BUTTON),
-                onClick = {
-                  mapViewModel.refreshCameraPosition()
-
-                  val newPos = mapViewModel.startingLocation.value
-                  val newLat = newPos.latitude
-                  val newLng = newPos.longitude
-                  val newZoom = mapViewModel.zoom.value
-
-                  cameraPositionState.move(
-                      CameraUpdateFactory.newLatLngZoom(LatLng(newLat, newLng), newZoom))
-                }) {
-                  Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh Location")
-                }
-
-            ShowReportInfo(
-                modifier =
-                    Modifier.onGloballyPositioned { coordinates ->
-                      reportBoxHeightPx = coordinates.size.height
-                    },
-                report = selectedReport.value,
-                onReportClick = { navigationActions?.navigateTo(Screen.ViewReport(it)) })
+          if (isViewedFromOverview) {
+            val options = listOf(null) + ReportStatus.entries.map { it.displayString() }
+            FilterDropdown(options, selectedFilter) { selectedFilter = it }
           }
-        })
-  }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MapTopBar(onBack: () -> Unit) {
-  TopAppBar(
-      title = {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically) {
-              Text(
-                  text = "Map",
-                  style = MaterialTheme.typography.titleLarge,
-                  modifier = Modifier.weight(1f).testTag(MapScreenTestTags.TOP_BAR_MAP_TITLE))
-            }
-      },
-      navigationIcon = {
-        IconButton(
-            onClick = onBack, modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
-              Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-            }
+          FloatingActionButton(
+              modifier =
+                  Modifier.align(Alignment.BottomEnd)
+                      .padding(
+                          end = 16.dp,
+                          bottom =
+                              if (selectedReport.value != null) reportBoxHeightDp + 16.dp
+                              else 16.dp)
+                      .testTag(MapScreenTestTags.REFRESH_BUTTON),
+              onClick = {
+                mapViewModel.refreshCameraPosition()
+
+                val newPos = mapViewModel.startingLocation.value
+                val newLat = newPos.latitude
+                val newLng = newPos.longitude
+                val newZoom = mapViewModel.zoom.value
+
+                cameraPositionState.move(
+                    CameraUpdateFactory.newLatLngZoom(LatLng(newLat, newLng), newZoom))
+              }) {
+                Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh Location")
+              }
+
+          ShowReportInfo(
+              modifier =
+                  Modifier.onGloballyPositioned { coordinates ->
+                    reportBoxHeightPx = coordinates.size.height
+                  },
+              report = selectedReport.value,
+              onReportClick = { navigationActions?.navigateTo(Screen.ViewReport(it)) })
+        }
       })
 }
 
@@ -437,10 +382,14 @@ fun createCircleMarker(color: Int, radius: Float = 40f, strokeWidth: Float = 8f)
   return BitmapDescriptorFactory.fromBitmap(bitmap)
 }
 
+// Preview composable functions
+/*
 // @Preview
 @Composable
 fun PreviewMapScreen() {
-  AgriHealthAppTheme { MapScreen(startingPosition = Location(46.7990813, 6.6264253)) }
+  LocationRepositoryProvider.repository = LocationRepository(LocalContext.current)
+  val mapViewModel = MapViewModel(startingPosition = Location(46.7990813, 6.6264253), locationViewModel = LocationViewModel())
+  AgriHealthAppTheme { MapScreen(mapViewModel) }
 }
 
 // @Preview
@@ -462,7 +411,7 @@ fun PreviewReportInfo() {
               "very very very very very very very very very very very very very very very very very long description",
           questionForms = emptyList(),
           farmerId = "farmer id",
-          vetId = "vetId",
+          officeId = "offId",
           status = ReportStatus.IN_PROGRESS,
           answer = "answer to the report",
           location = null,
@@ -474,3 +423,4 @@ fun PreviewReportInfo() {
     )
   }
 }
+*/

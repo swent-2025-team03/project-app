@@ -1,6 +1,7 @@
 package com.android.agrihealth.testutil
 
 import androidx.lifecycle.ViewModel
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
@@ -23,6 +24,10 @@ open class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
                       MCQO("MCQO Question 1", listOf("Option A", "Option B"), -1, ""))))
   override val uiState: StateFlow<AddReportUiState> = _uiState
 
+  override fun switchCollected() {
+    _uiState.value = _uiState.value.copy(collected = !uiState.value.collected)
+  }
+
   override fun setTitle(newTitle: String) {
     _uiState.value = _uiState.value.copy(title = newTitle)
   }
@@ -31,8 +36,12 @@ open class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
     _uiState.value = _uiState.value.copy(description = newDescription)
   }
 
-  override fun setVet(option: String) {
-    _uiState.value = _uiState.value.copy(chosenVet = option)
+  override fun setOffice(officeId: String) {
+    _uiState.value = _uiState.value.copy(chosenOffice = officeId)
+  }
+
+  override fun setAddress(address: Location?) {
+    _uiState.value = _uiState.value.copy(address = address)
   }
 
   override fun updateQuestion(index: Int, updated: QuestionForm) {

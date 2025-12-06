@@ -2,6 +2,8 @@ package com.android.agrihealth.data.model.firebase.emulators
 
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.Vet
 import kotlinx.coroutines.test.runTest
@@ -37,17 +39,19 @@ open class FirebaseEmulatorsTest() {
           "Rushia",
           "Uruha",
           "email1@thing.com",
-          null,
-          listOf("Best Vet Ever!", "Meh Vet"),
+          Location(latitude = 46.5191, longitude = 6.5668),
+          listOf("Best Office Ever!", "Meh Office."),
           "Test?")
   val user2 = Farmer("def456", "mike", "neko", "email2@aaaaa.balls", null, emptyList(), null)
-  val user3 = Vet("ghi789", "Nazuna", "Amemiya", "email3@kms.josh", null)
+  val user3 = Vet("ghi789", "Nazuna", "Amemiya", "email3@kms.josh", null, officeId = "off1")
   val user4 = Farmer("jklABC", "John", "Fake", "fakeUser.glorp", null, emptyList(), null)
 
   val password1 = "Password123"
   val password2 = "iamaweakpassword"
   val password3 = "12345678"
   val password4 = "weak"
+
+  val office1 = Office("off1", "o", ownerId = user3.uid)
 
   // from Bootcamp
   private fun clearEmulator(endpoint: String) {
@@ -60,8 +64,6 @@ open class FirebaseEmulatorsTest() {
 
   @Before
   open fun setUp() {
-    // FirebaseEmulatorsManager.linkEmulators()
-
     runTest {
       clearEmulator(authEndpoint)
       clearEmulator(firestoreEndpoint)

@@ -17,12 +17,13 @@ kaspresso = "1.5.5"
 materialIconsExtended = "<version>"
 robolectric = "4.11.1"
 sonar = "6.3.1.5724"
-firebaseAuthKtx = "24.0.1"
-firebaseFirestoreKtx = "26.0.1"
 navigationCompose = "2.7.7"
 firebaseAuth = "24.0.1"
 firebaseDatabase = "22.0.1"
 firebaseFirestore = "26.0.1"
+firebaseStorage = "22.0.1"
+firebaseMessaging = "25.0.1"
+firebaseFunctions = "22.1.0"
 okhttp = "4.12.0"
 playServicesAuth = "21.2.0"
 playServicesMaps = "19.0.0"
@@ -38,9 +39,14 @@ mockkAndroid = "1.13.7"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
+
 firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuth" }
 firebase-database = { module = "com.google.firebase:firebase-database", version.ref = "firebaseDatabase" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore", version.ref = "firebaseFirestore" }
+firebase-storage = { module = "com.google.firebase:firebase-storage", version.ref = "firebaseStorage" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging", version.ref = "firebaseMessaging"}
+firebase-functions = { module = "com.google.firebase:firebase-functions", version.ref = "firebaseFunctions"}
+
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -63,8 +69,6 @@ kaspresso = { group = "com.kaspersky.android-components", name = "kaspresso", ve
 kaspresso-compose = { group = "com.kaspersky.android-components", name = "kaspresso-compose-support", version.ref = "kaspresso" }
 
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
-firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
-firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }

@@ -1,42 +1,26 @@
 package com.android.agrihealth.data.model.device.location
 
 import android.Manifest
-import android.content.pm.PackageManager
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.device.PermissionsRequester
 
+/**
+ * Creates a system Android pop up asking the user for the app to use their fine location
+ *
+ * @param onGranted Action to take if all location permissions have been granted
+ * @param onDenied Action to take if any location permission has been denied
+ * @param onComplete Action to take regardless of the user's choice
+ */
 @Composable
-fun locationPermissionsRequester(locationViewModel: LocationViewModel = viewModel()): Boolean {
-  val context = LocalContext.current
+fun LocationPermissionsRequester(
+    onGranted: () -> Unit = {},
+    onDenied: () -> Unit = {},
+    onComplete: () -> Unit = {}
+) {
   val permissions =
       arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
 
-  val granted = remember {
-    mutableStateOf(
-        permissions.all {
-          ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
-        })
-  }
-
-  val locationPermissionRequest =
-      rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-          results ->
-        granted.value = results.values.all { it } // every permission granted
-      }
-
-  LaunchedEffect(Unit) {
-    if (!granted.value) locationPermissionRequest.launch(permissions)
-    else locationViewModel.getLastKnownLocation()
-  }
-  return granted.value
+  PermissionsRequester(permissions, onGranted, onDenied, onComplete)
 }
 
 // TODO: Remove this block once location services are implemented somewhere else in the app
@@ -50,7 +34,7 @@ fun LocationTestScreen() {
 
     val location by viewModel.locationState.collectAsState()
 
-    if (locationPermissionsRequester()) viewModel.getCurrentLocation()
+    LocationPermissionsRequester(onGranted = { viewModel.getCurrentLocation() }, onDenied = { })
 
     Column(Modifier.padding(16.dp).background(color = White)) {
       Text("Device Location")
@@ -62,4 +46,5 @@ fun LocationTestScreen() {
       }
     }
   }
-}*/
+}
+*/

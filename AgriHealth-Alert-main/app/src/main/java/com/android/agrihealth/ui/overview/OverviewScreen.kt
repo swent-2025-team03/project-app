@@ -1,43 +1,53 @@
 package com.android.agrihealth.ui.overview
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import com.android.agrihealth.core.design.theme.statusColor
+import com.android.agrihealth.core.design.theme.zoneColor
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
+import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
-import com.android.agrihealth.ui.loading.LoadingOverlay
+import com.android.agrihealth.ui.common.OfficeName
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
+import kotlinx.coroutines.launch
 
 // -- imports for preview --
 /*
 import androidx.compose.ui.tooling.preview.Preview
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.testutil.FakeOverviewViewModel
 */
 
 object OverviewScreenTestTags {
@@ -48,8 +58,10 @@ object OverviewScreenTestTags {
   const val REPORT_ITEM = "reportItem"
   const val PROFILE_BUTTON = "ProfileButton"
   const val STATUS_DROPDOWN = "StatusFilterDropdown"
-  const val VET_ID_DROPDOWN = "VetIdFilterDropdown"
+  const val OFFICE_ID_DROPDOWN = "OfficeIdFilterDropdown"
   const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
+
+  fun alertItemTag(page: Int) = "ALERT_ITEM_$page"
 }
 
 /**
@@ -60,15 +72,17 @@ object OverviewScreenTestTags {
  * @param reports List of report to display kept only for backward compatibility and shouldn't be
  *   used
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun OverviewScreen(
     userRole: UserRole,
     credentialManager: CredentialManager = CredentialManager.create(LocalContext.current),
-    userId: String,
+    user: User,
     overviewViewModel: OverviewViewModelContract,
     onAddReport: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
+    onAlertClick: (String) -> Unit = {},
+    onLogin: () -> Unit = {},
     navigationActions: NavigationActions? = null
 ) {
 
@@ -76,177 +90,183 @@ fun OverviewScreen(
   val density = LocalDensity.current
   var lazySpace by remember { mutableStateOf(0.dp) }
   val minLazySpace = remember { 150.dp }
+  val snackbarHostState = remember { SnackbarHostState() }
 
-  LaunchedEffect(userId) { overviewViewModel.loadReports(userRole, userId) }
-
-  LoadingOverlay(isLoading = uiState.isLoading) {
-    Scaffold(
-        // -- Top App Bar with logout icon --
-        topBar = {
-          TopAppBar(
-              title = {
-                Text(
-                    "Overview",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE))
-              },
-              navigationIcon = {
-                IconButton(
-                    onClick = { navigationActions?.navigateTo(Screen.Profile) },
-                    modifier = Modifier.testTag("ProfileButton")) {
-                      Icon(
-                          imageVector = Icons.Default.AccountCircle, contentDescription = "Profile")
-                    }
-              },
-              actions = {
-                IconButton(
-                    onClick = {
-                      overviewViewModel.signOut(credentialManager)
-                      navigationActions?.navigateToAuthAndClear()
-                    },
-                    modifier = Modifier.testTag(OverviewScreenTestTags.LOGOUT_BUTTON)) {
-                      Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Sign Out")
-                    }
-              })
-        },
-
-        // -- Bottom navigation menu --
-        bottomBar = {
-          BottomNavigationMenu(
-              selectedTab = Tab.Overview,
-              onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
-              modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
-        },
-
-        // -- Main content area --
-        content = { paddingValues ->
-          val topPadding = paddingValues.calculateTopPadding()
-          val bottomPadding = paddingValues.calculateBottomPadding()
-          BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val screen = this.maxHeight
-            Column(
-                modifier =
-                    Modifier.padding(paddingValues)
-                        .padding(horizontal = 16.dp)
-                        .onSizeChanged { size ->
-                          with(density) {
-                            lazySpace =
-                                screen - size.height.toDp() - topPadding - bottomPadding +
-                                    maxOf(minLazySpace, lazySpace)
-                          }
-                        }
-                        .testTag(OverviewScreenTestTags.SCREEN)
-                        .verticalScroll(rememberScrollState())) {
-                  // -- Latest alert section --
-                  Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
-
-                  Spacer(modifier = Modifier.height(12.dp))
-                  LatestAlertCard()
-
-                  Spacer(modifier = Modifier.height(24.dp))
-
-                  // -- Create a new report buton --
-                  // Display the button only if the user role is FARMER
-                  if (userRole == UserRole.FARMER) {
-                    Button(
-                        onClick = onAddReport,
-                        modifier =
-                            Modifier.align(Alignment.CenterHorizontally)
-                                .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
-                          Text("Create a new report")
-                        }
+  LaunchedEffect(user) {
+    overviewViewModel.loadReports(user)
+    overviewViewModel.loadAlerts(user)
+    onLogin()
+  }
+  Scaffold(
+      // -- Top App Bar with logout icon --
+      topBar = {
+        TopAppBar(
+            title = {
+              Text(
+                  "Overview",
+                  style = MaterialTheme.typography.titleLarge,
+                  modifier = Modifier.testTag(NavigationTestTags.TOP_BAR_TITLE))
+            },
+            navigationIcon = {
+              IconButton(
+                  onClick = { navigationActions?.navigateTo(Screen.Profile) },
+                  modifier = Modifier.testTag("ProfileButton")) {
+                    Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "Profile")
                   }
+            },
+            actions = {
+              IconButton(
+                  onClick = {
+                    overviewViewModel.signOut(credentialManager)
+                    navigationActions?.navigateToAuthAndClear()
+                  },
+                  modifier = Modifier.testTag(OverviewScreenTestTags.LOGOUT_BUTTON)) {
+                    Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Sign Out")
+                  }
+            })
+      },
 
-                  Spacer(modifier = Modifier.height(15.dp))
-                  // -- Past reports list --
-                  Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
-                  Spacer(modifier = Modifier.height(12.dp))
+      // -- Bottom navigation menu --
+      bottomBar = {
+        BottomNavigationMenu(
+            selectedTab = Tab.Overview,
+            onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
+            modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
+      },
+      snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
 
-                  Row(
-                      verticalAlignment = Alignment.CenterVertically,
-                      modifier = Modifier.fillMaxWidth()) {
-                        // -- Status filter --
-                        DropdownMenuWrapper(
-                            options = listOf(null) + ReportStatus.entries,
-                            selectedOption = uiState.selectedStatus,
-                            onOptionSelected = {
-                              overviewViewModel.updateFilters(
-                                  it, uiState.selectedVet, uiState.selectedFarmer)
-                            },
-                            modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN),
-                            placeholder = "Filter by status",
-                            labelProvider = { status -> status?.displayString() ?: "-" })
-                        Spacer(modifier = Modifier.width(8.dp))
-                        if (userRole == UserRole.FARMER) {
-                          // -- VetId filter (only for farmer) --
-                          DropdownMenuWrapper(
-                              options = listOf(null) + uiState.vetOptions,
-                              selectedOption = uiState.selectedVet,
-                              onOptionSelected = {
-                                overviewViewModel.updateFilters(
-                                    status = uiState.selectedStatus,
-                                    vetId = it,
-                                    farmerId = uiState.selectedFarmer)
-                              },
-                              modifier = Modifier.testTag(OverviewScreenTestTags.VET_ID_DROPDOWN),
-                              placeholder = "Filter by vets")
-                        } else if (userRole == UserRole.VET) {
-                          // -- FarmerId filter (only for vet) --
-                          DropdownMenuWrapper(
-                              options = listOf(null) + uiState.farmerOptions,
-                              selectedOption = uiState.selectedFarmer,
-                              onOptionSelected = {
-                                overviewViewModel.updateFilters(
-                                    status = uiState.selectedStatus,
-                                    vetId = uiState.selectedVet,
-                                    farmerId = it)
-                              },
-                              modifier =
-                                  Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN),
-                              placeholder = "Filter by farmers")
+      // -- Main content area --
+      content = { paddingValues ->
+        val topPadding = paddingValues.calculateTopPadding()
+        val bottomPadding = paddingValues.calculateBottomPadding()
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+          val screen = this.maxHeight
+          Column(
+              modifier =
+                  Modifier.padding(paddingValues)
+                      .padding(horizontal = 16.dp)
+                      .onSizeChanged { size ->
+                        with(density) {
+                          lazySpace =
+                              screen - size.height.toDp() - topPadding - bottomPadding +
+                                  maxOf(minLazySpace, lazySpace)
                         }
                       }
+                      .testTag(OverviewScreenTestTags.SCREEN)
+                      .verticalScroll(rememberScrollState())) {
+                // -- Latest alert section --
+                Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
 
-                  LazyColumn(modifier = Modifier.height(maxOf(lazySpace, minLazySpace))) {
-                    items(uiState.filteredReports) { report ->
-                      ReportItem(
-                          userRole = userRole,
-                          report = report,
-                          onClick = { onReportClick(report.id) },
-                      )
-                      HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-                    }
+                Spacer(modifier = Modifier.height(12.dp))
+
+                val pagerState =
+                    rememberPagerState(initialPage = 0, pageCount = { uiState.sortedAlerts.size })
+                val coroutineScope = rememberCoroutineScope()
+                val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                  if (uiState.sortedAlerts.isEmpty()) {
+                    Text(
+                        text = "No alerts available",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(16.dp))
+                  } else {
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(horizontal = (screenWidth - 350.dp) / 2),
+                        pageSpacing = 16.dp) { page ->
+                          val alertUiState = uiState.sortedAlerts[page]
+                          AlertItem(
+                              alertUiState = alertUiState,
+                              isCentered = pagerState.currentPage == page,
+                              onCenterClick = { onAlertClick(alertUiState.alert.id) },
+                              onNotCenterClick = {
+                                coroutineScope.launch { pagerState.animateScrollToPage(page) }
+                              },
+                              modifier =
+                                  Modifier.width(350.dp)
+                                      .testTag(OverviewScreenTestTags.alertItemTag(page)))
+                        }
                   }
                 }
-          }
-        })
-  }
-}
+                Spacer(modifier = Modifier.height(24.dp))
 
-/**
- * Card displaying the latest alert information. Currently uses static mock data. Future
- * implementation will fetch alerts.
- */
-@Composable
-fun LatestAlertCard() {
-  Card(modifier = Modifier.fillMaxWidth()) {
-    Column(modifier = Modifier.padding(16.dp)) {
-      // Using mock data for now, will implement the logics for LatestAlert later
-      Text("Influenza Detected", style = MaterialTheme.typography.titleMedium)
-      Text("Outbreak: 08/10/2025", style = MaterialTheme.typography.bodyMedium)
-      Text(
-          "Symptoms: Sudden drop in egg production, respiratory distress",
-          style = MaterialTheme.typography.bodyMedium)
-      Text("Region: Vaud, Switzerland", style = MaterialTheme.typography.bodyMedium)
-      Spacer(modifier = Modifier.height(8.dp))
-      // Will need to put outbreak photo
-      /*Image(
-      *    painter = painterResource(id = R.drawable.placeholder),
-      *    contentDescription = "Outbreak photo",
-      *    modifier = Modifier.height(120.dp).fillMaxWidth()
-      )*/
-    }
-  }
+                // -- Create a new report button --
+                // Display the button only if the user role is FARMER
+                if (userRole == UserRole.FARMER) {
+                  Button(
+                      onClick = onAddReport,
+                      modifier =
+                          Modifier.align(Alignment.CenterHorizontally)
+                              .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
+                        Text("Create a new report")
+                      }
+                }
+
+                Spacer(modifier = Modifier.height(15.dp))
+                // -- Past reports list --
+                Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()) {
+                      // -- Status filter --
+                      DropdownMenuWrapper(
+                          options = listOf(null) + ReportStatus.entries,
+                          selectedOption = uiState.selectedStatus,
+                          onOptionSelected = {
+                            overviewViewModel.updateFiltersForReports(
+                                it, uiState.selectedOffice, uiState.selectedFarmer)
+                          },
+                          modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN),
+                          placeholder = "Filter by status",
+                          labelProvider = { status -> status?.displayString() ?: "-" })
+                      Spacer(modifier = Modifier.width(8.dp))
+                      if (userRole == UserRole.FARMER) {
+                        // -- OfficeId filter (only for farmer) --
+                        DropdownMenuWrapper(
+                            options = listOf(null) + uiState.officeOptions,
+                            selectedOption = uiState.selectedOffice,
+                            onOptionSelected = {
+                              overviewViewModel.updateFiltersForReports(
+                                  status = uiState.selectedStatus,
+                                  officeId = it,
+                                  farmerId = uiState.selectedFarmer)
+                            },
+                            modifier = Modifier.testTag(OverviewScreenTestTags.OFFICE_ID_DROPDOWN),
+                            placeholder = "Filter by offices")
+                      } else if (userRole == UserRole.VET) {
+                        // -- FarmerId filter (only for vet) --
+                        DropdownMenuWrapper(
+                            options = listOf(null) + uiState.farmerOptions,
+                            selectedOption = uiState.selectedFarmer,
+                            onOptionSelected = {
+                              overviewViewModel.updateFiltersForReports(
+                                  status = uiState.selectedStatus,
+                                  officeId = uiState.selectedOffice,
+                                  farmerId = it)
+                            },
+                            modifier = Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN),
+                            placeholder = "Filter by farmers")
+                      }
+                    }
+
+                LazyColumn(modifier = Modifier.height(maxOf(lazySpace, minLazySpace))) {
+                  items(uiState.filteredReports) { report ->
+                    ReportItem(
+                        userRole = userRole,
+                        snackbarHostState = snackbarHostState,
+                        report = report,
+                        onClick = { onReportClick(report.id) },
+                        navigationActions = navigationActions)
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                  }
+                }
+              }
+        }
+      })
 }
 
 /** Composable displaying a simple dropdown menu for filtering or selecting options. */
@@ -285,7 +305,15 @@ fun <T> DropdownMenuWrapper(
  * description, and status tag.
  */
 @Composable
-fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
+fun ReportItem(
+    report: Report,
+    onClick: () -> Unit,
+    userRole: UserRole,
+    snackbarHostState: SnackbarHostState,
+    navigationActions: NavigationActions? = null
+) {
+  val coroutineScope = rememberCoroutineScope()
+
   Row(
       modifier =
           Modifier.fillMaxWidth()
@@ -295,17 +323,83 @@ fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
       verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
           Text(report.title, style = MaterialTheme.typography.titleSmall)
-          val uid = if (userRole == UserRole.VET) report.farmerId else report.vetId
+
           Row(verticalAlignment = Alignment.CenterVertically) {
-            // Show full name and role, no label
-            AuthorName(uid = uid, showRole = true)
+            if (userRole == UserRole.VET) {
+              AuthorName(
+                  uid = report.farmerId,
+                  onClick = { navigationActions?.navigateTo(Screen.ViewUser(report.farmerId)) })
+            } else
+                OfficeName(
+                    uid = report.officeId,
+                    onClick = {
+                      if (report.officeId.isNotBlank()) {
+                        navigationActions?.navigateTo(Screen.ViewOffice(report.officeId))
+                      } else {
+                        coroutineScope.launch {
+                          snackbarHostState.showSnackbar("This office no longer exists.")
+                        }
+                      }
+                    })
           }
           Text(
               text = report.description.let { if (it.length > 50) it.take(50) + "..." else it },
               style = MaterialTheme.typography.bodySmall,
               maxLines = 1)
         }
-        StatusTag(report.status)
+        ReportStatusTag(report.status)
+      }
+}
+
+/**
+ * Card displaying the latest alert information. Currently uses static mock data. Future
+ * implementation will fetch alerts.
+ */
+@Composable
+fun AlertItem(
+    alertUiState: AlertUiState,
+    isCentered: Boolean,
+    onCenterClick: () -> Unit,
+    onNotCenterClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+  val alert = alertUiState.alert
+  val distanceText = alertUiState.distanceToAddress?.let { "${it.toInt()} m" } ?: "Out of Zone"
+  Card(
+      onClick = {
+        if (isCentered) {
+          onCenterClick()
+        } else {
+          onNotCenterClick()
+        }
+      },
+      modifier = modifier.width(350.dp).height(120.dp),
+      elevation = CardDefaults.cardElevation(4.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+              Column(
+                  modifier = Modifier.weight(1f),
+                  verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = alert.title,
+                        style = MaterialTheme.typography.titleLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = alert.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${alert.region} • ${alert.outbreakDate}",
+                        style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(4.dp))
+                  }
+              AlertZoneTag(distanceText)
+            }
       }
 }
 
@@ -314,7 +408,7 @@ fun ReportItem(report: Report, onClick: () -> Unit, userRole: UserRole) {
  * status.
  */
 @Composable
-fun StatusTag(status: ReportStatus) {
+fun ReportStatusTag(status: ReportStatus) {
   Surface(
       color = statusColor(status),
       shape = MaterialTheme.shapes.small,
@@ -325,60 +419,50 @@ fun StatusTag(status: ReportStatus) {
             style = MaterialTheme.typography.labelSmall)
       }
 }
+
+/**
+ * Composable displaying the distance information of an alert as a colored tag. Color varies based
+ * on whether the user's address is in the zone or not.
+ */
+@Composable
+fun AlertZoneTag(distanceText: String) {
+  val isInside = !distanceText.contains("Out", ignoreCase = true)
+  Surface(
+      color = zoneColor(isInside),
+      shape = MaterialTheme.shapes.small,
+      modifier = Modifier.padding(start = 8.dp)) {
+        Text(
+            text = distanceText,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.White)
+      }
+}
 /*
 /** Preview of the OverviewScreen with dummy data. Temporarily commented out */
 @Preview(showBackground = true)
 @Composable
 fun PreviewOverviewScreen() {
-  val dummyReports =
-      listOf(
-          Report(
-              id = "1",
-              title = "Cow coughing",
-              description = "Coughing and nasal discharge observed",
-              photoUri = null,
-              farmerId = "farmer_001",
-              vetId = "vet_001",
-              status = ReportStatus.IN_PROGRESS,
-              answer = null,
-              location = null),
-          Report(
-              id = "2",
-              title = "Sheep limping",
-              description = "Limping observed in the rear leg; mild swelling noted",
-              photoUri = null,
-              farmerId = "farmer_002",
-              vetId = "vet_002",
-              status = ReportStatus.PENDING,
-              answer = null,
-              location = null))
-  val dummyUiState =
-      OverviewUIState(
-          reports = dummyReports,
-          filteredReports = dummyReports,
-          selectedStatus = null,
-          selectedVet = null,
-          selectedFarmer = null,
-          vetOptions = listOf("vet_001", "vet_002"),
-          farmerOptions = listOf("farmer_001", "farmer_002"))
-  val dummyViewModel =
-      object : OverviewViewModelContract {
-        override val uiState: StateFlow<OverviewUIState> = MutableStateFlow(dummyUiState)
+    val fakeFarmer = Farmer(
+        uid = "farmer_001",
+        firstname = "Test",
+        lastname = "Farmer",
+        email = "test@farmer.com",
+        address = Location(46.5191, 6.5668, "EPFL"),
+        linkedOffices = listOf("off_001"),
+        defaultOffice = "off_001"
+    )
+    val fakeViewModel = FakeOverviewViewModel(fakeFarmer)
 
-        override fun loadReports(userRole: UserRole, userId: String) {}
-
-        override fun updateFilters(status: ReportStatus?, vetId: String?, farmerId: String?) {}
-
-        override fun signOut(credentialManager: CredentialManager) {}
-      }
-  AgriHealthAppTheme {
-    OverviewScreen(
-        userRole = UserRole.FARMER,
-        userId = "farmer_001",
-        overviewViewModel = dummyViewModel,
-        onAddReport = {},
-        onReportClick = {},
-        navigationActions = null)
-  }
+    AgriHealthAppTheme {
+        OverviewScreen(
+            userRole = UserRole.FARMER,
+            user = fakeFarmer,
+            overviewViewModel = fakeViewModel,
+            onAddReport = {},
+            onReportClick = {},
+            onAlertClick = {}
+        )
+    }
 }
 */

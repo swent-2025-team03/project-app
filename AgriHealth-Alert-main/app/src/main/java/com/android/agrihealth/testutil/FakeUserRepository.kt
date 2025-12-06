@@ -1,40 +1,42 @@
-package com.android.agrihealth.fakes
+package com.android.agrihealth.testutil
 
 import com.android.agrihealth.data.model.authentification.UserRepository
-import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 
-class FakeUserRepository(private val userAddress: Location? = null) : UserRepository {
+private const val USER_NOT_FOUND = "User not found"
 
-  private val store = mutableMapOf<String, User>()
+class FakeUserRepository(private var targetUser: User? = null) : UserRepository {
 
-  override suspend fun getUserFromId(uid: String): Result<User> {
-    val user =
-        store[uid]
-            ?: Farmer(
-                uid = uid,
-                firstname = "Test",
-                lastname = "User",
-                email = "test@example.com",
-                address = userAddress,
-                linkedVets = emptyList(),
-                defaultVet = null,
-                isGoogleAccount = false,
-                description = null)
-    return Result.success(user)
-  }
+  /** Returns true if the in-memory user matches the given uid. */
+  private fun matches(uid: String): Boolean = targetUser?.uid == uid
 
   override suspend fun addUser(user: User) {
-    store[user.uid] = user
+    targetUser = user
   }
 
   override suspend fun updateUser(user: User) {
-    // Remplace ou insère l'utilisateur
-    store[user.uid] = user
+    if (matches(user.uid)) {
+      targetUser = user
+    } else {
+      throw NoSuchElementException(USER_NOT_FOUND)
+    }
   }
 
   override suspend fun deleteUser(uid: String) {
-    store.remove(uid)
+    if (matches(uid)) {
+      targetUser = null
+    }
+  }
+
+  override suspend fun getUserFromId(uid: String): Result<User> {
+    return getUserFromIdSync(uid)
+  }
+
+  fun getUserFromIdSync(uid: String): Result<User> {
+    return if (matches(uid)) {
+      Result.success(targetUser!!)
+    } else {
+      Result.failure(NoSuchElementException(USER_NOT_FOUND))
+    }
   }
 }
