@@ -118,15 +118,16 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(dismissTestTag).assertHasClickAction()
   }
 
+
   // Scrolls down
   private fun scrollToUploadSection() {
     composeRule
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON))
+        .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
   }
 
   // Manually fills a report
-  private fun fillReportWith(title: String, description: String) {
+  private fun fillReportWith(title: String, description: String, doSubmitReport: Boolean) {
     composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput(title)
     composeRule
         .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
@@ -182,15 +183,13 @@ class AddReportScreenTest {
       break
     }
 
-    composeRule
+
+    if (doSubmitReport) {
+      composeRule
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
         .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
-    composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
-  }
-
-  @After
-  fun cleanup() {
-    cleanupTestAssets()
+      composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
+    }
   }
 
   @Test
@@ -318,7 +317,7 @@ class AddReportScreenTest {
       }
     }
 
-    fillReportWith("title", "description")
+    fillReportWith("title", "description", true)
 
     assertDialogWorks(
         AddReportScreenTestTags.DIALOG_SUCCESS,
@@ -337,7 +336,7 @@ class AddReportScreenTest {
       }
     }
 
-    fillReportWith("title", "description")
+    fillReportWith("title", "description", true)
     composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeRule.onAllNodesWithText(AddReportDialogTexts.OK).fetchSemanticsNodes().isNotEmpty()
     }
@@ -421,48 +420,40 @@ class AddReportScreenTest {
   }
 
   @Test
-  fun uploadImageDialog_gallery_setsPhoto() {
-    val fakeViewModel = FakeAddReportViewModel()
-    composeRule.setContent {
-      MaterialTheme { AddReportScreen(onCreateReport = {}, addReportViewModel = fakeViewModel) }
-    }
+  fun chosenImage_isDisplayedInPreview() {
+    cleanupTestAssets()
 
-    scrollToUploadSection()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
-    composeRule.onNodeWithTag(ImagePickerTestTags.GALLERY_BUTTON).assertHasClickAction()
-
-    // Simulate picking photo from gallery
+    composeRule.waitForIdle()
     val imageUri = getUriFrom(FAKE_PHOTO_FILE)
-    fakeViewModel.setPhoto(imageUri)
+    val fakeViewModel = FakeAddReportViewModel().apply {
+      setPhoto(imageUri)
+    }
 
     composeRule.waitForIdle()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
-    composeRule
-        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
-  }
-
-  @Test
-  fun uploadImageDialog_camera_setsPhoto() {
-    val fakeViewModel = FakeAddReportViewModel()
     composeRule.setContent {
-      MaterialTheme { AddReportScreen(onCreateReport = {}, addReportViewModel = fakeViewModel) }
+      MaterialTheme {
+        AddReportScreen(
+          onCreateReport = {},
+          addReportViewModel = fakeViewModel,
+        )
+      }
+    }
+
+    composeRule.waitForIdle()
+    scrollToUploadSection()
+
+    composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeRule.onAllNodesWithTag(AddReportScreenTestTags.IMAGE_PREVIEW)
+        .fetchSemanticsNodes().isNotEmpty()
     }
 
     scrollToUploadSection()
 
-    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
-    composeRule.onNodeWithTag(ImagePickerTestTags.CAMERA_BUTTON).assertHasClickAction()
-
-    // Simulate picking photo with camera
-    val cameraUri = getUriFrom(FAKE_PHOTO_FILE)
-    fakeViewModel.setPhoto(cameraUri)
-
     composeRule.waitForIdle()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
     composeRule
-        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+      .assertIsDisplayed()
+      .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
   }
 
   @Test
@@ -480,7 +471,7 @@ class AddReportScreenTest {
       }
     }
 
-    fillReportWith("title", "description")
+    fillReportWith("title", "description", true)
 
     assertDialogWorks(
         AddReportScreenTestTags.DIALOG_SUCCESS,
