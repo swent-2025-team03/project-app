@@ -45,6 +45,7 @@ import com.android.agrihealth.data.model.report.QuestionForm
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.ui.common.OfficeNameViewModel
+import com.android.agrihealth.ui.common.rememberImagePickerLauncher
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.user.UserViewModel
@@ -487,33 +488,11 @@ fun UploadRemovePhotoSection(
   onPhotoPicked: (Uri?) -> Unit,
   onPhotoRemoved: () -> Unit,
 ) {
-  val context = LocalContext.current
   var showDialog by remember { mutableStateOf(false) }
-  var photoUri by remember { mutableStateOf<Uri?>(null) }
 
-  val galleryLauncher =
-    rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-      if (uri != null) onPhotoPicked(uri)
-    }
-
-  val cameraLauncher =
-    rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-      if (success && photoUri != null) onPhotoPicked(photoUri)
-    }
-
-  val cameraPermissionLauncher =
-    rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-      if (granted) {
-        photoUri?.let { cameraLauncher.launch(it) }
-      } else {
-        Toast.makeText(
-          context,
-          "Camera permission is required to take a photo",
-          Toast.LENGTH_LONG
-        ).show()
-        openAppPermissionsSettings(context)
-      }
-    }
+  val imagePickerState = rememberImagePickerLauncher(
+    onImageSelected = onPhotoPicked
+  )
 
   UploadRemovePhotoButton(
     photoAlreadyPicked = photoAlreadyPicked,
@@ -526,17 +505,11 @@ fun UploadRemovePhotoSection(
       onDismiss = { showDialog = false },
       onGalleryClick = {
         showDialog = false
-        galleryLauncher.launch("image/*")
+        imagePickerState.launchGallery()
       },
       onCameraClick = {
         showDialog = false
-        val imageFile = File.createTempFile("report_photo_", ".jpg", context.cacheDir)
-        photoUri = FileProvider.getUriForFile(
-          context,
-          getFileProviderAuthority(context),
-          imageFile
-        )
-        cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+        imagePickerState.launchCamera()
       },
     )
   }
