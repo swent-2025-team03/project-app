@@ -62,3 +62,18 @@ fun AuthorName(
       textDecoration = if (onClick != null) TextDecoration.Underline else TextDecoration.None,
       modifier = if (onClick != null) Modifier.clickable { onClick() } else Modifier)
 }
+
+/**
+ * String composable in case you need to display the User Name in a context that requires a String
+ */
+@Composable
+fun rememberUserName(userId: String?): String {
+  val vm: AuthorNameViewModel = viewModel(key = userId)
+  val name by vm.label.collectAsState()
+
+  LaunchedEffect(userId) {
+    vm.load(uid = userId, deletedText = "Deleted user", unassignedText = "Unassigned")
+  }
+
+  return name
+}

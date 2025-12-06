@@ -14,8 +14,10 @@ import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.location.LocationPickerTestTags
+import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testutil.FakeOfficeRepository
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.alert.AlertViewScreenTestTags
 import com.android.agrihealth.ui.authentification.RoleSelectionScreenTestTags
@@ -41,6 +43,7 @@ import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -159,12 +162,19 @@ class E2ETest : FirebaseEmulatorsTest() {
 
   @Test
   fun testFarmer_OverviewFilters_WorkCorrectly() {
-    val office1 = "Meh Office."
+    val fakeOfficeRepo = FakeOfficeRepository()
+    OfficeRepositoryProvider.set(fakeOfficeRepo)
+
+    val office2 =
+        Office(id = user1.linkedOffices.last(), name = "Some Other Office", ownerId = user1.uid)
+
+    runTest { fakeOfficeRepo.addOffice(office2) }
+
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.waitForIdle()
     completeSignIn(user1.email, "12345678")
     checkOverviewScreenIsDisplayed()
-    createReport("Report 1", "Description 1", office1)
+    createReport("Report 1", "Description 1", "Deleted Office")
     createReport("Report 2", "Description 2", user1.linkedOffices.last())
 
     // Report 1 appears when filtering for "Pending"
@@ -186,10 +196,14 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN).performClick()
     composeTestRule.onNodeWithTag("OPTION_All").performClick()
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.OFFICE_ID_DROPDOWN).performClick()
-    composeTestRule.onNodeWithText(office1).performClick()
+    composeTestRule
+        .onAllNodes(hasTestTagThatStartsWith("OPTION_"))
+        .filter(hasText("Some Other Office"))
+        .onFirst()
+        .performClick()
     composeTestRule
         .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
-        .assertAny(hasText("Report 1"))
+        .assertAny(hasText("Report 2"))
 
     // Report 1 and 2 both appear when filtering for All
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.OFFICE_ID_DROPDOWN).performClick()
@@ -202,6 +216,8 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertAny(hasText("Report 2"))
 
     signOutFromScreen()
+
+    tearDown()
   }
 
   @Test
@@ -306,6 +322,11 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   // ----------- Helper functions -----------
+
+  @After
+  fun tearDown() {
+    OfficeRepositoryProvider.reset()
+  }
 
   private fun completeSignUp(email: String, password: String, isVet: Boolean) {
     composeTestRule
