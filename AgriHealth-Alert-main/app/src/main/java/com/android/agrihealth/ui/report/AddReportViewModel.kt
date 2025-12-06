@@ -33,9 +33,11 @@ sealed class CreateReportResult {
   /** There is a validation error. For example a required field is missing a value */
   object ValidationError : CreateReportResult()
 
-  /** Uploading the report to the repository failed. Or uploading the photo to the image repository failed */
+  /**
+   * Uploading the report to the repository failed. Or uploading the photo to the image repository
+   * failed
+   */
   data class UploadError(val e: Throwable) : CreateReportResult()
-
 }
 
 /**

@@ -1,7 +1,9 @@
 package com.android.agrihealth.ui.common
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,8 +20,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import android.content.Intent
-import android.provider.Settings
 import java.io.File
 
 /** Test tags for the image picker */
@@ -41,8 +41,8 @@ object ImagePickerTexts {
 }
 
 /**
- *  Generative AI was used in the making of this file in order to move the original code in
- *  AddReportScreen.kt into its own standalone file
+ * Generative AI was used in the making of this file in order to move the original code in
+ * AddReportScreen.kt into its own standalone file
  *
  * A complete, self-contained image picker component that handles:
  * - Showing a dialog to choose between gallery and camera
@@ -68,118 +68,108 @@ object ImagePickerTexts {
  */
 @Composable
 fun ImagePickerDialog(
-  onDismiss: () -> Unit,
-  onImageSelected: (Uri) -> Unit,
-  modifier: Modifier = Modifier
+    onDismiss: () -> Unit,
+    onImageSelected: (Uri) -> Unit,
+    modifier: Modifier = Modifier
 ) {
   val context = LocalContext.current
   var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
 
   // Gallery launcher
-  val galleryLauncher = rememberLauncherForActivityResult(
-    contract = ActivityResultContracts.GetContent()
-  ) { uri: Uri? ->
-    uri?.let {
-      onImageSelected(it)
-      onDismiss()
-    }
-  }
+  val galleryLauncher =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri?
+        ->
+        uri?.let {
+          onImageSelected(it)
+          onDismiss()
+        }
+      }
 
   // Camera launcher
-  val cameraLauncher = rememberLauncherForActivityResult(
-    contract = ActivityResultContracts.TakePicture()
-  ) { success ->
-    if (success && tempPhotoUri != null) {
-      onImageSelected(tempPhotoUri!!)
-      onDismiss()
-    }
-  }
+  val cameraLauncher =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.TakePicture()) { success
+        ->
+        if (success && tempPhotoUri != null) {
+          onImageSelected(tempPhotoUri!!)
+          onDismiss()
+        }
+      }
 
   // Camera permission launcher
-  val cameraPermissionLauncher = rememberLauncherForActivityResult(
-    contract = ActivityResultContracts.RequestPermission()
-  ) { granted ->
-    if (granted) {
-      tempPhotoUri?.let { cameraLauncher.launch(it) }
-    } else {
-      Toast.makeText(
-        context,
-        ImagePickerTexts.PERMISSION_REQUIRED,
-        Toast.LENGTH_LONG
-      ).show()
-      openAppPermissionsSettings(context)
-    }
-  }
+  val cameraPermissionLauncher =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+          granted ->
+        if (granted) {
+          tempPhotoUri?.let { cameraLauncher.launch(it) }
+        } else {
+          Toast.makeText(context, ImagePickerTexts.PERMISSION_REQUIRED, Toast.LENGTH_LONG).show()
+          openAppPermissionsSettings(context)
+        }
+      }
 
   // The dialog UI
   AlertDialog(
-    modifier = modifier.testTag(ImagePickerTestTags.DIALOG),
-    onDismissRequest = onDismiss,
-    title = { Text(ImagePickerTexts.DIALOG_TITLE) },
-    text = { Text(ImagePickerTexts.DIALOG_MESSAGE) },
-    confirmButton = {
-      Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        TextButton(
-          modifier = Modifier.testTag(ImagePickerTestTags.GALLERY_BUTTON),
-          onClick = {
-            galleryLauncher.launch("image/*")
-          },
-          colors = ButtonDefaults.textButtonColors(
-            contentColor = MaterialTheme.colorScheme.onSurface
-          ),
-        ) {
-          Text(ImagePickerTexts.GALLERY)
+      modifier = modifier.testTag(ImagePickerTestTags.DIALOG),
+      onDismissRequest = onDismiss,
+      title = { Text(ImagePickerTexts.DIALOG_TITLE) },
+      text = { Text(ImagePickerTexts.DIALOG_MESSAGE) },
+      confirmButton = {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+          TextButton(
+              modifier = Modifier.testTag(ImagePickerTestTags.GALLERY_BUTTON),
+              onClick = { galleryLauncher.launch("image/*") },
+              colors =
+                  ButtonDefaults.textButtonColors(
+                      contentColor = MaterialTheme.colorScheme.onSurface),
+          ) {
+            Text(ImagePickerTexts.GALLERY)
+          }
+          TextButton(
+              modifier = Modifier.testTag(ImagePickerTestTags.CAMERA_BUTTON),
+              onClick = {
+                // Create temp file and launch camera with permission check
+                val imageFile = File.createTempFile("temp_image_", ".jpg", context.cacheDir)
+                tempPhotoUri =
+                    FileProvider.getUriForFile(
+                        context, getFileProviderAuthority(context), imageFile)
+                cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+              },
+              colors =
+                  ButtonDefaults.textButtonColors(
+                      contentColor = MaterialTheme.colorScheme.onSurface),
+          ) {
+            Text(ImagePickerTexts.CAMERA)
+          }
         }
+      },
+      dismissButton = {
         TextButton(
-          modifier = Modifier.testTag(ImagePickerTestTags.CAMERA_BUTTON),
-          onClick = {
-            // Create temp file and launch camera with permission check
-            val imageFile = File.createTempFile(
-              "temp_image_",
-              ".jpg",
-              context.cacheDir
-            )
-            tempPhotoUri = FileProvider.getUriForFile(
-              context,
-              getFileProviderAuthority(context),
-              imageFile
-            )
-            cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
-          },
-          colors = ButtonDefaults.textButtonColors(
-            contentColor = MaterialTheme.colorScheme.onSurface
-          ),
+            modifier = Modifier.testTag(ImagePickerTestTags.CANCEL_BUTTON),
+            onClick = onDismiss,
+            colors =
+                ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
         ) {
-          Text(ImagePickerTexts.CAMERA)
+          Text(ImagePickerTexts.CANCEL)
         }
-      }
-    },
-    dismissButton = {
-      TextButton(
-        modifier = Modifier.testTag(ImagePickerTestTags.CANCEL_BUTTON),
-        onClick = onDismiss,
-        colors = ButtonDefaults.textButtonColors(
-          contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        ),
-      ) {
-        Text(ImagePickerTexts.CANCEL)
-      }
-    },
+      },
   )
 }
 
 // Helper function to get the FileProvider authority
+// Note: This must be the *exact* same as seen in AndroidManifest.xml, in the <provider> tag, under
+// "android:authoritie"
 private fun getFileProviderAuthority(context: Context): String {
   return context.packageName + ".fileprovider"
 }
 
 // Helper function to open app settings
 private fun openAppPermissionsSettings(context: Context) {
-  val intent = Intent(
-    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-    Uri.fromParts("package", context.packageName, null),
-  ).apply {
-    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-  }
+  val intent =
+      Intent(
+              Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+              Uri.fromParts("package", context.packageName, null),
+          )
+          .apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
   context.startActivity(intent)
 }

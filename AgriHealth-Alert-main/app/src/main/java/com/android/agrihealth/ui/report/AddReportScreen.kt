@@ -103,7 +103,7 @@ object AddReportDialogTexts {
 
 // This **MUST** be the same as in: AndroidManifest.xml --> <provider --> android:authorities
 private fun getFileProviderAuthority(context: Context): String =
-  context.packageName + ".fileprovider" // TODO: Maybe move this into its own object
+    context.packageName + ".fileprovider" // TODO: Maybe move this into its own object
 
 // Helper function to format the error message shown in the error dialog when creating a report
 // failed
@@ -116,12 +116,12 @@ private fun generateCreateReportErrorMessage(e: Throwable?): String {
 }
 
 private fun openAppPermissionsSettings(context: Context) {
-  val intent = Intent(
-    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-    Uri.fromParts("package", context.packageName, null),
-  ).apply {
-    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-  }
+  val intent =
+      Intent(
+              Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+              Uri.fromParts("package", context.packageName, null),
+          )
+          .apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
   context.startActivity(intent)
 }
 
@@ -193,7 +193,6 @@ fun AddReportScreen(
     }
   }
 
-
   Scaffold(
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       topBar = {
@@ -250,11 +249,11 @@ fun AddReportScreen(
 
               UploadedImagePreview(photoUri = uiState.photoUri)
 
-            UploadRemovePhotoSection(
-              photoAlreadyPicked = uiState.photoUri != null,
-              onPhotoPicked = { addReportViewModel.setPhoto(it) },
-              onPhotoRemoved = { addReportViewModel.removePhoto() },
-            )
+              UploadRemovePhotoSection(
+                  photoAlreadyPicked = uiState.photoUri != null,
+                  onPhotoPicked = { addReportViewModel.setPhoto(it) },
+                  onPhotoRemoved = { addReportViewModel.removePhoto() },
+              )
 
               CreateReportButton(onClick = onCreateReportClick)
             }
@@ -470,123 +469,113 @@ private fun DescriptionField(
 }
 
 /**
- *  The section of the UI that handles adding or removing a photo from the report
+ * The section of the UI that handles adding or removing a photo from the report
  *
- *  @param photoAlreadyPicked True if a photo has already ben added to the report, False otherwise
- *  @param onPhotoPicked Called when a photo has been picked from the report
- *  @param onPhotoRemoved Called when a photo has been removed from the report
+ * @param photoAlreadyPicked True if a photo has already ben added to the report, False otherwise
+ * @param onPhotoPicked Called when a photo has been picked from the report
+ * @param onPhotoRemoved Called when a photo has been removed from the report
  */
 @Composable
 fun UploadRemovePhotoSection(
-  photoAlreadyPicked: Boolean,
-  onPhotoPicked: (Uri?) -> Unit,
-  onPhotoRemoved: () -> Unit,
+    photoAlreadyPicked: Boolean,
+    onPhotoPicked: (Uri?) -> Unit,
+    onPhotoRemoved: () -> Unit,
 ) {
   var showImagePicker by remember { mutableStateOf(false) }
 
   UploadRemovePhotoButton(
-    photoAlreadyPicked = photoAlreadyPicked,
-    onClickUpload = { showImagePicker = true },
-    onClickRemove = onPhotoRemoved,
+      photoAlreadyPicked = photoAlreadyPicked,
+      onClickUpload = { showImagePicker = true },
+      onClickRemove = onPhotoRemoved,
   )
 
   if (showImagePicker) {
     ImagePickerDialog(
-      onDismiss = { showImagePicker = false },
-      onImageSelected = { uri ->
-        onPhotoPicked(uri)
-      }
-    )
+        onDismiss = { showImagePicker = false }, onImageSelected = { uri -> onPhotoPicked(uri) })
   }
-
 }
 
 /**
- *  The button that allows user to either add a photo to the report or remove a photo from the report
+ * The button that allows user to either add a photo to the report or remove a photo from the report
  *
- *  @param photoAlreadyPicked True if a photo has already been picked by the user, False otherwise
- *  @param onClickUpload Called when the user clicks to add a photo to the report
- *  @param onClickRemove Called when the user clicks to remove a photo from the report
+ * @param photoAlreadyPicked True if a photo has already been picked by the user, False otherwise
+ * @param onClickUpload Called when the user clicks to add a photo to the report
+ * @param onClickRemove Called when the user clicks to remove a photo from the report
  */
 @Composable
 fun UploadRemovePhotoButton(
-  photoAlreadyPicked: Boolean,
-  onClickUpload: () -> Unit,
-  onClickRemove: () -> Unit,
+    photoAlreadyPicked: Boolean,
+    onClickUpload: () -> Unit,
+    onClickRemove: () -> Unit,
 ) {
   Button(
-    onClick = {
-      if (photoAlreadyPicked) onClickRemove() else onClickUpload()
-    },
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(vertical = 8.dp)
-      .testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
-    colors = ButtonDefaults.buttonColors(
-      containerColor = MaterialTheme.colorScheme.primary
-    ),
+      onClick = { if (photoAlreadyPicked) onClickRemove() else onClickUpload() },
+      modifier =
+          Modifier.fillMaxWidth()
+              .padding(vertical = 8.dp)
+              .testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
+      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
   ) {
     Text(
-      text = if (photoAlreadyPicked)
-        AddReportUploadButtonTexts.REMOVE_IMAGE
-      else
-        AddReportUploadButtonTexts.UPLOAD_IMAGE,
-      style = MaterialTheme.typography.titleLarge,
+        text =
+            if (photoAlreadyPicked) AddReportUploadButtonTexts.REMOVE_IMAGE
+            else AddReportUploadButtonTexts.UPLOAD_IMAGE,
+        style = MaterialTheme.typography.titleLarge,
     )
   }
 }
 
 /**
- *  Dialog that asks the user whether they want to upload a photo from gallery or from camera
+ * Dialog that asks the user whether they want to upload a photo from gallery or from camera
  *
- *  @param onDismiss Called when the user dismisses the dialog (i.e clicks on "Cancel")
- *  @param onGalleryClick Called when the user clicks on the "Gallery" button
- *  @param onCameraClick Called when the user clicks on the "Camera" button
+ * @param onDismiss Called when the user dismisses the dialog (i.e clicks on "Cancel")
+ * @param onGalleryClick Called when the user clicks on the "Gallery" button
+ * @param onCameraClick Called when the user clicks on the "Camera" button
  */
 @Composable
 fun PhotoSourceDialog(
-  onDismiss: () -> Unit,
-  onGalleryClick: () -> Unit,
-  onCameraClick: () -> Unit,
+    onDismiss: () -> Unit,
+    onGalleryClick: () -> Unit,
+    onCameraClick: () -> Unit,
 ) {
   AlertDialog(
-    modifier = Modifier.testTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG),
-    onDismissRequest = onDismiss,
-    title = { Text("Select Image Source") },
-    text = { Text("Choose from gallery or take a new photo.") },
-    confirmButton = {
-      Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        TextButton(
-          modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_GALLERY),
-          onClick = onGalleryClick,
-          colors = ButtonDefaults.textButtonColors(
-            contentColor = MaterialTheme.colorScheme.onSurface
-          ),
-        ) {
-          Text(AddReportDialogTexts.GALLERY)
+      modifier = Modifier.testTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG),
+      onDismissRequest = onDismiss,
+      title = { Text("Select Image Source") },
+      text = { Text("Choose from gallery or take a new photo.") },
+      confirmButton = {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+          TextButton(
+              modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_GALLERY),
+              onClick = onGalleryClick,
+              colors =
+                  ButtonDefaults.textButtonColors(
+                      contentColor = MaterialTheme.colorScheme.onSurface),
+          ) {
+            Text(AddReportDialogTexts.GALLERY)
+          }
+          TextButton(
+              modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CAMERA),
+              onClick = onCameraClick,
+              colors =
+                  ButtonDefaults.textButtonColors(
+                      contentColor = MaterialTheme.colorScheme.onSurface),
+          ) {
+            Text(AddReportDialogTexts.CAMERA)
+          }
         }
+      },
+      dismissButton = {
         TextButton(
-          modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CAMERA),
-          onClick = onCameraClick,
-          colors = ButtonDefaults.textButtonColors(
-            contentColor = MaterialTheme.colorScheme.onSurface
-          ),
+            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CANCEL),
+            onClick = onDismiss,
+            colors =
+                ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
         ) {
-          Text(AddReportDialogTexts.CAMERA)
+          Text(AddReportDialogTexts.CANCEL)
         }
-      }
-    },
-    dismissButton = {
-      TextButton(
-        modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CANCEL),
-        onClick = onDismiss,
-        colors = ButtonDefaults.textButtonColors(
-          contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        ),
-      ) {
-        Text(AddReportDialogTexts.CANCEL)
-      }
-    },
+      },
   )
 }
 
