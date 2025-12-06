@@ -23,6 +23,7 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.testutil.TestConstants
+import com.android.agrihealth.ui.loading.LoadingTestTags
 import com.android.agrihealth.ui.user.UserViewModelContract
 import org.junit.Assert
 import org.junit.Rule
@@ -266,5 +267,60 @@ class AddReportScreenTest {
     composeRule.onNodeWithText("OK").performClick()
 
     Assert.assertTrue(called)
+  }
+
+  @Test
+  fun createReport_showsLoadingOverlay() {
+    // Fake ViewModel that simulates slow repository
+    val slowViewModel =
+        object : FakeAddReportViewModel() {
+          override suspend fun createReport(): Boolean {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            kotlinx.coroutines.delay(1200) // simulate slow Firestore
+            _uiState.value = _uiState.value.copy(isLoading = false)
+            return true
+          }
+        }
+
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+            userRole = UserRole.FARMER,
+            userId = "test_user",
+            onCreateReport = {},
+            addReportViewModel = slowViewModel)
+      }
+    }
+
+    // Initially overlay not visible
+    composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
+    composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
+
+    // Enter valid input
+    createReport("Slow Test Title", "Desc")
+
+    // Wait until loading state becomes true (defensive, though immediate)
+    composeRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
+      composeRule.onAllNodesWithTag(LoadingTestTags.SCRIM).fetchSemanticsNodes().isNotEmpty() &&
+          composeRule.onAllNodesWithTag(LoadingTestTags.SPINNER).fetchSemanticsNodes().isNotEmpty()
+    }
+
+    // Assert that loading overlay appears
+    composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
+    composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
+
+    composeRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
+      composeRule.onAllNodesWithTag(LoadingTestTags.SCRIM).fetchSemanticsNodes().isEmpty() &&
+          composeRule.onAllNodesWithTag(LoadingTestTags.SPINNER).fetchSemanticsNodes().isEmpty()
+    }
+
+    // Wait until loading finishes
+    composeRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
+      !slowViewModel.uiState.value.isLoading
+    }
+
+    // Overlay should be gone
+    composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
+    composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
   }
 }
