@@ -1,12 +1,16 @@
 package com.android.agrihealth.ui.planner
 
+import android.annotation.SuppressLint
 import android.app.TimePickerDialog
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -66,7 +71,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import kotlin.math.max
 
 object PlannerScreenTestTags {
   const val SCREEN = "plannerScreen"
@@ -85,12 +89,6 @@ object PlannerScreenTestTags {
 
   fun reportCardTag(reportId: String): String = "reportCard_$reportId"
 }
-
-// Todo: show year if different from current year (Report View and Planner)
-// Todo: scroll to first task of the day
-// Todo: implement task overlapping
-// Todo: show a line for current hour
-// Todo: Fix report title clipping onto background
 
 /**
  * Planner Screen lets the user see their Reports ordered by dates.
@@ -207,11 +205,19 @@ fun PlannerScreen(
                 dayReportMap = uiState.reports)
             Row(modifier = Modifier.fillMaxWidth()) {
               Text(
-                  uiState.selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM")),
+                  if (uiState.selectedDate.year != LocalDate.now().year) {
+                    uiState.selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
+                  } else {
+                    uiState.selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM"))
+                  },
                   style = MaterialTheme.typography.titleLarge,
                   modifier = Modifier.testTag(PlannerScreenTestTags.SELECTED_DATE))
             }
-            DailyScheduler(uiState.selectedDateReports) { it -> reportClicked(it) }
+            DailyScheduler(
+                uiState.selectedDateReports, reportId, uiState.selectedDate == LocalDate.now()) { it
+                  ->
+                  reportClicked(it)
+                }
           }
           if (reportId != null) {
 
@@ -405,13 +411,36 @@ fun DotGrid(
  * The Scheduler containing the hour Scale and the Daily task representing the Reports
  *
  * @param reports the list of reports to show on the Scheduler
+ * @param reportId the id of the report to prioritize auto scroll to.
+ * @param showTimeLine weather or not to show the current time Line on the Scheduler
  * @param navigateToReport called when a report is clicked with the report.id
  */
 @Composable
-fun DailyScheduler(reports: List<Report>, navigateToReport: (String) -> Unit = {}) {
+fun DailyScheduler(
+    reports: List<Report>,
+    reportId: String? = null,
+    showTimeLine: Boolean = false,
+    navigateToReport: (String) -> Unit = {}
+) {
   val scrollState = rememberScrollState(0)
 
   val hourHeight = 60.dp
+  val density = LocalDensity.current
+
+  LaunchedEffect(reports) {
+    if (reports.any { it.startTime != null }) {
+      val reportToEdit = reports.find { it.id == reportId }
+      val first = reportToEdit ?: reports.minBy { it.startTime?.hour ?: 24 }
+
+      val offsetPx =
+          with(density) {
+            localTimeToOffset(first.startTime!!.toLocalTime(), hourHeight).toPx().toInt()
+          }
+
+      scrollState.animateScrollTo(
+          offsetPx, animationSpec = tween(800, easing = LinearOutSlowInEasing))
+    }
+  }
   Row(
       modifier =
           Modifier.fillMaxSize()
@@ -420,7 +449,10 @@ fun DailyScheduler(reports: List<Report>, navigateToReport: (String) -> Unit = {
         HourScale(hourHeight = hourHeight)
         Box(modifier = Modifier.weight(1f)) {
           DailyTasks(
-              reports = reports, hourHeight = hourHeight, navigateToReport = navigateToReport)
+              reports = reports,
+              hourHeight = hourHeight,
+              showTimeLine = showTimeLine,
+              navigateToReport = navigateToReport)
         }
       }
 }
@@ -433,15 +465,17 @@ fun DailyScheduler(reports: List<Report>, navigateToReport: (String) -> Unit = {
 @Composable
 fun HourScale(hourHeight: Dp = 60.dp) {
   Column {
-    for (hour in 0..24) {
+    Spacer(modifier = Modifier.height(hourHeight / 2))
+    for (hour in 1..23) {
       Box(
           modifier = Modifier.height(hourHeight)
           // .fillMaxWidth()
           ,
-          contentAlignment = Alignment.TopStart) {
+          contentAlignment = Alignment.Center) {
             Text(text = "$hour:00", modifier = Modifier.padding(4.dp))
           }
     }
+    Spacer(modifier = Modifier.height(hourHeight / 2))
   }
 }
 
@@ -451,56 +485,141 @@ fun HourScale(hourHeight: Dp = 60.dp) {
  *
  * @param reports the reports to show on the scheduler
  * @param hourHeight the height attributed to each hours
+ * @param showTimeLine weather or not to show the current time Line on the Scheduler
  * @param navigateToReport called with report.id when a report is clicked
  */
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun DailyTasks(
     reports: List<Report>,
     hourHeight: Dp = 60.dp,
+    showTimeLine: Boolean = false,
     navigateToReport: (String) -> Unit = {}
 ) {
-  Box(modifier = Modifier.fillMaxSize()) {
-    reports
-        .filter { it.startTime != null }
-        .forEach { report ->
-          val topOffset = report.startTime!!.hour.times(hourHeight.value)
-          val taskHeight =
-              report.duration.let {
+  val minReportDuration = 30f
+  BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    // Hour lines
+    for (hour in 0..24) {
+      Box(
+          modifier =
+              Modifier.fillMaxWidth()
+                  .height(2.dp)
+                  .offset(y = hourToOffset(hour.toFloat(), hourHeight))
+                  .background(MaterialTheme.colorScheme.surfaceVariant),
+          contentAlignment = Alignment.TopStart) {}
+    }
+    val items =
+        reports
+            .filter { it.startTime != null }
+            .map {
+              val start = it.startTime!!.toLocalTime()
+              val durationMinutes = (it.duration?.toSecondOfDay()?.div(60)) ?: minReportDuration
+              val end = start.plusMinutes(durationMinutes.toLong())
+              ReportLayoutItem(it, start, end)
+            }
+            .sortedBy { it.start }
+
+    for (layoutItems in clusterEvents(items)) {
+      assignLanes(layoutItems)
+    }
+    items.forEach { (report, startTime, _, lane, totalLane) ->
+      val taskHeight =
+          report.duration
+              .let {
                 if (it == null) 30f
                 else {
-                  max((it.hour + (it.minute.div(60))).times(hourHeight.value), 30f)
+                  localTimeToOffset(it, hourHeight).value.coerceAtLeast(minReportDuration)
                 }
               }
-
-          Column(
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .height(taskHeight.dp)
-                      .offset(y = topOffset.dp)
-                      .padding(horizontal = 0.dp)
-                      .background(
-                          color = statusColor(report.status), shape = MaterialTheme.shapes.medium)
-                      .clickable { navigateToReport(report.id) }
-                      .testTag(PlannerScreenTestTags.reportCardTag(report.id)),
-              verticalArrangement = Arrangement.Top) {
-                Text(
-                    report.title,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = onStatusColor(report.status),
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = if (taskHeight.dp >= 90.dp) 2 else 1)
-                if (taskHeight.dp >= 54.dp)
-                    report.location?.name?.let {
-                      Text(
-                          it,
-                          modifier = Modifier.weight(1f, fill = false),
-                          style = MaterialTheme.typography.bodyMedium,
-                          color = onStatusColor(report.status),
-                          maxLines = 1)
-                    }
-              }
-        }
+              .dp
+      val topOffset = localTimeToOffset(startTime, hourHeight)
+      val laneWidth = maxWidth / totalLane
+      val leftOffset = laneWidth * lane
+      ReportCard(report, taskHeight, topOffset, leftOffset, laneWidth, navigateToReport)
+    }
+    if (showTimeLine) {
+      CurrentTimeLine(hourHeight)
+    }
   }
+}
+
+/**
+ * Composable showing a report with its title and location.
+ *
+ * @param report the Report this composable represents
+ * @param taskHeight the height of the composable.
+ * @param topOffset the offset to the top of the master composable
+ * @param leftOffset the offset to the left of the master composable
+ * @param width the width of the composable.
+ * @param navigateToReport function executed with report.id when clicking the composable.
+ */
+@Composable
+fun ReportCard(
+    report: Report,
+    taskHeight: Dp,
+    topOffset: Dp,
+    leftOffset: Dp,
+    width: Dp,
+    navigateToReport: (String) -> Unit
+) {
+  Column(
+      modifier =
+          Modifier.width(width)
+              .height(taskHeight)
+              .offset(x = leftOffset, y = topOffset)
+              .padding(horizontal = 0.dp)
+              .background(color = statusColor(report.status), shape = MaterialTheme.shapes.medium)
+              .clickable { navigateToReport(report.id) }
+              .testTag(PlannerScreenTestTags.reportCardTag(report.id)),
+      verticalArrangement = Arrangement.Top) {
+        Text(
+            report.title,
+            modifier = Modifier.padding(horizontal = 8.dp),
+            style = MaterialTheme.typography.titleLarge,
+            color = onStatusColor(report.status),
+            overflow = TextOverflow.Ellipsis,
+            maxLines = if (taskHeight >= 90.dp) 2 else 1)
+        if (taskHeight >= 54.dp)
+            report.location?.name?.let {
+              Text(
+                  it,
+                  modifier = Modifier.weight(1f, fill = false).padding(horizontal = 8.dp),
+                  style = MaterialTheme.typography.bodyMedium,
+                  color = onStatusColor(report.status),
+                  maxLines = 1)
+            }
+      }
+}
+
+/**
+ * Time Line Display on the Scheduler at the current time.
+ *
+ * @param hourHeight size in Dp of each hour used to calculate the offset
+ */
+@Composable
+fun CurrentTimeLine(hourHeight: Dp) {
+  val now = LocalTime.now()
+  val offset = localTimeToOffset(now, hourHeight)
+  Row(
+      modifier = Modifier.fillMaxWidth().offset(y = offset),
+      verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier =
+                Modifier.size(12.dp)
+                    .background(MaterialTheme.colorScheme.primary, shape = CircleShape))
+        Box(
+            modifier =
+                Modifier.fillMaxWidth().height(3.dp).background(MaterialTheme.colorScheme.primary),
+        )
+      }
+}
+
+fun localTimeToOffset(time: LocalTime, hourHeight: Dp): Dp {
+  return hourToOffset((time.toSecondOfDay() / (60.0 * 60.0).toFloat()), hourHeight)
+}
+
+fun hourToOffset(hour: Float, hourHeight: Dp): Dp {
+  return (hour * hourHeight.value).dp
 }
 
 /**
@@ -606,6 +725,7 @@ fun TimePickerBox(
 @Preview
 @Composable
 fun PlannerScreenPreview() {
+  val startOfDay = LocalDate.now().atTime(0, 0)
   val previewReport1 =
       Report(
           id = "1",
@@ -614,30 +734,53 @@ fun PlannerScreenPreview() {
           questionForms = emptyList(),
           photoUri = null,
           farmerId = "farmer1",
-          vetId = "vet1",
+          officeId = "vet1",
           status = ReportStatus.IN_PROGRESS,
           answer = null,
           location = Location(latitude = 12.34, longitude = 56.78, name = "Farmhouse A"),
-          startTime = LocalDate.now().atTime(0, 0),
+          startTime = startOfDay.plusHours(2).plusMinutes(30),
           duration = LocalTime.of(0, 0))
 
   val previewReport2 =
       previewReport1.copy(
-          id = "2", startTime = LocalDateTime.now().plusHours(2), duration = LocalTime.of(1, 0))
+          id = "2", startTime = startOfDay.plusHours(2), duration = LocalTime.of(1, 0))
   val previewReport3 =
       previewReport1.copy(
           id = "3",
-          startTime = LocalDateTime.now().plusHours(4),
+          startTime = startOfDay.plusHours(2),
           duration = LocalTime.of(2, 0),
           status = ReportStatus.RESOLVED)
   val previewReport4 =
       previewReport1.copy(
-          id = "4", startTime = LocalDateTime.now().plusDays(1), duration = LocalTime.of(2, 0))
+          id = "4",
+          status = ReportStatus.PENDING,
+          startTime = startOfDay.plusHours(3).plusMinutes(45),
+          duration = LocalTime.of(1, 30))
+
+  val previewReport5 =
+      previewReport1.copy(
+          id = "5",
+          startTime = startOfDay.plusHours(5).plusMinutes(45),
+          duration = LocalTime.of(3, 0))
+
+  val user =
+      Vet(
+          uid = "vet1",
+          firstname = "test",
+          lastname = "test",
+          email = "test",
+          address = null,
+          validCodes = emptyList(),
+          officeId = "vet1",
+          isGoogleAccount = false,
+          description = "test",
+          collected = false)
 
   val reportRepo =
       object : ReportRepository {
         private val reports: MutableList<Report> =
-            mutableListOf(previewReport1, previewReport2, previewReport3, previewReport4)
+            mutableListOf(
+                previewReport1, previewReport2, previewReport3, previewReport4, previewReport5)
 
         private var nextId = 0
 
@@ -646,15 +789,7 @@ fun PlannerScreenPreview() {
         }
 
         override suspend fun getAllReports(userId: String): List<Report> {
-          return reports.filter { it.farmerId == userId || it.vetId == userId }
-        }
-
-        override suspend fun getReportsByFarmer(farmerId: String): List<Report> {
-          return reports.filter { it.farmerId == farmerId }
-        }
-
-        override suspend fun getReportsByVet(vetId: String): List<Report> {
-          return reports.filter { it.vetId == vetId }
+          return reports.filter { it.farmerId == userId || it.officeId == userId }
         }
 
         override suspend fun getReportById(reportId: String): Report? {
@@ -689,6 +824,6 @@ fun PlannerScreenPreview() {
         }
       }
   val fakePlannerVM = PlannerViewModel(reportRepo)
-  AgriHealthAppTheme { PlannerScreen(userId = "vet1", reportId = null, plannerVM = fakePlannerVM) }
+  AgriHealthAppTheme { PlannerScreen(user = user, reportId = null, plannerVM = fakePlannerVM) }
 }
 */

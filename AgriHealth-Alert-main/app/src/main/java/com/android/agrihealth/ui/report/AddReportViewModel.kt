@@ -19,7 +19,9 @@ import kotlinx.coroutines.flow.first
 data class AddReportUiState(
     val title: String = "",
     val description: String = "",
-    val chosenOffice: String = "", // TODO: Should be a separate type, not a String!
+    val chosenOffice: String = "",
+    val collected: Boolean = false,
+    val address: Location? = null,
     val photoUri: Uri? = null,
     val questionForms: List<QuestionForm> = emptyList(),
     val uploadedImagePath: String? = null,
@@ -61,6 +63,10 @@ class AddReportViewModel(
         _uiState.value.copy(questionForms = HealthQuestionFactory.animalHealthQuestions())
   }
 
+  override fun switchCollected() {
+    _uiState.value = _uiState.value.copy(collected = !uiState.value.collected)
+  }
+
   override fun setTitle(newTitle: String) {
     _uiState.value = _uiState.value.copy(title = newTitle)
   }
@@ -85,6 +91,10 @@ class AddReportViewModel(
     _uiState.value = _uiState.value.copy(uploadedImagePath = path)
   }
 
+  override fun setAddress(address: Location?) {
+    _uiState.value = _uiState.value.copy(address = address)
+  }
+
   override fun updateQuestion(index: Int, updated: QuestionForm) {
     val updatedList = _uiState.value.questionForms.toMutableList()
     updatedList[index] = updated
@@ -92,22 +102,28 @@ class AddReportViewModel(
   }
 
   override suspend fun createReport(): CreateReportResult {
-    val current = _uiState.value
+    val uiState = _uiState.value
 
-    // Input validation (checking that all fields are completed
-    // TODO More validation may be necessary (e.g forcing to have an office assigned, ...)
-    if (current.title.isBlank() || current.description.isBlank()) {
+    if (uiState.title.isBlank() ||
+        uiState.description.isBlank() ||
+        uiState.chosenOffice.isBlank() ||
+        uiState.address == null) {
       return CreateReportResult.ValidationError
     }
-    if (!current.questionForms.all { it.isValid() }) {
+    if (!uiState.questionForms.all { it.isValid() }) {
       return CreateReportResult.ValidationError
     }
 
-    var uploadedPath = current.uploadedImagePath
+    val allQuestionsAnswered = uiState.questionForms.all { it.isValid() }
+    if (!allQuestionsAnswered) {
+      return CreateReportResult.ValidationError
+    }
+
+    var uploadedPath = uiState.uploadedImagePath
 
     // Photo upload (if a photo has been chosen)
-    if (current.photoUri != null) {
-      imageViewModel.upload(current.photoUri)
+    if (uiState.photoUri != null) {
+      imageViewModel.upload(uiState.photoUri)
 
       val resultState =
           imageViewModel.uiState.first {
@@ -132,20 +148,16 @@ class AddReportViewModel(
     val newReport =
         Report(
             id = reportRepository.getNewReportId(),
-            title = current.title,
-            description = current.description,
-            questionForms = current.questionForms,
+            title = uiState.title,
+            description = uiState.description,
+            questionForms = uiState.questionForms,
             photoURL = uploadedPath,
             farmerId = userId,
-            officeId = current.chosenOffice,
+            officeId = uiState.chosenOffice,
             status = ReportStatus.PENDING,
             answer = null,
-            location =
-                Location(
-                    46.7990813,
-                    6.6259961), // TODO Create way to select location automatically or manually on a
-            // map
-        )
+            collected = uiState.collected,
+            location = uiState.address)
 
     try {
       reportRepository.addReport(newReport)

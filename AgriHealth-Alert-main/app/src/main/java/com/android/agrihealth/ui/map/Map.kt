@@ -51,13 +51,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.statusColor
-import com.android.agrihealth.data.model.device.location.LocationViewModel
-import com.android.agrihealth.data.model.device.location.locationPermissionsRequester
+import com.android.agrihealth.data.model.device.location.LocationPermissionsRequester
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
@@ -66,7 +64,6 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
-import com.android.agrihealth.ui.user.UserViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -101,14 +98,11 @@ const val AllFilterText = "All reports"
 @Composable
 fun MapScreen(
     mapViewModel: MapViewModel = viewModel(),
-    userViewModel: UserViewModel = viewModel(),
-    locationViewModel: LocationViewModel = viewModel(),
     navigationActions: NavigationActions? = null,
     isViewedFromOverview: Boolean = true,
     forceStartingPosition: Boolean = false
 ) {
   val uiState by mapViewModel.uiState.collectAsState()
-  val user by userViewModel.user.collectAsState()
   var selectedFilter by remember { mutableStateOf<String?>(null) }
 
   val mapInitialLocation by mapViewModel.startingLocation.collectAsState()
@@ -122,8 +116,6 @@ fun MapScreen(
         CameraPosition.fromLatLngZoom(
             LatLng(mapInitialLocation.latitude, mapInitialLocation.longitude), mapInitialZoom)
   }
-
-  LaunchedEffect(user.uid) { mapViewModel.refreshReports(user.uid) }
 
   val selectedReport = mapViewModel.selectedReport.collectAsState()
 
@@ -148,9 +140,7 @@ fun MapScreen(
       content = { pd ->
         Box(modifier = Modifier.fillMaxSize().padding(pd)) {
           if (!uiState.locationPermission) {
-            if (locationPermissionsRequester(locationViewModel)) {
-              mapViewModel.refreshMapPermission()
-            }
+            LocationPermissionsRequester(onComplete = { mapViewModel.refreshMapPermission() })
           }
           GoogleMap(
               cameraPositionState = cameraPositionState,

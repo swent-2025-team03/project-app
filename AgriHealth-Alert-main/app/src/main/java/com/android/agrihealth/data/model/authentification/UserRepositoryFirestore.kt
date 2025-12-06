@@ -1,9 +1,11 @@
 package com.android.agrihealth.data.model.authentification
 
-import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.location.locationFromMap
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.data.model.user.roleFromDisplayString
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
@@ -63,7 +65,9 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
                   is Vet -> "Vet"
                 },
             "isGoogleAccount" to user.isGoogleAccount,
-            "description" to user.description)
+            "description" to user.description,
+            "collected" to user.collected,
+            "deviceTokensFCM" to user.deviceTokensFCM.toList())
 
     // Add type-specific fields
     when (user) {
@@ -82,37 +86,46 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     return base
   }
 
+  @Suppress("UNCHECKED_CAST")
   private fun userFromData(uid: String, data: Map<String, Any>): User {
     val firstname = data["firstname"] as? String ?: throw Exception("Missing firstname")
     val lastname = data["lastname"] as? String ?: throw Exception("Missing lastname")
     val email = data["email"] as? String ?: throw Exception("Missing email")
     val roleStr = data["role"] as? String ?: throw Exception("Missing role")
+    val collected = data["collected"] as? Boolean ?: throw Exception("Missing data collect flag")
     val isGoogleAccount = data["isGoogleAccount"] as? Boolean ?: false
     val description = data["description"] as? String?
+    val addressData = data["address"] as? Map<*, *>
+    val address = locationFromMap(addressData)
+    val deviceTokensFCM = (data["deviceTokensFCM"] as? List<String>)?.toSet() ?: emptySet()
 
-    return when (roleStr) {
-      "Farmer" ->
+    return when (roleFromDisplayString(roleStr)) {
+      UserRole.FARMER ->
           Farmer(
               uid = uid,
               firstname = firstname,
               lastname = lastname,
               email = email,
-              address = data["address"] as? Location?,
+              address = address,
               linkedOffices = data["linkedOffices"] as? List<String> ?: emptyList(),
               defaultOffice = data["defaultOffice"] as? String,
               isGoogleAccount = isGoogleAccount,
-              description = description)
-      "Vet" ->
+              description = description,
+              collected = collected,
+              deviceTokensFCM = deviceTokensFCM)
+      UserRole.VET ->
           Vet(
               uid = uid,
               firstname = firstname,
               lastname = lastname,
               email = email,
-              address = data["address"] as? Location?,
+              address = address,
               validCodes = data["validCodes"] as? List<String> ?: emptyList(),
               officeId = data["officeId"] as? String?,
               isGoogleAccount = isGoogleAccount,
-              description = description)
+              description = description,
+              collected = collected,
+              deviceTokensFCM = deviceTokensFCM)
       else -> throw Exception("Unknown user type: $roleStr")
     }
   }
@@ -126,6 +139,9 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     if (old.email != new.email) changes["email"] = new.email
     if (old.isGoogleAccount != new.isGoogleAccount) changes["isGoogleAccount"] = new.isGoogleAccount
     if (old.description != new.description) changes["description"] = new.description
+    if (old.collected != new.collected) changes["collected"] = new.collected
+    if (old.deviceTokensFCM != new.deviceTokensFCM)
+        changes["deviceTokensFCM"] = new.deviceTokensFCM.toList()
 
     when {
       old is Farmer && new is Farmer -> {

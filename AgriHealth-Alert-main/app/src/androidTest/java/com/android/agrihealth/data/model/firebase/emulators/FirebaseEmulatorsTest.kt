@@ -2,6 +2,7 @@ package com.android.agrihealth.data.model.firebase.emulators
 
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.Vet
@@ -38,7 +39,7 @@ open class FirebaseEmulatorsTest() {
           "Rushia",
           "Uruha",
           "email1@thing.com",
-          null,
+          Location(latitude = 46.5191, longitude = 6.5668),
           listOf("Best Office Ever!", "Meh Office."),
           "Test?")
   val user2 = Farmer("def456", "mike", "neko", "email2@aaaaa.balls", null, emptyList(), null)

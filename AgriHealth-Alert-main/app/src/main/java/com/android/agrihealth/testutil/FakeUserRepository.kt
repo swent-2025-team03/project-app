@@ -29,6 +29,10 @@ class FakeUserRepository(private var targetUser: User? = null) : UserRepository 
   }
 
   override suspend fun getUserFromId(uid: String): Result<User> {
+    return getUserFromIdSync(uid)
+  }
+
+  fun getUserFromIdSync(uid: String): Result<User> {
     return if (matches(uid)) {
       Result.success(targetUser!!)
     } else {

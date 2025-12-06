@@ -33,7 +33,8 @@ data class ReportViewUIState(
             officeId = "OFF_456",
             status = ReportStatus.PENDING,
             answer = null,
-            location = Location(46.5191, 6.5668, "Lausanne Farm")),
+            location = Location(46.5191, 6.5668, "Lausanne Farm"),
+            assignedVet = "valid_vet_id"),
     val answerText: String = "",
     val status: ReportStatus = ReportStatus.PENDING
 )
@@ -99,6 +100,10 @@ class ReportViewViewModel(
     onSave()
   }
 
+  fun onDelete() {
+    viewModelScope.launch { repository.deleteReport(reportId = _uiState.value.report.id) }
+  }
+
   /** Saves the modified report, then triggers the saveCompleted flag on success. */
   fun onSave() {
     viewModelScope.launch {
@@ -122,5 +127,34 @@ class ReportViewViewModel(
 
   fun consumeUnsavedChanges() {
     _unsavedChanges.value = false
+  }
+
+  /** Assigns the report to the current vet. */
+  fun assignReportToVet(vetId: String) {
+    val reportId = _uiState.value.report.id
+
+    if (!_uiState.value.report.assignedVet.isNullOrEmpty()) return
+
+    viewModelScope.launch {
+      repository.assignReportToVet(reportId, vetId)
+
+      // Refresh state after assignment
+      loadReport(reportId)
+    }
+  }
+
+  /** Unassigns the report from the current vet. */
+  fun unassign() {
+    val report = _uiState.value.report
+    val reportId = report.id
+
+    if (!report.answer.isNullOrEmpty()) return
+
+    viewModelScope.launch {
+      repository.unassignReport(reportId)
+
+      // Refresh state after unassignment
+      loadReport(reportId)
+    }
   }
 }

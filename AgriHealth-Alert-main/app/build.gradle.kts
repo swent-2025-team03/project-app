@@ -187,6 +187,8 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.storage)
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.functions)
 
     // Http networking for firebase tests
     implementation(libs.okhttp)

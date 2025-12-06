@@ -17,22 +17,6 @@ interface ReportRepository {
   suspend fun getAllReports(userId: String): List<Report>
 
   /**
-   * Retrieves reports associated with a specific farmer.
-   *
-   * @param farmerId The ID of the farmer.
-   * @return List of reports for the specified farmer.
-   */
-  suspend fun getReportsByFarmer(farmerId: String): List<Report>
-
-  /**
-   * Retrieves reports assigned to a specific office.
-   *
-   * @param officeId The ID of the working office of the current vet.
-   * @return List of reports assigned to the specified office.
-   */
-  suspend fun getReportsByOffice(officeId: String): List<Report>
-
-  /**
    * Retrieves a report by its unique ID.
    *
    * @param reportId The ID of the report.
@@ -60,4 +44,10 @@ interface ReportRepository {
    * @param reportId The ID of the report to be deleted.
    */
   suspend fun deleteReport(reportId: String)
+
+  /** Assigns a report to a vet. */
+  suspend fun assignReportToVet(reportId: String, vetId: String)
+
+  /** Unassigns a report from a vet. */
+  suspend fun unassignReport(reportId: String)
 }

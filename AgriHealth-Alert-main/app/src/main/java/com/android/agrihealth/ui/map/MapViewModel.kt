@@ -15,8 +15,6 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.google.android.gms.maps.model.LatLng
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import java.util.Locale
 import kotlin.collections.firstOrNull
 import kotlin.math.cos
@@ -38,6 +36,7 @@ class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
     private val locationViewModel: LocationViewModel,
+    private val userId: String,
     val selectedReportId: String? = null,
     startingPosition: Location? = null,
     showReports: Boolean = true
@@ -62,11 +61,9 @@ class MapViewModel(
     refreshMapPermission()
     setStartingLocation()
 
-    if (showReports)
-        refreshReports(
-            Firebase.auth.currentUser?.uid
-                ?: throw IllegalArgumentException(
-                    "Map refreshed Reports while current user was null"))
+    if (showReports) {
+      refreshReports(userId)
+    }
   }
 
   fun refreshReports(uid: String) {
@@ -82,6 +79,7 @@ class MapViewModel(
     viewModelScope.launch {
       try {
         val reports = reportRepository.getAllReports(uid).filter { it.location != null }
+
         _uiState.value = _uiState.value.copy(reports = reports)
       } catch (e: Exception) {
         Log.e("MapScreen", "Failed to load todos: ${e.message}")
@@ -133,8 +131,7 @@ class MapViewModel(
   }
 
   private suspend fun getLocationFromUserAddress(): Location? {
-    val uid = Firebase.auth.currentUser?.uid ?: return null
-    val user = userRepository.getUserFromId(uid)
+    val user = userRepository.getUserFromId(userId)
     return user.getOrNull()?.address
   }
 
@@ -178,10 +175,13 @@ class MapViewModel(
    * @see offsetLatLng for how the offset positions are calculated
    */
   fun spiderifiedReports(): List<SpiderifiedReport> {
+    val currentReports = uiState.value.reports
+
     val groups =
-        uiState.value.reports
-            .filter { it -> it.location != null }
+        currentReports
+            .filter { it.location != null }
             .groupBy { Pair(it.location!!.latitude, it.location.longitude) }
+
     val result = mutableListOf<SpiderifiedReport>()
 
     for ((latLong, group) in groups) {
@@ -201,6 +201,7 @@ class MapViewModel(
         }
       }
     }
+
     return result
   }
 
