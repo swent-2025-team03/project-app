@@ -3,6 +3,8 @@ package com.android.agrihealth.ui.report
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.agrihealth.data.model.device.notifications.Notification
+import com.android.agrihealth.data.model.device.notifications.NotificationHandlerFirebase
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
@@ -112,6 +114,14 @@ class ReportViewViewModel(
             _uiState.value.report.copy(
                 answer = _uiState.value.answerText, status = _uiState.value.status)
         repository.editReport(updatedReport.id, updatedReport)
+
+        // Send a notification
+        val farmerId = updatedReport.farmerId
+        val answer = updatedReport.answer ?: ""
+        val notification = Notification.VetAnswer(destinationUid = farmerId, answer = answer)
+        val messagingService = NotificationHandlerFirebase()
+        messagingService.uploadNotification(notification)
+
         _saveCompleted.value = true
       } catch (e: Exception) {
         Log.e("ReportViewModel", "Error saving report", e)
