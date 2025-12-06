@@ -55,8 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.statusColor
-import com.android.agrihealth.data.model.device.location.LocationViewModel
-import com.android.agrihealth.data.model.device.location.locationPermissionsRequester
+import com.android.agrihealth.data.model.device.location.LocationPermissionsRequester
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
@@ -99,7 +98,6 @@ const val AllFilterText = "All reports"
 @Composable
 fun MapScreen(
     mapViewModel: MapViewModel = viewModel(),
-    locationViewModel: LocationViewModel = viewModel(),
     navigationActions: NavigationActions? = null,
     isViewedFromOverview: Boolean = true,
     forceStartingPosition: Boolean = false
@@ -142,9 +140,7 @@ fun MapScreen(
       content = { pd ->
         Box(modifier = Modifier.fillMaxSize().padding(pd)) {
           if (!uiState.locationPermission) {
-            if (locationPermissionsRequester(locationViewModel)) {
-              mapViewModel.refreshMapPermission()
-            }
+            LocationPermissionsRequester(onComplete = { mapViewModel.refreshMapPermission() })
           }
           GoogleMap(
               cameraPositionState = cameraPositionState,

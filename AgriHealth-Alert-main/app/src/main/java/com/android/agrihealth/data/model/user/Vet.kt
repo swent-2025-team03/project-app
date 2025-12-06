@@ -14,7 +14,8 @@ data class Vet(
     val officeId: String? = null, // Which office the vet belongs to (unique)
     override val isGoogleAccount: Boolean = false,
     override val description: String? = null,
-    override val collected: Boolean = false
+    override val collected: Boolean = false,
+    override val deviceTokensFCM: Set<String> = emptySet()
 ) :
     User(
         uid,
@@ -25,4 +26,5 @@ data class Vet(
         address,
         isGoogleAccount,
         description,
-        collected)
+        collected,
+        deviceTokensFCM)
