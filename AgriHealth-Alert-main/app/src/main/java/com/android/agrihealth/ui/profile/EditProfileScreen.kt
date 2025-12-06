@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.connection.ConnectionRepository
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.*
@@ -42,6 +43,17 @@ import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
 
+enum class CodeType {
+  FARMER,
+  VET;
+
+  fun displayName(): String =
+      when (this) {
+        FARMER -> "Farmer"
+        VET -> "Vet"
+      }
+}
+
 object EditProfileScreenTestTags {
   const val FIRSTNAME_FIELD = "FirstNameField"
   const val LASTNAME_FIELD = "LastNameField"
@@ -53,9 +65,11 @@ object EditProfileScreenTestTags {
   const val ADD_CODE_BUTTON = "AddVetButton"
   const val SAVE_BUTTON = "SaveButton"
   const val PASSWORD_BUTTON = "PasswordButton"
-  const val ACTIVE_CODES_DROPDOWN = "ActiveCodesDropdown"
-  const val ACTIVE_CODE_ELEMENT = "ActiveCodeListElement"
   const val COPY_CODE_BUTTON = "CopyActiveCodeListElementButton"
+
+  fun dropdownTag(type: String) = "ACTIVE_CODES_DROPDOWN_$type"
+
+  fun dropdownElementTag(type: String) = "ACTIVE_CODE_ELEMENT_$type"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,8 +82,22 @@ fun EditProfileScreen(
     onSave: (User) -> Unit = { userViewModel.updateUser(it) },
     onPasswordChange: () -> Unit = {}
 ) {
+
+  val connectionRepository = remember { ConnectionRepository(connectionType = "") }
+  val codesViewModel = remember { CodesViewModel(userViewModel, connectionRepository) }
+
   val user by userViewModel.user.collectAsState()
   val userRole = user.role
+  val currentUser = user
+
+  LaunchedEffect(user) {
+    if (currentUser is Vet) {
+      codesViewModel.loadActiveCodesForVet(currentUser)
+    }
+  }
+
+  val farmerCodes by codesViewModel.farmerCodes.collectAsState()
+  val vetCodes by codesViewModel.vetCodes.collectAsState()
 
   val createManageOfficeViewModel =
       object : androidx.lifecycle.ViewModelProvider.Factory {
@@ -279,8 +307,9 @@ fun EditProfileScreen(
               // Active Codes (Vets only)
               if (user is Vet) {
                 Spacer(modifier = Modifier.height(16.dp))
-                val codes = (user as Vet).validCodes
-                if (codes.isNotEmpty()) ActiveCodeList(codes, snackbarHostState)
+                if (farmerCodes.isNotEmpty())
+                    ActiveCodeList(CodeType.FARMER, farmerCodes, snackbarHostState)
+                if (vetCodes.isNotEmpty()) ActiveCodeList(CodeType.VET, vetCodes, snackbarHostState)
               }
 
               Spacer(modifier = Modifier.weight(1f))
@@ -366,7 +395,7 @@ fun EditProfileScreenPreviewVet() {
 
 @Composable
 /** Creates an expandable list of every given code, along a "copy to clipboard" button */
-fun ActiveCodeList(codes: List<String>, snackbarHostState: SnackbarHostState) {
+fun ActiveCodeList(type: CodeType, codes: List<String>, snackbarHostState: SnackbarHostState) {
   var expanded by remember { mutableStateOf(false) }
 
   Column(modifier = Modifier.fillMaxWidth()) {
@@ -376,10 +405,10 @@ fun ActiveCodeList(codes: List<String>, snackbarHostState: SnackbarHostState) {
             Modifier.fillMaxWidth()
                 .clickable { expanded = !expanded }
                 .padding(horizontal = 12.dp, vertical = 10.dp)
-                .testTag(EditProfileScreenTestTags.ACTIVE_CODES_DROPDOWN),
+                .testTag(EditProfileScreenTestTags.dropdownTag(type.name)),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically) {
-          Text(text = "Active codes")
+          Text(text = type.displayName())
           Icon(
               imageVector =
                   if (expanded) Icons.Default.KeyboardArrowDown
@@ -397,7 +426,8 @@ fun ActiveCodeList(codes: List<String>, snackbarHostState: SnackbarHostState) {
                 Text(
                     text = code,
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.testTag(EditProfileScreenTestTags.ACTIVE_CODE_ELEMENT))
+                    modifier =
+                        Modifier.testTag(EditProfileScreenTestTags.dropdownElementTag(type.name)))
                 CopyToClipboardButton(code, snackbarHostState)
               }
         }

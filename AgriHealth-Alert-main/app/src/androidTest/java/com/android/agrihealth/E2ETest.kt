@@ -242,7 +242,8 @@ class E2ETest : FirebaseEmulatorsTest() {
             lastname = "Vet",
             email = "vet@test.com",
             address = null,
-            validCodes = emptyList(),
+            farmerConnectCodes = emptyList(),
+            vetConnectCodes = emptyList(),
             officeId = "off1")
     val userViewModel = UserViewModel(initialUser = vet)
     runTest {
@@ -261,6 +262,47 @@ class E2ETest : FirebaseEmulatorsTest() {
     checkLinkedVetIsNotEmpty()
     clickChangePassword()
     changePassword(password, newPassword)
+  }
+
+  @Test
+  fun vetCreatesCodes_editProfileShowsFarmerDropdowns() {
+    composeTestRule.setContent { AgriHealthApp() }
+    composeTestRule.waitForIdle()
+    val email = "vet@test.com"
+    val password = "123456"
+    val vet =
+        Vet(
+            uid = "vet_001",
+            firstname = "Dr",
+            lastname = "Vet",
+            email = email,
+            address = null,
+            farmerConnectCodes = emptyList(),
+            vetConnectCodes = emptyList(),
+            officeId = "off1")
+    val userViewModel = UserViewModel(initialUser = vet)
+    runTest {
+      AuthRepositoryProvider.repository.signUpWithEmailAndPassword(vet.email, "123456", vet)
+    }
+    val codesViewModel =
+        CodesViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
+    codesViewModel.generateCode()
+
+    completeSignIn(email, password)
+    checkOverviewScreenIsDisplayed()
+    goToProfileFromOverview()
+    composeTestRule
+        .onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    checkEditProfileScreenIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.dropdownTag("FARMER"))
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.dropdownElementTag("FARMER"))
+        .assertIsDisplayed()
   }
 
   // ----------- Helper functions -----------
