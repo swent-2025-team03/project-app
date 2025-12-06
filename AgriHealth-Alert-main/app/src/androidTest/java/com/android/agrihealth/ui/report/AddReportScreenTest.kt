@@ -28,6 +28,7 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.testutil.TestConstants
+import com.android.agrihealth.ui.common.ImagePickerTestTags
 import com.android.agrihealth.ui.user.UserViewModelContract
 import com.android.agrihealth.utils.TestAssetUtils.FAKE_PHOTO_FILE
 import com.android.agrihealth.utils.TestAssetUtils.cleanupTestAssets
@@ -406,9 +407,9 @@ class AddReportScreenTest {
 
     scrollToUploadSection()
     composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG).assertIsDisplayed()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_CANCEL).performClick()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG).assertIsNotDisplayed()
+    composeRule.onNodeWithTag(ImagePickerTestTags.DIALOG).assertIsDisplayed()
+    composeRule.onNodeWithTag(ImagePickerTestTags.CANCEL_BUTTON).performClick()
+    composeRule.onNodeWithTag(ImagePickerTestTags.DIALOG).assertIsNotDisplayed()
     composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsNotDisplayed()
     composeRule
         .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
@@ -424,7 +425,7 @@ class AddReportScreenTest {
 
     scrollToUploadSection()
     composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_GALLERY).assertHasClickAction()
+    composeRule.onNodeWithTag(ImagePickerTestTags.GALLERY_BUTTON).assertHasClickAction()
 
     // Simulate picking photo from gallery
     val imageUri = getUriFrom(FAKE_PHOTO_FILE)
@@ -447,7 +448,7 @@ class AddReportScreenTest {
     scrollToUploadSection()
 
     composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_CAMERA).assertHasClickAction()
+    composeRule.onNodeWithTag(ImagePickerTestTags.CAMERA_BUTTON).assertHasClickAction()
 
     // Simulate picking photo with camera
     val cameraUri = getUriFrom(FAKE_PHOTO_FILE)

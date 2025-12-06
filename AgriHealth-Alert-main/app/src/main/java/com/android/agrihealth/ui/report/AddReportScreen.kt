@@ -59,10 +59,6 @@ object AddReportScreenTestTags {
   const val OFFICE_DROPDOWN = "officeDropDown"
   const val CREATE_BUTTON = "createButton"
   const val UPLOAD_IMAGE_BUTTON = "uploadImageButton"
-  const val UPLOAD_IMAGE_DIALOG = "uploadImageDialog"
-  const val DIALOG_GALLERY = "uploadImageDialogGallery"
-  const val DIALOG_CAMERA = "uploadImageDialogCamera"
-  const val DIALOG_CANCEL = "uploadImageDialogCancel"
   const val IMAGE_PREVIEW = "imageDisplay"
   const val SCROLL_CONTAINER = "scrollContainer"
   const val DIALOG_SUCCESS = "dialogSuccess"
@@ -90,9 +86,6 @@ object AddReportUploadButtonTexts {
 
 /** Texts of the dialog shown when clicking on uploading photo button */
 object AddReportDialogTexts {
-  const val GALLERY = "Gallery"
-  const val CAMERA = "Camera"
-  const val CANCEL = "Cancel"
   const val OK = "Ok"
   const val TITLE_SUCCESS = "Success!"
   const val TITLE_FAILURE = "Error!"
