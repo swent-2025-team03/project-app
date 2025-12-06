@@ -18,13 +18,11 @@ class AuthRepositoryFirebase(
     private val helper: GoogleSignInHelper = DefaultGoogleSignInHelper()
 ) : AuthRepository {
 
-  override suspend fun signInWithEmailAndPassword(
-      email: String,
-      password: String
-  ): Result<FirebaseUser> {
+  override suspend fun signInWithEmailAndPassword(email: String, password: String): Result<String> {
     return try {
       val loginResult = auth.signInWithEmailAndPassword(email, password).await()
-      val user = loginResult.user ?: return Result.failure(NullPointerException("Log in failed"))
+      val user =
+          loginResult.user?.uid ?: return Result.failure(NullPointerException("Log in failed"))
 
       Result.success(user)
     } catch (e: Exception) {
@@ -51,7 +49,7 @@ class AuthRepositoryFirebase(
     }
   }
 
-  override suspend fun signInWithGoogle(credential: Credential): Result<FirebaseUser> {
+  override suspend fun signInWithGoogle(credential: Credential): Result<String> {
     return try {
       if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
         val idToken = helper.extractIdTokenCredential(credential.data).idToken
@@ -63,7 +61,7 @@ class AuthRepositoryFirebase(
                 ?: return Result.failure(
                     IllegalStateException("Login failed : Could not retrieve user information"))
 
-        Result.success(user)
+        Result.success(user.uid)
       } else {
         return Result.failure(
             IllegalStateException("Login failed: Credential is not of type Google ID"))
@@ -78,7 +76,7 @@ class AuthRepositoryFirebase(
       email: String,
       password: String,
       userData: User
-  ): Result<FirebaseUser> {
+  ): Result<String> {
     val userRepository = UserRepositoryProvider.repository
 
     return try {
@@ -102,7 +100,7 @@ class AuthRepositoryFirebase(
         Result.failure<FirebaseUser>(NullPointerException("Account creation failed"))
       }
 
-      Result.success(user)
+      Result.success(user.uid)
     } catch (e: Exception) {
       Result.failure(e)
     }
