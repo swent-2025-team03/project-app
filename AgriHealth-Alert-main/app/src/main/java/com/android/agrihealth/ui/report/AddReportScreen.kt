@@ -101,9 +101,6 @@ object AddReportDialogTexts {
   const val TITLE_FAILURE = "Error!"
 }
 
-// This **MUST** be the same as in: AndroidManifest.xml --> <provider --> android:authorities
-private fun getFileProviderAuthority(context: Context): String =
-    context.packageName + ".fileprovider" // TODO: Maybe move this into its own object
 
 // Helper function to format the error message shown in the error dialog when creating a report
 // failed
@@ -113,16 +110,6 @@ private fun generateCreateReportErrorMessage(e: Throwable?): String {
   val fullMessage = "${AddReportFeedbackTexts.FAILURE}\n\nDetails:\n${errorMessage}"
 
   return fullMessage
-}
-
-private fun openAppPermissionsSettings(context: Context) {
-  val intent =
-      Intent(
-              Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-              Uri.fromParts("package", context.packageName, null),
-          )
-          .apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-  context.startActivity(intent)
 }
 
 /**
@@ -523,60 +510,6 @@ fun UploadRemovePhotoButton(
         style = MaterialTheme.typography.titleLarge,
     )
   }
-}
-
-/**
- * Dialog that asks the user whether they want to upload a photo from gallery or from camera
- *
- * @param onDismiss Called when the user dismisses the dialog (i.e clicks on "Cancel")
- * @param onGalleryClick Called when the user clicks on the "Gallery" button
- * @param onCameraClick Called when the user clicks on the "Camera" button
- */
-@Composable
-fun PhotoSourceDialog(
-    onDismiss: () -> Unit,
-    onGalleryClick: () -> Unit,
-    onCameraClick: () -> Unit,
-) {
-  AlertDialog(
-      modifier = Modifier.testTag(AddReportScreenTestTags.UPLOAD_IMAGE_DIALOG),
-      onDismissRequest = onDismiss,
-      title = { Text("Select Image Source") },
-      text = { Text("Choose from gallery or take a new photo.") },
-      confirmButton = {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-          TextButton(
-              modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_GALLERY),
-              onClick = onGalleryClick,
-              colors =
-                  ButtonDefaults.textButtonColors(
-                      contentColor = MaterialTheme.colorScheme.onSurface),
-          ) {
-            Text(AddReportDialogTexts.GALLERY)
-          }
-          TextButton(
-              modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CAMERA),
-              onClick = onCameraClick,
-              colors =
-                  ButtonDefaults.textButtonColors(
-                      contentColor = MaterialTheme.colorScheme.onSurface),
-          ) {
-            Text(AddReportDialogTexts.CAMERA)
-          }
-        }
-      },
-      dismissButton = {
-        TextButton(
-            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_CANCEL),
-            onClick = onDismiss,
-            colors =
-                ButtonDefaults.textButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
-        ) {
-          Text(AddReportDialogTexts.CANCEL)
-        }
-      },
-  )
 }
 
 /**
