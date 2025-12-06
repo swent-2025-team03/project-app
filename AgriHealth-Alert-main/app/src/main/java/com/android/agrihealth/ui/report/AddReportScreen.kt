@@ -76,7 +76,6 @@ object AddReportFeedbackTexts {
   const val SUCCESS = "Report created successfully!"
   const val FAILURE = "Couldn't upload report... Please verify your connection and try again..."
   const val INCOMPLETE = "Please fill in all required fields..."
-
   const val UNKNOWN = "Unknown error..."
 }
 
