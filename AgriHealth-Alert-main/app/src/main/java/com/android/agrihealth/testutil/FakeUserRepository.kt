@@ -2,6 +2,7 @@ package com.android.agrihealth.testutil
 
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.data.model.user.Vet
 
 private const val USER_NOT_FOUND = "User not found"
 
@@ -37,6 +38,15 @@ class FakeUserRepository(private var targetUser: User? = null) : UserRepository 
       Result.success(targetUser!!)
     } else {
       Result.failure(NoSuchElementException(USER_NOT_FOUND))
+    }
+  }
+
+  override suspend fun getVetsInOffice(officeId: String): List<String> {
+    val user = targetUser
+    return if (user is Vet && user.officeId == officeId) {
+      listOf(user.uid)
+    } else {
+      emptyList()
     }
   }
 }

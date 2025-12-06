@@ -1,7 +1,12 @@
 package com.android.agrihealth.ui.report
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.agrihealth.data.model.authentification.UserRepository
+import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.data.model.device.notifications.Notification
+import com.android.agrihealth.data.model.device.notifications.NotificationHandlerFirebase
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.HealthQuestionFactory
 import com.android.agrihealth.data.model.report.QuestionForm
@@ -25,7 +30,8 @@ data class AddReportUiState(
 
 class AddReportViewModel(
     private val userId: String,
-    private val reportRepository: ReportRepository = ReportRepositoryProvider.repository
+    private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
+    private val userRepository: UserRepository = UserRepositoryProvider.repository
 ) : ViewModel(), AddReportViewModelContract {
   private val _uiState = MutableStateFlow(AddReportUiState())
   override val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
@@ -89,6 +95,17 @@ class AddReportViewModel(
             location = uiState.address)
 
     viewModelScope.launch { reportRepository.addReport(newReport) }
+
+    // Send a notification
+    val vetIds = userRepository.getVetsInOffice(newReport.officeId)
+    val reportTitle = newReport.title
+    vetIds.forEach { vetId ->
+      val notification = Notification.NewReport(destinationUid = vetId, reportTitle = reportTitle)
+      val messagingService = NotificationHandlerFirebase()
+      messagingService.uploadNotification(notification) { success ->
+        Log.d("Notification", "NewReport sent to $vetId = $success")
+      }
+    }
 
     // Clears all the fields
     clearInputs() // TODO: Call only if addReport succeeds
