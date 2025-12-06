@@ -100,7 +100,7 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
             else -> null
           }
         }
-    val photoUri = doc.getString("photoUri")
+    val photoURL = doc.getString("photoUri")
     val farmerId = doc.getString("farmerId") ?: return null
     val officeId = doc.getString("officeId") ?: return null
     val statusStr = doc.getString("status") ?: return null
@@ -138,8 +138,8 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
         id = id,
         title = title,
         description = description,
+        photoURL = photoURL,
         questionForms = questionForms,
-        photoUri = photoUri,
         farmerId = farmerId,
         officeId = officeId,
         status = status,

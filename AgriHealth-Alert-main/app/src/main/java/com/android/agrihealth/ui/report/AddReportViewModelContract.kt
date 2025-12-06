@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import android.net.Uri
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.QuestionForm
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +20,13 @@ interface AddReportViewModelContract {
 
   fun updateQuestion(index: Int, updated: QuestionForm)
 
-  suspend fun createReport(): Boolean
+  suspend fun createReport(): CreateReportResult
 
   fun clearInputs()
+
+  fun setPhoto(uri: Uri?)
+
+  fun removePhoto()
+
+  fun setUploadedImagePath(path: String?)
 }

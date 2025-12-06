@@ -53,13 +53,13 @@ object PlannerTestReportsData {
           "rep_id1",
           "Report title 1",
           "Description 1",
-          emptyList(),
-          null,
-          user.uid,
-          "vetId1",
-          ReportStatus.PENDING,
-          null,
-          Location(46.9481, 7.4474, "Place name 1"),
+          photoURL = null,
+          questionForms = emptyList(),
+          farmerId = user.uid,
+          officeId = "officeId1",
+          status = ReportStatus.PENDING,
+          answer = null,
+          location = Location(46.9481, 7.4474, "Place name 1"),
           duration = LocalTime.of(0, 10))
   val report2 =
       report1.copy(id = "rep_id2", status = ReportStatus.RESOLVED, duration = LocalTime.of(1, 0))
