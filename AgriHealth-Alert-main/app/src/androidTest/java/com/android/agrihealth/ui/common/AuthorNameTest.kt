@@ -67,7 +67,6 @@ class AuthorNameTest {
   private fun setRememberUserNameContent(uid: String?) {
     val repo = FakeUserDirectoryDataSource()
     composeRule.setContent {
-      // Manually inject ViewModel
       val vm = AuthorNameViewModel(repo)
       val name = with(vm) { rememberUserName(uid) }
       Text(name)
