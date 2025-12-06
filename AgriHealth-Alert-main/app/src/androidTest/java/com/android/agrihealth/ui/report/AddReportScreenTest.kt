@@ -34,7 +34,6 @@ import com.android.agrihealth.utils.TestAssetUtils.FAKE_PHOTO_FILE
 import com.android.agrihealth.utils.TestAssetUtils.cleanupTestAssets
 import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
 import kotlinx.coroutines.flow.MutableStateFlow
-import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -118,7 +117,6 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(dismissTestTag).assertHasClickAction()
   }
 
-
   // Scrolls down
   private fun scrollToUploadSection() {
     composeRule
@@ -183,11 +181,10 @@ class AddReportScreenTest {
       break
     }
 
-
     if (doSubmitReport) {
       composeRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
+          .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+          .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
       composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
     }
   }
@@ -425,16 +422,14 @@ class AddReportScreenTest {
 
     composeRule.waitForIdle()
     val imageUri = getUriFrom(FAKE_PHOTO_FILE)
-    val fakeViewModel = FakeAddReportViewModel().apply {
-      setPhoto(imageUri)
-    }
+    val fakeViewModel = FakeAddReportViewModel().apply { setPhoto(imageUri) }
 
     composeRule.waitForIdle()
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-          onCreateReport = {},
-          addReportViewModel = fakeViewModel,
+            onCreateReport = {},
+            addReportViewModel = fakeViewModel,
         )
       }
     }
@@ -443,17 +438,19 @@ class AddReportScreenTest {
     scrollToUploadSection()
 
     composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeRule.onAllNodesWithTag(AddReportScreenTestTags.IMAGE_PREVIEW)
-        .fetchSemanticsNodes().isNotEmpty()
+      composeRule
+          .onAllNodesWithTag(AddReportScreenTestTags.IMAGE_PREVIEW)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
     }
 
     scrollToUploadSection()
 
     composeRule.waitForIdle()
     composeRule
-      .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-      .assertIsDisplayed()
-      .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertIsDisplayed()
+        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
   }
 
   @Test
