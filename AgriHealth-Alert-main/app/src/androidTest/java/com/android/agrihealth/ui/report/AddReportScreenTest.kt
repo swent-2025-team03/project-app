@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import com.android.agrihealth.data.model.location.Location
@@ -20,10 +21,12 @@ import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.repository.ReportRepository
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.testutil.FakeUserViewModel
+import com.android.agrihealth.testutil.SlowFakeReportRepository
 import com.android.agrihealth.testutil.TestConstants
-import com.android.agrihealth.ui.loading.LoadingTestTags
 import com.android.agrihealth.ui.user.UserViewModelContract
 import org.junit.Assert
 import org.junit.Rule
@@ -52,66 +55,95 @@ class AddReportScreenTest {
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
   // -- Helper function --
-  private fun createReport(title: String, description: String) {
-    composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput(title)
-    composeRule
-        .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
-        .performTextInput(description)
-    val scrollContainer = composeRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-    var index = 0
-    while (true) {
-      composeRule.waitForIdle()
-      val openNode =
+  private fun fillAndCreateReport(
+      title: String = "",
+      description: String = "",
+      officeId: String? = null,
+      address: Location? = null,
+      fillQuestions: Boolean = false,
+      viewModel: AddReportViewModel? = null,
+  ) {
+    // 1) Titre
+    if (title.isNotBlank()) {
+      composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput(title)
+    }
+
+    // 2) Description
+    if (description.isNotBlank()) {
+      composeRule
+          .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
+          .performTextInput(description)
+    }
+
+    // 3) Office (via UI + éventuellement ViewModel)
+    if (officeId != null) {
+      composeRule
+          .onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN)
+          .performScrollTo()
+          .performClick()
+
+      composeRule
+          .onNodeWithTag(
+              AddReportScreenTestTags.getTestTagForOffice(officeId), useUnmergedTree = true)
+          .performClick()
+
+      // Pour le cas du vrai AddReportViewModel (overlay test),
+      // on force aussi l'état côté VM si on a un viewModel
+      viewModel?.setOffice(officeId)
+    }
+
+    // 4) Adresse : la UI ne met pas l’adresse dans le VM toute seule en test,
+    // donc on passe direct par le ViewModel si fourni.
+    if (address != null && viewModel != null) {
+      viewModel.setAddress(address)
+    }
+
+    // 5) Questions
+    if (fillQuestions) {
+      val scroll = composeRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+      var index = 0
+      while (true) {
+        composeRule.waitForIdle()
+        when {
           composeRule
               .onAllNodesWithTag("QUESTION_${index}_OPEN")
               .fetchSemanticsNodes()
-              .firstOrNull()
-      if (openNode != null) {
-        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_OPEN"))
-        composeRule.onNodeWithTag("QUESTION_${index}_OPEN").performTextInput("answer $index")
-        index++
-        continue
-      }
-      val yesNode =
+              .isNotEmpty() -> {
+            scroll.performScrollToNode(hasTestTag("QUESTION_${index}_OPEN"))
+            composeRule.onNodeWithTag("QUESTION_${index}_OPEN").performTextInput("answer $index")
+          }
           composeRule
               .onAllNodesWithTag("QUESTION_${index}_YESORNO")
               .fetchSemanticsNodes()
-              .firstOrNull()
-      if (yesNode != null) {
-        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_YESORNO"))
-        val options = composeRule.onAllNodesWithTag("QUESTION_${index}_YESORNO")
-        options[0].performClick()
-        index++
-        continue
-      }
-      val mcqNode =
-          composeRule.onAllNodesWithTag("QUESTION_${index}_MCQ").fetchSemanticsNodes().firstOrNull()
-      if (mcqNode != null) {
-        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQ"))
-        val options = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQ")
-        options[0].performClick()
-        index++
-        continue
-      }
-      val mcqONode =
+              .isNotEmpty() -> {
+            scroll.performScrollToNode(hasTestTag("QUESTION_${index}_YESORNO"))
+            composeRule.onAllNodesWithTag("QUESTION_${index}_YESORNO")[0].performClick()
+          }
+          composeRule
+              .onAllNodesWithTag("QUESTION_${index}_MCQ")
+              .fetchSemanticsNodes()
+              .isNotEmpty() -> {
+            scroll.performScrollToNode(hasTestTag("QUESTION_${index}_MCQ"))
+            composeRule.onAllNodesWithTag("QUESTION_${index}_MCQ")[0].performClick()
+          }
           composeRule
               .onAllNodesWithTag("QUESTION_${index}_MCQO")
               .fetchSemanticsNodes()
-              .firstOrNull()
-      if (mcqONode != null) {
-        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQO"))
-        val options = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQO")
-        options[0].performClick()
+              .isNotEmpty() -> {
+            scroll.performScrollToNode(hasTestTag("QUESTION_${index}_MCQO"))
+            composeRule.onAllNodesWithTag("QUESTION_${index}_MCQO")[0].performClick()
+          }
+          else -> break
+        }
         index++
-        continue
       }
-      break
     }
 
+    // 6) Bouton CREATE
     composeRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
-    composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
+        .onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON)
+        .performScrollTo()
+        .performClick()
   }
 
   @Test
@@ -238,7 +270,12 @@ class AddReportScreenTest {
         AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
       }
     }
-    createReport("title", "description")
+
+    fillAndCreateReport(
+        title = "title",
+        description = "description",
+    )
+
     // Check that dialog appears
     composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeRule
@@ -260,7 +297,10 @@ class AddReportScreenTest {
       }
     }
 
-    createReport("title", "description")
+    fillAndCreateReport(
+        title = "title",
+        description = "description",
+    )
     composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeRule.onAllNodesWithText("OK").fetchSemanticsNodes().isNotEmpty()
     }
@@ -271,56 +311,32 @@ class AddReportScreenTest {
 
   @Test
   fun createReport_showsLoadingOverlay() {
-    // Fake ViewModel that simulates slow repository
-    val slowViewModel =
-        object : FakeAddReportViewModel() {
-          override suspend fun createReport(): Boolean {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-            kotlinx.coroutines.delay(1200) // simulate slow Firestore
-            _uiState.value = _uiState.value.copy(isLoading = false)
-            return true
-          }
-        }
+
+    val slowRepo: ReportRepository = SlowFakeReportRepository(delayMs = 1200L)
+    val viewModel = AddReportViewModel(userId = "test_user", reportRepository = slowRepo)
 
     composeRule.setContent {
       MaterialTheme {
         AddReportScreen(
-            userRole = UserRole.FARMER,
-            userId = "test_user",
+            userViewModel = fakeFarmerViewModel(),
             onCreateReport = {},
-            addReportViewModel = slowViewModel)
+            addReportViewModel = viewModel)
       }
     }
 
-    // Initially overlay not visible
-    composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
-    composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
+    fillAndCreateReport(
+        title = "Slow Test",
+        description = "Desc",
+        officeId = "Best Office Ever!",
+        address = Location(0.0, 0.0, "Test address"),
+        fillQuestions = true,
+        viewModel = viewModel,
+    )
 
-    // Enter valid input
-    createReport("Slow Test Title", "Desc")
-
-    // Wait until loading state becomes true (defensive, though immediate)
-    composeRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
-      composeRule.onAllNodesWithTag(LoadingTestTags.SCRIM).fetchSemanticsNodes().isNotEmpty() &&
-          composeRule.onAllNodesWithTag(LoadingTestTags.SPINNER).fetchSemanticsNodes().isNotEmpty()
-    }
-
-    // Assert that loading overlay appears
-    composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
-    composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
-
-    composeRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
-      composeRule.onAllNodesWithTag(LoadingTestTags.SCRIM).fetchSemanticsNodes().isEmpty() &&
-          composeRule.onAllNodesWithTag(LoadingTestTags.SPINNER).fetchSemanticsNodes().isEmpty()
-    }
-
-    // Wait until loading finishes
-    composeRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
-      !slowViewModel.uiState.value.isLoading
-    }
-
-    // Overlay should be gone
-    composeRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
-    composeRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
+    composeRule.assertOverlayDuringLoading(
+        isLoading = { viewModel.uiState.value.isLoading },
+        timeoutStart = TestConstants.DEFAULT_TIMEOUT,
+        timeoutEnd = TestConstants.DEFAULT_TIMEOUT,
+    )
   }
 }

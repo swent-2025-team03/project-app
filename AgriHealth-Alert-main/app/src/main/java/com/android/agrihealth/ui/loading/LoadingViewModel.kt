@@ -7,8 +7,11 @@ suspend fun <S> MutableStateFlow<S>.withLoadingState(
     block: suspend () -> Unit
 ) {
   value = applyLoading(value, true)
+
   try {
     block()
+  } catch (e: Exception) {
+    throw e
   } finally {
     value = applyLoading(value, false)
   }

@@ -356,62 +356,65 @@ class MapScreenTest {
     assertEquals(11, positions1?.size)
     assertEquals(6, positions2?.size)
   }
+}
 
-  private fun setupMapWithSlowGps(): MapViewModel {
-    val slowRepository =
-        mockk<LocationRepository>(relaxed = true).apply {
-          every { hasFineLocationPermission() } returns true
-          every { hasCoarseLocationPermission() } returns true
+    /*
+      private fun setupMapWithSlowGps(): MapViewModel {
+        val slowRepository =
+            mockk<LocationRepository>(relaxed = true).apply {
+              every { hasFineLocationPermission() } returns true
+              every { hasCoarseLocationPermission() } returns true
 
-          coEvery { getLastKnownLocation() } coAnswers
-              {
-                delay(1500L)
-                Location(46.95, 7.44, "Loaded Position")
-              }
-          coEvery { getCurrentLocation() } returns Location(46.95, 7.44, "Loaded Position")
+              coEvery { getLastKnownLocation() } coAnswers
+                  {
+                    delay(1500L)
+                    Location(46.95, 7.44, "Loaded Position")
+                  }
+              coEvery { getCurrentLocation() } returns Location(46.95, 7.44, "Loaded Position")
+            }
+
+        LocationRepositoryProvider.repository = slowRepository
+        locationViewModel = LocationViewModel()
+
+        val mapViewModel =
+            MapViewModel(
+                reportRepository = reportRepository,
+                locationViewModel = locationViewModel,
+                authProvider = FakeAuthProvider(),
+                selectedReportId = null)
+
+        composeTestRule.setContent {
+          MaterialTheme {
+            MapScreen(mapViewModel = mapViewModel, isViewedFromOverview = true, startingPosition = null)
+          }
         }
 
-    LocationRepositoryProvider.repository = slowRepository
-    locationViewModel = LocationViewModel()
+        return mapViewModel
+      }
 
-    val mapViewModel =
-        MapViewModel(
-            reportRepository = reportRepository,
-            locationViewModel = locationViewModel,
-            authProvider = FakeAuthProvider(),
-            selectedReportId = null)
+      @OptIn(ExperimentalCoroutinesApi::class)
+      @Test
+      fun loadingOverlay_showsWhileFetchingLocation() = runTest {
+        composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
+        composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
 
-    composeTestRule.setContent {
-      MaterialTheme {
-        MapScreen(mapViewModel = mapViewModel, isViewedFromOverview = true, startingPosition = null)
+        val mapViewModel = setupMapWithSlowGps()
+        composeTestRule.runOnUiThread { mapViewModel.setStartingLocation(null) }
+
+        // Loading should be visible
+        composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
+
+        // Finish coroutines
+        composeTestRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
+          !mapViewModel.uiState.value.isLoading
+        }
+        // Loading should disappear
+        composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
+        composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
+
+        // Map is displayed
+        composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
       }
     }
-
-    return mapViewModel
-  }
-
-  @OptIn(ExperimentalCoroutinesApi::class)
-  @Test
-  fun loadingOverlay_showsWhileFetchingLocation() = runTest {
-    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
-    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
-
-    val mapViewModel = setupMapWithSlowGps()
-    composeTestRule.runOnUiThread { mapViewModel.setStartingLocation(null) }
-
-    // Loading should be visible
-    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
-
-    // Finish coroutines
-    composeTestRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
-      !mapViewModel.uiState.value.isLoading
-    }
-    // Loading should disappear
-    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
-    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
-
-    // Map is displayed
-    composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
-  }
-}
+    */

@@ -5,12 +5,17 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.data.repository.ReportRepository
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testutil.FakeOverviewViewModel
+import com.android.agrihealth.testutil.SlowFakeReportRepository
+import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
 import com.android.agrihealth.testutil.TestReportRepository
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -481,14 +486,21 @@ class ReportViewScreenTest {
 
   @Test
   fun reportView_showsLoadingOverlayWhileFetchingReport() {
-    val sampleReport = ReportViewUIState().report.copy(id = "RPT_SLOW")
-
-    val slowRepo =
-        SlowFakeReportRepository(
-            reports = listOf(sampleReport),
-        )
-
-    val vm = ReportViewModel(repository = slowRepo)
+    val sampleReport =
+        Report(
+            id = "RPT_SLOW",
+            title = "Slow loading report",
+            description = "Testing slow repository",
+            questionForms = emptyList(),
+            photoUri = null,
+            farmerId = "FARMER_123",
+            officeId = "OFF_456",
+            status = ReportStatus.PENDING,
+            answer = null,
+            location = null,
+            assignedVet = null)
+    val slowRepo: ReportRepository = SlowFakeReportRepository(listOf(sampleReport))
+    val vm = ReportViewViewModel(repository = slowRepo)
 
     composeTestRule.setContent {
       val nav = rememberNavController()
@@ -500,18 +512,10 @@ class ReportViewScreenTest {
           reportId = "RPT_SLOW")
     }
 
-    composeTestRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
-      vm.uiState.value.isLoading
-    }
-
-    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
-
-    composeTestRule.waitUntil(timeoutMillis = TestConstants.LONG_TIMEOUT) {
-      !vm.uiState.value.isLoading
-    }
-
-    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
-    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
+    composeTestRule.assertOverlayDuringLoading(
+        isLoading = { vm.uiState.value.isLoading },
+        timeoutStart = TestConstants.DEFAULT_TIMEOUT,
+        timeoutEnd = TestConstants.LONG_TIMEOUT,
+    )
   }
 }

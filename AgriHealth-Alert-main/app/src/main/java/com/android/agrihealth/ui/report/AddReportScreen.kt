@@ -32,6 +32,7 @@ import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.ui.common.OfficeNameViewModel
+import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.user.UserViewModel
@@ -123,185 +124,188 @@ fun AddReportScreen(
 
   LaunchedEffect(Unit) { addReportViewModel.setOffice(selectedOption) }
 
-  Scaffold(
-      snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-      topBar = {
-        // Top bar with back arrow and title/status
-        TopAppBar(
-            title = {
-              Row(
-                  modifier = Modifier.fillMaxWidth(),
-                  horizontalArrangement = Arrangement.SpaceBetween,
-                  verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = Screen.AddReport.name,
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.weight(1f).testTag(NavigationTestTags.TOP_BAR_TITLE))
-                  }
-            },
-            navigationIcon = {
-              IconButton(
-                  onClick = onBack,
-                  modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back")
-                  }
-            })
-      }) { padding ->
+  LoadingOverlay(isLoading = uiState.isLoading) {
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        topBar = {
+          // Top bar with back arrow and title/status
+          TopAppBar(
+              title = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically) {
+                      Text(
+                          text = Screen.AddReport.name,
+                          style = MaterialTheme.typography.titleLarge,
+                          modifier = Modifier.weight(1f).testTag(NavigationTestTags.TOP_BAR_TITLE))
+                    }
+              },
+              navigationIcon = {
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
+                      Icon(
+                          imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                          contentDescription = "Back")
+                    }
+              })
+        }) { padding ->
 
-        // Main scrollable content
-        Column(
-            modifier =
-                Modifier.padding(padding)
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp)
-                    .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
-            verticalArrangement = Arrangement.Top) {
-              HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
+          // Main scrollable content
+          Column(
+              modifier =
+                  Modifier.padding(padding)
+                      .fillMaxSize()
+                      .verticalScroll(rememberScrollState())
+                      .padding(16.dp)
+                      .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
+              verticalArrangement = Arrangement.Top) {
+                HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
 
-              Field(
-                  uiState.title,
-                  { addReportViewModel.setTitle(it) },
-                  "Title",
-                  AddReportScreenTestTags.TITLE_FIELD)
-              Field(
-                  uiState.description,
-                  { addReportViewModel.setDescription(it) },
-                  "Description",
-                  AddReportScreenTestTags.DESCRIPTION_FIELD)
+                Field(
+                    uiState.title,
+                    { addReportViewModel.setTitle(it) },
+                    "Title",
+                    AddReportScreenTestTags.TITLE_FIELD)
+                Field(
+                    uiState.description,
+                    { addReportViewModel.setDescription(it) },
+                    "Description",
+                    AddReportScreenTestTags.DESCRIPTION_FIELD)
 
-              // Questions
-              uiState.questionForms.forEachIndexed { index, question ->
-                when (question) {
-                  is OpenQuestion -> {
-                    OpenQuestionItem(
-                        question = question,
-                        onAnswerChange = { updated ->
-                          addReportViewModel.updateQuestion(index, updated)
-                        },
-                        enabled = true,
-                        modifier = Modifier.testTag("QUESTION_${index}_OPEN"))
-                  }
-                  is YesOrNoQuestion -> {
-                    YesOrNoQuestionItem(
-                        question = question,
-                        onAnswerChange = { updated ->
-                          addReportViewModel.updateQuestion(index, updated)
-                        },
-                        enabled = true,
-                        modifier = Modifier.testTag("QUESTION_${index}_YESORNO"))
-                  }
-                  is MCQ -> {
-                    MCQItem(
-                        question = question,
-                        onAnswerChange = { updated ->
-                          addReportViewModel.updateQuestion(index, updated)
-                        },
-                        enabled = true,
-                        modifier = Modifier.testTag("QUESTION_${index}_MCQ"))
-                  }
-                  is MCQO -> {
-                    MCQOItem(
-                        question = question,
-                        onAnswerChange = { updated ->
-                          addReportViewModel.updateQuestion(index, updated)
-                        },
-                        enabled = true,
-                        modifier = Modifier.testTag("QUESTION_${index}_MCQO"))
+                // Questions
+                uiState.questionForms.forEachIndexed { index, question ->
+                  when (question) {
+                    is OpenQuestion -> {
+                      OpenQuestionItem(
+                          question = question,
+                          onAnswerChange = { updated ->
+                            addReportViewModel.updateQuestion(index, updated)
+                          },
+                          enabled = true,
+                          modifier = Modifier.testTag("QUESTION_${index}_OPEN"))
+                    }
+                    is YesOrNoQuestion -> {
+                      YesOrNoQuestionItem(
+                          question = question,
+                          onAnswerChange = { updated ->
+                            addReportViewModel.updateQuestion(index, updated)
+                          },
+                          enabled = true,
+                          modifier = Modifier.testTag("QUESTION_${index}_YESORNO"))
+                    }
+                    is MCQ -> {
+                      MCQItem(
+                          question = question,
+                          onAnswerChange = { updated ->
+                            addReportViewModel.updateQuestion(index, updated)
+                          },
+                          enabled = true,
+                          modifier = Modifier.testTag("QUESTION_${index}_MCQ"))
+                    }
+                    is MCQO -> {
+                      MCQOItem(
+                          question = question,
+                          onAnswerChange = { updated ->
+                            addReportViewModel.updateQuestion(index, updated)
+                          },
+                          enabled = true,
+                          modifier = Modifier.testTag("QUESTION_${index}_MCQO"))
+                    }
                   }
                 }
+
+                OutlinedTextField(
+                    value = uiState.address?.name ?: "Select a Location",
+                    placeholder = { Text("Select a Location") },
+                    onValueChange = {},
+                    readOnly = true,
+                    singleLine = true,
+                    label = { Text("Selected Location") },
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.ADDRESS_FIELD))
+                Button(
+                    onClick = onChangeLocation,
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.LOCATION_BUTTON)) {
+                      Text("Select Location")
+                    }
+
+                var selectedOfficeName = offices[selectedOption] ?: selectedOption
+                ExposedDropdownMenuBox(
+                    expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                      OutlinedTextField(
+                          value = selectedOfficeName,
+                          onValueChange = {}, // No direct text editing
+                          readOnly = true,
+                          label = { Text("Choose an Office") },
+                          trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                          },
+                          modifier =
+                              Modifier.menuAnchor() // Needed for M3 dropdown alignment
+                                  .fillMaxWidth()
+                                  .testTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
+
+                      ExposedDropdownMenu(
+                          expanded = expanded, onDismissRequest = { expanded = false }) {
+                            offices.forEach { (option, displayName) ->
+                              DropdownMenuItem(
+                                  text = { Text(displayName) },
+                                  onClick = {
+                                    selectedOfficeName = displayName
+                                    addReportViewModel.setOffice(option)
+                                    expanded = false
+                                  },
+                                  modifier =
+                                      Modifier.testTag(
+                                          AddReportScreenTestTags.getTestTagForOffice(option)))
+                            }
+                          }
+                    }
+
+                CollectedSwitch(uiState.collected, { addReportViewModel.switchCollected() }, true)
+
+                Button(
+                    onClick = {
+                      scope.launch {
+                        val created = addReportViewModel.createReport()
+                        if (created) {
+                          showSuccessDialog = true
+                        } else {
+                          snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
+                        }
+                      }
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
+                      Text("Create Report", style = MaterialTheme.typography.titleMedium)
+                    }
               }
 
-              OutlinedTextField(
-                  value = uiState.address?.name ?: "Select a Location",
-                  placeholder = { Text("Select a Location") },
-                  onValueChange = {},
-                  readOnly = true,
-                  singleLine = true,
-                  label = { Text("Selected Location") },
-                  modifier = Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.ADDRESS_FIELD))
-              Button(
-                  onClick = onChangeLocation,
-                  modifier =
-                      Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.LOCATION_BUTTON)) {
-                    Text("Select Location")
-                  }
-
-              var selectedOfficeName = offices[selectedOption] ?: selectedOption
-              ExposedDropdownMenuBox(
-                  expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-                    OutlinedTextField(
-                        value = selectedOfficeName,
-                        onValueChange = {}, // No direct text editing
-                        readOnly = true,
-                        label = { Text("Choose an Office") },
-                        trailingIcon = {
-                          ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                        },
-                        modifier =
-                            Modifier.menuAnchor() // Needed for M3 dropdown alignment
-                                .fillMaxWidth()
-                                .testTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
-
-                    ExposedDropdownMenu(
-                        expanded = expanded, onDismissRequest = { expanded = false }) {
-                          offices.forEach { (option, displayName) ->
-                            DropdownMenuItem(
-                                text = { Text(displayName) },
-                                onClick = {
-                                  selectedOfficeName = displayName
-                                  addReportViewModel.setOffice(option)
-                                  expanded = false
-                                },
-                                modifier =
-                                    Modifier.testTag(
-                                        AddReportScreenTestTags.getTestTagForOffice(option)))
-                          }
-                        }
-                  }
-
-              CollectedSwitch(uiState.collected, { addReportViewModel.switchCollected() }, true)
-
-              Button(
-                  onClick = {
-                    scope.launch {
-                      val created = addReportViewModel.createReport()
-                      if (created) {
-                        showSuccessDialog = true
-                      } else {
-                        snackbarHostState.showSnackbar(AddReportFeedbackTexts.FAILURE)
+          // If adding the report was successful
+          if (showSuccessDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                  showSuccessDialog = false
+                  onBack()
+                },
+                confirmButton = {
+                  TextButton(
+                      onClick = {
+                        showSuccessDialog = false
+                        onCreateReport()
+                        onBack()
+                      }) {
+                        Text(text = "OK", color = MaterialTheme.colorScheme.onSurface)
                       }
-                    }
-                  },
-                  modifier =
-                      Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
-                    Text("Create Report", style = MaterialTheme.typography.titleMedium)
-                  }
-            }
-
-        // If adding the report was successful
-        if (showSuccessDialog) {
-          AlertDialog(
-              onDismissRequest = {
-                showSuccessDialog = false
-                onBack()
-              },
-              confirmButton = {
-                TextButton(
-                    onClick = {
-                      showSuccessDialog = false
-                      onCreateReport()
-                      onBack()
-                    }) {
-                      Text(text = "OK", color = MaterialTheme.colorScheme.onSurface)
-                    }
-              },
-              title = { Text("Success!") },
-              text = { Text(AddReportFeedbackTexts.SUCCESS) })
+                },
+                title = { Text("Success!") },
+                text = { Text(AddReportFeedbackTexts.SUCCESS) })
+          }
         }
-      }
+  }
 }
 
 @Composable

@@ -1,7 +1,7 @@
 package com.android.agrihealth.ui.report
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.HealthQuestionFactory
 import com.android.agrihealth.data.model.report.QuestionForm
@@ -9,10 +9,10 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
+import com.android.agrihealth.ui.loading.withLoadingState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 data class AddReportUiState(
     val title: String = "",
@@ -21,12 +21,18 @@ data class AddReportUiState(
     val collected: Boolean = false,
     val address: Location? = null,
     val questionForms: List<QuestionForm> = emptyList(),
+    val isLoading: Boolean = false,
 )
 
 class AddReportViewModel(
     private val userId: String,
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository
 ) : ViewModel(), AddReportViewModelContract {
+
+  companion object {
+    private const val TAG = "ADD-REPORT-VM"
+  }
+
   private val _uiState = MutableStateFlow(AddReportUiState())
   override val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
 
@@ -88,10 +94,13 @@ class AddReportViewModel(
             collected = uiState.collected,
             location = uiState.address)
 
-    viewModelScope.launch { reportRepository.addReport(newReport) }
-
-    // Clears all the fields
-    clearInputs() // TODO: Call only if addReport succeeds
+    _uiState.withLoadingState(
+        applyLoading = { state, loading ->
+          Log.d(TAG, "createReport: applyLoading -> isLoading=$loading")
+          state.copy(isLoading = loading)
+        }) {
+          reportRepository.addReport(newReport)
+        }
 
     return true
   }
