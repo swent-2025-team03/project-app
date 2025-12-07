@@ -1,4 +1,4 @@
-package com.android.agrihealth.ui.common
+package com.android.agrihealth.ui.utils
 
 import android.content.Context
 import android.content.Intent
