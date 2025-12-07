@@ -268,7 +268,8 @@ fun OverviewScreen(
                         snackbarHostState = snackbarHostState,
                         report = report,
                         onClick = { onReportClick(report.id) },
-                        navigationActions = navigationActions)
+                        navigationActions = navigationActions,
+                        user = user)
                     HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                   }
                 }
@@ -318,45 +319,100 @@ fun ReportItem(
     onClick: () -> Unit,
     userRole: UserRole,
     snackbarHostState: SnackbarHostState,
-    navigationActions: NavigationActions? = null
+    navigationActions: NavigationActions? = null,
+    user: User? = null
 ) {
   val coroutineScope = rememberCoroutineScope()
 
-  Row(
+  Box(
       modifier =
-          Modifier.fillMaxWidth()
-              .testTag(OverviewScreenTestTags.REPORT_ITEM)
-              .clickable { onClick() }
-              .padding(vertical = 8.dp),
-      verticalAlignment = Alignment.CenterVertically) {
-        Column(modifier = Modifier.weight(1f)) {
-          Text(report.title, style = MaterialTheme.typography.titleSmall)
+          Modifier.fillMaxWidth().testTag(OverviewScreenTestTags.REPORT_ITEM).clickable {
+            onClick()
+          }) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+              Column(modifier = Modifier.weight(1f)) {
+                Text(report.title, style = MaterialTheme.typography.titleSmall)
 
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            if (userRole == UserRole.VET) {
-              AuthorName(
-                  uid = report.farmerId,
-                  onClick = { navigationActions?.navigateTo(Screen.ViewUser(report.farmerId)) })
-            } else
-                OfficeName(
-                    uid = report.officeId,
-                    onClick = {
-                      if (report.officeId.isNotBlank()) {
-                        navigationActions?.navigateTo(Screen.ViewOffice(report.officeId))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                  if (userRole == UserRole.VET) {
+                    AuthorName(
+                        uid = report.farmerId,
+                        onClick = {
+                          navigationActions?.navigateTo(Screen.ViewUser(report.farmerId))
+                        })
+                  } else {
+                    OfficeName(
+                        uid = report.officeId,
+                        onClick = {
+                          if (report.officeId.isNotBlank()) {
+                            navigationActions?.navigateTo(Screen.ViewOffice(report.officeId))
+                          } else {
+                            coroutineScope.launch {
+                              snackbarHostState.showSnackbar("This office no longer exists.")
+                            }
+                          }
+                        })
+                  }
+                }
+
+                Text(
+                    text =
+                        report.description.let { if (it.length > 50) it.take(50) + "..." else it },
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1)
+              }
+
+              ReportStatusTag(report.status)
+            }
+
+        if (userRole == UserRole.VET && report.assignedVet != null) {
+          Box(modifier = Modifier.align(Alignment.BottomEnd).offset(y = 6.dp)) {
+            AssignedVetTag(
+                vetId = report.assignedVet,
+                isCurrentVet = report.assignedVet == user?.uid,
+                navigationActions = navigationActions,
+                snackbarHostState = snackbarHostState)
+          }
+        }
+      }
+}
+
+/**
+ * Shows the Name of the assignedVet or "Assigned to You" or nothing depending on the situation.
+ * Only for Vets.
+ */
+@Composable
+fun AssignedVetTag(
+    vetId: String,
+    isCurrentVet: Boolean,
+    navigationActions: NavigationActions?,
+    snackbarHostState: SnackbarHostState
+) {
+  val coroutineScope = rememberCoroutineScope()
+  val label = if (isCurrentVet) "Assigned to You" else rememberUserName(vetId)
+
+  val isClickable = !isCurrentVet
+
+  Text(
+      text = label,
+      style = MaterialTheme.typography.labelSmall,
+      color = if (isClickable) MaterialTheme.colorScheme.primary else LocalContentColor.current,
+      modifier =
+          Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+              .then(
+                  if (isClickable) {
+                    Modifier.clickable {
+                      if (vetId.isNotBlank()) {
+                        navigationActions?.navigateTo(Screen.ViewUser(vetId))
                       } else {
                         coroutineScope.launch {
-                          snackbarHostState.showSnackbar("This office no longer exists.")
+                          snackbarHostState.showSnackbar("This vet no longer exists.")
                         }
                       }
-                    })
-          }
-          Text(
-              text = report.description.let { if (it.length > 50) it.take(50) + "..." else it },
-              style = MaterialTheme.typography.bodySmall,
-              maxLines = 1)
-        }
-        ReportStatusTag(report.status)
-      }
+                    }
+                  } else Modifier))
 }
 
 /**
