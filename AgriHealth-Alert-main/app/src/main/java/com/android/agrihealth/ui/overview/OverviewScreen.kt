@@ -219,7 +219,7 @@ fun OverviewScreen(
 
                         if (userRole == UserRole.VET) {
                           Text(
-                              text = if (showAllReports) "(all)" else "(my reports)",
+                              text = if (showAllReports) "(all)" else "(assigned to me)",
                               style = MaterialTheme.typography.labelSmall,
                               color = LocalContentColor.current)
                         }
