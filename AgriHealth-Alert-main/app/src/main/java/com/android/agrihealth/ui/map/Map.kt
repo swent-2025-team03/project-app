@@ -67,9 +67,7 @@ fun MapScreen(
   val selectedReport by mapViewModel.selectedReport.collectAsState()
 
   fun Report.isSelected() = this == selectedReport
-  fun Report.toggleSelect() {
-    mapViewModel.setSelectedReport(if (this.isSelected()) null else this)
-  }
+  fun Report.toggleSelect() = mapViewModel.setSelectedReport(if (this.isSelected()) null else this)
 
   // Marker filter
   var selectedFilter by remember { mutableStateOf<String?>(null) }
