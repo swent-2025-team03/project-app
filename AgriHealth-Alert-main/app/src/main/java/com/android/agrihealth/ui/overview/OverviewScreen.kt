@@ -41,6 +41,7 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
+import com.android.agrihealth.ui.overview.OverviewScreenTestTags.FILTER_SWITCH
 import kotlinx.coroutines.launch
 
 // -- imports for preview --
@@ -62,6 +63,7 @@ object OverviewScreenTestTags {
   const val STATUS_DROPDOWN = "StatusFilterDropdown"
   const val OFFICE_ID_DROPDOWN = "OfficeIdFilterDropdown"
   const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
+  const val FILTER_SWITCH = "FilterSwitch"
 
   fun alertItemTag(page: Int) = "ALERT_ITEM_$page"
 }
@@ -233,7 +235,8 @@ fun OverviewScreen(
                             onCheckedChange = { checked ->
                               showAllReports = checked
                               overviewViewModel.updateReportViewMode(checked)
-                            })
+                            },
+                            modifier = Modifier.testTag(FILTER_SWITCH))
                       }
                     }
 

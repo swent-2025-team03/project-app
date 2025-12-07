@@ -137,4 +137,15 @@ class OverviewScreenTest {
       }
     }
   }
+
+  // --- TEST 9: check filter switch is displayed correctly ---
+  @Test
+  fun filter_switchIsDisplayed() {
+    setVetScreen()
+
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTER_SWITCH).assertIsDisplayed()
+    composeTestRule.onNodeWithText("(all)").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTER_SWITCH).performClick()
+    composeTestRule.onNodeWithText("(assigned to me)").assertIsDisplayed()
+  }
 }
