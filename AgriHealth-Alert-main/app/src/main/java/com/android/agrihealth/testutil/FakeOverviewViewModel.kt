@@ -29,7 +29,7 @@ class FakeOverviewViewModel(
               title = "Test Report",
               description = "This is a test report",
               questionForms = emptyList(),
-              photoUri = null,
+              photoURL = null,
               farmerId = user?.uid ?: "dummy_farmer",
               officeId = "off_001",
               status = ReportStatus.PENDING,

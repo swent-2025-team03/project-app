@@ -1,9 +1,13 @@
 package com.android.agrihealth.ui.report
 
+import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertAny
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -18,13 +22,19 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
+import com.android.agrihealth.data.model.report.QuestionForm
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.user.UserViewModelContract
-import org.junit.Assert
+import com.android.agrihealth.ui.utils.ImagePickerTestTags
+import com.android.agrihealth.utils.TestAssetUtils.FAKE_PHOTO_FILE
+import com.android.agrihealth.utils.TestAssetUtils.cleanupTestAssets
+import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
+import kotlinx.coroutines.flow.MutableStateFlow
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -46,12 +56,76 @@ private fun fakeFarmerViewModel(): UserViewModelContract =
             defaultOffice = linkedOffices.keys.toList().first(),
         ))
 
+// Helper addReportViewModel used to simulate a specific result of creating a report (i.e success,
+// validation error, ...)
+private class ResultFakeAddReportViewModel(
+    private val resultToReturn: CreateReportResult,
+) : AddReportViewModelContract {
+  private val _uiState =
+      MutableStateFlow(
+          AddReportUiState(
+              title = "title",
+              description = "description",
+              questionForms = emptyList(),
+          ))
+  override val uiState = _uiState
+
+  override fun switchCollected() {}
+
+  override fun setTitle(newTitle: String) {}
+
+  override fun setDescription(newDescription: String) {}
+
+  override fun setOffice(officeId: String) {}
+
+  override fun setAddress(address: Location?) {}
+
+  override fun setPhoto(uri: Uri?) {}
+
+  override fun removePhoto() {}
+
+  override fun setUploadedImagePath(path: String?) {}
+
+  override fun updateQuestion(index: Int, updated: QuestionForm) {}
+
+  override suspend fun createReport(): CreateReportResult = resultToReturn
+
+  override fun clearInputs() {}
+}
+
 class AddReportScreenTest {
 
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-  // -- Helper function --
-  private fun createReport(title: String, description: String) {
+  // Waits until the dialog is shown
+  private fun assertDialogIsShown(testTag: String) {
+    composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeRule.onAllNodesWithTag(testTag).fetchSemanticsNodes().isNotEmpty()
+    }
+  }
+
+  // Checks if all the components of the dialog work correctly
+  private fun assertDialogWorks(
+      dialogTestTag: String,
+      dialogTitle: String,
+      dismissTestTag: String
+  ) {
+    assertDialogIsShown(dialogTestTag)
+
+    composeRule.onNodeWithText(dialogTitle).assertIsDisplayed()
+
+    composeRule.onNodeWithTag(dismissTestTag).assertHasClickAction()
+  }
+
+  // Scrolls down
+  private fun scrollToUploadSection() {
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+        .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
+  }
+
+  // Manually fills a report
+  private fun fillReportWith(title: String, description: String, doSubmitReport: Boolean) {
     composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput(title)
     composeRule
         .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
@@ -107,10 +181,12 @@ class AddReportScreenTest {
       break
     }
 
-    composeRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
-    composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
+    if (doSubmitReport) {
+      composeRule
+          .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+          .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
+      composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
+    }
   }
 
   @Test
@@ -191,11 +267,11 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
     composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeRule
-          .onAllNodesWithText(AddReportFeedbackTexts.FAILURE)
+          .onAllNodesWithText(AddReportFeedbackTexts.INCOMPLETE)
           .fetchSemanticsNodes()
           .isNotEmpty()
     }
-    composeRule.onNodeWithText(AddReportFeedbackTexts.FAILURE).assertIsDisplayed()
+    composeRule.onNodeWithText(AddReportFeedbackTexts.INCOMPLETE).assertIsDisplayed()
   }
 
   @Test
@@ -237,15 +313,13 @@ class AddReportScreenTest {
         AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
       }
     }
-    createReport("title", "description")
-    // Check that dialog appears
-    composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeRule
-          .onAllNodesWithText(AddReportFeedbackTexts.SUCCESS)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
-    composeRule.onNodeWithText("OK").assertIsDisplayed()
+
+    fillReportWith("title", "description", true)
+
+    assertDialogWorks(
+        AddReportScreenTestTags.DIALOG_SUCCESS,
+        AddReportDialogTexts.TITLE_SUCCESS,
+        AddReportScreenTestTags.DIALOG_SUCCESS_OK)
   }
 
   @Test
@@ -259,12 +333,184 @@ class AddReportScreenTest {
       }
     }
 
-    createReport("title", "description")
+    fillReportWith("title", "description", true)
     composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeRule.onAllNodesWithText("OK").fetchSemanticsNodes().isNotEmpty()
+      composeRule.onAllNodesWithText(AddReportDialogTexts.OK).fetchSemanticsNodes().isNotEmpty()
     }
-    composeRule.onNodeWithText("OK").performClick()
+    composeRule.onNodeWithText(AddReportDialogTexts.OK).performClick()
 
-    Assert.assertTrue(called)
+    assertTrue(called)
+  }
+
+  @Test
+  fun imagePreview_isNotShownWhenEmpty() {
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
+      }
+    }
+    scrollToUploadSection()
+    composeRule.waitForIdle()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertDoesNotExist()
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
+  }
+
+  @Test
+  fun imagePreview_canRemoveImage() {
+    val imageUri = getUriFrom(FAKE_PHOTO_FILE)
+    val fakeViewModel = FakeAddReportViewModel()
+    fakeViewModel.setPhoto(imageUri)
+    composeRule.setContent {
+      MaterialTheme { AddReportScreen(onCreateReport = {}, addReportViewModel = fakeViewModel) }
+    }
+    scrollToUploadSection()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertIsDisplayed()
+        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+        .performClick()
+    composeRule.waitForIdle()
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertIsDisplayed()
+        .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertDoesNotExist()
+  }
+
+  @Test
+  fun imagePreview_isShownWhenUploaded() {
+    val imageUri = getUriFrom(FAKE_PHOTO_FILE)
+    val fakeViewModel = FakeAddReportViewModel()
+    fakeViewModel.setPhoto(imageUri)
+
+    composeRule.setContent {
+      MaterialTheme { AddReportScreen(onCreateReport = {}, addReportViewModel = fakeViewModel) }
+    }
+    scrollToUploadSection()
+    composeRule.waitForIdle()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+  }
+
+  @Test
+  fun uploadImageDialog_cancel_dismissedNoPhotoPicked() {
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
+      }
+    }
+
+    scrollToUploadSection()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
+    composeRule.onNodeWithTag(ImagePickerTestTags.DIALOG).assertIsDisplayed()
+    composeRule.onNodeWithTag(ImagePickerTestTags.CANCEL_BUTTON).performClick()
+    composeRule.onNodeWithTag(ImagePickerTestTags.DIALOG).assertIsNotDisplayed()
+    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsNotDisplayed()
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
+  }
+
+  @Test
+  fun chosenImage_isDisplayedInPreview() {
+    cleanupTestAssets()
+
+    composeRule.waitForIdle()
+    val imageUri = getUriFrom(FAKE_PHOTO_FILE)
+    val fakeViewModel = FakeAddReportViewModel().apply { setPhoto(imageUri) }
+
+    composeRule.waitForIdle()
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+            onCreateReport = {},
+            addReportViewModel = fakeViewModel,
+        )
+      }
+    }
+
+    composeRule.waitForIdle()
+    scrollToUploadSection()
+
+    composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeRule
+          .onAllNodesWithTag(AddReportScreenTestTags.IMAGE_PREVIEW)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+
+    scrollToUploadSection()
+
+    composeRule.waitForIdle()
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertIsDisplayed()
+        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+  }
+
+  @Test
+  fun createReport_successDialogWorksCorrectly() {
+    var backCalled = false
+    var onCreateCalled = false
+
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+            onBack = { backCalled = true },
+            onCreateReport = { onCreateCalled = true },
+            addReportViewModel = FakeAddReportViewModel(),
+        )
+      }
+    }
+
+    fillReportWith("title", "description", true)
+
+    assertDialogWorks(
+        AddReportScreenTestTags.DIALOG_SUCCESS,
+        AddReportDialogTexts.TITLE_SUCCESS,
+        AddReportScreenTestTags.DIALOG_SUCCESS_OK)
+
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS_OK)
+        .assertHasClickAction()
+        .performClick()
+
+    assertTrue(backCalled)
+    assertTrue(onCreateCalled)
+
+    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS).assertDoesNotExist()
+  }
+
+  @Test
+  fun createReport_errorDialogWorksCorrectly() {
+    val errorMessage = "repository failed"
+    val error = RuntimeException(errorMessage)
+    val fakeViewModel = ResultFakeAddReportViewModel(CreateReportResult.UploadError(error))
+
+    composeRule.setContent {
+      MaterialTheme { AddReportScreen(onCreateReport = {}, addReportViewModel = fakeViewModel) }
+    }
+
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+        .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
+    composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
+
+    assertDialogWorks(
+        AddReportScreenTestTags.DIALOG_FAILURE,
+        AddReportDialogTexts.TITLE_FAILURE,
+        AddReportScreenTestTags.DIALOG_FAILURE_OK)
+
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.DIALOG_FAILURE_OK)
+        .assertHasClickAction()
+        .performClick()
+
+    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_FAILURE).assertDoesNotExist()
   }
 }
