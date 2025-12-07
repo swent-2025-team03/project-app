@@ -28,8 +28,8 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.testutil.TestConstants
-import com.android.agrihealth.ui.common.ImagePickerTestTags
 import com.android.agrihealth.ui.user.UserViewModelContract
+import com.android.agrihealth.ui.utils.ImagePickerTestTags
 import com.android.agrihealth.utils.TestAssetUtils.FAKE_PHOTO_FILE
 import com.android.agrihealth.utils.TestAssetUtils.cleanupTestAssets
 import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
