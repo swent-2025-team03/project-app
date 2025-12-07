@@ -72,4 +72,8 @@ class FakeOverviewViewModel(
       credentialManager.clearCredentialState(ClearCredentialStateRequest())
     }
   }
+
+  override fun updateReportViewMode(showAll: Boolean) {
+    // Not needed here
+  }
 }

@@ -32,7 +32,8 @@ data class OverviewUIState(
     val officeOptions: List<String> = emptyList(),
     val farmerOptions: List<String> = emptyList(),
     val filteredReports: List<Report> = emptyList(),
-    val sortedAlerts: List<AlertUiState> = emptyList()
+    val sortedAlerts: List<AlertUiState> = emptyList(),
+    val showAllReports: Boolean = true
 )
 
 /**
@@ -48,6 +49,8 @@ class OverviewViewModel(
   override val uiState: StateFlow<OverviewUIState> = _uiState.asStateFlow()
 
   private lateinit var authRepository: AuthRepository
+
+  private var currentUserId: String = ""
 
   /**
    * Loads reports for the user based on role and updates UIState. Applies selected filters to
@@ -73,6 +76,8 @@ class OverviewViewModel(
                 officeOptions = officeOptions,
                 farmerOptions = farmerOptions,
                 filteredReports = filtered)
+
+        currentUserId = user.uid
       } catch (e: Exception) {
         _uiState.value = _uiState.value.copy(reports = emptyList())
       }
@@ -164,5 +169,26 @@ class OverviewViewModel(
       authRepository.signOut()
       credentialManager.clearCredentialState(ClearCredentialStateRequest())
     }
+  }
+
+  override fun updateReportViewMode(showAll: Boolean) {
+    val currentState = _uiState.value
+
+    val baseList =
+        if (showAll) {
+          currentState.reports
+        } else {
+          currentState.reports.filter { report -> report.assignedVet == currentUserId }
+        }
+
+    val filtered =
+        applyFiltersForReports(
+            baseList,
+            currentState.selectedStatus,
+            currentState.selectedOffice,
+            currentState.selectedFarmer,
+        )
+
+    _uiState.value = currentState.copy(showAllReports = showAll, filteredReports = filtered)
   }
 }

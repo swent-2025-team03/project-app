@@ -93,6 +93,7 @@ fun OverviewScreen(
   var lazySpace by remember { mutableStateOf(0.dp) }
   val minLazySpace = remember { 150.dp }
   val snackbarHostState = remember { SnackbarHostState() }
+  var showAllReports by remember { mutableStateOf(true) }
 
   LaunchedEffect(user) {
     overviewViewModel.loadReports(user)
@@ -208,7 +209,34 @@ fun OverviewScreen(
 
                 Spacer(modifier = Modifier.height(15.dp))
                 // -- Past reports list --
-                Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically) {
+                      Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
+
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        if (userRole == UserRole.VET) {
+                          Text(
+                              text = if (showAllReports) "(all)" else "(my reports)",
+                              style = MaterialTheme.typography.labelSmall,
+                              color = LocalContentColor.current)
+                        }
+                      }
+
+                      Spacer(modifier = Modifier.weight(1f))
+
+                      if (userRole == UserRole.VET) {
+                        Switch(
+                            checked = showAllReports,
+                            onCheckedChange = { checked ->
+                              showAllReports = checked
+                              overviewViewModel.updateReportViewMode(checked)
+                            })
+                      }
+                    }
+
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Row(

@@ -15,4 +15,6 @@ interface OverviewViewModelContract {
   fun loadAlerts(user: User)
 
   fun signOut(credentialManager: CredentialManager)
+
+  fun updateReportViewMode(showAll: Boolean)
 }
