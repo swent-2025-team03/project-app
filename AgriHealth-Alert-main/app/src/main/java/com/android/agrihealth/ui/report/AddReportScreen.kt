@@ -476,9 +476,9 @@ private fun DescriptionField(
 /**
  * The section of the UI that handles adding or removing a photo from the report
  *
- * @param photoAlreadyPicked True if a photo has already ben added to the report, False otherwise
- * @param onPhotoPicked Called when a photo has been picked from the report
- * @param onPhotoRemoved Called when a photo has been removed from the report
+ * @param photoAlreadyPicked true if a photo has already ben added to the report, false otherwise
+ * @param onPhotoPicked Called when a photo has been picked for the report
+ * @param onPhotoRemoved Called when the selected photo has been removed from the report
  */
 @Composable
 fun UploadRemovePhotoSection(

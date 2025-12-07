@@ -43,7 +43,7 @@ sealed class CreateReportResult {
 }
 
 /**
- * The view associated to the report creation screen.
+ * The view model associated to the report creation screen.
  *
  * @param userId The ID of the user viewing this screen
  * @param reportRepository The repository containing the reports

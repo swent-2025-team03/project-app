@@ -47,6 +47,7 @@ object ImagePickerTexts {
  * A complete, self-contained image picker component that handles:
  * - Showing a dialog to choose between gallery and camera
  * - Requesting camera permissions
+ * - Opens the app permission settings if camera permission was denied
  * - Creating temporary files for camera captures
  * - Returning the selected/captured image URI
  *
@@ -158,13 +159,13 @@ fun ImagePickerDialog(
 
 // Helper function to get the FileProvider authority
 // Note: This must be the *exact* same as seen in AndroidManifest.xml, in the <provider> tag, under
-// "android:authoritie"
+// "android:authorities"
 // TODO: Maybe move this into its own object
 private fun getFileProviderAuthority(context: Context): String {
   return context.packageName + ".fileprovider"
 }
 
-// Helper function to open app settings
+// Helper function to open app permission settings
 private fun openAppPermissionsSettings(context: Context) {
   val intent =
       Intent(
