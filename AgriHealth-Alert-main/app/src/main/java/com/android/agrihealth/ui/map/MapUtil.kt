@@ -126,7 +126,7 @@ fun ReportMarkers(
     isSelected: (report: Report) -> Boolean = { false },
     onClick: (report: Report) -> Unit = {}
 ) {
-  reports.forEach { it ->
+  reports.forEach {
     val report = it.report
 
     val markerSize = if (isSelected(report)) 60f else 40f
@@ -275,7 +275,7 @@ fun ShowReportInfo(
 }
 
 @Composable
-fun RefreshMapCamera(modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun RefreshLocationButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
   FloatingActionButton(
       modifier = Modifier.padding(16.dp).testTag(MapScreenTestTags.REFRESH_BUTTON).then(modifier),
       onClick = onClick) {
@@ -283,7 +283,11 @@ fun RefreshMapCamera(modifier: Modifier = Modifier, onClick: () -> Unit) {
       }
 }
 
-fun createCircleMarker(color: Int, radius: Float = 40f, strokeWidth: Float = 8f): BitmapDescriptor {
+private fun createCircleMarker(
+    color: Int,
+    radius: Float = 40f,
+    strokeWidth: Float = 8f
+): BitmapDescriptor {
   val size = (radius * 2 + strokeWidth).toInt()
   val bitmap = createBitmap(size, size)
   val canvas = Canvas(bitmap)

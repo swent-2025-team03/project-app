@@ -166,9 +166,8 @@ class MapViewModel(
     val newReports = mutableListOf<SpiderifiedReport>()
 
     for ((latLong, group) in groups) {
-      val baseLat = latLong.first
-      val baseLng = latLong.second
-      val center = LatLng(baseLat, baseLng)
+      val position = Location(latLong.first, latLong.second)
+      val center = position.toLatLng()
 
       if (group.size == 1) {
         newReports.add(SpiderifiedReport(group.first(), center, center))
@@ -177,7 +176,7 @@ class MapViewModel(
         val angleStep = 2 * Math.PI / group.size
         group.forEachIndexed { index, report ->
           val angle = index * angleStep
-          val offset = offsetLatLng(baseLat, baseLng, radiusMeters, angle)
+          val offset = offsetLatLng(position, radiusMeters, angle)
 
           newReports.add(SpiderifiedReport(report, offset.toLatLng(), center))
         }

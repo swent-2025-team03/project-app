@@ -67,9 +67,7 @@ fun MapScreen(
   val selectedReport by mapViewModel.selectedReport.collectAsState()
 
   fun Report.isSelected() = this == selectedReport
-  fun Report.toggleSelect() {
-    mapViewModel.setSelectedReport(if (this.isSelected()) null else this)
-  }
+  fun Report.toggleSelect() = mapViewModel.setSelectedReport(if (this.isSelected()) null else this)
 
   // Marker filter
   var selectedFilter by remember { mutableStateOf<String?>(null) }
@@ -107,7 +105,7 @@ fun MapScreen(
           LocationPermissionsRequester(onComplete = { /* Set starting position? */})
 
           val reportsToDisplay =
-              reports.filter { it ->
+              reports.filter {
                 selectedFilter == null || it.report.status.displayString() == selectedFilter
               }
 
@@ -133,7 +131,7 @@ fun MapScreen(
 
           val density = LocalDensity.current
           val reportInfoBoxHeightDp = with(density) { reportInfoBoxHeightPx.toDp() }
-          RefreshMapCamera(
+          RefreshLocationButton(
               modifier =
                   Modifier.padding(
                           bottom = if (selectedReport != null) reportInfoBoxHeightDp else 0.dp)

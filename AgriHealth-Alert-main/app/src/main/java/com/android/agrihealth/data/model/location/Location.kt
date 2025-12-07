@@ -21,18 +21,19 @@ fun locationFromMap(locationData: Map<*, *>?): Location? {
 }
 
 /**
- * Offset [lat] and [lng] by [distanceMeters] in the direction of [angleRadians].
+ * Offset [location] by [distanceMeters] in the direction of [angleRadians].
  *
- * @param lat the latitude of the point to offset
- * @param lng the longitude of the point to offset
+ * @param location the location point to offset
  * @param distanceMeters the distance in meters to offset by which the point is offset
  * @param angleRadians angle to offset by. 0 offset to the right, PI offset to the left.
  */
-fun offsetLatLng(lat: Double, lng: Double, distanceMeters: Double, angleRadians: Double): Location {
+fun offsetLatLng(location: Location, distanceMeters: Double, angleRadians: Double): Location {
+  val lat = location.latitude
+  val lng = location.longitude
+
   val earthRadius = 6371000.0 // meters
   val dLat = (distanceMeters / earthRadius) * sin(angleRadians)
   val dLng = (distanceMeters / (earthRadius * cos(Math.toRadians(lat)))) * cos(angleRadians)
 
   return Location(lat + Math.toDegrees(dLat), lng + Math.toDegrees(dLng))
-  // return LatLng(lat + Math.toDegrees(dLat), lng + Math.toDegrees(dLng))
 }
