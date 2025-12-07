@@ -26,6 +26,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
@@ -53,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import com.android.agrihealth.R
 import com.android.agrihealth.core.design.theme.statusColor
+import com.android.agrihealth.data.model.alert.Alert
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
@@ -153,7 +155,7 @@ fun ReportMarkers(
 
 /** Displays relevant areas for every current alert */
 @Composable
-fun AlertAreas() {
+fun AlertAreas(alerts: List<Alert>, onClick: () -> Unit) {
   /* TODO */
 }
 
@@ -161,7 +163,8 @@ fun AlertAreas() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapFilterMenu(selectedOption: String?, onOptionSelected: (String?) -> Unit) {
-  val options = listOf(null) + ReportStatus.entries.map { it.displayString() }
+  val hideReportsText = "Hide all reports"
+  val options = listOf(null, hideReportsText) + ReportStatus.entries.map { it.displayString() }
 
   var expanded by remember { mutableStateOf(false) }
   val textFieldBackgroundColor = MaterialTheme.colorScheme.surface
@@ -202,6 +205,12 @@ fun MapFilterMenu(selectedOption: String?, onOptionSelected: (String?) -> Unit) 
                     },
                     text = { Text(option ?: AllFilterText) },
                     modifier = Modifier.testTag(MapScreenTestTags.getTestTagForFilter(option)))
+
+                if (option == hideReportsText) HorizontalDivider(
+                  modifier = Modifier.padding(8.dp),
+                  color = MaterialTheme.colorScheme.onSurface,
+                  thickness = 1.dp
+                )
               }
             }
       }

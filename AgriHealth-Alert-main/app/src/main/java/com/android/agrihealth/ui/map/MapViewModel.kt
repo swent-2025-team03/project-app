@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.agrihealth.data.model.alert.Alert
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
@@ -28,8 +29,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
 data class MapUIState(
-    val reports: List<SpiderifiedReport> = emptyList(),
-    val geocodedAddress: String? = null
+  val reports: List<SpiderifiedReport> = emptyList(),
+  val alerts: List<Alert> = emptyList(),
+  val geocodedAddress: String? = null
 )
 
 data class SpiderifiedReport(val report: Report, val position: LatLng, val center: LatLng)

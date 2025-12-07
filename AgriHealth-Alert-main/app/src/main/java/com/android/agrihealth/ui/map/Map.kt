@@ -51,7 +51,7 @@ object MapScreenTestTags {
   fun getTestTagForFilter(filter: String?): String = "filter_$filter"
 }
 
-const val AllFilterText = "All reports"
+const val AllFilterText = "Show all reports"
 
 @Composable
 fun MapScreen(
@@ -65,6 +65,7 @@ fun MapScreen(
 
   val reports = uiState.reports
   val selectedReport by mapViewModel.selectedReport.collectAsState()
+  val alerts = uiState.alerts
 
   fun Report.isSelected() = this == selectedReport
   fun Report.toggleSelect() = mapViewModel.setSelectedReport(if (this.isSelected()) null else this)
@@ -120,7 +121,10 @@ fun MapScreen(
                     isSelected = { it.isSelected() },
                     onClick = { it.toggleSelect() })
 
-                AlertAreas()
+                AlertAreas(
+                  alerts = alerts,
+                  onClick = {}
+                )
               }
 
           MapTestMarkers(reportsToDisplay) { it.toggleSelect() }
