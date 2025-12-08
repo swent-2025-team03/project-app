@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.report
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -64,8 +63,19 @@ object ReportViewScreenTestTags {
   const val UNSAVED_ALERT_BOX_DISCARD = "UnsavedChangesAlertDiscardButton"
   const val UNSAVED_ALERT_BOX_CANCEL = "UnsavedChangesAlertCancelButton"
   const val DELETE_REPORT_ALERT_BOX = "DeleteReportAlertBox"
+  const val PHOTO_RENDER = "PhotoRender"
+  const val PHOTO_LOADING_ANIMATION = "PhotoLoadingAnimation"
+  const val PHOTO_ERROR_TEXT = "PhotoErrorText"
+  const val PHOTO_ILLEGAL_TEXT = "PhotoIllegalStateText"
 
   fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
+}
+
+object ReportViewScreenTexts {
+  const val PHOTO_DESCRIPTION = "Photo associated to the report"
+  const val PHOTO_ERROR_TEXT = "Failed to load image"
+  const val PHOTO_ILLEGAL_TEXT = "An unexpected error happened. Please contact the developers!"
+
 }
 
 @Composable
@@ -92,6 +102,7 @@ fun ReportViewScreen(
     navigationActions: NavigationActions,
     userRole: UserRole,
     viewModel: ReportViewViewModel,
+    imageViewModel: ImageViewModel = ImageViewModel(),
     reportId: String = "",
     user: User? = null
 ) {
@@ -146,8 +157,6 @@ fun ReportViewScreen(
   fun handleGoBack(force: Boolean = false) {
     if (unsavedChanges && !force) isUnsavedAlertOpen = true else navigationActions.goBack()
   }
-
-  val imageViewModel: ImageViewModel = remember { ImageViewModel() }
 
   // Overrides behavior of Android system back button
   BackHandler { handleGoBack() }
@@ -258,17 +267,6 @@ fun ReportViewScreen(
                     }
                   }
 
-              // ---- Photo ---- For now, I am skipping this part since I had trouble loading a
-              // placeholder image
-              /*Image(
-                  imageVector = Icons.Filled.Image,
-                  contentDescription = "Report photo",
-                  modifier = Modifier
-                      .fillMaxWidth()
-                      .height(200.dp)
-                      .background(MaterialTheme.colorScheme.surfaceVariant)
-              )*/
-
               // ---- Description ----
               Text(
                   text = "Description: ${report.description}",
@@ -285,6 +283,7 @@ fun ReportViewScreen(
               // ---- Collected switch ----
               CollectedSwitch(report.collected)
 
+              // Display photo if available
               if (report.photoURL != null) {
                 PhotoDisplay(photoURL = report.photoURL, imageViewModel = imageViewModel)
               }
@@ -594,7 +593,7 @@ fun UnsavedChangesAlert(onDiscard: () -> Unit, onStay: () -> Unit) {
 fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModel, modifier: Modifier = Modifier) {
   val imageUiState by imageViewModel.uiState.collectAsState()
 
-  // Download the photo in parallel so the screen is not blocked
+  // Download the photo asynchronously so the screen is not blocked by download
   LaunchedEffect(photoURL) {
     if (photoURL != null) {
       imageViewModel.download(photoURL)
@@ -605,11 +604,11 @@ fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModel, modifier: Mo
     is ImageUIState.DownloadSuccess -> {
       AsyncImage(
         model = currentState.imageData,
-        contentDescription = "Photo associated to the report",
+        contentDescription = ReportViewScreenTexts.PHOTO_DESCRIPTION,
         modifier = modifier
           .fillMaxWidth()
           .padding(top = 16.dp, bottom = 16.dp)
-          .testTag(AddReportScreenTestTags.IMAGE_PREVIEW),
+          .testTag(ReportViewScreenTestTags.PHOTO_RENDER),
         contentScale = ContentScale.Fit
       )
     }
@@ -621,14 +620,16 @@ fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModel, modifier: Mo
           .padding(top = 16.dp, bottom = 16.dp),
         contentAlignment = Alignment.Center
       ) {
-        CircularProgressIndicator()
+        CircularProgressIndicator(
+          modifier = Modifier.testTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
+        )
       }
     }
     is ImageUIState.Error -> {
       Text(
-        text = "Failed to load image",
+        text = ReportViewScreenTexts.PHOTO_ERROR_TEXT,
         color = MaterialTheme.colorScheme.error,
-        modifier = modifier.padding(16.dp)
+        modifier = modifier.padding(16.dp).testTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT)
       )
     }
     is ImageUIState.Idle -> {
@@ -636,9 +637,9 @@ fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModel, modifier: Mo
     }
     else -> {
       Text(
-        text = "An unexpected error happened. Please contact the developers!",
+        text = ReportViewScreenTexts.PHOTO_ILLEGAL_TEXT,
         color = MaterialTheme.colorScheme.error,
-        modifier = modifier.padding(16.dp)
+        modifier = modifier.padding(16.dp).testTag(ReportViewScreenTestTags.PHOTO_ILLEGAL_TEXT)
       )
     }
   }
