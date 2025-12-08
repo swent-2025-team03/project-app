@@ -41,6 +41,7 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
+import com.android.agrihealth.ui.overview.OverviewScreenTestTags.ASSIGNED_VET_TAG
 import kotlinx.coroutines.launch
 
 // -- imports for preview --
@@ -63,6 +64,7 @@ object OverviewScreenTestTags {
   const val OFFICE_ID_DROPDOWN = "OfficeIdFilterDropdown"
   const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
   const val ASSIGNEE_FILTER = "AssigneeFilter"
+  const val ASSIGNED_VET_TAG = "AssignedVetTag"
 
   fun alertItemTag(page: Int) = "ALERT_ITEM_$page"
 }
@@ -439,7 +441,8 @@ fun AssignedVetTag(
       style = MaterialTheme.typography.labelSmall,
       color = if (isClickable) MaterialTheme.colorScheme.primary else LocalContentColor.current,
       modifier =
-          Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+          Modifier.testTag(ASSIGNED_VET_TAG)
+              .padding(horizontal = 8.dp, vertical = 4.dp)
               .then(
                   if (isClickable) {
                     Modifier.clickable {
@@ -451,7 +454,7 @@ fun AssignedVetTag(
                         }
                       }
                     }
-                  } else Modifier))
+                  } else Modifier.testTag(ASSIGNED_VET_TAG)))
 }
 
 /**

@@ -57,6 +57,7 @@ object ProfileScreenTestTags {
   const val DEFAULT_OFFICE_FIELD = "DefaultOfficeField"
   const val CODE_BUTTON_FARMER = "CodeButtonFarmer"
   const val MANAGE_OFFICE_BUTTON = "ManageOfficeButton"
+  const val GENERATE_CODE_BUTTON = "GenerateCodeButton"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -228,7 +229,10 @@ fun ProfileScreen(
 
               if (user is Vet) {
                 GenerateCode(
-                    codesViewModel, snackbarHostState, Modifier.align(Alignment.CenterHorizontally))
+                    codesViewModel,
+                    snackbarHostState,
+                    Modifier.align(Alignment.CenterHorizontally)
+                        .testTag(ProfileScreenTestTags.GENERATE_CODE_BUTTON))
 
                 Spacer(modifier = Modifier.height(12.dp))
 
