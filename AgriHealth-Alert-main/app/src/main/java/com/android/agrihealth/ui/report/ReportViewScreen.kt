@@ -103,7 +103,7 @@ fun ReportViewScreen(
     navigationActions: NavigationActions,
     userRole: UserRole,
     viewModel: ReportViewViewModel,
-    imageViewModel: ImageViewModelContract = ImageViewModel(),
+    imageViewModel: ImageViewModel = ImageViewModel(),
     reportId: String = "",
     user: User? = null
 ) {
@@ -591,7 +591,7 @@ fun UnsavedChangesAlert(onDiscard: () -> Unit, onStay: () -> Unit) {
 
 
 @Composable
-fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModelContract, modifier: Modifier = Modifier) {
+fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModel, modifier: Modifier = Modifier) {
   val imageUiState by imageViewModel.uiState.collectAsState()
 
   // Download the photo asynchronously so the screen is not blocked by download
