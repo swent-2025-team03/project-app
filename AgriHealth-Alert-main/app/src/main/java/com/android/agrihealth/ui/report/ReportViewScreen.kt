@@ -33,7 +33,6 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.data.model.images.ImageViewModelContract
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.common.OfficeName
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -76,7 +75,6 @@ object ReportViewScreenTexts {
   const val PHOTO_DESCRIPTION = "Photo associated to the report"
   const val PHOTO_ERROR_TEXT = "Failed to load image"
   const val PHOTO_ILLEGAL_TEXT = "An unexpected error happened. Please contact the developers!"
-
 }
 
 @Composable
@@ -589,7 +587,6 @@ fun UnsavedChangesAlert(onDiscard: () -> Unit, onStay: () -> Unit) {
       })
 }
 
-
 @Composable
 fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModel, modifier: Modifier = Modifier) {
   val imageUiState by imageViewModel.uiState.collectAsState()
@@ -604,44 +601,37 @@ fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModel, modifier: Mo
   when (val currentState = imageUiState) {
     is ImageUIState.DownloadSuccess -> {
       AsyncImage(
-        model = currentState.imageData,
-        contentDescription = ReportViewScreenTexts.PHOTO_DESCRIPTION,
-        modifier = modifier
-          .fillMaxWidth()
-          .padding(top = 16.dp, bottom = 16.dp)
-          .testTag(ReportViewScreenTestTags.PHOTO_RENDER),
-        contentScale = ContentScale.Fit
-      )
+          model = currentState.imageData,
+          contentDescription = ReportViewScreenTexts.PHOTO_DESCRIPTION,
+          modifier =
+              modifier
+                  .fillMaxWidth()
+                  .padding(top = 16.dp, bottom = 16.dp)
+                  .testTag(ReportViewScreenTestTags.PHOTO_RENDER),
+          contentScale = ContentScale.Fit)
     }
     is ImageUIState.Loading -> {
       Box(
-        modifier = modifier
-          .fillMaxWidth()
-          .height(200.dp)
-          .padding(top = 16.dp, bottom = 16.dp),
-        contentAlignment = Alignment.Center
-      ) {
-        CircularProgressIndicator(
-          modifier = Modifier.testTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
-        )
-      }
+          modifier = modifier.fillMaxWidth().height(200.dp).padding(top = 16.dp, bottom = 16.dp),
+          contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(
+                modifier = Modifier.testTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION))
+          }
     }
     is ImageUIState.Error -> {
       Text(
-        text = ReportViewScreenTexts.PHOTO_ERROR_TEXT,
-        color = MaterialTheme.colorScheme.error,
-        modifier = modifier.padding(16.dp).testTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT)
-      )
+          text = ReportViewScreenTexts.PHOTO_ERROR_TEXT,
+          color = MaterialTheme.colorScheme.error,
+          modifier = modifier.padding(16.dp).testTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT))
     }
     is ImageUIState.Idle -> {
       // Nothing happening yet
     }
     else -> {
       Text(
-        text = ReportViewScreenTexts.PHOTO_ILLEGAL_TEXT,
-        color = MaterialTheme.colorScheme.error,
-        modifier = modifier.padding(16.dp).testTag(ReportViewScreenTestTags.PHOTO_ILLEGAL_TEXT)
-      )
+          text = ReportViewScreenTexts.PHOTO_ILLEGAL_TEXT,
+          color = MaterialTheme.colorScheme.error,
+          modifier = modifier.padding(16.dp).testTag(ReportViewScreenTestTags.PHOTO_ILLEGAL_TEXT))
     }
   }
 }

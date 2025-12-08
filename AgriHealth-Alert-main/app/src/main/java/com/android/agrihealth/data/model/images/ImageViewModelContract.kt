@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface ImageViewModelContract {
   val uiState: StateFlow<ImageUIState>
+
   fun upload(uri: Uri): Job
+
   fun download(path: String): Job
 }

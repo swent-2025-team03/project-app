@@ -9,27 +9,39 @@ class FakeImageRepository(private var connectionIsFrozen: Boolean = true) : Imag
 
   override val MAX_FILE_SIZE: Long
     get() = 10 * 1024 * 1024
+
   override val IMAGE_MAX_WIDTH: Int
     get() = 4096
+
   override val IMAGE_MAX_HEIGHT: Int
     get() = 4096
+
   override val IMAGE_FORMAT: Bitmap.CompressFormat
     get() = Bitmap.CompressFormat.JPEG
 
-  private var photoStored : ByteArray? = null
+  private var photoStored: ByteArray? = null
   private var doesThrowError = false
 
-  fun makeRepoWorkAgain() {doesThrowError = false}
+  fun makeRepoWorkAgain() {
+    doesThrowError = false
+  }
 
-  fun makeRepoThrowError() {doesThrowError = true}
+  fun makeRepoThrowError() {
+    doesThrowError = true
+  }
 
-  fun freezeRepoConnection() {connectionIsFrozen = true}
+  fun freezeRepoConnection() {
+    connectionIsFrozen = true
+  }
 
-  fun unfreezeRepoConnection() {connectionIsFrozen = false}
+  fun unfreezeRepoConnection() {
+    connectionIsFrozen = false
+  }
 
   fun forceUploadImage(bytes: ByteArray) {
     photoStored = bytes
   }
+
   override suspend fun uploadImage(bytes: ByteArray): Result<String> {
     throw NotImplementedError()
   }
