@@ -49,10 +49,6 @@ class ReportViewViewModel(
     private val repository: ReportRepository = ReportRepositoryProvider.repository
 ) : ViewModel() {
 
-  companion object {
-    private const val TAG = "ReportViewViewModel"
-  }
-
   private val _uiState = MutableStateFlow(ReportViewUIState())
   val uiState: StateFlow<ReportViewUIState> = _uiState.asStateFlow()
 
@@ -79,9 +75,7 @@ class ReportViewViewModel(
                     )
               }
             } catch (e: Exception) {
-              Log.e(TAG, "Error loading Report by ID: $reportID", e)
-            } finally {
-              // no-op
+              Log.e("ReportViewViewModel", "Error loading Report by ID: $reportID", e)
             }
           }
     }
@@ -129,9 +123,7 @@ class ReportViewViewModel(
               repository.editReport(updatedReport.id, updatedReport)
               _saveCompleted.value = true
             } catch (e: Exception) {
-              Log.e(TAG, "Error saving report", e)
-            } finally {
-              // no-op
+              Log.e("ReportViewViewModel", "Error saving report", e)
             }
           }
     }

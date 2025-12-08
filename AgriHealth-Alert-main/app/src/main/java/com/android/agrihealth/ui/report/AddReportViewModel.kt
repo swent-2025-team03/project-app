@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.report
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.HealthQuestionFactory
@@ -28,10 +27,6 @@ class AddReportViewModel(
     private val userId: String,
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository
 ) : ViewModel(), AddReportViewModelContract {
-
-  companion object {
-    private const val TAG = "ADD-REPORT-VM"
-  }
 
   private val _uiState = MutableStateFlow(AddReportUiState())
   override val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
@@ -95,10 +90,7 @@ class AddReportViewModel(
             location = uiState.address)
 
     _uiState.withLoadingState(
-        applyLoading = { state, loading ->
-          Log.d(TAG, "createReport: applyLoading -> isLoading=$loading")
-          state.copy(isLoading = loading)
-        }) {
+        applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
           reportRepository.addReport(newReport)
         }
 

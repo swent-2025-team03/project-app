@@ -152,7 +152,6 @@ fun ReportViewScreen(
             handleGoBack(force = true)
           })
 
-  // Wrap all screen content inside LoadingOverlay
   LoadingOverlay(isLoading = uiState.isLoading) {
     Scaffold(
         topBar = {
