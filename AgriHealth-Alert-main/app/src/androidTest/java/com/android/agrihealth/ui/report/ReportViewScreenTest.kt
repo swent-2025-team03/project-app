@@ -105,13 +105,13 @@ class ReportViewScreenTest {
                   address = null,
                   defaultOffice = "OFF_456"))
 
-  private fun createFakeReport(withReport: Boolean = true): Report {
+  private fun createFakeReport(withPhoto: Boolean = true): Report {
     return Report(
         id = "RPT001",
         title = "My sheep is acting strange",
         description = "Since this morning, my sheep keeps getting on its front knees.",
         questionForms = emptyList(),
-        photoURL = if (withReport) FAKE_PHOTO_PATH else null,
+        photoURL = if (withPhoto) FAKE_PHOTO_PATH else null,
         farmerId = "FARMER_123",
         officeId = "OFF_456",
         status = ReportStatus.PENDING,
@@ -589,7 +589,6 @@ class ReportViewScreenTest {
     composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER).isDisplayed()
     }
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER).assertIsDisplayed()
 
     composeTestRule
         .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)

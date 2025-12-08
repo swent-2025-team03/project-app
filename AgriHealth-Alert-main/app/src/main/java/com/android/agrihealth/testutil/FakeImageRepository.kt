@@ -49,7 +49,7 @@ class FakeImageRepository(private var connectionIsFrozen: Boolean = true) : Imag
   override suspend fun downloadImage(path: String): Result<ByteArray> {
     // Wait while connection is frozen
     while (connectionIsFrozen) {
-      delay(100) // Check every 100ms to avoid busy-waiting
+      delay(100)
     }
 
     return if (doesThrowError || photoStored == null) {
@@ -60,22 +60,22 @@ class FakeImageRepository(private var connectionIsFrozen: Boolean = true) : Imag
   }
 
   override fun isFileTooLarge(bytes: ByteArray): Boolean {
-    TODO("Not implemented")
+    throw NotImplementedError()
   }
 
   override fun reduceFileSize(bytes: ByteArray): ByteArray {
-    TODO("Not implemented")
+    throw NotImplementedError()
   }
 
   override fun resizeImage(bitmap: Bitmap): Bitmap {
-    TODO("Not implemented")
+    throw NotImplementedError()
   }
 
   override fun compressImage(bitmap: Bitmap): ByteArray {
-    TODO("Not implemented")
+    throw NotImplementedError()
   }
 
   override fun resolveUri(uri: Uri): ByteArray {
-    TODO("Not implemented")
+    throw NotImplementedError()
   }
 }

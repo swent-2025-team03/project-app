@@ -603,7 +603,7 @@ fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModel, modifier: Mo
     }
     is ImageUIState.Loading -> {
       Box(
-          modifier = modifier.fillMaxWidth().height(200.dp).padding(top = 16.dp, bottom = 16.dp),
+          modifier = modifier.fillMaxWidth().height(200.dp).padding(vertical = 16.dp),
           contentAlignment = Alignment.Center) {
             CircularProgressIndicator(
                 modifier = Modifier.testTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION))
