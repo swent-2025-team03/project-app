@@ -138,9 +138,6 @@ fun ReportViewScreen(
   var isDeleteDialogOpen by remember { mutableStateOf(false) }
   var isUnsavedAlertOpen by remember { mutableStateOf(false) }
 
-  // TODO: REMOVE THIS
-  var isDebug by remember { mutableStateOf(false) }
-
   // AssignedVet logic
   val isAssignedToCurrentVet = (userRole != UserRole.FARMER && (report.assignedVet == user?.uid))
   val isUnassigned = report.assignedVet == null
@@ -210,13 +207,7 @@ fun ReportViewScreen(
                         contentDescription = "Back")
                   }
             },
-            // TODO REMOVE THIS
-            // Debug
-            actions = {
-              IconButton(onClick = { isDebug = !isDebug }) {
-                Text("Debug", style = MaterialTheme.typography.labelMedium)
-              }
-            })
+        )
       },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { padding ->
 
