@@ -29,7 +29,7 @@ data class ReportViewUIState(
             title = "My sheep is acting strange",
             description = "Since this morning, my sheep keeps getting on its front knees.",
             questionForms = emptyList(),
-            photoUri = null, // Placeholder for now
+            photoURL = null,
             farmerId = "FARMER_123",
             officeId = "OFF_456",
             status = ReportStatus.PENDING,

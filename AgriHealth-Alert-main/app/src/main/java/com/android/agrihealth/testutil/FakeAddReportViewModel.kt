@@ -1,5 +1,6 @@
 package com.android.agrihealth.testutil
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.MCQ
@@ -9,6 +10,7 @@ import com.android.agrihealth.data.model.report.QuestionForm
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.ui.report.AddReportUiState
 import com.android.agrihealth.ui.report.AddReportViewModelContract
+import com.android.agrihealth.ui.report.CreateReportResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -50,11 +52,27 @@ open class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
     _uiState.value = _uiState.value.copy(questionForms = updatedList)
   }
 
-  override suspend fun createReport(): Boolean {
-    return _uiState.value.title.isNotBlank() && _uiState.value.description.isNotBlank()
+  override suspend fun createReport(): CreateReportResult {
+    if (_uiState.value.title.isNotBlank() && _uiState.value.description.isNotBlank()) {
+      return CreateReportResult.Success
+    } else {
+      return CreateReportResult.ValidationError
+    }
   }
 
   override fun clearInputs() {
     _uiState.value = AddReportUiState()
+  }
+
+  override fun setPhoto(uri: Uri?) {
+    _uiState.value = _uiState.value.copy(photoUri = uri)
+  }
+
+  override fun removePhoto() {
+    _uiState.value = _uiState.value.copy(photoUri = null)
+  }
+
+  override fun setUploadedImagePath(path: String?) {
+    _uiState.value = _uiState.value.copy(uploadedImagePath = path)
   }
 }

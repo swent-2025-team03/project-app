@@ -1,6 +1,9 @@
 package com.android.agrihealth.ui.report
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
+import com.android.agrihealth.data.model.images.ImageUIState
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.HealthQuestionFactory
 import com.android.agrihealth.data.model.report.QuestionForm
@@ -12,6 +15,7 @@ import com.android.agrihealth.ui.loading.withLoadingState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 
 data class AddReportUiState(
     val title: String = "",
@@ -19,15 +23,40 @@ data class AddReportUiState(
     val chosenOffice: String = "",
     val collected: Boolean = false,
     val address: Location? = null,
+    val photoUri: Uri? = null,
     val questionForms: List<QuestionForm> = emptyList(),
+    val uploadedImagePath: String? = null,
     val isLoading: Boolean = false,
 )
 
+/** Represents the result of creating a report */
+sealed class CreateReportResult {
+  /** The report has successfully been created */
+  object Success : CreateReportResult()
+
+  /** There is a validation error. For example a required field is missing a value */
+  object ValidationError : CreateReportResult()
+
+  /**
+   * Uploading the report to the repository failed. Or uploading the photo to the image repository
+   * failed
+   */
+  data class UploadError(val e: Throwable) : CreateReportResult()
+}
+
+/**
+ * The view model associated to the report creation screen.
+ *
+ * @param userId The ID of the user viewing this screen
+ * @param reportRepository The repository containing the reports
+ * @param imageViewModel The view model used to handle uploading/downloading photos
+ * @see AddReportScreen
+ */
 class AddReportViewModel(
     private val userId: String,
-    private val reportRepository: ReportRepository = ReportRepositoryProvider.repository
+    private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
+    private val imageViewModel: ImageViewModel = ImageViewModel(),
 ) : ViewModel(), AddReportViewModelContract {
-
   private val _uiState = MutableStateFlow(AddReportUiState())
   override val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
 
@@ -52,6 +81,18 @@ class AddReportViewModel(
     _uiState.value = _uiState.value.copy(chosenOffice = officeId)
   }
 
+  override fun setPhoto(uri: Uri?) {
+    _uiState.value = _uiState.value.copy(photoUri = uri)
+  }
+
+  override fun removePhoto() {
+    _uiState.value = _uiState.value.copy(photoUri = null)
+  }
+
+  override fun setUploadedImagePath(path: String?) {
+    _uiState.value = _uiState.value.copy(uploadedImagePath = path)
+  }
+
   override fun setAddress(address: Location?) {
     _uiState.value = _uiState.value.copy(address = address)
   }
@@ -62,39 +103,82 @@ class AddReportViewModel(
     _uiState.value = _uiState.value.copy(questionForms = updatedList)
   }
 
-  override suspend fun createReport(): Boolean {
+  override suspend fun createReport(): CreateReportResult {
     val uiState = _uiState.value
+
     if (uiState.title.isBlank() ||
         uiState.description.isBlank() ||
         uiState.chosenOffice.isBlank() ||
         uiState.address == null) {
-      return false
+      return CreateReportResult.ValidationError
     }
+    if (!uiState.questionForms.all { it.isValid() }) {
+      return CreateReportResult.ValidationError
+    }
+
     val allQuestionsAnswered = uiState.questionForms.all { it.isValid() }
     if (!allQuestionsAnswered) {
-      return false
+      return CreateReportResult.ValidationError
     }
 
-    val newReport =
-        Report(
-            id = reportRepository.getNewReportId(),
-            title = uiState.title,
-            description = uiState.description,
-            questionForms = uiState.questionForms,
-            photoUri = null, // currently unused
-            farmerId = userId,
-            officeId = uiState.chosenOffice,
-            status = ReportStatus.PENDING,
-            answer = null,
-            collected = uiState.collected,
-            location = uiState.address)
+    var uploadedPath = uiState.uploadedImagePath
 
+    // Wrap the long running upload / repository calls so uiState.isLoading is toggled
+    var result: CreateReportResult =
+        CreateReportResult.UploadError(IllegalStateException("Unknown error"))
     _uiState.withLoadingState(
         applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
-          reportRepository.addReport(newReport)
+          // Photo upload (if a photo has been chosen)
+          if (uiState.photoUri != null) {
+            imageViewModel.upload(uiState.photoUri)
+
+            val resultState =
+                imageViewModel.uiState.first {
+                  it is ImageUIState.UploadSuccess || it is ImageUIState.Error
+                }
+
+            when (resultState) {
+              is ImageUIState.UploadSuccess -> {
+                uploadedPath = resultState.path
+                _uiState.value = _uiState.value.copy(uploadedImagePath = resultState.path)
+              }
+              is ImageUIState.Error -> {
+                result = CreateReportResult.UploadError(resultState.e)
+                return@withLoadingState
+              }
+              else -> {
+                result =
+                    CreateReportResult.UploadError(
+                        IllegalStateException(AddReportFeedbackTexts.UNKNOWN))
+                return@withLoadingState
+              }
+            }
+          }
+
+          val newReport =
+              Report(
+                  id = reportRepository.getNewReportId(),
+                  title = uiState.title,
+                  description = uiState.description,
+                  questionForms = uiState.questionForms,
+                  photoURL = uploadedPath,
+                  farmerId = userId,
+                  officeId = uiState.chosenOffice,
+                  status = ReportStatus.PENDING,
+                  answer = null,
+                  collected = uiState.collected,
+                  location = uiState.address)
+
+          try {
+            reportRepository.addReport(newReport)
+            clearInputs()
+            result = CreateReportResult.Success
+          } catch (e: Exception) {
+            result = CreateReportResult.UploadError(e)
+          }
         }
 
-    return true
+    return result
   }
 
   override fun clearInputs() {
