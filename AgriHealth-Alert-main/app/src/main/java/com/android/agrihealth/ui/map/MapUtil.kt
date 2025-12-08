@@ -33,6 +33,7 @@ import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -44,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color as Colorx
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -55,13 +57,18 @@ import androidx.core.graphics.createBitmap
 import com.android.agrihealth.R
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.alert.Alert
+import com.android.agrihealth.data.model.alert.distanceMeters
+import com.android.agrihealth.data.model.location.toLatLng
+import com.android.agrihealth.data.model.location.toLocation
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
@@ -114,6 +121,7 @@ fun getUISettingsAndTheme(): Pair<MapUiSettings, MapProperties> {
 }
 
 // === Map components ===
+// === Reports ===
 
 /**
  * Displays the given spiderified reports
@@ -151,69 +159,6 @@ fun ReportMarkers(
         width = 5f,
         color = MaterialTheme.colorScheme.onBackground)
   }
-}
-
-/** Displays relevant areas for every current alert */
-@Composable
-fun AlertAreas(alerts: List<Alert>, onClick: () -> Unit) {
-  /* TODO */
-}
-
-/** Displays a dropdown menu to filter reports based on their status */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MapFilterMenu(selectedOption: String?, onOptionSelected: (String?) -> Unit) {
-  val hideReportsText = "Hide all reports"
-  val options = listOf(null, hideReportsText) + ReportStatus.entries.map { it.displayString() }
-
-  var expanded by remember { mutableStateOf(false) }
-  val textFieldBackgroundColor = MaterialTheme.colorScheme.surface
-
-  val textMeasurer = rememberTextMeasurer()
-  val maxTextWidth =
-      remember(options) {
-        options.maxOf {
-          textMeasurer.measure(text = AnnotatedString(it ?: AllFilterText)).size.width
-        }
-      }
-  val dropdownWidth = maxTextWidth - 32.dp.value
-
-  ExposedDropdownMenuBox(
-      expanded = expanded,
-      onExpandedChange = { expanded = !expanded },
-      modifier = Modifier.padding(16.dp).width(dropdownWidth.dp)) {
-        OutlinedTextField(
-            value = selectedOption ?: AllFilterText,
-            onValueChange = {},
-            readOnly = true,
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier.menuAnchor().testTag(MapScreenTestTags.REPORT_FILTER_MENU),
-            colors =
-                OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = textFieldBackgroundColor,
-                    focusedContainerColor = textFieldBackgroundColor))
-
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.background(color = MaterialTheme.colorScheme.surface)) {
-              options.forEach { option ->
-                DropdownMenuItem(
-                    onClick = {
-                      onOptionSelected(option)
-                      expanded = false
-                    },
-                    text = { Text(option ?: AllFilterText) },
-                    modifier = Modifier.testTag(MapScreenTestTags.getTestTagForFilter(option)))
-
-                if (option == hideReportsText) HorizontalDivider(
-                  modifier = Modifier.padding(8.dp),
-                  color = MaterialTheme.colorScheme.onSurface,
-                  thickness = 1.dp
-                )
-              }
-            }
-      }
 }
 
 /**
@@ -281,6 +226,174 @@ fun ShowReportInfo(
           Spacer(modifier = Modifier.height(8.dp))
         }
   }
+}
+
+// === Alerts ===
+
+/** Displays relevant areas for every current alert */
+@Composable
+fun AlertAreas(alerts: List<Alert>, onClick: () -> Unit) {
+  /*// ----- Toggle -----
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(12.dp),
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Text("Show Area Info")
+      Spacer(Modifier.weight(1f))
+      Switch(
+        checked = showCircles,
+        onCheckedChange = { /* update state in ViewModel */ }
+      )
+    }
+
+
+  if (tappedItems.size == 1) {
+      DisplayInfo(tappedItems.first())
+  }
+
+  if (tappedItems.size > 1) {
+      AlertDialog(
+          onDismissRequest = { tappedItems = emptyList() },
+          title = { Text("Select Area") },
+          text = {
+              Column {
+                  tappedItems.forEach { item ->
+                      Text(
+                          text = item.info,
+                          modifier = Modifier
+                              .fillMaxWidth()
+                              .clickable {
+                                  DisplayInfo(item)
+                                  tappedItems = emptyList()
+                              }
+                              .padding(12.dp)
+                      )
+                  }
+              }
+          },
+          confirmButton = {}
+      )
+  }
+
+
+     */
+
+  alerts.forEach { alert ->
+    alert.zones?.forEach { zone ->
+      Circle(
+          center = zone.center.toLatLng(),
+          radius = zone.radiusMeters,
+          fillColor = Colorx(0x552196F3), // semi-transparent
+          strokeColor = Colorx(0xFF2196F3),
+          strokeWidth = 4f,
+          clickable = true, // enable click
+          onClick = {
+            // onCircleClicked(item)
+            false // return false so map doesn't consume the event
+          })
+    }
+  }
+}
+
+/** Menu to show info about every alert provided */
+@Composable
+fun ShowAlertInfo(alerts: List<Alert?>) {
+  if (alerts.isEmpty()) return
+}
+
+fun findAlertZonesUnderTap(alerts: List<Alert>, tap: LatLng): List<Alert> {
+  return alerts.filter { alert ->
+    alert.zones?.any { zone ->
+      val center = zone.center
+      val radius = zone.radiusMeters
+      val distance = distanceMeters(center, tap.toLocation())
+      distance <= radius
+    } == true
+  }
+}
+
+// === UI ===
+
+/** Displays a switch to show/hide reports on the map */
+@Composable
+fun ReportVisibilitySwitch(shouldDisplay: Boolean, onChange: (Boolean) -> Unit) {
+  VisibilitySwitch("Show reports", shouldDisplay, onChange)
+}
+
+/** Displays a switch to show/hide alerts on the map */
+@Composable
+fun AlertVisibilitySwitch(shouldDisplay: Boolean, onChange: (Boolean) -> Unit) {
+  VisibilitySwitch("Show alerts", shouldDisplay, onChange)
+}
+
+@Composable
+private fun VisibilitySwitch(text: String, shouldDisplay: Boolean, onChange: (Boolean) -> Unit) {
+  Row(modifier = Modifier.padding(horizontal = 8.dp)) {
+    Text(
+        text,
+        Modifier.align(Alignment.CenterVertically),
+        color = MaterialTheme.colorScheme.onSurface)
+    Spacer(Modifier.size(8.dp))
+    Switch(checked = shouldDisplay, onCheckedChange = { enabled -> onChange(enabled) })
+  }
+}
+
+/** Displays a dropdown menu to filter reports based on their status */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MapFilterMenu(selectedOption: String?, onOptionSelected: (String?) -> Unit) {
+  val options = listOf(null) + ReportStatus.entries.map { it.displayString() }
+
+  var expanded by remember { mutableStateOf(false) }
+  val textFieldBackgroundColor = MaterialTheme.colorScheme.surface
+
+  val textMeasurer = rememberTextMeasurer()
+  val maxTextWidth =
+      remember(options) {
+        options.maxOf {
+          textMeasurer.measure(text = AnnotatedString(it ?: AllFilterText)).size.width
+        }
+      }
+  val dropdownWidth = maxTextWidth - 32.dp.value
+
+  ExposedDropdownMenuBox(
+      expanded = expanded,
+      onExpandedChange = { expanded = !expanded },
+      modifier = Modifier.padding(8.dp).width(dropdownWidth.dp)) {
+        OutlinedTextField(
+            value = selectedOption ?: AllFilterText,
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.menuAnchor().testTag(MapScreenTestTags.REPORT_FILTER_MENU),
+            colors =
+                OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = textFieldBackgroundColor,
+                    focusedContainerColor = textFieldBackgroundColor))
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(color = MaterialTheme.colorScheme.surface)) {
+              options.forEach { option ->
+                DropdownMenuItem(
+                    onClick = {
+                      onOptionSelected(option)
+                      expanded = false
+                    },
+                    text = { Text(option ?: AllFilterText) },
+                    modifier = Modifier.testTag(MapScreenTestTags.getTestTagForFilter(option)))
+
+                if (option == AllFilterText)
+                    HorizontalDivider(
+                        modifier = Modifier.padding(8.dp),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        thickness = 1.dp)
+              }
+            }
+      }
 }
 
 @Composable

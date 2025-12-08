@@ -1,8 +1,12 @@
 package com.android.agrihealth.ui.map
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,6 +23,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.alert.Alert
 import com.android.agrihealth.data.model.device.location.LocationPermissionsRequester
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.displayString
@@ -51,7 +56,7 @@ object MapScreenTestTags {
   fun getTestTagForFilter(filter: String?): String = "filter_$filter"
 }
 
-const val AllFilterText = "Show all reports"
+const val AllFilterText = "All reports"
 
 @Composable
 fun MapScreen(
@@ -66,12 +71,16 @@ fun MapScreen(
   val reports = uiState.reports
   val selectedReport by mapViewModel.selectedReport.collectAsState()
   val alerts = uiState.alerts
+  var selectedAlerts by remember { mutableStateOf(listOf<Alert?>(null)) }
 
   fun Report.isSelected() = this == selectedReport
   fun Report.toggleSelect() = mapViewModel.setSelectedReport(if (this.isSelected()) null else this)
 
   // Marker filter
   var selectedFilter by remember { mutableStateOf<String?>(null) }
+
+  // Alert filter
+  var showAlerts by remember { mutableStateOf(true) }
 
   // Initial camera state
   val mapInitialLocation by mapViewModel.startingLocation.collectAsState()
@@ -110,28 +119,50 @@ fun MapScreen(
                 selectedFilter == null || it.report.status.displayString() == selectedFilter
               }
 
+          val alertsToDisplay = alerts.filter { showAlerts }
+
           GoogleMap(
               cameraPositionState = cameraPositionState,
               properties = googleMapMapProperties,
               uiSettings = googleMapUiSettings,
               modifier = Modifier.testTag(MapScreenTestTags.GOOGLE_MAP_SCREEN),
-              onMapClick = { mapViewModel.setSelectedReport(null) }) {
+              onMapClick = { tapLatLng ->
+                // Reports: unselect
+                mapViewModel.setSelectedReport(null)
+
+                // Alerts: show info for every potential
+                selectedAlerts = findAlertZonesUnderTap(alertsToDisplay, tapLatLng)
+              }) {
                 ReportMarkers(
                     reports = reportsToDisplay,
                     isSelected = { it.isSelected() },
                     onClick = { it.toggleSelect() })
 
-                AlertAreas(
-                  alerts = alerts,
-                  onClick = {}
-                )
+                AlertAreas(alerts = alertsToDisplay, onClick = {})
               }
 
           MapTestMarkers(reportsToDisplay) { it.toggleSelect() }
 
-          if (isViewedFromOverview) {
-            MapFilterMenu(selectedFilter) { selectedFilter = it }
-          }
+          // Control what to display
+          Column(
+              modifier =
+                  Modifier.padding(16.dp)
+                      .align(Alignment.TopEnd)
+                      .background(
+                          color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6F),
+                          shape = RoundedCornerShape(16.dp)),
+              horizontalAlignment = Alignment.End) {
+                val showReports = selectedFilter != "None"
+
+                AlertVisibilitySwitch(showAlerts) { showAlerts = it }
+                ReportVisibilitySwitch(showReports) { enabled ->
+                  selectedFilter = if (enabled) null else "None"
+                }
+
+                if (isViewedFromOverview && showReports) {
+                  MapFilterMenu(selectedFilter) { selectedFilter = it }
+                }
+              }
 
           val density = LocalDensity.current
           val reportInfoBoxHeightDp = with(density) { reportInfoBoxHeightPx.toDp() }
@@ -160,6 +191,8 @@ fun MapScreen(
           ) {
             navigationActions?.navigateTo(Screen.ViewReport(it))
           }
+
+          ShowAlertInfo(selectedAlerts)
         }
       })
 }
