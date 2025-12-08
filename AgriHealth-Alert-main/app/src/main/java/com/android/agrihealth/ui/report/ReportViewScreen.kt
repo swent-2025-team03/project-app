@@ -285,10 +285,8 @@ fun ReportViewScreen(
               // ---- Collected switch ----
               CollectedSwitch(report.collected)
 
-              if (isDebug) {
-                if (report.photoURL != null) {
-                  PhotoDisplay(photoURL = report.photoURL, imageViewModel = imageViewModel)
-                }
+              if (report.photoURL != null) {
+                PhotoDisplay(photoURL = report.photoURL, imageViewModel = imageViewModel)
               }
 
               // Check assignedVet Status
@@ -596,7 +594,7 @@ fun UnsavedChangesAlert(onDiscard: () -> Unit, onStay: () -> Unit) {
 fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModel, modifier: Modifier = Modifier) {
   val imageUiState by imageViewModel.uiState.collectAsState()
 
-  // Download image only when photoURL changes
+  // Download the photo in parallel so the screen is not blocked
   LaunchedEffect(photoURL) {
     if (photoURL != null) {
       imageViewModel.download(photoURL)
@@ -633,15 +631,12 @@ fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModel, modifier: Mo
         modifier = modifier.padding(16.dp)
       )
     }
-    is ImageUIState.Idle -> {Text(
-      text = "DEBUG --- Idle state",
-      color = MaterialTheme.colorScheme.error,
-      modifier = modifier.padding(16.dp)
-    )// Nothing is happening
+    is ImageUIState.Idle -> {
+      // Nothing happening yet
     }
     else -> {
       Text(
-        text = "Unexpected error happened. Please contact the developers!",
+        text = "An unexpected error happened. Please contact the developers!",
         color = MaterialTheme.colorScheme.error,
         modifier = modifier.padding(16.dp)
       )
