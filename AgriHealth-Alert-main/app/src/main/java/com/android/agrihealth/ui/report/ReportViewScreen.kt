@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -15,12 +16,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.core.design.theme.statusColor
+import com.android.agrihealth.data.model.images.ImageUIState
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
@@ -123,6 +128,9 @@ fun ReportViewScreen(
   var isDeleteDialogOpen by remember { mutableStateOf(false) }
   var isUnsavedAlertOpen by remember { mutableStateOf(false) }
 
+  // TODO: REMOVE THIS
+  var isDebug by remember { mutableStateOf(false) }
+
   // AssignedVet logic
   val isAssignedToCurrentVet = (userRole != UserRole.FARMER && (report.assignedVet == user?.uid))
   val isUnassigned = report.assignedVet == null
@@ -138,6 +146,8 @@ fun ReportViewScreen(
   fun handleGoBack(force: Boolean = false) {
     if (unsavedChanges && !force) isUnsavedAlertOpen = true else navigationActions.goBack()
   }
+
+  val imageViewModel: ImageViewModel = remember { ImageViewModel() }
 
   // Overrides behavior of Android system back button
   BackHandler { handleGoBack() }
@@ -191,6 +201,13 @@ fun ReportViewScreen(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back")
                   }
+            },
+            // TODO REMOVE THIS
+            // Debug
+            actions = {
+              IconButton(onClick = { isDebug = !isDebug }) {
+                Text("Debug", style = MaterialTheme.typography.labelMedium)
+              }
             })
       },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { padding ->
@@ -267,6 +284,12 @@ fun ReportViewScreen(
 
               // ---- Collected switch ----
               CollectedSwitch(report.collected)
+
+              if (isDebug) {
+                if (report.photoURL != null) {
+                  PhotoDisplay(photoURL = report.photoURL, imageViewModel = imageViewModel)
+                }
+              }
 
               // Check assignedVet Status
               if (isUnassigned) {
@@ -566,6 +589,64 @@ fun UnsavedChangesAlert(onDiscard: () -> Unit, onStay: () -> Unit) {
               Text("Cancel")
             }
       })
+}
+
+
+@Composable
+fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModel, modifier: Modifier = Modifier) {
+  val imageUiState by imageViewModel.uiState.collectAsState()
+
+  // Download image only when photoURL changes
+  LaunchedEffect(photoURL) {
+    if (photoURL != null) {
+      imageViewModel.download(photoURL)
+    }
+  }
+
+  when (val currentState = imageUiState) {
+    is ImageUIState.DownloadSuccess -> {
+      AsyncImage(
+        model = currentState.imageData,
+        contentDescription = "Photo associated to the report",
+        modifier = modifier
+          .fillMaxWidth()
+          .padding(top = 16.dp, bottom = 16.dp)
+          .testTag(AddReportScreenTestTags.IMAGE_PREVIEW),
+        contentScale = ContentScale.Fit
+      )
+    }
+    is ImageUIState.Loading -> {
+      Box(
+        modifier = modifier
+          .fillMaxWidth()
+          .height(200.dp)
+          .padding(top = 16.dp, bottom = 16.dp),
+        contentAlignment = Alignment.Center
+      ) {
+        CircularProgressIndicator()
+      }
+    }
+    is ImageUIState.Error -> {
+      Text(
+        text = "Failed to load image",
+        color = MaterialTheme.colorScheme.error,
+        modifier = modifier.padding(16.dp)
+      )
+    }
+    is ImageUIState.Idle -> {Text(
+      text = "DEBUG --- Idle state",
+      color = MaterialTheme.colorScheme.error,
+      modifier = modifier.padding(16.dp)
+    )// Nothing is happening
+    }
+    else -> {
+      Text(
+        text = "Unexpected error happened. Please contact the developers!",
+        color = MaterialTheme.colorScheme.error,
+        modifier = modifier.padding(16.dp)
+      )
+    }
+  }
 }
 
 /*  If you want to use the preview, just de-comment this block.
