@@ -20,9 +20,9 @@ sealed interface Notification {
   }
 
   data class ConnectOffice(override val destinationUid: String, val description: String) :
-          Notification {
-            override val type = NotificationType.CONNECT_OFFICE
-          }
+      Notification {
+    override val type = NotificationType.CONNECT_OFFICE
+  }
 }
 
 enum class NotificationType {

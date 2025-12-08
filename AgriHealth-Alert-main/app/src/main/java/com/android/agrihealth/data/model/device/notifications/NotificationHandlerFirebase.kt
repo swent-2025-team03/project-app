@@ -26,10 +26,10 @@ import androidx.core.app.NotificationCompat
 import com.android.agrihealth.R
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.authentification.USERS_COLLECTION_PATH
+import com.android.agrihealth.data.model.device.notifications.Notification.ConnectOffice
 import com.android.agrihealth.data.model.device.notifications.Notification.JoinOffice
 import com.android.agrihealth.data.model.device.notifications.Notification.NewReport
 import com.android.agrihealth.data.model.device.notifications.Notification.VetAnswer
-import com.android.agrihealth.data.model.device.notifications.Notification.ConnectOffice
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
@@ -138,7 +138,8 @@ class NotificationHandlerFirebase(
               channelJoinOffice, "Join office", NotificationManager.IMPORTANCE_HIGH))
 
       nm.createNotificationChannel(
-          NotificationChannel(channelConnectOffice, "Connect office", NotificationManager.IMPORTANCE_HIGH))
+          NotificationChannel(
+              channelConnectOffice, "Connect office", NotificationManager.IMPORTANCE_HIGH))
     }
   }
 }
@@ -166,8 +167,7 @@ fun Notification.toDataMap(): Map<String, String> =
           mapOf(
               "type" to type.toName(),
               "destinationUid" to destinationUid,
-              "description" to description
-          )
+              "description" to description)
     }
 
 fun Map<String, String>.toNotification(): Notification? {
