@@ -78,7 +78,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
       }
       is Vet -> {
         base["address"] = user.address
-        base["validCodes"] = user.validCodes
+        base["farmerConnectCodes"] = user.farmerConnectCodes
+        base["vetConnectCodes"] = user.vetConnectCodes
         base["officeId"] = user.officeId
       }
     }
@@ -120,7 +121,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               lastname = lastname,
               email = email,
               address = address,
-              validCodes = data["validCodes"] as? List<String> ?: emptyList(),
+              farmerConnectCodes = data["farmerConnectCodes"] as? List<String> ?: emptyList(),
+              vetConnectCodes = data["vetConnectCodes"] as? List<String> ?: emptyList(),
               officeId = data["officeId"] as? String?,
               isGoogleAccount = isGoogleAccount,
               description = description,
@@ -151,7 +153,10 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
       }
       old is Vet && new is Vet -> {
         if (old.address != new.address) changes["address"] = new.address
-        if (old.validCodes != new.validCodes) changes["validCodes"] = new.validCodes
+        if (old.farmerConnectCodes != new.farmerConnectCodes)
+            changes["farmerConnectCodes"] = new.farmerConnectCodes
+        if (old.vetConnectCodes != new.vetConnectCodes)
+            changes["vetConnectCodes"] = new.vetConnectCodes
         if (old.officeId != new.officeId) changes["officeId"] = new.officeId
       }
       else -> throw IllegalArgumentException("Permission denied")

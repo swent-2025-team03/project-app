@@ -199,6 +199,10 @@ dependencies {
     implementation(libs.maps.compose.utils)
     implementation(libs.play.services.auth)
     implementation(libs.play.services.location)
+
+    // ------- Using Coil for image handling --------------
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
 }
 
 tasks.withType<Test> {

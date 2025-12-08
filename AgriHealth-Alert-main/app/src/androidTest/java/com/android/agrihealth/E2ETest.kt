@@ -14,8 +14,10 @@ import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.location.LocationPickerTestTags
+import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testutil.FakeOfficeRepository
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.alert.AlertViewScreenTestTags
 import com.android.agrihealth.ui.authentification.RoleSelectionScreenTestTags
@@ -32,7 +34,6 @@ import com.android.agrihealth.ui.profile.CodeComposableComponentsTestTags
 import com.android.agrihealth.ui.profile.CodesViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags
-import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags
 import com.android.agrihealth.ui.user.UserViewModel
@@ -41,6 +42,7 @@ import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -159,12 +161,19 @@ class E2ETest : FirebaseEmulatorsTest() {
 
   @Test
   fun testFarmer_OverviewFilters_WorkCorrectly() {
-    val office1 = "Meh Office."
+    val fakeOfficeRepo = FakeOfficeRepository()
+    OfficeRepositoryProvider.set(fakeOfficeRepo)
+
+    val office2 =
+        Office(id = user1.linkedOffices.last(), name = "Some Other Office", ownerId = user1.uid)
+
+    runTest { fakeOfficeRepo.addOffice(office2) }
+
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.waitForIdle()
     completeSignIn(user1.email, "12345678")
     checkOverviewScreenIsDisplayed()
-    createReport("Report 1", "Description 1", office1)
+    createReport("Report 1", "Description 1", "Deleted Office")
     createReport("Report 2", "Description 2", user1.linkedOffices.last())
 
     // Report 1 appears when filtering for "Pending"
@@ -186,10 +195,14 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN).performClick()
     composeTestRule.onNodeWithTag("OPTION_All").performClick()
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.OFFICE_ID_DROPDOWN).performClick()
-    composeTestRule.onNodeWithText(office1).performClick()
+    composeTestRule
+        .onAllNodes(hasTestTagThatStartsWith("OPTION_"))
+        .filter(hasText("Some Other Office"))
+        .onFirst()
+        .performClick()
     composeTestRule
         .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
-        .assertAny(hasText("Report 1"))
+        .assertAny(hasText("Report 2"))
 
     // Report 1 and 2 both appear when filtering for All
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.OFFICE_ID_DROPDOWN).performClick()
@@ -202,6 +215,8 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertAny(hasText("Report 2"))
 
     signOutFromScreen()
+
+    tearDown()
   }
 
   @Test
@@ -242,7 +257,8 @@ class E2ETest : FirebaseEmulatorsTest() {
             lastname = "Vet",
             email = "vet@test.com",
             address = null,
-            validCodes = emptyList(),
+            farmerConnectCodes = emptyList(),
+            vetConnectCodes = emptyList(),
             officeId = "off1")
     val userViewModel = UserViewModel(initialUser = vet)
     runTest {
@@ -263,7 +279,53 @@ class E2ETest : FirebaseEmulatorsTest() {
     changePassword(password, newPassword)
   }
 
+  @Test
+  fun vetCreatesCodes_editProfileShowsFarmerDropdowns() {
+    composeTestRule.setContent { AgriHealthApp() }
+    composeTestRule.waitForIdle()
+    val email = "vet@test.com"
+    val password = "123456"
+    val vet =
+        Vet(
+            uid = "vet_001",
+            firstname = "Dr",
+            lastname = "Vet",
+            email = email,
+            address = null,
+            farmerConnectCodes = emptyList(),
+            vetConnectCodes = emptyList(),
+            officeId = "off1")
+    val userViewModel = UserViewModel(initialUser = vet)
+    runTest {
+      AuthRepositoryProvider.repository.signUpWithEmailAndPassword(vet.email, "123456", vet)
+    }
+    val codesViewModel =
+        CodesViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
+    codesViewModel.generateCode()
+
+    completeSignIn(email, password)
+    checkOverviewScreenIsDisplayed()
+    goToProfileFromOverview()
+    composeTestRule
+        .onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    checkEditProfileScreenIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.dropdownTag("FARMER"))
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule
+        .onNodeWithTag(EditProfileScreenTestTags.dropdownElementTag("FARMER"))
+        .assertIsDisplayed()
+  }
+
   // ----------- Helper functions -----------
+
+  @After
+  fun tearDown() {
+    OfficeRepositoryProvider.reset()
+  }
 
   private fun completeSignUp(email: String, password: String, isVet: Boolean) {
     composeTestRule
@@ -597,9 +659,12 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onNodeWithText(AddReportFeedbackTexts.SUCCESS).isDisplayed()
+      composeTestRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS).isDisplayed()
     }
-    composeTestRule.onNodeWithText("OK").assertIsDisplayed().performClick()
+    composeTestRule
+        .onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS_OK)
+        .assertIsDisplayed()
+        .performClick()
   }
 
   private fun clickFirstReportItem() {

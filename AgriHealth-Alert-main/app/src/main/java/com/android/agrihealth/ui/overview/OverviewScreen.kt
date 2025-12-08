@@ -34,6 +34,8 @@ import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.common.OfficeName
+import com.android.agrihealth.ui.common.rememberOfficeName
+import com.android.agrihealth.ui.common.rememberUserName
 import com.android.agrihealth.ui.navigation.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -236,7 +238,10 @@ fun OverviewScreen(
                                   farmerId = uiState.selectedFarmer)
                             },
                             modifier = Modifier.testTag(OverviewScreenTestTags.OFFICE_ID_DROPDOWN),
-                            placeholder = "Filter by offices")
+                            placeholder = "Filter by offices",
+                            labelProvider = { officeId ->
+                              if (officeId == null) "-" else rememberOfficeName(officeId)
+                            })
                       } else if (userRole == UserRole.VET) {
                         // -- FarmerId filter (only for vet) --
                         DropdownMenuWrapper(
@@ -249,7 +254,10 @@ fun OverviewScreen(
                                   farmerId = it)
                             },
                             modifier = Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN),
-                            placeholder = "Filter by farmers")
+                            placeholder = "Filter by farmers",
+                            labelProvider = { farmerId ->
+                              if (farmerId == null) "-" else rememberUserName(farmerId)
+                            })
                       }
                     }
 
@@ -277,7 +285,7 @@ fun <T> DropdownMenuWrapper(
     onOptionSelected: (T?) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String,
-    labelProvider: (T?) -> String = { it?.toString() ?: "-" }
+    labelProvider: @Composable (T?) -> String = { it?.toString() ?: "-" }
 ) {
   var expanded by remember { mutableStateOf(false) }
   val displayText = selectedOption?.let { labelProvider(it) } ?: placeholder

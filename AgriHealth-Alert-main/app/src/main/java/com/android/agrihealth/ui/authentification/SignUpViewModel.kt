@@ -9,7 +9,6 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
-import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -28,7 +27,7 @@ object SignUpErrorMsg {
 data class SignUpUIState(
     val email: String = "",
     val password: String = "",
-    val user: FirebaseUser? = null,
+    val uid: String? = null,
     val firstname: String = "",
     val lastname: String = "",
     val cnfPassword: String = "",
@@ -120,7 +119,7 @@ open class SignUpViewModel(
           authRepository
               .signUpWithEmailAndPassword(state.email, state.password, user)
               .fold(
-                  { user -> _uiState.update { it.copy(user = user) } },
+                  { uid -> _uiState.update { it.copy(uid = uid) } },
                   { failure ->
                     setErrorMsg(
                         when (failure) {
@@ -146,12 +145,12 @@ open class SignUpViewModel(
     }
   }
 
-  fun createLocalUser(firebaseUser: FirebaseUser): User? {
+  fun createLocalUser(uid: String): User? {
     val state = _uiState.value
     return when (state.role) {
       UserRole.FARMER ->
           Farmer(
-              uid = firebaseUser.uid,
+              uid = uid,
               firstname = state.firstname,
               lastname = state.lastname,
               email = state.email,
@@ -160,7 +159,7 @@ open class SignUpViewModel(
               defaultOffice = null)
       UserRole.VET ->
           Vet(
-              uid = firebaseUser.uid,
+              uid = uid,
               firstname = state.firstname,
               lastname = state.lastname,
               email = state.email,
