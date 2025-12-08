@@ -78,7 +78,9 @@ fun RoleSelectionScreen(
             })
       }) { padding ->
         Column(
-            modifier = Modifier.padding(padding).verticalScroll(rememberScrollState()),
+            modifier = Modifier
+                .padding(padding)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)) {
               Text(
@@ -86,7 +88,9 @@ fun RoleSelectionScreen(
                   style = MaterialTheme.typography.displaySmall,
                   overflow = TextOverflow.Visible,
                   textAlign = TextAlign.Center,
-                  modifier = Modifier.testTag(RoleSelectionScreenTestTags.WELCOME).fillMaxWidth())
+                  modifier = Modifier
+                      .testTag(RoleSelectionScreenTestTags.WELCOME)
+                      .fillMaxWidth())
               Text(text = "Please choose a role.", style = MaterialTheme.typography.headlineMedium)
               Button(
                   onClick = {
@@ -136,6 +140,6 @@ fun RoleSelectionScreen(
 
 @Preview
 @Composable
-fun ScreenPreview() {
+fun RoleSelectionScreenPreview() {
   RoleSelectionScreen()
 }
