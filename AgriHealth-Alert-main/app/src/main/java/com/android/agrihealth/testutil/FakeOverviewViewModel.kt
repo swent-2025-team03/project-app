@@ -11,6 +11,7 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.ui.overview.AlertUiState
+import com.android.agrihealth.ui.overview.AssignmentFilter
 import com.android.agrihealth.ui.overview.OverviewUIState
 import com.android.agrihealth.ui.overview.OverviewViewModelContract
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,7 +59,8 @@ class FakeOverviewViewModel(
   override fun updateFiltersForReports(
       status: ReportStatus?,
       officeId: String?,
-      farmerId: String?
+      farmerId: String?,
+      assignment: AssignmentFilter?
   ) {}
 
   override fun loadAlerts(user: User) {}
@@ -71,9 +73,5 @@ class FakeOverviewViewModel(
       authRepository.signOut()
       credentialManager.clearCredentialState(ClearCredentialStateRequest())
     }
-  }
-
-  override fun updateReportViewMode(showAll: Boolean) {
-    // Not needed here
   }
 }

@@ -33,8 +33,14 @@ data class OverviewUIState(
     val farmerOptions: List<String> = emptyList(),
     val filteredReports: List<Report> = emptyList(),
     val sortedAlerts: List<AlertUiState> = emptyList(),
-    val showAllReports: Boolean = true
+    val selectedAssignmentFilter: AssignmentFilter? = null
 )
+
+enum class AssignmentFilter {
+  ASSIGNED_TO_CURRENT_VET,
+  UNASSIGNED,
+  ASSIGNED_TO_OTHERS
+}
 
 /**
  * ViewModel holding the state of reports displayed on the Overview screen. Currently uses mock data
@@ -68,7 +74,8 @@ class OverviewViewModel(
                 _uiState.value.selectedStatus,
                 _uiState.value.selectedOffice,
                 _uiState.value.selectedFarmer,
-            )
+                _uiState.value.selectedAssignmentFilter,
+                currentUserId = user.uid)
 
         _uiState.value =
             _uiState.value.copy(
@@ -91,14 +98,24 @@ class OverviewViewModel(
   override fun updateFiltersForReports(
       status: ReportStatus?,
       officeId: String?,
-      farmerId: String?
+      farmerId: String?,
+      assignment: AssignmentFilter?
   ) {
-    val filtered = applyFiltersForReports(_uiState.value.reports, status, officeId, farmerId)
+    val filtered =
+        applyFiltersForReports(
+            reports = _uiState.value.reports,
+            status = status,
+            officeId = officeId,
+            farmerId = farmerId,
+            assignment = assignment,
+            currentUserId = currentUserId)
+
     _uiState.value =
         _uiState.value.copy(
             selectedStatus = status,
             selectedOffice = officeId,
             selectedFarmer = farmerId,
+            selectedAssignmentFilter = assignment,
             filteredReports = filtered)
   }
 
@@ -110,12 +127,25 @@ class OverviewViewModel(
       reports: List<Report>,
       status: ReportStatus?,
       officeId: String?,
-      farmerId: String?
+      farmerId: String?,
+      assignment: AssignmentFilter?,
+      currentUserId: String
   ): List<Report> {
     return reports.filter { report ->
-      (status == null || report.status == status) &&
-          (officeId == null || report.officeId == officeId) &&
-          (farmerId == null || report.farmerId == farmerId)
+      val matchesStatus = (status == null || report.status == status)
+      val matchesOffice = (officeId == null || report.officeId == officeId)
+      val matchesFarmer = (farmerId == null || report.farmerId == farmerId)
+
+      val matchesAssignment =
+          when (assignment) {
+            null -> true
+            AssignmentFilter.ASSIGNED_TO_CURRENT_VET -> report.assignedVet == currentUserId
+            AssignmentFilter.UNASSIGNED -> report.assignedVet == null
+            AssignmentFilter.ASSIGNED_TO_OTHERS ->
+                report.assignedVet != null && report.assignedVet != currentUserId
+          }
+
+      matchesStatus && matchesOffice && matchesFarmer && matchesAssignment
     }
   }
 
@@ -169,26 +199,5 @@ class OverviewViewModel(
       authRepository.signOut()
       credentialManager.clearCredentialState(ClearCredentialStateRequest())
     }
-  }
-
-  override fun updateReportViewMode(showAll: Boolean) {
-    val currentState = _uiState.value
-
-    val baseList =
-        if (showAll) {
-          currentState.reports
-        } else {
-          currentState.reports.filter { report -> report.assignedVet == currentUserId }
-        }
-
-    val filtered =
-        applyFiltersForReports(
-            baseList,
-            currentState.selectedStatus,
-            currentState.selectedOffice,
-            currentState.selectedFarmer,
-        )
-
-    _uiState.value = currentState.copy(showAllReports = showAll, filteredReports = filtered)
   }
 }
