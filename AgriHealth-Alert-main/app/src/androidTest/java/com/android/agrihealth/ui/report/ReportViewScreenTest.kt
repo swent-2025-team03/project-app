@@ -123,13 +123,13 @@ class ReportViewScreenTest {
         )
     )
 
-  private fun createFakeReport(): Report {
+  private fun createFakeReport(withReport : Boolean = true): Report {
     return Report(
       id = "RPT001",
       title = "My sheep is acting strange",
       description = "Since this morning, my sheep keeps getting on its front knees.",
       questionForms = emptyList(),
-      photoURL = FAKE_PHOTO_PATH,
+      photoURL = if (withReport) FAKE_PHOTO_PATH else null,
       farmerId = "FARMER_123",
       officeId = "OFF_456",
       status = ReportStatus.PENDING,
@@ -160,7 +160,7 @@ class ReportViewScreenTest {
   )
 
   private fun setUpScreenAndRepositories(withPhoto : Boolean = true): TestDependencies {
-    val testReport = createFakeReport()
+    val testReport = createFakeReport(withPhoto)
     val repoWithPhoto = TestReportRepository(initialReports = listOf(testReport))
     val reportViewModel = ReportViewViewModel(repository = repoWithPhoto)
 
@@ -233,6 +233,9 @@ class ReportViewScreenTest {
   @Test
   fun vet_canOpenSpamDialog() {
     setValidVetScreen()
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
+      .performScrollToNode(hasTestTag(ReportViewScreenTestTags.SPAM_BUTTON))
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.SPAM_BUTTON).performClick()
     composeTestRule.onNodeWithText("Report as spam?").assertIsDisplayed()
     composeTestRule.onNodeWithText("Confirm").assertIsDisplayed()
@@ -654,73 +657,49 @@ class ReportViewScreenTest {
       .assertIsNotDisplayed()
   }
 
-//  @Test
-//  fun photoDisplay_showsNothing_whenNoPhotoURL() {
-//    val dependencies = setUpScreenAndRepositories()
-//
-//    composeTestRule.waitForIdle()
-//
-//    composeTestRule
-//      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER)
-//      .assertIsNotDisplayed()
-//
-//    composeTestRule
-//      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
-//      .assertIsNotDisplayed()
-//
-//    composeTestRule
-//      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT)
-//      .assertIsNotDisplayed()
-//
-//  }
-//
-//  @Test
-//  fun photoDisplay_showsNothing_whenInIdleState() {
-//    setUpScreenAndRepositories()
-//
-//    composeTestRule.runOnUiThread {
-//      fakeImageViewModel.setState(ImageUIState.Idle)
-//    }
-//
-//    composeTestRule.waitForIdle()
-//
-//    composeTestRule
-//      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER)
-//      .assertIsNotDisplayed()
-//
-//    composeTestRule
-//      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
-//      .assertIsNotDisplayed()
-//  }
-//
-//
-//  @Test
-//  fun photoDisplay_transitionsFromLoadingToSuccess() {
-//    setUpScreenAndRepositories()
-//
-//    composeTestRule.waitForIdle()
-//
-//    composeTestRule.runOnUiThread {
-//      fakeImageViewModel.setState(ImageUIState.Loading)
-//    }
-//
-//    composeTestRule.waitForIdle()
-//
-//    composeTestRule
-//      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
-//      .assertIsDisplayed()
-//
-//
-//    val fakeImageUri = getUriFrom(FAKE_PHOTO_FILE)
-//    val fakeImageBytes = getImageBytesFromUri(fakeImageUri)
-//    composeTestRule.runOnUiThread {
-//      fakeImageViewModel.setState(ImageUIState.DownloadSuccess(fakeImageBytes))
-//    }
-//
-//    composeTestRule.waitForIdle()
-//
-//    composeTestRule
-//      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER)
-//      .assertIsDisplayed()
-//  }
+  @Test
+  fun photoDisplay_showsNothing_whenNoPhotoURL() {
+    val dependencies = setUpScreenAndRepositories(withPhoto = false)
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER)
+      .assertIsNotDisplayed()
+
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
+      .assertIsNotDisplayed()
+
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT)
+      .assertIsNotDisplayed()
+
+  }
+
+
+  @Test
+  fun photoDisplay_transitionsFromLoadingToSuccess() {
+    val dependencies = setUpScreenAndRepositories()
+    dependencies.imageRepository.freezeRepoConnection()
+    addPlaceholderPhotoToReport(dependencies.imageRepository)
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION).isDisplayed()
+    }
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT).assertIsNotDisplayed()
+
+    dependencies.imageRepository.unfreezeRepoConnection()
+
+    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER).isDisplayed()
+    }
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT).assertIsNotDisplayed()
+
+  }
 }
