@@ -33,6 +33,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.data.model.images.ImageViewModelContract
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.common.OfficeName
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -102,7 +103,7 @@ fun ReportViewScreen(
     navigationActions: NavigationActions,
     userRole: UserRole,
     viewModel: ReportViewViewModel,
-    imageViewModel: ImageViewModel = ImageViewModel(),
+    imageViewModel: ImageViewModelContract = ImageViewModel(),
     reportId: String = "",
     user: User? = null
 ) {
@@ -280,13 +281,13 @@ fun ReportViewScreen(
 
               uiState.report.questionForms.forEach { QuestionItem(it) }
 
-              // ---- Collected switch ----
-              CollectedSwitch(report.collected)
-
               // Display photo if available
               if (report.photoURL != null) {
                 PhotoDisplay(photoURL = report.photoURL, imageViewModel = imageViewModel)
               }
+
+              // ---- Collected switch ----
+              CollectedSwitch(report.collected)
 
               // Check assignedVet Status
               if (isUnassigned) {
@@ -590,7 +591,7 @@ fun UnsavedChangesAlert(onDiscard: () -> Unit, onStay: () -> Unit) {
 
 
 @Composable
-fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModel, modifier: Modifier = Modifier) {
+fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModelContract, modifier: Modifier = Modifier) {
   val imageUiState by imageViewModel.uiState.collectAsState()
 
   // Download the photo asynchronously so the screen is not blocked by download

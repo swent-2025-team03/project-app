@@ -1,10 +1,17 @@
 package com.android.agrihealth.ui.report
 
+import android.net.Uri
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.test.platform.app.InstrumentationRegistry
+import com.android.agrihealth.data.model.images.ImageUIState
+import com.android.agrihealth.data.model.images.ImageViewModel
+import com.android.agrihealth.data.model.images.ImageViewModelContract
+import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
@@ -18,9 +25,83 @@ import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
+import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
+import io.mockk.Awaits
+import io.mockk.Runs
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.just
+import io.mockk.unmockkAll
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import okhttp3.internal.wait
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+
+
+/**
+ * Fake implementation of ImageViewModel for testing.
+ * Allows manual control of UI state without actual file operations.
+ */
+class FakeImageViewModel : ImageViewModelContract {
+  private val _uiState = MutableStateFlow<ImageUIState>(ImageUIState.Idle)
+  override val uiState: StateFlow<ImageUIState> = _uiState
+
+  // Track method calls for verification
+  var uploadCalled = false
+  var downloadCalled = false
+  var lastUploadUri: Uri? = null
+  var lastDownloadPath: String? = null
+
+  /**
+   * Manually set the UI state for testing.
+   * Call this to simulate different image loading states.
+   */
+  fun setState(state: ImageUIState) {
+    _uiState.value = state
+  }
+
+  /**
+   * Simulates upload
+   */
+  override fun upload(uri: Uri): Job {
+    uploadCalled = true
+    lastUploadUri = uri
+    _uiState.value = ImageUIState.Loading
+    return Job()
+  }
+
+  /**
+   *  Simulates download
+   */
+  override fun download(path: String): Job {
+    downloadCalled = true
+    lastDownloadPath = path
+    _uiState.value = ImageUIState.Loading
+    return Job()
+  }
+
+  /**
+   * Reset the fake for the next test.
+   * Call this in @Before or @After.
+   */
+  fun reset() {
+    _uiState.value = ImageUIState.Idle
+    uploadCalled = false
+    downloadCalled = false
+    lastUploadUri = null
+    lastDownloadPath = null
+  }
+}
+
+/** Fake photo used when creating a new report */
+const val FAKE_PHOTO_FILE = "report_image_cat.jpg"
 
 /**
  * UI tests for [ReportViewScreen]. These tests ensure that all interactive and display elements
@@ -31,6 +112,7 @@ class ReportViewScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   private val fakeRepo = TestReportRepository()
+  private val fakeImageViewModel = FakeImageViewModel()
 
   /** Sets up the ReportViewScreen for a given role (Vet or Farmer). */
   private fun setReportViewScreen(
@@ -88,6 +170,56 @@ class ReportViewScreenTest {
                   email = "mail@mail",
                   address = null,
                   defaultOffice = "OFF_456"))
+
+  @Before
+  fun setup() {
+    // Reset the fake before each test
+    fakeImageViewModel.reset()
+  }
+
+  private fun createFakeReport(photoURL : String) : Report {
+    return Report(
+      id = "RPT001",
+      title = "My sheep is acting strange",
+      description = "Since this morning, my sheep keeps getting on its front knees.",
+      questionForms = emptyList(),
+      photoURL = photoURL,
+      farmerId = "FARMER_123",
+      officeId = "OFF_456",
+      status = ReportStatus.PENDING,
+      answer = null,
+      location = Location(46.5191, 6.5668, "Lausanne Farm"),
+      assignedVet = "valid_vet_id")
+  }
+
+
+  private fun setReportViewScreenWithPhoto(photoURL: String = "some/path/to/fake/photo") {
+    val testReport = createFakeReport(photoURL)
+    val repoWithPhoto = TestReportRepository(initialReports = listOf(testReport))
+    val viewModel = ReportViewViewModel(repository = repoWithPhoto)
+
+
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      val navigationActions = NavigationActions(navController)
+
+      ReportViewScreen(
+        navigationActions = navigationActions,
+        userRole = UserRole.VET,
+        viewModel = viewModel,
+        imageViewModel = fakeImageViewModel,
+        reportId = "RPT001",
+        user = Vet(
+          uid = "vet_id",
+          firstname = "alice",
+          lastname = "alice",
+          email = "mail@mail",
+          address = null,
+          officeId = "OFF_456"
+        )
+      )
+    }
+  }
 
   // --- TEST 1: Vet typing in answer field ---
   @Test
@@ -477,5 +609,148 @@ class ReportViewScreenTest {
     composeTestRule
         .onNodeWithTag(ReportComposableCommonsTestTags.COLLECTED_SWITCH)
         .assertIsDisplayed()
+  }
+
+
+  @Test
+  fun photoDisplay_showsLoadingIndicator_whenImageIsLoading() {
+    val expectedPhotoURL = "path/to/fake/photo"
+    setReportViewScreenWithPhoto(expectedPhotoURL)
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.runOnUiThread {
+      fakeImageViewModel.setState(ImageUIState.Loading)
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
+      .assertIsDisplayed()
+
+    assertTrue(fakeImageViewModel.downloadCalled)
+    assertEquals(expectedPhotoURL, fakeImageViewModel.lastDownloadPath)
+  }
+
+  @Test
+  fun photoDisplay_showsImage_whenDownloadSucceeds() {
+    setReportViewScreenWithPhoto()
+
+    composeTestRule.waitForIdle()
+
+    val mockImageBytes = ByteArray(100) { 0xFF.toByte() }
+    composeTestRule.runOnUiThread {
+      fakeImageViewModel.setState(ImageUIState.DownloadSuccess(mockImageBytes))
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER)
+      .assertIsDisplayed()
+
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
+      .assertIsNotDisplayed()
+  }
+
+  @Test
+  fun photoDisplay_showsErrorText_whenDownloadFails() {
+    setReportViewScreenWithPhoto()
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.runOnUiThread {
+      fakeImageViewModel.setState(ImageUIState.Error(Exception("Network error")))
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT)
+      .assertIsDisplayed()
+      .assertTextEquals(ReportViewScreenTexts.PHOTO_ERROR_TEXT)
+
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER)
+      .assertIsNotDisplayed()
+  }
+
+  @Test
+  fun photoDisplay_showsNothing_whenNoPhotoURL() {
+    setReportViewScreenWithPhoto()
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER)
+      .assertIsNotDisplayed()
+
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
+      .assertIsNotDisplayed()
+
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT)
+      .assertIsNotDisplayed()
+
+    assertFalse(fakeImageViewModel.downloadCalled)
+  }
+
+  @Test
+  fun photoDisplay_showsNothing_whenInIdleState() {
+    setReportViewScreenWithPhoto()
+
+    composeTestRule.runOnUiThread {
+      fakeImageViewModel.setState(ImageUIState.Idle)
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER)
+      .assertIsNotDisplayed()
+
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
+      .assertIsNotDisplayed()
+  }
+
+  private fun getImageBytesFromUri(uri: Uri): ByteArray {
+    val context = InstrumentationRegistry.getInstrumentation().context
+    return context.contentResolver.openInputStream(uri)?.use { inputStream ->
+      inputStream.readBytes()
+    } ?: ByteArray(0)
+  }
+
+  @Test
+  fun photoDisplay_transitionsFromLoadingToSuccess() {
+    setReportViewScreenWithPhoto()
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.runOnUiThread {
+      fakeImageViewModel.setState(ImageUIState.Loading)
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
+      .assertIsDisplayed()
+
+
+    val fakeImageUri = getUriFrom(FAKE_PHOTO_FILE)
+    val fakeImageBytes = getImageBytesFromUri(fakeImageUri)
+    composeTestRule.runOnUiThread {
+      fakeImageViewModel.setState(ImageUIState.DownloadSuccess(fakeImageBytes))
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+      .onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER)
+      .assertIsDisplayed()
   }
 }

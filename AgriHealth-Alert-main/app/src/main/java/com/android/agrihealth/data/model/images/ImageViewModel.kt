@@ -28,15 +28,15 @@ sealed class ImageUIState {
  * upload() or download() and then use a "when ()" on the UI state to handle response.
  */
 class ImageViewModel(private val repository: ImageRepository = ImageRepositoryProvider.repository) :
-    ViewModel() {
+    ViewModel(), ImageViewModelContract {
   private val _uiState = MutableStateFlow<ImageUIState>(ImageUIState.Idle)
-  val uiState: StateFlow<ImageUIState> = _uiState
+  override val uiState: StateFlow<ImageUIState> = _uiState
 
   /**
    * Uploads an image to the photos backend using a URI to the file content. Updates UI state to
    * UploadSuccess, containing the online path to the image
    */
-  fun upload(uri: Uri) =
+  override fun upload(uri: Uri) =
       viewModelScope.launch {
         _uiState.value = ImageUIState.Loading
 
@@ -52,7 +52,7 @@ class ImageViewModel(private val repository: ImageRepository = ImageRepositoryPr
    * Downloads an image from the photos backend using the online path. Updates UI state to
    * DownloadSuccess, containing the ByteArray image data
    */
-  fun download(path: String) =
+  override fun download(path: String) =
       viewModelScope.launch {
         _uiState.value = ImageUIState.Loading
 
