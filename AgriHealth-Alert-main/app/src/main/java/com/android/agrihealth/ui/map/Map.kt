@@ -31,6 +31,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -74,6 +76,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.flow.collectLatest
 
 object MapScreenTestTags {
   const val GOOGLE_MAP_SCREEN = "googleMapScreen"
@@ -104,6 +107,18 @@ fun MapScreen(
 ) {
   val uiState by mapViewModel.uiState.collectAsState()
   var selectedFilter by remember { mutableStateOf<String?>(null) }
+
+  val snackbarHostState = remember { SnackbarHostState() }
+
+  LaunchedEffect(Unit) {
+    mapViewModel.events.collectLatest { event: MapEvent ->
+      when (event) {
+        is MapEvent.FetchingLocation ->
+            snackbarHostState.showSnackbar("Loading position…", withDismissAction = false)
+        is MapEvent.LocationLoaded -> snackbarHostState.currentSnackbarData?.dismiss()
+      }
+    }
+  }
 
   val mapInitialLocation by mapViewModel.startingLocation.collectAsState()
   val mapInitialZoom by mapViewModel.zoom.collectAsState()
@@ -137,6 +152,7 @@ fun MapScreen(
                 onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
                 modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
       },
+      snackbarHost = { SnackbarHost(snackbarHostState) },
       content = { pd ->
         Box(modifier = Modifier.fillMaxSize().padding(pd)) {
           if (!uiState.locationPermission) {

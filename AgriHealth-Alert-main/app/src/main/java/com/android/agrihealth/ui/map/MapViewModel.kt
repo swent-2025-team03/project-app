@@ -19,8 +19,12 @@ import java.util.Locale
 import kotlin.collections.firstOrNull
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -29,8 +33,14 @@ import kotlinx.coroutines.withTimeoutOrNull
 data class MapUIState(
     val reports: List<Report> = emptyList(),
     val locationPermission: Boolean = false,
-    val geocodedAddress: String? = null
+    val geocodedAddress: String? = null,
 )
+
+sealed class MapEvent {
+  object FetchingLocation : MapEvent()
+
+  object LocationLoaded : MapEvent()
+}
 
 class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
@@ -43,6 +53,11 @@ class MapViewModel(
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(MapUIState())
   val uiState: StateFlow<MapUIState> = _uiState.asStateFlow()
+
+  private val _events =
+      MutableSharedFlow<MapEvent>(
+          replay = 0, extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+  val events: SharedFlow<MapEvent> = _events.asSharedFlow()
 
   private val _startingLocation =
       MutableStateFlow(startingPosition ?: Location(46.9481, 7.4474)) // Bern
@@ -104,29 +119,31 @@ class MapViewModel(
    * @param useCurrentLocation will fetch new location instead of using last known location if true.
    */
   fun setStartingLocation(location: Location? = null, useCurrentLocation: Boolean = false) {
-    // Specific starting point, takes priority because of report navigation for example
     if (location != null) {
       _startingLocation.value = location
       _zoom.value = 15f
+      return
     }
-    // Default starting position, so either location or workplace or default
-    else {
-      viewModelScope.launch {
-        _zoom.value = 12f
-        if (locationViewModel.hasLocationPermissions()) {
-          if (useCurrentLocation) {
-            locationViewModel.getCurrentLocation()
-          } else {
-            locationViewModel.getLastKnownLocation()
-          }
-          val gpsLocation =
-              withTimeoutOrNull(3_000) {
-                locationViewModel.locationState.firstOrNull { it != null }
-              }
 
-          _startingLocation.value = gpsLocation ?: getLocationFromUserAddress() ?: return@launch
-        }
+    viewModelScope.launch {
+      _zoom.value = 12f
+
+      if (!locationViewModel.hasLocationPermissions()) return@launch
+
+      _events.emit(MapEvent.FetchingLocation)
+
+      if (useCurrentLocation) {
+        locationViewModel.getCurrentLocation()
+      } else {
+        locationViewModel.getLastKnownLocation()
       }
+
+      val gpsLocation =
+          withTimeoutOrNull(3000) { locationViewModel.locationState.firstOrNull { it != null } }
+
+      gpsLocation?.let { _startingLocation.value = it }
+
+      _events.emit(MapEvent.LocationLoaded)
     }
   }
 
