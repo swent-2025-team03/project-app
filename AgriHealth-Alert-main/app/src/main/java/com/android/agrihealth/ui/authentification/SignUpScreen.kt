@@ -87,12 +87,13 @@ fun SignUpScreen(
             })
       }) { padding ->
         Column(
-            Modifier.background(MaterialTheme.colorScheme.surface)
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 24.dp)
-                .testTag(SignUpScreenTestTags.SCREEN)
-                .verticalScroll(rememberScrollState()),
+            Modifier
+              .background(MaterialTheme.colorScheme.surface)
+              .fillMaxSize()
+              .padding(padding)
+              .padding(horizontal = 24.dp)
+              .testTag(SignUpScreenTestTags.SCREEN)
+              .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally) {
               Spacer(Modifier.height(24.dp))
               Text(
@@ -143,9 +144,10 @@ fun SignUpScreen(
               Button(
                   onClick = { signUpViewModel.signUp() },
                   modifier =
-                      Modifier.fillMaxWidth()
-                          .height(56.dp)
-                          .testTag(SignUpScreenTestTags.SAVE_BUTTON),
+                      Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .testTag(SignUpScreenTestTags.SAVE_BUTTON),
                   shape = RoundedCornerShape(20.dp),
               ) {
                 Text("Save", style = MaterialTheme.typography.titleLarge)
@@ -186,7 +188,9 @@ private fun SelectablePill(
       onClick = onClick,
       shape = RoundedCornerShape(24.dp),
       color = bg,
-      modifier = modifier.width(140.dp).height(56.dp)) {
+      modifier = modifier
+        .width(140.dp)
+        .height(56.dp)) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
           Text(text, style = MaterialTheme.typography.titleMedium)
         }
@@ -206,7 +210,9 @@ private fun Field(
       onValueChange = onValueChange,
       placeholder = { Text(placeholder) },
       singleLine = true,
-      modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
+      modifier = modifier
+        .fillMaxWidth()
+        .padding(vertical = 8.dp),
       isError = isError,
   )
 }
@@ -248,6 +254,14 @@ private fun SignUpScreenPreview() {
         }
 
         override suspend fun deleteAccount(): Result<Unit> {
+          TODO("Not yet implemented")
+        }
+
+        override suspend fun checkIsVerified(): Boolean {
+          TODO("Not yet implemented")
+        }
+
+        override suspend fun sendVerificationEmail(): Result<Unit> {
           TODO("Not yet implemented")
         }
       }

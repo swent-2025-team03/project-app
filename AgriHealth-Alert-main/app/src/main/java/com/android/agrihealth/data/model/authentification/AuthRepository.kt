@@ -57,4 +57,18 @@ interface AuthRepository {
    * @return A [Result] indicating success or failure.
    */
   suspend fun deleteAccount(): Result<Unit>
+
+  /**
+   * Checks if the current user has verified their email address.
+   *
+   * @return A [Boolean] indicating if the user's email is verified or not.
+   */
+  suspend fun checkIsVerified(): Boolean
+
+  /**
+   * Sends a verification email to the user.
+   *
+   * @return A [Result] indicating success or failure.
+   */
+  suspend fun sendVerificationEmail(): Result<Unit>
 }

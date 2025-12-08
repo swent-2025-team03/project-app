@@ -130,4 +130,18 @@ class AuthRepositoryFirebase(
       Result.failure(e)
     }
   }
+
+  override suspend fun checkIsVerified(): Boolean {
+    auth.currentUser?.reload()?.await()
+    return auth.currentUser?.isEmailVerified ?: false
+  }
+
+  override suspend fun sendVerificationEmail(): Result<Unit> {
+    try {
+      auth.currentUser?.sendEmailVerification()?.await()
+    } catch (e: Exception) {
+      return Result.failure(e)
+    }
+    return Result.success(Unit)
+  }
 }

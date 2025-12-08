@@ -86,4 +86,12 @@ class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository 
     }
     return Result.failure(IllegalStateException("timeout"))
   }
+
+  override suspend fun checkIsVerified(): Boolean {
+    return true
+  }
+
+  override suspend fun sendVerificationEmail(): Result<Unit> {
+    return Result.success(Unit)
+  }
 }
