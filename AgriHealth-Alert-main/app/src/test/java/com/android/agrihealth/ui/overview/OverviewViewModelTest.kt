@@ -74,11 +74,47 @@ class OverviewViewModelTest {
     advanceUntilIdle()
 
     val officeId = viewModel.uiState.value.officeOptions.firstOrNull()
-    viewModel.updateFiltersForReports(status = null, officeId = officeId, farmerId = null)
+    viewModel.updateFiltersForReports(status = null, officeId = officeId, farmerId = null, null)
     val state = viewModel.uiState.value
 
     Assert.assertEquals(officeId, state.selectedOffice)
     Assert.assertTrue(state.filteredReports.all { it.officeId == vet001.officeId })
+  }
+
+  @Test
+  fun `updateFiltersForReports applies assignment filter correctly`() = runTest {
+    viewModel.loadReports(vet001)
+    advanceUntilIdle()
+
+    val allReports = viewModel.uiState.value.reports
+    val currentVetId = vet001.uid
+
+    // --- Test ASSIGNED_TO_CURRENT_VET ---
+    viewModel.updateFiltersForReports(
+        status = null,
+        officeId = null,
+        farmerId = null,
+        assignment = AssignmentFilter.ASSIGNED_TO_CURRENT_VET)
+    advanceUntilIdle()
+    val assignedToMeReports = viewModel.uiState.value.filteredReports
+    assert(assignedToMeReports.all { it.assignedVet == currentVetId })
+
+    // --- Test UNASSIGNED ---
+    viewModel.updateFiltersForReports(
+        status = null, officeId = null, farmerId = null, assignment = AssignmentFilter.UNASSIGNED)
+    advanceUntilIdle()
+    val unassignedReports = viewModel.uiState.value.filteredReports
+    assert(unassignedReports.all { it.assignedVet == null })
+
+    // --- Test ASSIGNED_TO_OTHERS ---
+    viewModel.updateFiltersForReports(
+        status = null,
+        officeId = null,
+        farmerId = null,
+        assignment = AssignmentFilter.ASSIGNED_TO_OTHERS)
+    advanceUntilIdle()
+    val assignedToOthersReports = viewModel.uiState.value.filteredReports
+    assert(assignedToOthersReports.all { it.assignedVet != null && it.assignedVet != currentVetId })
   }
 
   @After

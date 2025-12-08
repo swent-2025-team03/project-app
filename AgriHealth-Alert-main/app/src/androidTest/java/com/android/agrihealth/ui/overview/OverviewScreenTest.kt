@@ -1,6 +1,8 @@
 package com.android.agrihealth.ui.overview
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -13,6 +15,7 @@ import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.FakeAlertRepository
 import com.android.agrihealth.testutil.FakeOverviewViewModel
 import com.android.agrihealth.testutil.InMemoryReportRepository
+import com.android.agrihealth.testutil.TestConstants
 import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -138,14 +141,31 @@ class OverviewScreenTest {
     }
   }
 
-  // --- TEST 9: check filter switch is displayed correctly ---
+  // --- TEST 9: Verify Assignee Filter presence ---
   @Test
-  fun filter_switchIsDisplayed() {
+  fun assigneeFilterDropdown_isDisplayedAndSelectable() {
     setVetScreen()
 
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTER_SWITCH).assertIsDisplayed()
-    composeTestRule.onNodeWithText("(all)").assertIsDisplayed()
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTER_SWITCH).performClick()
-    composeTestRule.onNodeWithText("(assigned to me)").assertIsDisplayed()
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).isDisplayed()
+    }
+
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).performClick()
+    composeTestRule.onNodeWithText("Assigned to Me").performClick()
+    composeTestRule
+        .onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER)
+        .assertTextEquals("Assigned to Me")
+
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).performClick()
+    composeTestRule.onNodeWithText("Unassigned").performClick()
+    composeTestRule
+        .onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER)
+        .assertTextEquals("Unassigned")
+
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).performClick()
+    composeTestRule.onNodeWithText("Assigned to Others").performClick()
+    composeTestRule
+        .onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER)
+        .assertTextEquals("Assigned to Others")
   }
 }

@@ -62,7 +62,7 @@ object OverviewScreenTestTags {
   const val STATUS_DROPDOWN = "StatusFilterDropdown"
   const val OFFICE_ID_DROPDOWN = "OfficeIdFilterDropdown"
   const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
-  const val FILTER_SWITCH = "FilterSwitch"
+  const val ASSIGNEE_FILTER = "AssigneeFilter"
 
   fun alertItemTag(page: Int) = "ALERT_ITEM_$page"
 }
@@ -287,6 +287,7 @@ fun OverviewScreen(
                                   farmerId = uiState.selectedFarmer,
                                   assignment = newAssignment)
                             },
+                            modifier = Modifier.testTag(OverviewScreenTestTags.ASSIGNEE_FILTER),
                             placeholder = "Filter by Assignee",
                             labelProvider = { assignment ->
                               when (assignment) {
