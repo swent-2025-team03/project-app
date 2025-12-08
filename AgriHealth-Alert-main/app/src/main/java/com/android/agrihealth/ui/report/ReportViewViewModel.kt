@@ -110,18 +110,22 @@ class ReportViewViewModel(
   fun onSave() {
     viewModelScope.launch {
       try {
-        val updatedReport =
-            _uiState.value.report.copy(
-                answer = _uiState.value.answerText, status = _uiState.value.status)
-        repository.editReport(updatedReport.id, updatedReport)
+        val currentReport = _uiState.value.report
+        val newAnswer = _uiState.value.answerText
+        val newStatus = _uiState.value.status
 
-        // Send a notification
-        val farmerId = updatedReport.farmerId
-        val answer = updatedReport.answer ?: ""
-        val notification = Notification.VetAnswer(destinationUid = farmerId, answer = answer)
-        val messagingService = NotificationHandlerFirebase()
-        messagingService.uploadNotification(notification)
+        if (currentReport.answer != newAnswer || currentReport.status != newStatus) {
+          val updatedReport = currentReport.copy(answer = newAnswer, status = newStatus)
+          repository.editReport(updatedReport.id, updatedReport)
 
+          // Send a notification
+          val farmerId = updatedReport.farmerId
+          val description = "Your report '${updatedReport.title}' has new changes!"
+          val notification =
+              Notification.VetAnswer(destinationUid = farmerId, description = description)
+          val messagingService = NotificationHandlerFirebase()
+          messagingService.uploadNotification(notification)
+        }
         _saveCompleted.value = true
       } catch (e: Exception) {
         Log.e("ReportViewModel", "Error saving report", e)

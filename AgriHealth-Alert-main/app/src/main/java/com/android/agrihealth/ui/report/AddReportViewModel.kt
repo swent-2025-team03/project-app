@@ -98,9 +98,9 @@ class AddReportViewModel(
 
     // Send a notification
     val vetIds = userRepository.getVetsInOffice(newReport.officeId)
-    val reportTitle = newReport.title
+    val description = "A new report: '${newReport.title}' was just created by a farmer"
     vetIds.forEach { vetId ->
-      val notification = Notification.NewReport(destinationUid = vetId, reportTitle = reportTitle)
+      val notification = Notification.NewReport(destinationUid = vetId, description = description)
       val messagingService = NotificationHandlerFirebase()
       messagingService.uploadNotification(notification) { success ->
         Log.d("Notification", "NewReport sent to $vetId = $success")

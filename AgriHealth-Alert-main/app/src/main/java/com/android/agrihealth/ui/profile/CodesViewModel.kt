@@ -1,8 +1,13 @@
 package com.android.agrihealth.ui.profile
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.agrihealth.data.model.authentification.UserRepository
+import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.connection.ConnectionRepository
+import com.android.agrihealth.data.model.device.notifications.Notification
+import com.android.agrihealth.data.model.device.notifications.NotificationHandlerFirebase
 import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
@@ -17,7 +22,8 @@ import kotlinx.coroutines.launch
 class CodesViewModel(
     private val userViewModel: UserViewModelContract = UserViewModel(),
     private val connectionRepository: ConnectionRepository,
-    private val officeRepository: OfficeRepository = OfficeRepositoryProvider.get()
+    private val officeRepository: OfficeRepository = OfficeRepositoryProvider.get(),
+    private val userRepository: UserRepository = UserRepositoryProvider.repository
 ) : ViewModel() {
 
   private val _generatedCode = MutableStateFlow<String?>(null)
@@ -78,6 +84,24 @@ class CodesViewModel(
                         throw IllegalStateException()
                       }
                   officeRepository.updateOffice(updatedOffice)
+
+                  // Send a notification
+                  val destinationUids = userRepository.getVetsInOffice(officeId)
+                  val vetName =
+                      listOfNotNull(user.firstname, user.lastname)
+                          .filter { it.isNotBlank() }
+                          .joinToString(" ")
+                          .ifBlank { user.uid }
+                  val description = "A new vet: '${vetName}' just joined your office!"
+                  destinationUids.forEach { Uid ->
+                    val notification =
+                        Notification.JoinOffice(destinationUid = Uid, description = description)
+                    val messagingService = NotificationHandlerFirebase()
+                    messagingService.uploadNotification(notification) { success ->
+                      Log.d("Notification", "JoinOffice sent to $Uid = $success")
+                    }
+                  }
+
                   _claimMessage.value = "You successfully joined an office"
                 } catch (_: Exception) {
                   if (_claimMessage.value == null)

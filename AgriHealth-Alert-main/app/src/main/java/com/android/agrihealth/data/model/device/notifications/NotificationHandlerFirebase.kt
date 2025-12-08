@@ -26,6 +26,7 @@ import androidx.core.app.NotificationCompat
 import com.android.agrihealth.R
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.authentification.USERS_COLLECTION_PATH
+import com.android.agrihealth.data.model.device.notifications.Notification.JoinOffice
 import com.android.agrihealth.data.model.device.notifications.Notification.NewReport
 import com.android.agrihealth.data.model.device.notifications.Notification.VetAnswer
 import com.google.firebase.Firebase
@@ -46,6 +47,7 @@ class NotificationHandlerFirebase(
 
   private val channelNewReport = "new_report_channel"
   private val channelVetAnswer = "vet_answer_channel"
+  private val channelJoinOffice = "join_office_channel"
 
   override fun onCreate() {
     super.onCreate()
@@ -86,9 +88,10 @@ class NotificationHandlerFirebase(
 
     val (title, body, channelId) =
         when (notification) {
-          is NewReport -> Triple("New report", notification.reportTitle, channelNewReport)
-          is VetAnswer ->
-              Triple("A vet has answered your report", notification.answer, channelVetAnswer)
+          is NewReport -> Triple("New Report Created", notification.description, channelNewReport)
+          is VetAnswer -> Triple("A Report Updated", notification.description, channelVetAnswer)
+          is JoinOffice ->
+              Triple("New Vet Joined Office", notification.description, channelJoinOffice)
         }
 
     val systemNotification =
@@ -125,6 +128,10 @@ class NotificationHandlerFirebase(
 
       nm.createNotificationChannel(
           NotificationChannel(channelVetAnswer, "Vet answers", NotificationManager.IMPORTANCE_HIGH))
+
+      nm.createNotificationChannel(
+          NotificationChannel(
+              channelJoinOffice, "Join office", NotificationManager.IMPORTANCE_HIGH))
     }
   }
 }
@@ -137,9 +144,17 @@ fun Notification.toDataMap(): Map<String, String> =
           mapOf(
               "type" to type.toName(),
               "destinationUid" to destinationUid,
-              "reportTitle" to reportTitle)
+              "description" to description)
       is VetAnswer ->
-          mapOf("type" to type.toName(), "destinationUid" to destinationUid, "answer" to answer)
+          mapOf(
+              "type" to type.toName(),
+              "destinationUid" to destinationUid,
+              "description" to description)
+      is JoinOffice ->
+          mapOf(
+              "type" to type.toName(),
+              "destinationUid" to destinationUid,
+              "description" to description)
     }
 
 fun Map<String, String>.toNotification(): Notification? {
@@ -148,9 +163,12 @@ fun Map<String, String>.toNotification(): Notification? {
 
   return when (type) {
     NotificationType.NEW_REPORT ->
-        NewReport(destinationUid = destinationUid, reportTitle = this["reportTitle"] ?: return null)
+        NewReport(destinationUid = destinationUid, description = this["description"] ?: return null)
     NotificationType.VET_ANSWER ->
-        VetAnswer(destinationUid = destinationUid, answer = this["answer"] ?: return null)
+        VetAnswer(destinationUid = destinationUid, description = this["description"] ?: return null)
+    NotificationType.JOIN_OFFICE ->
+        JoinOffice(
+            destinationUid = destinationUid, description = this["description"] ?: return null)
     null -> null
   }
 }
@@ -178,7 +196,7 @@ fun NotificationTestControlPanel() {
               return@getToken
             }
 
-            val map: Map<String, List<String>> = mapOf("deviceTokensFCM" to listOf(token))
+            val map = mapOf("deviceTokensFCM" to listOf(token))
             CoroutineScope(Dispatchers.IO).launch {
               Firebase.firestore.collection(USERS_COLLECTION_PATH).document(uid).update(map).await()
             }

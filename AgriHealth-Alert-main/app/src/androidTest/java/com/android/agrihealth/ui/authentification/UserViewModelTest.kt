@@ -104,4 +104,8 @@ class FakeUserRepository : UserRepository {
   override suspend fun updateUser(user: User) {}
 
   override suspend fun deleteUser(uid: String) {}
+
+  override suspend fun getVetsInOffice(officeId: String): List<String> {
+    return listOf()
+  }
 }

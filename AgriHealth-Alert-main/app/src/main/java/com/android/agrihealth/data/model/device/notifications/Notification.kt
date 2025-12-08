@@ -4,19 +4,26 @@ sealed interface Notification {
   val destinationUid: String
   val type: NotificationType
 
-  data class NewReport(override val destinationUid: String, val reportTitle: String) :
+  data class NewReport(override val destinationUid: String, val description: String) :
       Notification {
     override val type = NotificationType.NEW_REPORT
   }
 
-  data class VetAnswer(override val destinationUid: String, val answer: String) : Notification {
+  data class VetAnswer(override val destinationUid: String, val description: String) :
+      Notification {
     override val type = NotificationType.VET_ANSWER
+  }
+
+  data class JoinOffice(override val destinationUid: String, val description: String) :
+      Notification {
+    override val type = NotificationType.JOIN_OFFICE
   }
 }
 
 enum class NotificationType {
   NEW_REPORT,
-  VET_ANSWER;
+  VET_ANSWER,
+  JOIN_OFFICE;
 
   /** Converts a NotificationType into its string representation. To use when sending to Firebase */
   fun toName(): String = name.lowercase()
