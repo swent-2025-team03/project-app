@@ -29,6 +29,7 @@ import com.android.agrihealth.data.model.authentification.USERS_COLLECTION_PATH
 import com.android.agrihealth.data.model.device.notifications.Notification.JoinOffice
 import com.android.agrihealth.data.model.device.notifications.Notification.NewReport
 import com.android.agrihealth.data.model.device.notifications.Notification.VetAnswer
+import com.android.agrihealth.data.model.device.notifications.Notification.ConnectOffice
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
@@ -48,6 +49,7 @@ class NotificationHandlerFirebase(
   private val channelNewReport = "new_report_channel"
   private val channelVetAnswer = "vet_answer_channel"
   private val channelJoinOffice = "join_office_channel"
+  private val channelConnectOffice = "connect_office_channel"
 
   override fun onCreate() {
     super.onCreate()
@@ -92,6 +94,8 @@ class NotificationHandlerFirebase(
           is VetAnswer -> Triple("A Report Updated", notification.description, channelVetAnswer)
           is JoinOffice ->
               Triple("New Vet Joined Office", notification.description, channelJoinOffice)
+          is ConnectOffice ->
+              Triple("New Farmer Connected", notification.description, channelConnectOffice)
         }
 
     val systemNotification =
@@ -132,6 +136,9 @@ class NotificationHandlerFirebase(
       nm.createNotificationChannel(
           NotificationChannel(
               channelJoinOffice, "Join office", NotificationManager.IMPORTANCE_HIGH))
+
+      nm.createNotificationChannel(
+          NotificationChannel(channelConnectOffice, "Connect office", NotificationManager.IMPORTANCE_HIGH))
     }
   }
 }
@@ -155,6 +162,12 @@ fun Notification.toDataMap(): Map<String, String> =
               "type" to type.toName(),
               "destinationUid" to destinationUid,
               "description" to description)
+      is ConnectOffice ->
+          mapOf(
+              "type" to type.toName(),
+              "destinationUid" to destinationUid,
+              "description" to description
+          )
     }
 
 fun Map<String, String>.toNotification(): Notification? {
@@ -168,6 +181,9 @@ fun Map<String, String>.toNotification(): Notification? {
         VetAnswer(destinationUid = destinationUid, description = this["description"] ?: return null)
     NotificationType.JOIN_OFFICE ->
         JoinOffice(
+            destinationUid = destinationUid, description = this["description"] ?: return null)
+    NotificationType.CONNECT_OFFICE ->
+        ConnectOffice(
             destinationUid = destinationUid, description = this["description"] ?: return null)
     null -> null
   }

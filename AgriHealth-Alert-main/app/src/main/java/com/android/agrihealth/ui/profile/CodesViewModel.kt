@@ -58,6 +58,11 @@ class CodesViewModel(
 
   fun claimCode(code: String) {
     val user = userViewModel.user.value
+      val userName =
+          listOfNotNull(user.firstname, user.lastname)
+              .filter { it.isNotBlank() }
+              .joinToString(" ")
+              .ifBlank { user.uid }
     viewModelScope.launch {
       val result = connectionRepository.claimCode(code)
       result.fold(
@@ -70,6 +75,18 @@ class CodesViewModel(
                     user.copy(
                         linkedOffices = updatedLinkedOffices, defaultOffice = newDefaultOffice)
                 userViewModel.updateUser(updatedFarmer)
+
+                  // Send a notification
+                  val destinationUids = userRepository.getVetsInOffice(officeId)
+                  val description = "A new farmer: '${userName}' just got connected to your office!"
+                  destinationUids.forEach { Uid ->
+                      val notification =
+                          Notification.ConnectOffice(destinationUid = Uid, description = description)
+                      val messagingService = NotificationHandlerFirebase()
+                      messagingService.uploadNotification(notification) { success ->
+                          Log.d("Notification", "ConnectOffice sent to $Uid = $success")
+                      }
+                  }
 
                 _claimMessage.value = "Office successfully added!"
               }
@@ -87,12 +104,7 @@ class CodesViewModel(
 
                   // Send a notification
                   val destinationUids = userRepository.getVetsInOffice(officeId)
-                  val vetName =
-                      listOfNotNull(user.firstname, user.lastname)
-                          .filter { it.isNotBlank() }
-                          .joinToString(" ")
-                          .ifBlank { user.uid }
-                  val description = "A new vet: '${vetName}' just joined your office!"
+                  val description = "A new vet: '${userName}' just joined your office!"
                   destinationUids.forEach { Uid ->
                     val notification =
                         Notification.JoinOffice(destinationUid = Uid, description = description)

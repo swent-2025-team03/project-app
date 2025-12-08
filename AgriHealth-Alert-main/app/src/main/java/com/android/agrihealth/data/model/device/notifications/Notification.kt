@@ -18,12 +18,18 @@ sealed interface Notification {
       Notification {
     override val type = NotificationType.JOIN_OFFICE
   }
+
+  data class ConnectOffice(override val destinationUid: String, val description: String) :
+          Notification {
+            override val type = NotificationType.CONNECT_OFFICE
+          }
 }
 
 enum class NotificationType {
   NEW_REPORT,
   VET_ANSWER,
-  JOIN_OFFICE;
+  JOIN_OFFICE,
+  CONNECT_OFFICE;
 
   /** Converts a NotificationType into its string representation. To use when sending to Firebase */
   fun toName(): String = name.lowercase()
