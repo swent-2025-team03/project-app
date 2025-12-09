@@ -8,7 +8,7 @@ class NotificationSenderFirebase : NotificationSender {
 
   @Suppress("UNCHECKED_CAST")
   override fun sendNotification(data: Map<String, String>, onComplete: (success: Boolean) -> Unit) {
-    val uploader = functions.getHttpsCallable("sendNotification")
+    val uploader = functions.getHttpsCallable("sendNotification-sendNotification")
 
     uploader
         .call(data)

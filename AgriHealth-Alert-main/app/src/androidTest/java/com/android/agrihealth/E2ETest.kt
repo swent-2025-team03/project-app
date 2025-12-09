@@ -344,8 +344,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.waitForIdle()
 
-    Log.d("TEST", "Reached step 0: Start App")
-
     completeSignUp("Test", "Vet", vetEmail, vetPassword, true)
     checkEditProfileScreenIsDisplayed()
     goBack()
@@ -358,8 +356,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     generateFarmerCode()
     signOutFromScreen()
 
-    Log.d("TEST", "Reached step 1: Finished first user")
-
     val clipData = clipboard.primaryClip
     val copiedCode = clipData?.getItemAt(0)?.text.toString()
 
@@ -371,14 +367,10 @@ class E2ETest : FirebaseEmulatorsTest() {
     goToProfileFromOverview()
     farmerJoinOffice(copiedCode)
     goBack()
-    Log.d("TEST", "Before create report")
     createReportWithOfficeName("Report 1", "Description 1", "Vet Office")
-    Log.d("TEST", "After create report")
     createReportWithOfficeName("Report 2", "Description 2", "Vet Office")
     createReportWithOfficeName("Report 3", "Description 3", "Vet Office")
     signOutFromScreen()
-
-    Log.d("TEST", "Reached step 2: Finished Second User")
 
     completeSignIn(vetEmail, vetPassword)
     claimReport("Report 1")
@@ -387,8 +379,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     generateOfficeCode()
     goBack()
     signOutFromScreen()
-
-    Log.d("TEST", "Reached step 3: Back to first User")
 
     val clipData2 = clipboard.primaryClip
     val copiedCode2 = clipData2?.getItemAt(0)?.text.toString()
@@ -405,8 +395,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     goBack()
     claimReport("Report 2")
     checkAssignedVetDisplayedOnOverview()
-
-    Log.d("TEST", "Reached step 4: Finished the test")
   }
 
   // ----------- Helper functions -----------
