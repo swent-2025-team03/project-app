@@ -432,6 +432,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.ADD_CODE_BUTTON).performClick()
 
     goBack()
+    waitUntilTestTag(ProfileScreenTestTags.PROFILE_IMAGE)
   }
 
   private fun vetJoinOffice(vetCode: String) {
@@ -699,14 +700,11 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun createReportWithOfficeName(title: String, description: String, officeName: String) {
-    composeTestRule
-        .onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-    composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD)
-        .assertIsDisplayed()
-        .performTextInput(title)
+    waitUntilTestTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON).performClick()
+
+    waitUntilTestTag(AddReportScreenTestTags.TITLE_FIELD)
+    composeTestRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput(title)
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
         .assertIsDisplayed()
@@ -811,6 +809,8 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS_OK)
         .assertIsDisplayed()
         .performClick()
+
+    waitUntilTestTag(OverviewScreenTestTags.SCREEN)
   }
 
   private fun createReport(title: String, description: String, officeId: String) {
