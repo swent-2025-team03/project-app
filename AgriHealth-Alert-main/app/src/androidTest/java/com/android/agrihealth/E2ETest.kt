@@ -11,7 +11,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
-import com.android.agrihealth.core.design.theme.Test
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
@@ -164,7 +163,7 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun testCompleteFlow() {
+  fun testCompleteConnectionFlow() {
     val vetEmail = "vet@email.com"
     val vet2Email = "vet2@email.com"
     val farmerEmail = "farm@email.com"
@@ -226,6 +225,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     goBack()
     checkOverviewScreenIsDisplayed()
     goToProfileFromOverview()
+    goToManageOffice()
     vetJoinOffice(copiedCode2)
     goBack()
     goBack()
@@ -435,9 +435,6 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun vetJoinOffice(vetCode: String) {
-    waitUntilTestTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON)
-    composeTestRule.onNodeWithTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON).performClick()
-
     waitUntilTestTag(ManageOfficeScreenTestTags.JOIN_OFFICE_BUTTON)
     composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.JOIN_OFFICE_BUTTON).performClick()
 
