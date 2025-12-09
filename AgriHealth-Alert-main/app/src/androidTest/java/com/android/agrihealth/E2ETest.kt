@@ -2,7 +2,6 @@ package com.android.agrihealth
 
 import android.content.ClipboardManager
 import android.content.Context
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
