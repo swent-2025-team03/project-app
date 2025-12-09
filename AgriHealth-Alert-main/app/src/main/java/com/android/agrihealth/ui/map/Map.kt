@@ -134,7 +134,8 @@ fun MapScreen(
                 mapViewModel.setSelectedReport(null)
 
                 // Alerts: show info for every potential
-                selectedAlerts = findAlertZonesUnderTap(alertsToDisplay, tapLatLng)
+                val newAlerts = findAlertZonesUnderTap(alertsToDisplay, tapLatLng)
+                selectedAlerts = if (newAlerts == selectedAlerts) listOf() else newAlerts
               }) {
                 ReportMarkers(
                     reports = reportsToDisplay,

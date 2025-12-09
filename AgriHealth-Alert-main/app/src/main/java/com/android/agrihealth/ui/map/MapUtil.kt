@@ -3,7 +3,6 @@ package com.android.agrihealth.ui.map
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -48,7 +47,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color as Colorx
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -184,14 +182,13 @@ fun ShowReportInfo(
 
   Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.REPORT_INFO_BOX)) {
     InfoElement(
-      Modifier.align(Alignment.BottomCenter),
-      report.title,
-      report.description,
-      "View report",
-      { onReportClick(report.id) },
-      MapScreenTestTags.getTestTagForReportTitle(report.id),
-      MapScreenTestTags.getTestTagForReportDesc(report.id)
-      )
+        Modifier.align(Alignment.BottomCenter),
+        report.title,
+        report.description,
+        "View report",
+        { onReportClick(report.id) },
+        MapScreenTestTags.getTestTagForReportTitle(report.id),
+        MapScreenTestTags.getTestTagForReportDesc(report.id))
   }
 }
 
@@ -218,23 +215,24 @@ fun ShowAlertInfo(alerts: List<Alert>, onClick: (alert: Alert) -> Unit) {
   if (alerts.isEmpty()) return
 
   Box(modifier = Modifier.fillMaxSize()) {
-    LazyColumn(modifier = Modifier
-      .background(color = MaterialTheme.colorScheme.surface)
-      .align(Alignment.BottomCenter)
-      .fillMaxWidth()) {
-      items(alerts) { alert ->
-        InfoElement(
-          title = alert.title,
-          description = alert.description,
-          buttonDesc = "View alert",
-          onButtonClick = { onClick(alert) },
-          titleTestTag = "",
-          descTestTag = ""
-        )
+    LazyColumn(
+        modifier =
+            Modifier.background(color = MaterialTheme.colorScheme.surface)
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()) {
+          items(alerts) { alert ->
+            InfoElement(
+                title = alert.title,
+                description = alert.description,
+                buttonDesc = "View alert",
+                onButtonClick = { onClick(alert) },
+                titleTestTag = "",
+                descTestTag = "")
 
-        if (alerts.last() != alert) HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3F))
-      }
-    }
+            if (alerts.last() != alert)
+                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3F))
+          }
+        }
   }
 }
 
@@ -252,52 +250,52 @@ fun findAlertZonesUnderTap(alerts: List<Alert>, tap: LatLng): List<Alert> {
 // === UI ===
 
 @Composable
-fun InfoElement(modifier: Modifier = Modifier, title: String, description: String, buttonDesc: String, onButtonClick: () -> Unit, titleTestTag: String, descTestTag: String) {
+fun InfoElement(
+    modifier: Modifier = Modifier,
+    title: String,
+    description: String,
+    buttonDesc: String,
+    onButtonClick: () -> Unit,
+    titleTestTag: String,
+    descTestTag: String
+) {
   Column(
-    modifier =
-      Modifier
-        .background(color = MaterialTheme.colorScheme.surface)
-        .fillMaxWidth()
-        .padding(16.dp)
-        .then(modifier)) {
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.SpaceBetween) {
-      Text(
-        text = title,
-        style = MaterialTheme.typography.titleLarge,
-        maxLines = 2,
-        overflow = TextOverflow.Ellipsis,
-        modifier =
-          Modifier.weight(1f)
-            .padding(end = 8.dp)
-            .testTag(titleTestTag))
+      modifier =
+          Modifier.background(color = MaterialTheme.colorScheme.surface)
+              .fillMaxWidth()
+              .padding(16.dp)
+              .then(modifier)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+          Text(
+              text = title,
+              style = MaterialTheme.typography.titleLarge,
+              maxLines = 2,
+              overflow = TextOverflow.Ellipsis,
+              modifier = Modifier.weight(1f).padding(end = 8.dp).testTag(titleTestTag))
 
-      IconButton(
-        onClick = onButtonClick,
-        modifier =
-          Modifier.align(Alignment.CenterVertically)
-            .size(32.dp)
-            .testTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON),
-        colors =
-          IconButtonColors(
-            MaterialTheme.colorScheme.primaryContainer,
-            MaterialTheme.colorScheme.onPrimaryContainer,
-            disabledContainerColor = MaterialTheme.colorScheme.surface,
-            disabledContentColor = MaterialTheme.colorScheme.onSurface)) {
-        Icon(
-          imageVector = Icons.Default.Preview,
-          contentDescription = buttonDesc,
-          modifier = Modifier.size(24.dp))
+          IconButton(
+              onClick = onButtonClick,
+              modifier =
+                  Modifier.align(Alignment.CenterVertically)
+                      .size(32.dp)
+                      .testTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON),
+              colors =
+                  IconButtonColors(
+                      MaterialTheme.colorScheme.primaryContainer,
+                      MaterialTheme.colorScheme.onPrimaryContainer,
+                      disabledContainerColor = MaterialTheme.colorScheme.surface,
+                      disabledContentColor = MaterialTheme.colorScheme.onSurface)) {
+                Icon(
+                    imageVector = Icons.Default.Preview,
+                    contentDescription = buttonDesc,
+                    modifier = Modifier.size(24.dp))
+              }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = description, modifier = Modifier.testTag(descTestTag))
+        Spacer(modifier = Modifier.height(8.dp))
       }
-    }
-
-    Spacer(modifier = Modifier.height(4.dp))
-    Text(
-      text = description,
-      modifier = Modifier.testTag(descTestTag))
-    Spacer(modifier = Modifier.height(8.dp))
-  }
 }
 
 /** Displays a switch to show/hide reports on the map */
