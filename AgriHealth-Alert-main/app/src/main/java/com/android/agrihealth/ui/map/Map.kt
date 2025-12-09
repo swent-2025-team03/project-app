@@ -71,10 +71,13 @@ fun MapScreen(
   val reports = uiState.reports
   val selectedReport by mapViewModel.selectedReport.collectAsState()
   val alerts = uiState.alerts
-  var selectedAlerts by remember { mutableStateOf(listOf<Alert?>(null)) }
+  var selectedAlerts by remember { mutableStateOf(listOf<Alert>()) }
 
   fun Report.isSelected() = this == selectedReport
-  fun Report.toggleSelect() = mapViewModel.setSelectedReport(if (this.isSelected()) null else this)
+  fun Report.toggleSelect() {
+    mapViewModel.setSelectedReport(if (this.isSelected()) null else this)
+    selectedAlerts = listOf()
+  }
 
   // Marker filter
   var selectedFilter by remember { mutableStateOf<String?>(null) }
@@ -138,7 +141,7 @@ fun MapScreen(
                     isSelected = { it.isSelected() },
                     onClick = { it.toggleSelect() })
 
-                AlertAreas(alerts = alertsToDisplay, onClick = {})
+                AlertAreas(alerts = alertsToDisplay)
               }
 
           MapTestMarkers(reportsToDisplay) { it.toggleSelect() }
@@ -154,7 +157,10 @@ fun MapScreen(
               horizontalAlignment = Alignment.End) {
                 val showReports = selectedFilter != "None"
 
-                AlertVisibilitySwitch(showAlerts) { showAlerts = it }
+                AlertVisibilitySwitch(showAlerts) {
+                  showAlerts = it
+                  selectedAlerts = listOf()
+                }
                 ReportVisibilitySwitch(showReports) { enabled ->
                   selectedFilter = if (enabled) null else "None"
                 }
@@ -192,7 +198,9 @@ fun MapScreen(
             navigationActions?.navigateTo(Screen.ViewReport(it))
           }
 
-          ShowAlertInfo(selectedAlerts)
+          ShowAlertInfo(selectedAlerts) { alert ->
+            navigationActions?.navigateTo(Screen.ViewAlert(alert.id))
+          }
         }
       })
 }
