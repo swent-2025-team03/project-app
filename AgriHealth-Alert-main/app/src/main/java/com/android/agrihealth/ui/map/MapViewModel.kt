@@ -125,10 +125,13 @@ class MapViewModel(
    * @param useCurrentLocation will fetch new location instead of using last known location if true.
    */
   fun setStartingLocation(location: Location? = null, useCurrentLocation: Boolean = false) {
+    // Specific starting point, takes priority because of report navigation for example
     if (location != null) {
       _startingLocation.value = location
       _zoom.value = 15f
-    } else {
+    }
+    // Default starting position, so either location or workplace or default
+    else {
       viewModelScope.launch {
         _zoom.value = 12f
 
@@ -146,12 +149,7 @@ class MapViewModel(
                 locationViewModel.locationState.firstOrNull { it != null }
               }
 
-          val fromUserAddress = getLocationFromUserAddress()
-          val startLocation = gpsLocation ?: fromUserAddress
-
-          if (startLocation != null) {
-            _startingLocation.value = startLocation
-          }
+          _startingLocation.value = gpsLocation ?: getLocationFromUserAddress() ?: return@launch
         }
       }
     }
