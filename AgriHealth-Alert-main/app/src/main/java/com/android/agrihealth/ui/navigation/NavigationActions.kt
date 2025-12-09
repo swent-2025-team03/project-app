@@ -41,6 +41,8 @@ sealed class Screen(
 
   object RoleSelection : Screen(route = "role", name = "Role")
 
+  object EmailVerify : Screen(route = "email_verification", name = "Email Verification")
+
   object LocationPicker : Screen(route = "location_picker", name = "Select a Location")
 
   data class ViewReport(val reportId: String) :

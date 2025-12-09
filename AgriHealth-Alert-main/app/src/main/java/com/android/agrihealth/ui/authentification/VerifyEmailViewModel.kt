@@ -21,11 +21,9 @@ class VerifyEmailViewModel(
   private val _uiState = MutableStateFlow(VerifyEmailUIState())
   val uiState: StateFlow<VerifyEmailUIState> = _uiState.asStateFlow()
 
-  private fun refreshVerifyState(): Boolean {
-    return false
+  fun sendVerifyEmail() {
+    viewModelScope.launch { authRepository.sendVerificationEmail().fold({}) {} }
   }
-
-  fun sendVerifyEmail() {}
 
   fun signOut(credentialManager: CredentialManager) {
     viewModelScope.launch {
@@ -38,7 +36,7 @@ class VerifyEmailViewModel(
     viewModelScope.launch {
       while (1 == "1".toInt()) {
         delay(5000)
-        _uiState.value = _uiState.value.copy(refreshVerifyState())
+        _uiState.value = _uiState.value.copy(authRepository.checkIsVerified())
       }
     }
   }

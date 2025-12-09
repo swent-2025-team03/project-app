@@ -50,6 +50,7 @@ import com.android.agrihealth.ui.alert.AlertViewScreen
 import com.android.agrihealth.ui.authentification.RoleSelectionScreen
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
+import com.android.agrihealth.ui.authentification.VerifyEmailScreen
 import com.android.agrihealth.ui.map.MapScreen
 import com.android.agrihealth.ui.map.MapViewModel
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -87,7 +88,9 @@ class MainActivity : ComponentActivity() {
       AgriHealthAppTheme {
         // A surface container using the 'background' color from the theme
         Surface(
-            modifier = Modifier.fillMaxSize().semantics { testTag = C.Tag.main_screen_container },
+            modifier = Modifier
+              .fillMaxSize()
+              .semantics { testTag = C.Tag.main_screen_container },
             color = MaterialTheme.colorScheme.background) {
               AgriHealthApp()
             }
@@ -169,7 +172,7 @@ fun AgriHealthApp(
         SignUpScreen(
             userViewModel = userViewModel,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onSignedUp = { navigationActions.navigateTo(Screen.EditProfile) })
+          onSignedUp = { navigationActions.navigateTo(Screen.EmailVerify) })
       }
     }
     navigation(startDestination = Screen.RoleSelection.route, route = Screen.RoleSelection.name) {
@@ -179,6 +182,16 @@ fun AgriHealthApp(
             onBack = { navigationActions.navigateTo(Screen.Auth) },
             onButtonPressed = { navigationActions.navigateTo(Screen.EditProfile) },
             userViewModel = userViewModel)
+      }
+      navigation(startDestination = Screen.EmailVerify.route, route = Screen.EmailVerify.name) {
+        composable(Screen.EmailVerify.route) {
+          VerifyEmailScreen(
+            credentialManager = credentialManager,
+            onBack = { navigationActions.goBack() },
+            onVerified = { navigationActions.navigateTo(Screen.EditProfile) },
+            userViewModel = userViewModel
+          )
+        }
       }
     }
 
