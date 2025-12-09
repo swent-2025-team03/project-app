@@ -1,11 +1,12 @@
-package com.android.agrihealth.testhelpers
+package com.android.agrihealth.testutil
 
 import com.google.firebase.functions.FirebaseFunctions
 import kotlinx.coroutines.tasks.await
 
 private val functions = FirebaseFunctions.getInstance()
 
-suspend fun verifyCurrentUser() {
+suspend fun verifyUser(uid: String) {
+  val data = mapOf("uid" to uid)
   val uploader = functions.getHttpsCallable("verifyEmail")
-  uploader.call().await()
+  uploader.call(data).await()
 }
