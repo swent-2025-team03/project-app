@@ -91,8 +91,16 @@ class NotificationsTest {
     val notificationVetAnswer =
         Notification.VetAnswer(destinationUid = user1.uid, description = "rope neck asap")
 
+    val notificationJoinOffice =
+        Notification.JoinOffice(destinationUid = user1.uid, description = "sorahe mau")
+
+    val notificationConnectOffice =
+        Notification.ConnectOffice(destinationUid = user1.uid, description = "sekaino kanata")
+
     messagingService.uploadNotification(notificationNewReport) { assertTrue(it) }
     messagingService.uploadNotification(notificationVetAnswer) { assertTrue(it) }
+    messagingService.uploadNotification(notificationJoinOffice) { assertTrue(it) }
+    messagingService.uploadNotification(notificationConnectOffice) { assertTrue(it) }
   }
 
   @Test
@@ -127,18 +135,32 @@ class NotificationsTest {
     val notificationVetAnswer =
         Notification.VetAnswer(
             destinationUid = user1.uid, description = "when you're acting like that")
+    val notificationJoinOffice =
+        Notification.JoinOffice(destinationUid = user1.uid, description = "yamiwo terasu")
+    val notificationConnectOffice =
+        Notification.ConnectOffice(destinationUid = user1.uid, description = "kaisei")
 
     val messageNR = dataToRemoteMessage(notificationNewReport.toDataMap())
     val messageVA = dataToRemoteMessage(notificationVetAnswer.toDataMap())
+    val messageJO = dataToRemoteMessage(notificationJoinOffice.toDataMap())
+    val messageCO = dataToRemoteMessage(notificationConnectOffice.toDataMap())
 
     spy.onMessageReceived(messageNR)
     val capturedNR = slot.captured
     slot.clear()
     spy.onMessageReceived(messageVA)
     val capturedVA = slot.captured
+    slot.clear()
+    spy.onMessageReceived(messageJO)
+    val capturedJO = slot.captured
+    slot.clear()
+    spy.onMessageReceived(messageCO)
+    val capturedCO = slot.captured
 
     assertEquals(notificationNewReport, capturedNR)
     assertEquals(notificationVetAnswer, capturedVA)
+    assertEquals(notificationJoinOffice, capturedJO)
+    assertEquals(notificationConnectOffice, capturedCO)
 
     clearMocks(spy)
   }
