@@ -797,11 +797,9 @@ class E2ETest : FirebaseEmulatorsTest() {
       composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER).isDisplayed()
     }
     scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
-    composeTestRule.onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN).performClick()
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithText(officeName).isDisplayed()
     }
-    composeTestRule.onNodeWithText(officeName).performClick()
 
     scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
     composeTestRule
