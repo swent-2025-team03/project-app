@@ -352,10 +352,10 @@ fun <T> DropdownMenuWrapper(
 
 /**
  * Composable displaying a single report item in the list. Shows title, farmer ID, truncated
- * description, and status tag.
+ * description, and status tag. For Vets, it also shows the assignedVet if there is one.
  */
 @Composable
-fun ReportItem(
+private fun ReportItem(
     report: Report,
     onClick: () -> Unit,
     userRole: UserRole,
@@ -425,7 +425,7 @@ fun ReportItem(
  * Only for Vets.
  */
 @Composable
-fun AssignedVetTag(
+private fun AssignedVetTag(
     vetId: String,
     isCurrentVet: Boolean,
     navigationActions: NavigationActions?,
@@ -439,7 +439,9 @@ fun AssignedVetTag(
   Text(
       text = label,
       style = MaterialTheme.typography.labelSmall,
-      color = if (isClickable) MaterialTheme.colorScheme.primary else LocalContentColor.current,
+      color =
+          if (isClickable) MaterialTheme.colorScheme.primary
+          else MaterialTheme.colorScheme.onBackground,
       modifier =
           Modifier.testTag(ASSIGNED_VET_TAG)
               .padding(horizontal = 8.dp, vertical = 4.dp)

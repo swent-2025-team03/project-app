@@ -163,77 +163,6 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun testCompleteConnectionFlow() {
-    val vetEmail = "vet@email.com"
-    val vet2Email = "vet2@email.com"
-    val farmerEmail = "farm@email.com"
-
-    val vetPassword = "vetvetvet"
-    val vet2Password = "vet2vet2"
-    val farmerPassword = "farmfarm"
-
-    val clipboard =
-        InstrumentationRegistry.getInstrumentation()
-            .targetContext
-            .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-
-    composeTestRule.setContent { AgriHealthApp() }
-    composeTestRule.waitForIdle()
-
-    completeSignUp("Test", "Vet", vetEmail, vetPassword, true)
-    checkEditProfileScreenIsDisplayed()
-    goBack()
-    goBack()
-    checkOverviewScreenIsDisplayed()
-    goToProfileFromOverview()
-    goToManageOffice()
-    createOffice()
-    goBack()
-    generateFarmerCode()
-    signOutFromScreen()
-
-    val clipData = clipboard.primaryClip
-    val copiedCode = clipData?.getItemAt(0)?.text.toString()
-
-    completeSignUp("Test", "Farmer", farmerEmail, farmerPassword, false)
-    checkEditProfileScreenIsDisplayed()
-    goBack()
-    goBack()
-    checkOverviewScreenIsDisplayed()
-    goToProfileFromOverview()
-    farmerJoinOffice(copiedCode)
-    goBack()
-    createReportWithOfficeName("Report 1", "Description 1", "Vet Office")
-    createReportWithOfficeName("Report 2", "Description 2", "Vet Office")
-    createReportWithOfficeName("Report 3", "Description 3", "Vet Office")
-    signOutFromScreen()
-
-    completeSignIn(vetEmail, vetPassword)
-    claimReport("Report 1")
-    goToProfileFromOverview()
-    goToManageOffice()
-    generateOfficeCode()
-    goBack()
-    signOutFromScreen()
-
-    val clipData2 = clipboard.primaryClip
-    val copiedCode2 = clipData2?.getItemAt(0)?.text.toString()
-
-    completeSignUp("Test", "Vet2", vet2Email, vet2Password, true)
-    checkEditProfileScreenIsDisplayed()
-    goBack()
-    goBack()
-    checkOverviewScreenIsDisplayed()
-    goToProfileFromOverview()
-    goToManageOffice()
-    vetJoinOffice(copiedCode2)
-    goBack()
-    goBack()
-    claimReport("Report 2")
-    checkAssignedVetDisplayedOnOverview()
-  }
-
-  @Test
   fun testFarmer_OverviewFilters_WorkCorrectly() {
     val fakeOfficeRepo = FakeOfficeRepository()
     OfficeRepositoryProvider.set(fakeOfficeRepo)
@@ -394,6 +323,79 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
   }
 
+  // ----------- Scenario: Both Users -----------
+
+  @Test
+  fun testCompleteConnectionFlow() {
+    val vetEmail = "vet@email.com"
+    val vet2Email = "vet2@email.com"
+    val farmerEmail = "farm@email.com"
+
+    val vetPassword = "vetvetvet"
+    val vet2Password = "vet2vet2"
+    val farmerPassword = "farmfarm"
+
+    val clipboard =
+        InstrumentationRegistry.getInstrumentation()
+            .targetContext
+            .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+
+    composeTestRule.setContent { AgriHealthApp() }
+    composeTestRule.waitForIdle()
+
+    completeSignUp("Test", "Vet", vetEmail, vetPassword, true)
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
+    checkOverviewScreenIsDisplayed()
+    goToProfileFromOverview()
+    goToManageOffice()
+    createOffice()
+    goBack()
+    generateFarmerCode()
+    signOutFromScreen()
+
+    val clipData = clipboard.primaryClip
+    val copiedCode = clipData?.getItemAt(0)?.text.toString()
+
+    completeSignUp("Test", "Farmer", farmerEmail, farmerPassword, false)
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
+    checkOverviewScreenIsDisplayed()
+    goToProfileFromOverview()
+    farmerJoinOffice(copiedCode)
+    goBack()
+    createReportWithOfficeName("Report 1", "Description 1", "Vet Office")
+    createReportWithOfficeName("Report 2", "Description 2", "Vet Office")
+    createReportWithOfficeName("Report 3", "Description 3", "Vet Office")
+    signOutFromScreen()
+
+    completeSignIn(vetEmail, vetPassword)
+    claimReport("Report 1")
+    goToProfileFromOverview()
+    goToManageOffice()
+    generateOfficeCode()
+    goBack()
+    signOutFromScreen()
+
+    val clipData2 = clipboard.primaryClip
+    val copiedCode2 = clipData2?.getItemAt(0)?.text.toString()
+
+    completeSignUp("Test", "Vet2", vet2Email, vet2Password, true)
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
+    checkOverviewScreenIsDisplayed()
+    goToProfileFromOverview()
+    goToManageOffice()
+    vetJoinOffice(copiedCode2)
+    goBack()
+    goBack()
+    claimReport("Report 2")
+    checkAssignedVetDisplayedOnOverview()
+  }
+
   // ----------- Helper functions -----------
 
   @After
@@ -473,11 +475,14 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun checkAssignedVetDisplayedOnOverview() {
+    val vet = "Test Vet"
+    val assignedToYou = "Assigned to You"
+
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onNodeWithText("Test Vet").isDisplayed()
+      composeTestRule.onNodeWithText(vet).isDisplayed()
     }
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onNodeWithText("Assigned to You").isDisplayed()
+      composeTestRule.onNodeWithText(assignedToYou).isDisplayed()
     }
   }
 
@@ -775,9 +780,7 @@ class E2ETest : FirebaseEmulatorsTest() {
       break
     }
 
-    composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.LOCATION_BUTTON))
+    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.LOCATION_BUTTON))
     composeTestRule.onNodeWithTag(AddReportScreenTestTags.LOCATION_BUTTON).performClick()
     composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).isDisplayed()
@@ -793,13 +796,9 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER).isDisplayed()
     }
-    composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
+    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
 
-    composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
+    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON)
         .assertIsDisplayed()
@@ -892,9 +891,7 @@ class E2ETest : FirebaseEmulatorsTest() {
       break
     }
 
-    composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.LOCATION_BUTTON))
+    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.LOCATION_BUTTON))
     composeTestRule.onNodeWithTag(AddReportScreenTestTags.LOCATION_BUTTON).performClick()
     composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).isDisplayed()
@@ -910,9 +907,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER).isDisplayed()
     }
-    composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
+    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN)
         .assertIsDisplayed()
@@ -925,9 +920,7 @@ class E2ETest : FirebaseEmulatorsTest() {
       composeTestRule.onAllNodesWithText(officeName).onFirst().performClick()
     }
 
-    composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
+    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON)
         .assertIsDisplayed()
