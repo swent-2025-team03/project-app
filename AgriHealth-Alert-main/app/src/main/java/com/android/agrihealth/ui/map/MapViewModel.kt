@@ -11,26 +11,28 @@ import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.location.offsetLatLng
+import com.android.agrihealth.data.model.location.toLatLng
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.google.android.gms.maps.model.LatLng
 import java.util.Locale
 import kotlin.collections.firstOrNull
-import kotlin.math.cos
-import kotlin.math.sin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
 data class MapUIState(
-    val reports: List<Report> = emptyList(),
-    val locationPermission: Boolean = false,
+    val reports: List<SpiderifiedReport> = emptyList(),
     val geocodedAddress: String? = null
 )
+
+data class SpiderifiedReport(val report: Report, val position: LatLng, val center: LatLng)
 
 class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
@@ -44,51 +46,57 @@ class MapViewModel(
   private val _uiState = MutableStateFlow(MapUIState())
   val uiState: StateFlow<MapUIState> = _uiState.asStateFlow()
 
+  private fun updateState(reducer: MapUIState.() -> MapUIState) {
+    _uiState.update { it.reducer() }
+  }
+
+  private val _selectedReport = MutableStateFlow<Report?>(null)
+  val selectedReport = _selectedReport.asStateFlow()
+
+  private fun Report?.select() {
+    _selectedReport.value = this
+  }
+
   private val _startingLocation =
       MutableStateFlow(startingPosition ?: Location(46.9481, 7.4474)) // Bern
   val startingLocation = _startingLocation.asStateFlow()
   private val _zoom = MutableStateFlow(10f)
   val zoom = _zoom.asStateFlow()
-  private val _selectedReport = MutableStateFlow<Report?>(null)
-  val selectedReport: StateFlow<Report?> = _selectedReport.asStateFlow()
 
   init {
     if (selectedReportId != null) {
-      viewModelScope.launch {
-        _selectedReport.value = reportRepository.getReportById(selectedReportId)
-      }
+      viewModelScope.launch { reportRepository.getReportById(selectedReportId).select() }
     }
-    refreshMapPermission()
+
     setStartingLocation()
 
     if (showReports) {
-      refreshReports(userId)
+      refreshReports()
     }
   }
 
-  fun refreshReports(uid: String) {
-    fetchLocalizableReports(uid)
-  }
-
-  fun refreshMapPermission() {
-    _uiState.value =
-        _uiState.value.copy(locationPermission = locationViewModel.hasLocationPermissions())
-  }
-
-  private fun fetchLocalizableReports(uid: String) {
+  /** Fetches every report linked to the current user and exposes them in MapUIState */
+  fun refreshReports() {
     viewModelScope.launch {
       try {
-        val reports = reportRepository.getAllReports(uid).filter { it.location != null }
-
-        _uiState.value = _uiState.value.copy(reports = reports)
+        val newReports = fetchSpiderifiedReports()
+        updateState { copy(reports = newReports) }
       } catch (e: Exception) {
-        Log.e("MapScreen", "Failed to load todos: ${e.message}")
+        Log.e("MapScreen", "Failed to load reports: ${e.message}")
       }
     }
   }
 
+  /** Sets the currently selected report. Intended to be highlighted in the map */
   fun setSelectedReport(report: Report?) {
-    _selectedReport.value = report
+    report.select()
+  }
+
+  /**
+   * Resets the camera to its original position, or moves to the user's current location if allowed
+   */
+  fun refreshCameraPosition() {
+    setStartingLocation(useCurrentLocation = true)
   }
 
   /**
@@ -135,33 +143,6 @@ class MapViewModel(
     return user.getOrNull()?.address
   }
 
-  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-  /**
-   * Converts geographical coordinates into a text address
-   *
-   * @param context Current composable context
-   * @param lat Latitude to convert
-   * @param lng Longitude to convert
-   */
-  fun getAddressFromLatLng(context: Context, lat: Double, lng: Double) {
-    val geocoder = Geocoder(context, Locale.getDefault())
-
-    try {
-      // Deprecated but I can't use the new function for some reason
-      val addresses = geocoder.getFromLocation(lat, lng, 1)
-      val result = addresses?.firstOrNull()?.getAddressLine(0)
-      _uiState.value = _uiState.value.copy(geocodedAddress = result)
-    } catch (_: Exception) {
-      _uiState.value = _uiState.value.copy(geocodedAddress = null)
-    }
-  }
-
-  fun refreshCameraPosition() {
-    setStartingLocation(useCurrentLocation = true)
-  }
-
-  data class SpiderifiedReport(val report: Report, val position: LatLng, val center: LatLng)
-
   /**
    * Generate a List of [SpiderifiedReport] with new positions centered around common report
    * locations.
@@ -174,50 +155,55 @@ class MapViewModel(
    * @return A list of [SpiderifiedReport] objects containing their adjusted map positions.
    * @see offsetLatLng for how the offset positions are calculated
    */
-  fun spiderifiedReports(): List<SpiderifiedReport> {
-    val currentReports = uiState.value.reports
+  private suspend fun fetchSpiderifiedReports(): List<SpiderifiedReport> {
+    val currentReports = reportRepository.getAllReports(userId)
 
     val groups =
         currentReports
             .filter { it.location != null }
             .groupBy { Pair(it.location!!.latitude, it.location.longitude) }
 
-    val result = mutableListOf<SpiderifiedReport>()
+    val newReports = mutableListOf<SpiderifiedReport>()
 
     for ((latLong, group) in groups) {
-      val baseLat = latLong.first
-      val baseLng = latLong.second
-      val center = LatLng(baseLat, baseLng)
+      val position = Location(latLong.first, latLong.second)
+      val center = position.toLatLng()
 
       if (group.size == 1) {
-        result.add(SpiderifiedReport(group.first(), center, center))
+        newReports.add(SpiderifiedReport(group.first(), center, center))
       } else {
         val radiusMeters = 20.0 + group.size * 5.0
         val angleStep = 2 * Math.PI / group.size
         group.forEachIndexed { index, report ->
           val angle = index * angleStep
-          val offset = offsetLatLng(baseLat, baseLng, radiusMeters, angle)
-          result.add(SpiderifiedReport(report, offset, center))
+          val offset = offsetLatLng(position, radiusMeters, angle)
+
+          newReports.add(SpiderifiedReport(report, offset.toLatLng(), center))
         }
       }
     }
 
-    return result
+    return newReports
   }
 
   /**
-   * Offset [lat] and [lng] by [distanceMeters] in the direction of [angleRadians].
+   * Converts geographical coordinates into a text address
    *
-   * @param lat the latitude of the point to offset
-   * @param lng the longitude of the point to offset
-   * @param distanceMeters the distance in meters to offset by which the point is offset
-   * @param angleRadians angle to offset by. 0 offset to the right, PI offset to the left.
+   * @param context Current composable context
+   * @param lat Latitude to convert
+   * @param lng Longitude to convert
    */
-  fun offsetLatLng(lat: Double, lng: Double, distanceMeters: Double, angleRadians: Double): LatLng {
-    val earthRadius = 6371000.0 // meters
-    val dLat = (distanceMeters / earthRadius) * sin(angleRadians)
-    val dLng = (distanceMeters / (earthRadius * cos(Math.toRadians(lat)))) * cos(angleRadians)
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  fun getAddressFromLatLng(context: Context, lat: Double, lng: Double) {
+    val geocoder = Geocoder(context, Locale.getDefault())
 
-    return LatLng(lat + Math.toDegrees(dLat), lng + Math.toDegrees(dLng))
+    try {
+      // Deprecated but I can't use the new function for some reason
+      val addresses = geocoder.getFromLocation(lat, lng, 1)
+      val result = addresses?.firstOrNull()?.getAddressLine(0)
+      updateState { copy(geocodedAddress = result) }
+    } catch (_: Exception) {
+      updateState { copy(geocodedAddress = null) }
+    }
   }
 }
