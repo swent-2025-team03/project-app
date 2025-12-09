@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// ICI ON VEUT OU PAS LE LOADING OVERLAY
 object SignUpErrorMsg {
   const val EMPTY_FIELDS = "Please fill every field."
   const val ROLE_NULL = "Please select a role."
@@ -35,6 +34,7 @@ data class SignUpUIState(
     val role: UserRole? = null,
     val errorMsg: String? = null,
     val hasFailed: Boolean = false,
+    val isLoading: Boolean = false,
 ) {
 
   fun isValid(): Boolean {
@@ -117,18 +117,20 @@ open class SignUpViewModel(
 
       if (user != null) {
         viewModelScope.launch {
-          authRepository
-              .signUpWithEmailAndPassword(state.email, state.password, user)
-              .fold(
-                  { uid -> _uiState.update { it.copy(uid = uid) } },
-                  { failure ->
-                    setErrorMsg(
-                        when (failure) {
-                          is com.google.firebase.auth.FirebaseAuthException ->
-                              SignUpErrorMsg.ALREADY_USED_EMAIL
-                          else -> SignUpErrorMsg.TIMEOUT
-                        })
-                  })
+          _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
+            authRepository
+                .signUpWithEmailAndPassword(state.email, state.password, user)
+                .fold(
+                    { uid -> _uiState.update { it.copy(uid = uid) } },
+                    { failure ->
+                      setErrorMsg(
+                          when (failure) {
+                            is com.google.firebase.auth.FirebaseAuthException ->
+                                SignUpErrorMsg.ALREADY_USED_EMAIL
+                            else -> SignUpErrorMsg.TIMEOUT
+                          })
+                    })
+          }
         }
       }
     } else {
