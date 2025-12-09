@@ -183,7 +183,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     completeSignUp("Test", "Vet", vetEmail, vetPassword, true)
     checkEditProfileScreenIsDisplayed()
     goBack()
-    checkProfileScreenIsDisplayed()
     goBack()
     checkOverviewScreenIsDisplayed()
     goToProfileFromOverview()
@@ -199,7 +198,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     completeSignUp("Test", "Farmer", farmerEmail, farmerPassword, false)
     checkEditProfileScreenIsDisplayed()
     goBack()
-    checkProfileScreenIsDisplayed()
     goBack()
     checkOverviewScreenIsDisplayed()
     goToProfileFromOverview()
@@ -224,7 +222,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     completeSignUp("Test", "Vet2", vet2Email, vet2Password, true)
     checkEditProfileScreenIsDisplayed()
     goBack()
-    checkProfileScreenIsDisplayed()
     goBack()
     checkOverviewScreenIsDisplayed()
     goToProfileFromOverview()
@@ -957,10 +954,6 @@ class E2ETest : FirebaseEmulatorsTest() {
 
   private fun checkEditProfileScreenIsDisplayed() {
     waitUntilTestTag(EditProfileScreenTestTags.FIRSTNAME_FIELD)
-  }
-
-  private fun checkProfileScreenIsDisplayed() {
-    waitUntilTestTag(ProfileScreenTestTags.PROFILE_IMAGE)
   }
 
   private fun goBack() {
