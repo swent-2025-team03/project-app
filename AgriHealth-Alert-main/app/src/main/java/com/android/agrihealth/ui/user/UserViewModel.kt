@@ -8,14 +8,17 @@ import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.ui.loading.withLoadingState
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -30,6 +33,9 @@ val defaultUser =
         defaultOffice = null,
         isGoogleAccount = false)
 
+/** UI state unifié pour l'utilisateur. */
+data class UserUiState(val user: User = defaultUser, val isLoading: Boolean = false)
+
 /**
  * ViewModel for managing user-related data and operations.
  *
@@ -43,13 +49,13 @@ open class UserViewModel(
 ) : ViewModel(), UserViewModelContract {
 
   // private val _userRole = MutableStateFlow<UserRole>(UserRole.FARMER)
-  private val _user = MutableStateFlow(initialUser ?: defaultUser)
+  private val _ui = MutableStateFlow(UserUiState(user = initialUser ?: defaultUser))
 
   // user id can be accessed using Firebase.auth.currentUser?.uid
 
   /** The current user's role as a state flow. */
-  // val userRole: StateFlow<UserRole> = _userRole.asStateFlow()
-  override var user: StateFlow<User> = _user.asStateFlow()
+  override var user: StateFlow<User> =
+      _ui.map { it.user }.stateIn(viewModelScope, SharingStarted.Eagerly, _ui.value.user)
 
   init {
     val currentUser = auth.currentUser
@@ -67,7 +73,7 @@ open class UserViewModel(
     val result = userRepository.getUserFromId(userId)
 
     result.fold(
-        onSuccess = { user -> _user.value = user },
+        onSuccess = { loadedUser -> _ui.value = _ui.value.copy(user = loadedUser) },
         onFailure = { e -> Log.e("UserViewModel", "Failed to load user role", e) })
   }
 
@@ -83,8 +89,10 @@ open class UserViewModel(
   override fun updateUser(user: User): Deferred<Unit> {
     return viewModelScope.async {
       try {
-        userRepository.updateUser(user)
-        _user.value = user // update local state
+        _ui.withLoadingState(applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+          userRepository.updateUser(user)
+          _ui.value = _ui.value.copy(user = user) // update local state
+        }
       } catch (e: Exception) {
         Log.e("UserViewModel", "Failed to update user", e)
       }
@@ -93,21 +101,24 @@ open class UserViewModel(
 
   /** Sets the current user. */
   override fun setUser(user: User) {
-    _user.value = user
+    _ui.value = _ui.value.copy(user = user)
   }
 
   /** Updating the officeId when creating or joining an office */
   override fun updateVetOfficeId(officeId: String?): Deferred<Unit> {
     return viewModelScope.async {
-      val current = _user.value
+      val current = _ui.value.user
 
       // Only vets should get an officeId
       if (current is Vet) {
         val updated = current.copy(officeId = officeId)
 
         try {
-          userRepository.updateUser(updated)
-          _user.value = updated
+          _ui.withLoadingState(
+              applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+                userRepository.updateUser(updated)
+                _ui.value = _ui.value.copy(user = updated)
+              }
         } catch (e: Exception) {
           Log.e("UserViewModel", "Failed to update vet officeId", e)
           throw e

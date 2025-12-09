@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+// ICI ON VEUT OU PAS LE LOADING OVERLAY
 object SignUpErrorMsg {
   const val EMPTY_FIELDS = "Please fill every field."
   const val ROLE_NULL = "Please select a role."

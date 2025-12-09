@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
+import com.android.agrihealth.ui.loading.withLoadingState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +16,8 @@ data class ChangePasswordUiState(
     val success: Boolean = false,
     val oldWrong: Boolean = false,
     val newPassword: String = "",
-    val newWeak: Boolean = false
+    val newWeak: Boolean = false,
+    val isLoading: Boolean = false
 ) {
   fun isWeak(): Boolean {
     return newPassword.length < 6
@@ -41,17 +43,28 @@ class ChangePasswordViewModel(
   }
 
   override fun changePassword() {
-    _uiState.value = _uiState.value.copy(newWeak = false, oldWrong = false)
-    if (_uiState.value.isWeak()) {
-      _uiState.value = _uiState.value.copy(newWeak = true)
+    var state = _uiState.value.copy(newWeak = false, oldWrong = false, success = false)
+
+    if (state.isWeak()) {
+      _uiState.value = state.copy(newWeak = true)
+      return
     }
+
+    _uiState.value = state
+
     viewModelScope.launch {
-      repository.reAuthenticate(_uiState.value.email, _uiState.value.oldPassword).fold({
-        repository.changePassword(_uiState.value.newPassword).fold({
-          _uiState.value = _uiState.value.copy(success = true)
-        }) {}
-      }) {
-        _uiState.value = _uiState.value.copy(oldWrong = true)
+      _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
+        repository
+            .reAuthenticate(_uiState.value.email, _uiState.value.oldPassword)
+            .fold(
+                onSuccess = {
+                  repository
+                      .changePassword(_uiState.value.newPassword)
+                      .fold(
+                          onSuccess = { _uiState.value = _uiState.value.copy(success = true) },
+                          onFailure = {})
+                },
+                onFailure = { _uiState.value = _uiState.value.copy(oldWrong = true) })
       }
     }
   }

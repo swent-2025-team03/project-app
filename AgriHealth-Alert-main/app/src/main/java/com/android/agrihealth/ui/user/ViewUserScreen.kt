@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.*
+import com.android.agrihealth.ui.loading.LoadingOverlay
 
 object ViewUserScreenTestTags {
   const val TOP_BAR = "ViewUserTopBar"
@@ -73,23 +74,25 @@ fun ViewUserScreen(
             },
             modifier = Modifier.testTag(ViewUserScreenTestTags.TOP_BAR))
       }) { padding ->
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-        Box(modifier = Modifier.padding(padding)) {
-          when (uiState) {
-            is ViewUserUiState.Loading ->
-                Box(Modifier.fillMaxSize(), Alignment.Center) {
-                  CircularProgressIndicator(
-                      modifier = Modifier.testTag(ViewUserScreenTestTags.LOADING_INDICATOR))
-                }
-            is ViewUserUiState.Error ->
-                Box(Modifier.fillMaxSize(), Alignment.Center) {
-                  Text(
-                      (uiState as ViewUserUiState.Error).message,
-                      modifier = Modifier.testTag(ViewUserScreenTestTags.ERROR_TEXT))
-                }
-            is ViewUserUiState.Success -> {
-              val success = uiState as ViewUserUiState.Success
-              ViewUserContent(user = success.user, officeName = success.officeName)
+        LoadingOverlay(isLoading = uiState is ViewUserUiState.Loading) {
+          HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+          Box(modifier = Modifier.padding(padding)) {
+            when (uiState) {
+              is ViewUserUiState.Loading ->
+                  Box(Modifier.fillMaxSize(), Alignment.Center) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.testTag(ViewUserScreenTestTags.LOADING_INDICATOR))
+                  }
+              is ViewUserUiState.Error ->
+                  Box(Modifier.fillMaxSize(), Alignment.Center) {
+                    Text(
+                        (uiState as ViewUserUiState.Error).message,
+                        modifier = Modifier.testTag(ViewUserScreenTestTags.ERROR_TEXT))
+                  }
+              is ViewUserUiState.Success -> {
+                val success = uiState as ViewUserUiState.Success
+                ViewUserContent(user = success.user, officeName = success.officeName)
+              }
             }
           }
         }
