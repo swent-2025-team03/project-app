@@ -68,14 +68,15 @@ class ReportViewViewModel(
               val fetchedReport = repository.getReportById(reportID)
               if (fetchedReport != null) {
                 _uiState.value =
-                    _uiState.value.copy(
+                    ReportViewUIState(
                         report = fetchedReport,
                         answerText = fetchedReport.answer ?: "",
-                        status = fetchedReport.status,
-                    )
+                        status = fetchedReport.status)
+              } else {
+                Log.e("ReportViewModel", "Report with ID $reportID not found.")
               }
             } catch (e: Exception) {
-              Log.e("ReportViewViewModel", "Error loading Report by ID: $reportID", e)
+              Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
             }
           }
     }
@@ -112,18 +113,17 @@ class ReportViewViewModel(
   fun onSave() {
     viewModelScope.launch {
       _uiState.withLoadingState(
-          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+          applyLoading = { state, loading ->
+            state.copy(isLoading = loading)
+          }) { // <-- ONLY ADD WRAPPER
             try {
-              val current = _uiState.value
               val updatedReport =
-                  current.report.copy(
-                      answer = current.answerText,
-                      status = current.status,
-                  )
+                  _uiState.value.report.copy(
+                      answer = _uiState.value.answerText, status = _uiState.value.status)
               repository.editReport(updatedReport.id, updatedReport)
               _saveCompleted.value = true
             } catch (e: Exception) {
-              Log.e("ReportViewViewModel", "Error saving report", e)
+              Log.e("ReportViewModel", "Error saving report", e)
             }
           }
     }

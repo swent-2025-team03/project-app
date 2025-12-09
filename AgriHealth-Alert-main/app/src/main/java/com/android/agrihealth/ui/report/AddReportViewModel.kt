@@ -29,6 +29,7 @@ data class AddReportUiState(
     val isLoading: Boolean = false,
 )
 
+/** Represents the result of creating a report */
 sealed class CreateReportResult {
   object Success : CreateReportResult()
 
@@ -42,6 +43,7 @@ class AddReportViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
     private val imageViewModel: ImageViewModel = ImageViewModel(),
 ) : ViewModel(), AddReportViewModelContract {
+
   private val _uiState = MutableStateFlow(AddReportUiState())
   override val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
 
@@ -101,12 +103,18 @@ class AddReportViewModel(
       return CreateReportResult.ValidationError
     }
 
+    val allQuestionsAnswered = uiState.questionForms.all { it.isValid() }
+    if (!allQuestionsAnswered) {
+      return CreateReportResult.ValidationError
+    }
+
     var uploadedPath = uiState.uploadedImagePath
 
     var result: CreateReportResult =
         CreateReportResult.UploadError(IllegalStateException("Unknown error"))
 
     _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
+      // Photo upload (if a photo has been chosen)
       if (uiState.photoUri != null) {
         imageViewModel.upload(uiState.photoUri)
 
