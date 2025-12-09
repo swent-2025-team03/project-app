@@ -2,7 +2,6 @@ package com.android.agrihealth
 
 import android.content.ClipboardManager
 import android.content.Context
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
@@ -434,6 +433,9 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performTextInput(farmerCode)
     composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.ADD_CODE_BUTTON).performClick()
 
+    composeTestRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
+      composeTestRule.onNodeWithText("Office successfully added!").isDisplayed()
+    }
     goBack()
     waitUntilTestTag(ProfileScreenTestTags.PROFILE_IMAGE)
   }
@@ -448,6 +450,9 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performTextInput(vetCode)
     composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.ADD_CODE_BUTTON).performClick()
+    composeTestRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
+      composeTestRule.onNodeWithText("You successfully joined an office").isDisplayed()
+    }
 
     goBack()
   }
