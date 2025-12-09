@@ -597,7 +597,7 @@ fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModel, modifier: Mo
           modifier =
               modifier
                   .fillMaxWidth()
-                  .padding(top = 16.dp, bottom = 16.dp)
+                  .padding(vertical = 16.dp)
                   .testTag(ReportViewScreenTestTags.PHOTO_RENDER),
           contentScale = ContentScale.Fit)
     }
