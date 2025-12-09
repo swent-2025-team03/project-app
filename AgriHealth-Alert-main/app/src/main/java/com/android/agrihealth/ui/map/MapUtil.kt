@@ -180,7 +180,7 @@ fun ShowReportInfo(
 ) {
   if (report == null) return
 
-  Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.REPORT_INFO_BOX)) {
+  Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.INFO_BOX)) {
     InfoElement(
         Modifier.align(Alignment.BottomCenter),
         report.title,
@@ -214,7 +214,7 @@ fun AlertAreas(alerts: List<Alert>) {
 fun ShowAlertInfo(alerts: List<Alert>, onClick: (alert: Alert) -> Unit) {
   if (alerts.isEmpty()) return
 
-  Box(modifier = Modifier.fillMaxSize()) {
+  Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.INFO_BOX)) {
     LazyColumn(
         modifier =
             Modifier.background(color = MaterialTheme.colorScheme.surface)
@@ -226,8 +226,8 @@ fun ShowAlertInfo(alerts: List<Alert>, onClick: (alert: Alert) -> Unit) {
                 description = alert.description,
                 buttonDesc = "View alert",
                 onButtonClick = { onClick(alert) },
-                titleTestTag = "",
-                descTestTag = "")
+                titleTestTag = MapScreenTestTags.getTestTagForAlertTitle(alert.id),
+                descTestTag = MapScreenTestTags.getTestTagForAlertDesc(alert.id))
 
             if (alerts.last() != alert)
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3F))
@@ -278,7 +278,7 @@ fun InfoElement(
               modifier =
                   Modifier.align(Alignment.CenterVertically)
                       .size(32.dp)
-                      .testTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON),
+                      .testTag(MapScreenTestTags.INFO_NAVIGATION_BUTTON),
               colors =
                   IconButtonColors(
                       MaterialTheme.colorScheme.primaryContainer,
@@ -301,26 +301,38 @@ fun InfoElement(
 /** Displays a switch to show/hide reports on the map */
 @Composable
 fun ReportVisibilitySwitch(shouldDisplay: Boolean, onChange: (Boolean) -> Unit) {
-  VisibilitySwitch("Show reports", shouldDisplay, onChange)
+  VisibilitySwitch(
+      "Show reports", shouldDisplay, onChange, MapScreenTestTags.REPORT_VISIBILITY_SWITCH)
 }
 
 /** Displays a switch to show/hide alerts on the map */
 @Composable
 fun AlertVisibilitySwitch(shouldDisplay: Boolean, onChange: (Boolean) -> Unit) {
-  VisibilitySwitch("Show alerts", shouldDisplay, onChange)
+  VisibilitySwitch(
+      "Show alerts", shouldDisplay, onChange, MapScreenTestTags.ALERT_VISIBILITY_SWITCH)
 }
 
 @Composable
-private fun VisibilitySwitch(text: String, shouldDisplay: Boolean, onChange: (Boolean) -> Unit) {
+private fun VisibilitySwitch(
+    text: String,
+    shouldDisplay: Boolean,
+    onChange: (Boolean) -> Unit,
+    tag: String = ""
+) {
   Row(modifier = Modifier.padding(horizontal = 8.dp)) {
     Text(
         text,
         Modifier.align(Alignment.CenterVertically),
         color = MaterialTheme.colorScheme.onSurface)
     Spacer(Modifier.size(8.dp))
-    Switch(checked = shouldDisplay, onCheckedChange = { enabled -> onChange(enabled) })
+    Switch(
+        checked = shouldDisplay,
+        onCheckedChange = { enabled -> onChange(enabled) },
+        modifier = Modifier.testTag(tag))
   }
 }
+
+const val AllFilterText = "All reports"
 
 /** Displays a dropdown menu to filter reports based on their status */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -427,7 +439,7 @@ private fun createCircleMarker(
  * markers
  */
 @Composable
-fun MapTestMarkers(reports: List<SpiderifiedReport>, onClick: (Report) -> Unit) {
+fun MapTestReportMarkers(reports: List<SpiderifiedReport>, onClick: (Report) -> Unit) {
   reports.forEach {
     val report = it.report
 
@@ -439,5 +451,24 @@ fun MapTestMarkers(reports: List<SpiderifiedReport>, onClick: (Report) -> Unit) 
                 .size(1.dp)) {
           Text(":)") // Box doesn't exist if it's not visible
     }
+  }
+}
+
+/**
+ * Displays debug boxes to act as clickable circles during instrumented tests. This is because
+ * Google maps circles cannot be accessed during testing. onClick should have the same behavior as
+ * the real circles
+ */
+@Composable
+fun MapTestAlertCircles(alerts: List<Alert>, onClick: (Alert) -> Unit) {
+  alerts.forEach { alert ->
+    Box(
+        modifier =
+            Modifier.testTag(MapScreenTestTags.getTestTagForAlertZone(alert.id))
+                .clickable { onClick(alert) }
+                .alpha(0f)
+                .size(1.dp)) {
+          Text(":)")
+        }
   }
 }

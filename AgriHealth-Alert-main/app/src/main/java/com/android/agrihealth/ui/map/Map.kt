@@ -38,26 +38,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.rememberCameraPositionState
 
-object MapScreenTestTags {
-  const val GOOGLE_MAP_SCREEN = "googleMapScreen"
-  const val TOP_BAR_MAP_TITLE = "topBarMapTitle"
-  const val REPORT_INFO_BOX = "reportInfoBox"
-  const val REPORT_FILTER_MENU = "reportFilterDropdownMenu"
-  const val REPORT_NAVIGATION_BUTTON = "reportNavigationButton"
-  const val REFRESH_BUTTON = "mapRefreshButton"
-
-  // from bootcamp map
-  fun getTestTagForReportMarker(reportId: String): String = "reportMarker_$reportId"
-
-  fun getTestTagForReportTitle(reportId: String): String = "reportTitle_$reportId"
-
-  fun getTestTagForReportDesc(reportId: String): String = "reportDescription_$reportId"
-
-  fun getTestTagForFilter(filter: String?): String = "filter_$filter"
-}
-
-const val AllFilterText = "All reports"
-
 @Composable
 fun MapScreen(
     mapViewModel: MapViewModel = viewModel(),
@@ -145,7 +125,11 @@ fun MapScreen(
                 AlertAreas(alerts = alertsToDisplay)
               }
 
-          MapTestMarkers(reportsToDisplay) { it.toggleSelect() }
+          MapTestReportMarkers(reportsToDisplay) { it.toggleSelect() }
+          MapTestAlertCircles(alertsToDisplay) {
+            val newList = listOf(it)
+            selectedAlerts = if (newList == selectedAlerts) listOf() else newList
+          }
 
           // Control what to display
           Column(
@@ -154,7 +138,8 @@ fun MapScreen(
                       .align(Alignment.TopEnd)
                       .background(
                           color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6F),
-                          shape = RoundedCornerShape(16.dp)),
+                          shape = RoundedCornerShape(16.dp))
+                      .testTag(MapScreenTestTags.VISIBILITY_MENU),
               horizontalAlignment = Alignment.End) {
                 val showReports = selectedFilter != "None"
 
@@ -204,6 +189,33 @@ fun MapScreen(
           }
         }
       })
+}
+
+object MapScreenTestTags {
+  const val GOOGLE_MAP_SCREEN = "googleMapScreen"
+  const val TOP_BAR_MAP_TITLE = "topBarMapTitle"
+  const val INFO_BOX = "infoBox"
+  const val REPORT_FILTER_MENU = "reportFilterDropdownMenu"
+  const val INFO_NAVIGATION_BUTTON = "navigationButton"
+  const val REFRESH_BUTTON = "mapRefreshButton"
+  const val VISIBILITY_MENU = "mapDisplayVisibilityMenu"
+  const val REPORT_VISIBILITY_SWITCH = "reportVisibilitySwitch"
+  const val ALERT_VISIBILITY_SWITCH = "alertVisibilitySwitch"
+
+  // from bootcamp map
+  fun getTestTagForReportMarker(reportId: String): String = "reportMarker_$reportId"
+
+  fun getTestTagForReportTitle(reportId: String): String = "reportTitle_$reportId"
+
+  fun getTestTagForReportDesc(reportId: String): String = "reportDescription_$reportId"
+
+  fun getTestTagForAlertZone(alertId: String): String = "alertZone_$alertId"
+
+  fun getTestTagForAlertTitle(alertId: String): String = "alertTitle_$alertId"
+
+  fun getTestTagForAlertDesc(alertId: String): String = "alertDescription_$alertId"
+
+  fun getTestTagForFilter(filter: String?): String = "filter_$filter"
 }
 
 // Preview composable functions

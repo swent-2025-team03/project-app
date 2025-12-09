@@ -701,8 +701,8 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun mapClickViewReport() {
-    waitUntilTestTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)
-    composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON).performClick()
+    waitUntilTestTag(MapScreenTestTags.INFO_NAVIGATION_BUTTON)
+    composeTestRule.onNodeWithTag(MapScreenTestTags.INFO_NAVIGATION_BUTTON).performClick()
   }
 
   private fun goToProfileFromOverview() {
