@@ -692,10 +692,8 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun signOutFromScreen() {
-    composeTestRule
-        .onNodeWithTag(OverviewScreenTestTags.LOGOUT_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
+    waitUntilTestTag(OverviewScreenTestTags.LOGOUT_BUTTON)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.LOGOUT_BUTTON).performClick()
 
     waitUntilTestTag(SignInScreenTestTags.SCREEN)
   }
