@@ -81,9 +81,7 @@ fun MapScreen(
   LaunchedEffect(Unit) {
     mapViewModel.events.collectLatest { event: MapEvent ->
       when (event) {
-        is MapEvent.FetchingLocation ->
-            snackbarHostState.showSnackbar("Loading position…", withDismissAction = false)
-        is MapEvent.LocationLoaded -> snackbarHostState.currentSnackbarData?.dismiss()
+        MapEvent.LoadingLocation -> snackbarHostState.showSnackbar("Loading location…")
       }
     }
   }

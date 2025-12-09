@@ -18,6 +18,7 @@ import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
 import com.google.android.gms.maps.model.LatLng
 import java.util.Locale
+import kotlin.collections.firstOrNull
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,17 +33,14 @@ import kotlinx.coroutines.withTimeoutOrNull
 
 data class MapUIState(
     val reports: List<SpiderifiedReport> = emptyList(),
-    val locationPermission: Boolean = false,
-    val geocodedAddress: String? = null,
+    val geocodedAddress: String? = null
 )
 
-sealed class MapEvent {
-  object FetchingLocation : MapEvent()
-
-  object LocationLoaded : MapEvent()
-}
-
 data class SpiderifiedReport(val report: Report, val position: LatLng, val center: LatLng)
+
+sealed class MapEvent {
+  object LoadingLocation : MapEvent()
+}
 
 class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
@@ -130,28 +128,32 @@ class MapViewModel(
     if (location != null) {
       _startingLocation.value = location
       _zoom.value = 15f
-      return
-    }
+    } else {
+      viewModelScope.launch {
+        _zoom.value = 12f
 
-    viewModelScope.launch {
-      _zoom.value = 12f
+        _events.emit(MapEvent.LoadingLocation)
 
-      if (!locationViewModel.hasLocationPermissions()) return@launch
+        if (locationViewModel.hasLocationPermissions()) {
+          if (useCurrentLocation) {
+            locationViewModel.getCurrentLocation()
+          } else {
+            locationViewModel.getLastKnownLocation()
+          }
 
-      _events.emit(MapEvent.FetchingLocation)
+          val gpsLocation =
+              withTimeoutOrNull(3_000) {
+                locationViewModel.locationState.firstOrNull { it != null }
+              }
 
-      if (useCurrentLocation) {
-        locationViewModel.getCurrentLocation()
-      } else {
-        locationViewModel.getLastKnownLocation()
+          val fromUserAddress = getLocationFromUserAddress()
+          val startLocation = gpsLocation ?: fromUserAddress
+
+          if (startLocation != null) {
+            _startingLocation.value = startLocation
+          }
+        }
       }
-
-      val gpsLocation =
-          withTimeoutOrNull(3000) { locationViewModel.locationState.firstOrNull { it != null } }
-
-      gpsLocation?.let { _startingLocation.value = it }
-
-      _events.emit(MapEvent.LocationLoaded)
     }
   }
 

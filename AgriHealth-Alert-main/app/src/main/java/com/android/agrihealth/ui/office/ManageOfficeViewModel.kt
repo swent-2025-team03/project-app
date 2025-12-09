@@ -45,8 +45,6 @@ class ManageOfficeViewModel(
                   editableName = office?.name ?: "",
                   editableDescription = office?.description ?: "",
                   editableAddress = office?.address?.toString() ?: "")
-        } else {
-          _uiState.value = _uiState.value.copy(office = null)
         }
       }
     }
