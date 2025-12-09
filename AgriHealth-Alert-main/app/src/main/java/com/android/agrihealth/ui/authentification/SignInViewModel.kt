@@ -123,8 +123,10 @@ class SignInViewModel(
             val signInRequest = signInRequest(signInOptions)
 
             try {
+              // Launch Credential Manager UI safely
               val credential = getCredential(context, signInRequest, credentialManager)
 
+              // Pass the credential to your repository
               authRepository.signInWithGoogle(credential).fold({ uid ->
                 if (userRepository.getUserFromId(uid).isFailure)
                     _uiState.update { it.copy(uid = uid, isNewGoogle = true) }
@@ -133,8 +135,10 @@ class SignInViewModel(
                 _uiState.update { it.copy(uid = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
               }
             } catch (e: GetCredentialCancellationException) {
+              // User cancelled the sign-in flow
               _uiState.update { it.copy(uid = null) }
             } catch (e: Exception) {
+              // Unexpected errors
               _uiState.update { it.copy(uid = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
             }
           }

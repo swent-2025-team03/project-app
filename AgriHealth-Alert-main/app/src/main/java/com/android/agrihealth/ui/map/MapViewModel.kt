@@ -143,7 +143,6 @@ class MapViewModel(
           } else {
             locationViewModel.getLastKnownLocation()
           }
-
           val gpsLocation =
               withTimeoutOrNull(3_000) {
                 locationViewModel.locationState.firstOrNull { it != null }
