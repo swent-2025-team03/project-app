@@ -798,14 +798,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
         .performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
-    //        composeTestRule
-    //            .onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN)
-    //            .assertIsDisplayed()
-    //            .performClick()
-    //        composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-    //            composeTestRule.onNodeWithText(officeName).isDisplayed()
-    //        }
-    //        composeTestRule.onNodeWithText(officeName).performClick()
 
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
