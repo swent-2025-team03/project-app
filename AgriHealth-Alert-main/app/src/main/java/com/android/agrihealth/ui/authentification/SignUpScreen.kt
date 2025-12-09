@@ -86,7 +86,7 @@ fun SignUpScreen(
                   }
             })
       }) { padding ->
-        LoadingOverlay() {
+        LoadingOverlay(isLoading = signUpUIState.isLoading) {
           Column(
               Modifier.background(MaterialTheme.colorScheme.surface)
                   .fillMaxSize()
