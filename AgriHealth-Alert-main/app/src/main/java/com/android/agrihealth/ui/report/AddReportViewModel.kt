@@ -11,7 +11,7 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
-import com.android.agrihealth.ui.loading.withLoadingState // <-- ADDED
+import com.android.agrihealth.ui.loading.withLoadingState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,7 +26,7 @@ data class AddReportUiState(
     val photoUri: Uri? = null,
     val questionForms: List<QuestionForm> = emptyList(),
     val uploadedImagePath: String? = null,
-    val isLoading: Boolean = false, // <-- ADDED
+    val isLoading: Boolean = false,
 )
 
 /** Represents the result of creating a report */
@@ -124,7 +124,6 @@ class AddReportViewModel(
 
     var uploadedPath = uiState.uploadedImagePath
 
-    // Only addition: wrap the whole long-running block
     var result: CreateReportResult =
         CreateReportResult.UploadError(IllegalStateException("Unknown error"))
 
