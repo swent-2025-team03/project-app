@@ -146,8 +146,12 @@ fun AgriHealthApp(
   LaunchedEffect(currentUser.address) { pickedLocation.value = currentUser.address }
 
   val startDestination = remember {
-    if (Firebase.auth.currentUser == null) Screen.Auth.name
-    else if (currentUser == defaultUser) Screen.RoleSelection.name else Screen.Overview.name
+    when {
+      Firebase.auth.currentUser == null -> Screen.Auth.name
+      !(Firebase.auth.currentUser?.isEmailVerified ?: false) -> Screen.EmailVerify.name
+      currentUser == defaultUser -> Screen.RoleSelection.name
+      else -> Screen.Overview.name
+    }
   }
 
   NavHost(navController = navController, startDestination = startDestination) {
@@ -181,14 +185,14 @@ fun AgriHealthApp(
             onButtonPressed = { navigationActions.navigateTo(Screen.EditProfile) },
             userViewModel = userViewModel)
       }
-      navigation(startDestination = Screen.EmailVerify.route, route = Screen.EmailVerify.name) {
-        composable(Screen.EmailVerify.route) {
-          VerifyEmailScreen(
-              credentialManager = credentialManager,
-              onBack = { navigationActions.goBack() },
-              onVerified = { navigationActions.navigateTo(Screen.EditProfile) },
-              userViewModel = userViewModel)
-        }
+    }
+    navigation(startDestination = Screen.EmailVerify.route, route = Screen.EmailVerify.name) {
+      composable(Screen.EmailVerify.route) {
+        VerifyEmailScreen(
+            credentialManager = credentialManager,
+            onBack = { navigationActions.navigateToAuthAndClear() },
+            onVerified = { navigationActions.navigateTo(Screen.EditProfile) },
+            userViewModel = userViewModel)
       }
     }
 
