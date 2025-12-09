@@ -3,13 +3,13 @@ package com.android.agrihealth.ui.report
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.agrihealth.data.model.authentification.UserRepository
-import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.device.notifications.Notification
 import com.android.agrihealth.data.model.device.notifications.NotificationHandlerFirebase
 import com.android.agrihealth.data.model.images.ImageUIState
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.office.OfficeRepository
+import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.report.HealthQuestionFactory
 import com.android.agrihealth.data.model.report.QuestionForm
 import com.android.agrihealth.data.model.report.Report
@@ -59,7 +59,7 @@ sealed class CreateReportResult {
 class AddReportViewModel(
     private val userId: String,
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
-    private val userRepository: UserRepository = UserRepositoryProvider.repository,
+    private val officeRepository: OfficeRepository = OfficeRepositoryProvider.get(),
     private val imageViewModel: ImageViewModel = ImageViewModel(),
 ) : ViewModel(), AddReportViewModelContract {
   private val _uiState = MutableStateFlow(AddReportUiState())
@@ -168,7 +168,7 @@ class AddReportViewModel(
     viewModelScope.launch { reportRepository.addReport(newReport) }
 
     // Send a notification
-    val vetIds = userRepository.getVetsInOffice(newReport.officeId)
+    val vetIds = officeRepository.getVetsInOffice(newReport.officeId)
     val description = "A new report: '${newReport.title}' was just created by a farmer"
     vetIds.forEach { vetId ->
       val notification = Notification.NewReport(destinationUid = vetId, description = description)

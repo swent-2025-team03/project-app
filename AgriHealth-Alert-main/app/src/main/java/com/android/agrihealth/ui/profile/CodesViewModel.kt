@@ -2,8 +2,6 @@ package com.android.agrihealth.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.agrihealth.data.model.authentification.UserRepository
-import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.connection.ConnectionRepository
 import com.android.agrihealth.data.model.device.notifications.Notification
 import com.android.agrihealth.data.model.device.notifications.NotificationHandlerFirebase
@@ -21,8 +19,7 @@ import kotlinx.coroutines.launch
 class CodesViewModel(
     private val userViewModel: UserViewModelContract = UserViewModel(),
     private val connectionRepository: ConnectionRepository,
-    private val officeRepository: OfficeRepository = OfficeRepositoryProvider.get(),
-    private val userRepository: UserRepository = UserRepositoryProvider.repository
+    private val officeRepository: OfficeRepository = OfficeRepositoryProvider.get()
 ) : ViewModel() {
 
   private val _generatedCode = MutableStateFlow<String?>(null)
@@ -76,11 +73,11 @@ class CodesViewModel(
                 userViewModel.updateUser(updatedFarmer)
 
                 // Send a notification
-                val destinationUids = userRepository.getVetsInOffice(officeId)
+                val destinationUids = officeRepository.getVetsInOffice(officeId)
                 val description = "A new farmer: '${userName}' just got connected to your office!"
-                destinationUids.forEach { Uid ->
+                destinationUids.forEach { uid ->
                   val notification =
-                      Notification.ConnectOffice(destinationUid = Uid, description = description)
+                      Notification.ConnectOffice(destinationUid = uid, description = description)
                   val messagingService = NotificationHandlerFirebase()
                   messagingService.uploadNotification(notification)
                 }
@@ -100,11 +97,11 @@ class CodesViewModel(
                   officeRepository.updateOffice(updatedOffice)
 
                   // Send a notification
-                  val destinationUids = userRepository.getVetsInOffice(officeId)
+                  val destinationUids = officeRepository.getVetsInOffice(officeId)
                   val description = "A new vet: '${userName}' just joined your office!"
-                  destinationUids.forEach { Uid ->
+                  destinationUids.forEach { uid ->
                     val notification =
-                        Notification.JoinOffice(destinationUid = Uid, description = description)
+                        Notification.JoinOffice(destinationUid = uid, description = description)
                     val messagingService = NotificationHandlerFirebase()
                     messagingService.uploadNotification(notification)
                   }

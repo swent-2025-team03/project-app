@@ -94,7 +94,7 @@ class NotificationHandlerFirebase(
     val (title, body, channelId) =
         when (notification) {
           is NewReport -> Triple("New Report Created", notification.description, channelNewReport)
-          is VetAnswer -> Triple("A Report Updated", notification.description, channelVetAnswer)
+          is VetAnswer -> Triple("Report Updated", notification.description, channelVetAnswer)
           is JoinOffice ->
               Triple("New Vet Joined Office", notification.description, channelJoinOffice)
           is ConnectOffice ->
@@ -150,28 +150,7 @@ class NotificationHandlerFirebase(
 // Serialization and Deserialization
 
 fun Notification.toDataMap(): Map<String, String> =
-    when (this) {
-      is NewReport ->
-          mapOf(
-              "type" to type.toName(),
-              "destinationUid" to destinationUid,
-              "description" to description)
-      is VetAnswer ->
-          mapOf(
-              "type" to type.toName(),
-              "destinationUid" to destinationUid,
-              "description" to description)
-      is JoinOffice ->
-          mapOf(
-              "type" to type.toName(),
-              "destinationUid" to destinationUid,
-              "description" to description)
-      is ConnectOffice ->
-          mapOf(
-              "type" to type.toName(),
-              "destinationUid" to destinationUid,
-              "description" to description)
-    }
+    mapOf("type" to type.toName(), "destinationUid" to destinationUid, "description" to description)
 
 fun Map<String, String>.toNotification(): Notification? {
   val type = NotificationType.fromName(this["type"] ?: return null)

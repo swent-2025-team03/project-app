@@ -1,6 +1,5 @@
 package com.android.agrihealth.data.model.authentification
 
-import android.util.Log
 import com.android.agrihealth.data.model.location.locationFromMap
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
@@ -164,24 +163,5 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     }
 
     return changes
-  }
-
-  override suspend fun getVetsInOffice(officeId: String): List<String> {
-    return try {
-      val snapshot = db.collection("offices").document(officeId).get().await()
-
-      if (!snapshot.exists()) {
-        return emptyList()
-      }
-
-      val data = snapshot.data ?: return emptyList()
-
-      val vets = (data["vets"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
-
-      vets
-    } catch (e: Exception) {
-      Log.e("UserRepository", "Error fetching vets: ${e.message}")
-      emptyList()
-    }
   }
 }
