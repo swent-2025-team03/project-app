@@ -180,7 +180,6 @@ fun AddReportScreen(
 
   LaunchedEffect(Unit) { addReportViewModel.setOffice(selectedOption) }
 
-  // Wrap the screen content with LoadingOverlay so the overlay is shown when isLoading=true
   LoadingOverlay(isLoading = uiState.isLoading) {
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },

@@ -29,29 +29,14 @@ data class AddReportUiState(
     val isLoading: Boolean = false,
 )
 
-/** Represents the result of creating a report */
 sealed class CreateReportResult {
-  /** The report has successfully been created */
   object Success : CreateReportResult()
 
-  /** There is a validation error. For example a required field is missing a value */
   object ValidationError : CreateReportResult()
 
-  /**
-   * Uploading the report to the repository failed. Or uploading the photo to the image repository
-   * failed
-   */
   data class UploadError(val e: Throwable) : CreateReportResult()
 }
 
-/**
- * The view model associated to the report creation screen.
- *
- * @param userId The ID of the user viewing this screen
- * @param reportRepository The repository containing the reports
- * @param imageViewModel The view model used to handle uploading/downloading photos
- * @see AddReportScreen
- */
 class AddReportViewModel(
     private val userId: String,
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
@@ -116,67 +101,60 @@ class AddReportViewModel(
       return CreateReportResult.ValidationError
     }
 
-    val allQuestionsAnswered = uiState.questionForms.all { it.isValid() }
-    if (!allQuestionsAnswered) {
-      return CreateReportResult.ValidationError
-    }
-
     var uploadedPath = uiState.uploadedImagePath
 
-    // Wrap the long running upload / repository calls so uiState.isLoading is toggled
     var result: CreateReportResult =
         CreateReportResult.UploadError(IllegalStateException("Unknown error"))
-    _uiState.withLoadingState(
-        applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
-          // Photo upload (if a photo has been chosen)
-          if (uiState.photoUri != null) {
-            imageViewModel.upload(uiState.photoUri)
 
-            val resultState =
-                imageViewModel.uiState.first {
-                  it is ImageUIState.UploadSuccess || it is ImageUIState.Error
-                }
+    _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
+      if (uiState.photoUri != null) {
+        imageViewModel.upload(uiState.photoUri)
 
-            when (resultState) {
-              is ImageUIState.UploadSuccess -> {
-                uploadedPath = resultState.path
-                _uiState.value = _uiState.value.copy(uploadedImagePath = resultState.path)
-              }
-              is ImageUIState.Error -> {
-                result = CreateReportResult.UploadError(resultState.e)
-                return@withLoadingState
-              }
-              else -> {
-                result =
-                    CreateReportResult.UploadError(
-                        IllegalStateException(AddReportFeedbackTexts.UNKNOWN))
-                return@withLoadingState
-              }
+        val resultState =
+            imageViewModel.uiState.first {
+              it is ImageUIState.UploadSuccess || it is ImageUIState.Error
             }
+
+        when (resultState) {
+          is ImageUIState.UploadSuccess -> {
+            uploadedPath = resultState.path
+            _uiState.value = _uiState.value.copy(uploadedImagePath = resultState.path)
           }
-
-          val newReport =
-              Report(
-                  id = reportRepository.getNewReportId(),
-                  title = uiState.title,
-                  description = uiState.description,
-                  questionForms = uiState.questionForms,
-                  photoURL = uploadedPath,
-                  farmerId = userId,
-                  officeId = uiState.chosenOffice,
-                  status = ReportStatus.PENDING,
-                  answer = null,
-                  collected = uiState.collected,
-                  location = uiState.address)
-
-          try {
-            reportRepository.addReport(newReport)
-            clearInputs()
-            result = CreateReportResult.Success
-          } catch (e: Exception) {
-            result = CreateReportResult.UploadError(e)
+          is ImageUIState.Error -> {
+            result = CreateReportResult.UploadError(resultState.e)
+            return@withLoadingState
+          }
+          else -> {
+            result =
+                CreateReportResult.UploadError(
+                    IllegalStateException(AddReportFeedbackTexts.UNKNOWN))
+            return@withLoadingState
           }
         }
+      }
+
+      val newReport =
+          Report(
+              id = reportRepository.getNewReportId(),
+              title = uiState.title,
+              description = uiState.description,
+              questionForms = uiState.questionForms,
+              photoURL = uploadedPath,
+              farmerId = userId,
+              officeId = uiState.chosenOffice,
+              status = ReportStatus.PENDING,
+              answer = null,
+              collected = uiState.collected,
+              location = uiState.address)
+
+      try {
+        reportRepository.addReport(newReport)
+        clearInputs()
+        result = CreateReportResult.Success
+      } catch (e: Exception) {
+        result = CreateReportResult.UploadError(e)
+      }
+    }
 
     return result
   }

@@ -43,14 +43,11 @@ class ChangePasswordViewModel(
   }
 
   override fun changePassword() {
-    var state = _uiState.value.copy(newWeak = false, oldWrong = false, success = false)
+    _uiState.value = _uiState.value.copy(newWeak = false, oldWrong = false)
 
-    if (state.isWeak()) {
-      _uiState.value = state.copy(newWeak = true)
-      return
+    if (_uiState.value.isWeak()) {
+      _uiState.value = _uiState.value.copy(newWeak = true)
     }
-
-    _uiState.value = state
 
     viewModelScope.launch {
       _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
