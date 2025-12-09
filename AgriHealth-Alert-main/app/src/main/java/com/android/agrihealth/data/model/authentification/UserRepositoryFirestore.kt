@@ -171,16 +171,13 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
       val snapshot = db.collection("offices").document(officeId).get().await()
 
       if (!snapshot.exists()) {
-        Log.w("UserRepository", "Office $officeId not found")
         return emptyList()
       }
 
       val data = snapshot.data ?: return emptyList()
-      Log.d("UserRepository", "Office data = $data")
 
       val vets = (data["vets"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
 
-      Log.d("UserRepository", "Vets: $vets")
       vets
     } catch (e: Exception) {
       Log.e("UserRepository", "Error fetching vets: ${e.message}")

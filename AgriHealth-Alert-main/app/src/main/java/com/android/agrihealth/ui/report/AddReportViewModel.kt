@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.report
 
-import android.util.Log
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -166,18 +165,16 @@ class AddReportViewModel(
             collected = uiState.collected,
             location = uiState.address)
 
-      viewModelScope.launch { reportRepository.addReport(newReport) }
+    viewModelScope.launch { reportRepository.addReport(newReport) }
 
-      // Send a notification
-      val vetIds = userRepository.getVetsInOffice(newReport.officeId)
-      val description = "A new report: '${newReport.title}' was just created by a farmer"
-      vetIds.forEach { vetId ->
-          val notification = Notification.NewReport(destinationUid = vetId, description = description)
-          val messagingService = NotificationHandlerFirebase()
-          messagingService.uploadNotification(notification) { success ->
-              Log.d("Notification", "NewReport sent to $vetId = $success")
-          }
-      }
+    // Send a notification
+    val vetIds = userRepository.getVetsInOffice(newReport.officeId)
+    val description = "A new report: '${newReport.title}' was just created by a farmer"
+    vetIds.forEach { vetId ->
+      val notification = Notification.NewReport(destinationUid = vetId, description = description)
+      val messagingService = NotificationHandlerFirebase()
+      messagingService.uploadNotification(notification)
+    }
 
     try {
       reportRepository.addReport(newReport)

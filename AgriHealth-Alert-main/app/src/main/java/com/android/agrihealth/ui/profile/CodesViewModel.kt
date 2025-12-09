@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.profile
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.authentification.UserRepository
@@ -83,9 +82,7 @@ class CodesViewModel(
                   val notification =
                       Notification.ConnectOffice(destinationUid = Uid, description = description)
                   val messagingService = NotificationHandlerFirebase()
-                  messagingService.uploadNotification(notification) { success ->
-                    Log.d("Notification", "ConnectOffice sent to $Uid = $success")
-                  }
+                  messagingService.uploadNotification(notification)
                 }
 
                 _claimMessage.value = "Office successfully added!"
@@ -109,9 +106,7 @@ class CodesViewModel(
                     val notification =
                         Notification.JoinOffice(destinationUid = Uid, description = description)
                     val messagingService = NotificationHandlerFirebase()
-                    messagingService.uploadNotification(notification) { success ->
-                      Log.d("Notification", "JoinOffice sent to $Uid = $success")
-                    }
+                    messagingService.uploadNotification(notification)
                   }
 
                   _claimMessage.value = "You successfully joined an office"
