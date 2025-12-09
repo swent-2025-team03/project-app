@@ -113,9 +113,7 @@ class ReportViewViewModel(
   fun onSave() {
     viewModelScope.launch {
       _uiState.withLoadingState(
-          applyLoading = { state, loading ->
-            state.copy(isLoading = loading)
-          }) { // <-- ONLY ADD WRAPPER
+          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
             try {
               val updatedReport =
                   _uiState.value.report.copy(

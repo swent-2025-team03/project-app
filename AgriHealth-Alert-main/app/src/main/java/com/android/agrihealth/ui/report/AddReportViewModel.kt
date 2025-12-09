@@ -11,7 +11,7 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
-import com.android.agrihealth.ui.loading.withLoadingState
+import com.android.agrihealth.ui.loading.withLoadingState // <-- ADDED
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,18 +26,32 @@ data class AddReportUiState(
     val photoUri: Uri? = null,
     val questionForms: List<QuestionForm> = emptyList(),
     val uploadedImagePath: String? = null,
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = false, // <-- ADDED
 )
 
 /** Represents the result of creating a report */
 sealed class CreateReportResult {
+  /** The report has successfully been created */
   object Success : CreateReportResult()
 
+  /** There is a validation error. For example a required field is missing a value */
   object ValidationError : CreateReportResult()
 
+  /**
+   * Uploading the report to the repository failed. Or uploading the photo to the image repository
+   * failed
+   */
   data class UploadError(val e: Throwable) : CreateReportResult()
 }
 
+/**
+ * The view model associated to the report creation screen.
+ *
+ * @param userId The ID of the user viewing this screen
+ * @param reportRepository The repository containing the reports
+ * @param imageViewModel The view model used to handle uploading/downloading photos
+ * @see AddReportScreen
+ */
 class AddReportViewModel(
     private val userId: String,
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
@@ -110,10 +124,12 @@ class AddReportViewModel(
 
     var uploadedPath = uiState.uploadedImagePath
 
+    // Only addition: wrap the whole long-running block
     var result: CreateReportResult =
         CreateReportResult.UploadError(IllegalStateException("Unknown error"))
 
     _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
+
       // Photo upload (if a photo has been chosen)
       if (uiState.photoUri != null) {
         imageViewModel.upload(uiState.photoUri)
