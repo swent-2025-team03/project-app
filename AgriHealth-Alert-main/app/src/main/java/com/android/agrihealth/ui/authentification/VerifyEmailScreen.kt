@@ -78,56 +78,48 @@ fun VerifyEmailScreen(
   val user = userViewModel.user.collectAsState()
 
   Scaffold(
-    topBar = {
-      // Top bar with back arrow and title/status
-      TopAppBar(
-        title = {},
-        navigationIcon = {
-          IconButton(
-            onClick = {
-              vm.signOut(credentialManager)
-              onBack.invoke()
-            },
-            modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)
-          ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-          }
-        })
-    }) { padding ->
+      topBar = {
+        // Top bar with back arrow and title/status
+        TopAppBar(
+            title = {},
+            navigationIcon = {
+              IconButton(
+                  onClick = {
+                    vm.signOut(credentialManager)
+                    onBack.invoke()
+                  },
+                  modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                  }
+            })
+      }) { padding ->
         Column(
             modifier =
-              Modifier
-                .padding(padding)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
+                Modifier.padding(padding)
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
-          verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically)
-        ) {
-          Text(
-            text = userGreeting,
-            style = MaterialTheme.typography.headlineLarge,
-            overflow = TextOverflow.Visible,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-              .testTag(VerifyEmailScreenTestTags.WELCOME)
-              .fillMaxWidth()
-          )
-          Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically)) {
+              Text(
+                  text = userGreeting,
+                  style = MaterialTheme.typography.headlineLarge,
+                  overflow = TextOverflow.Visible,
+                  textAlign = TextAlign.Center,
+                  modifier = Modifier.testTag(VerifyEmailScreenTestTags.WELCOME).fillMaxWidth())
+              Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "email was successfully sent to ${user.value.email}",
                     style = MaterialTheme.typography.bodyLarge,
-                  textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center)
                 Button(
                     onClick = { vm.sendVerifyEmail() },
-                  modifier = Modifier.testTag(VerifyEmailScreenTestTags.FARMER)
-                ) {
-                  Text("Send new email")
-                }
+                    modifier = Modifier.testTag(VerifyEmailScreenTestTags.FARMER)) {
+                      Text("Send new email")
+                    }
                 Text("Didn't receive the email?", style = MaterialTheme.typography.bodyMedium)
-          }
-        }
-  }
+              }
+            }
+      }
 }
 
 @Preview
@@ -135,8 +127,7 @@ fun VerifyEmailScreen(
 fun VerifyEmailScreenPreview() {
   AgriHealthAppTheme {
     VerifyEmailScreen(
-      vm = VerifyEmailViewModel(FakeAuthRepository()),
-      userViewModel = FakeUserViewModel(defaultUser.copy(email = "ma@email.coom"))
-    )
+        vm = VerifyEmailViewModel(FakeAuthRepository()),
+        userViewModel = FakeUserViewModel(defaultUser.copy(email = "ma@email.coom")))
   }
 }

@@ -88,9 +88,7 @@ class MainActivity : ComponentActivity() {
       AgriHealthAppTheme {
         // A surface container using the 'background' color from the theme
         Surface(
-          modifier = Modifier
-            .fillMaxSize()
-            .semantics { testTag = C.Tag.main_screen_container },
+            modifier = Modifier.fillMaxSize().semantics { testTag = C.Tag.main_screen_container },
             color = MaterialTheme.colorScheme.background) {
               AgriHealthApp()
             }
@@ -172,7 +170,7 @@ fun AgriHealthApp(
         SignUpScreen(
             userViewModel = userViewModel,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-          onSignedUp = { navigationActions.navigateTo(Screen.EmailVerify) })
+            onSignedUp = { navigationActions.navigateTo(Screen.EmailVerify) })
       }
     }
     navigation(startDestination = Screen.RoleSelection.route, route = Screen.RoleSelection.name) {
@@ -186,11 +184,10 @@ fun AgriHealthApp(
       navigation(startDestination = Screen.EmailVerify.route, route = Screen.EmailVerify.name) {
         composable(Screen.EmailVerify.route) {
           VerifyEmailScreen(
-            credentialManager = credentialManager,
-            onBack = { navigationActions.goBack() },
-            onVerified = { navigationActions.navigateTo(Screen.EditProfile) },
-            userViewModel = userViewModel
-          )
+              credentialManager = credentialManager,
+              onBack = { navigationActions.goBack() },
+              onVerified = { navigationActions.navigateTo(Screen.EditProfile) },
+              userViewModel = userViewModel)
         }
       }
     }
