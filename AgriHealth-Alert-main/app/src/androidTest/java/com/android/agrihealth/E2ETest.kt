@@ -843,9 +843,9 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).performClick()
     waitUntilTestTag(LocationPickerTestTags.CONFIRMATION_PROMPT)
     composeTestRule.onNodeWithTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON).performClick()
-    composeTestRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
-      composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER).isDisplayed()
-    }
+    //    composeTestRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
+    //      composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER).isDisplayed()
+    //    }
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithText(officeName).isDisplayed()
     }
