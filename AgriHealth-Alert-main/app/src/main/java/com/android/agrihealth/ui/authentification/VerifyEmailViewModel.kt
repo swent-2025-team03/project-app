@@ -1,7 +1,5 @@
 package com.android.agrihealth.ui.authentification
 
-import androidx.credentials.ClearCredentialStateRequest
-import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.authentification.AuthRepository
@@ -23,13 +21,6 @@ class VerifyEmailViewModel(
 
   fun sendVerifyEmail() {
     viewModelScope.launch { authRepository.sendVerificationEmail().fold({}) {} }
-  }
-
-  fun signOut(credentialManager: CredentialManager) {
-    viewModelScope.launch {
-      authRepository.signOut()
-      credentialManager.clearCredentialState(ClearCredentialStateRequest())
-    }
   }
 
   fun pollingRefresh() {

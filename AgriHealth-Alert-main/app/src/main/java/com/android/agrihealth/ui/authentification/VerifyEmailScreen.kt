@@ -47,8 +47,7 @@ import com.android.agrihealth.testutil.verifyUser
  */
 object VerifyEmailScreenTestTags {
   const val WELCOME = "Welcome"
-  const val FARMER = "FarmerButton"
-  const val VET = "VetButton"
+  const val SEND_EMAIL = "SendEmail"
 }
 
 /**
@@ -86,15 +85,11 @@ fun VerifyEmailScreen(
 
   Scaffold(
       topBar = {
-        // Top bar with back arrow and title/status
         TopAppBar(
             title = {},
             navigationIcon = {
               IconButton(
-                  onClick = {
-                    vm.signOut(credentialManager)
-                    onBack.invoke()
-                  },
+                  onClick = { onBack() },
                   modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                   }
@@ -120,7 +115,7 @@ fun VerifyEmailScreen(
                     textAlign = TextAlign.Center)
                 Button(
                     onClick = { vm.sendVerifyEmail() },
-                    modifier = Modifier.testTag(VerifyEmailScreenTestTags.FARMER)) {
+                    modifier = Modifier.testTag(VerifyEmailScreenTestTags.SEND_EMAIL)) {
                       Text("Send new email")
                     }
                 Text("Didn't receive the email?", style = MaterialTheme.typography.bodyMedium)
