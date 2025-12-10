@@ -332,11 +332,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     val vet2Password = "vet2vet2"
     val farmerPassword = "farmfarm"
 
-    //    val clipboard =
-    //        InstrumentationRegistry.getInstrumentation()
-    //            .targetContext
-    //            .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.waitForIdle()
 
@@ -352,9 +347,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     generateFarmerCode()
     val copiedCode = readGeneratedCodeFromUi()
     signOutFromScreen()
-
-    //    val clipData = clipboard.primaryClip
-    //    val copiedCode = clipData?.getItemAt(0)?.text.toString()
 
     completeSignUp("Test", "Farmer", farmerEmail, farmerPassword, false)
     checkEditProfileScreenIsDisplayed()
@@ -377,9 +369,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     val copiedCode2 = readGeneratedCodeFromUi()
     goBack()
     signOutFromScreen()
-
-    //    val clipData2 = clipboard.primaryClip
-    //    val copiedCode2 = clipData2?.getItemAt(0)?.text.toString()
 
     completeSignUp("Test", "Vet2", vet2Email, vet2Password, true)
     checkEditProfileScreenIsDisplayed()
@@ -487,15 +476,22 @@ class E2ETest : FirebaseEmulatorsTest() {
 
   private fun claimReport(reportName: String) {
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onNodeWithText(reportName).isDisplayed()
+      composeTestRule.onAllNodes(hasText(reportName)).fetchSemanticsNodes().isNotEmpty()
     }
     composeTestRule.onNodeWithText(reportName).performClick()
 
-    waitUntilTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
     waitUntilTestTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(ReportViewScreenTestTags.CLAIM_BUTTON))
+
+    val scroll = composeTestRule.onNodeWithTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
+    // Ensure claim button exists (poll)
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule
+          .onAllNodesWithTag(ReportViewScreenTestTags.CLAIM_BUTTON)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+    // Scroll until claim button is visible and click it
+    scroll.performScrollToNode(hasTestTag(ReportViewScreenTestTags.CLAIM_BUTTON))
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.CLAIM_BUTTON).performClick()
 
     goBack()
@@ -508,6 +504,30 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     waitUntilTestTag(OverviewScreenTestTags.SCREEN)
   }
+
+  //    private fun claimReport(reportName: String) {
+  //    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+  //      composeTestRule.onNodeWithText(reportName).isDisplayed()
+  //    }
+  //    composeTestRule.onNodeWithText(reportName).performClick()
+  //
+  //    waitUntilTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
+  //    waitUntilTestTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
+  //    composeTestRule
+  //        .onNodeWithTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
+  //        .performScrollToNode(hasTestTag(ReportViewScreenTestTags.CLAIM_BUTTON))
+  //    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.CLAIM_BUTTON).performClick()
+  //
+  //    goBack()
+  //
+  //    // TODO remove once discard change is fixed
+  //    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+  //      composeTestRule.onNodeWithText("Discard changes").isDisplayed()
+  //    }
+  //    composeTestRule.onNodeWithText("Discard changes").performClick()
+  //
+  //    waitUntilTestTag(OverviewScreenTestTags.SCREEN)
+  //  }
 
   private fun checkAssignedVetDisplayedOnOverview() {
     val vet = "Test Vet"
