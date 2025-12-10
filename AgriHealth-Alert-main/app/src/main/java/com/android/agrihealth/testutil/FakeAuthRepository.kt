@@ -25,6 +25,10 @@ class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository 
     return Result.failure(IllegalStateException("timeout"))
   }
 
+  override suspend fun sendResetPasswordEmail(email: String): Result<Unit> {
+    return Result.success(Unit)
+  }
+
   override suspend fun deleteAccount(): Result<Unit> {
     if (isOnline) {
       if (currentUser == null) {
