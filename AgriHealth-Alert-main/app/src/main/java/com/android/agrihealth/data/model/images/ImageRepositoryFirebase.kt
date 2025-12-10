@@ -8,9 +8,9 @@ import androidx.exifinterface.media.ExifInterface
 import com.android.agrihealth.data.model.images.ImageRepository.Companion.toBitmap
 import com.android.agrihealth.ui.user.UserViewModel
 import com.google.firebase.storage.FirebaseStorage
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.tasks.await
-import java.io.ByteArrayInputStream
 
 /** Image repository communicating with Firebase Storage to handle images */
 class ImageRepositoryFirebase : ImageRepository {
@@ -95,22 +95,22 @@ class ImageRepositoryFirebase : ImageRepository {
             ?: throw IllegalArgumentException("Could not read file with URI $uri")
     val bytes = inputStream.use { it.readBytes() }
 
-    // Read orientation and physically rotate the bitmap to ensure correct orientation when uploading to Firebase Storage
-    val orientation = ByteArrayInputStream(bytes).use { stream ->
-      val exif = ExifInterface(stream)
-      exif.getAttributeInt(
-        ExifInterface.TAG_ORIENTATION,
-        ExifInterface.ORIENTATION_NORMAL
-      )
-    }
+    // Read orientation and physically rotate the bitmap to ensure correct orientation when
+    // uploading to Firebase Storage
+    val orientation =
+        ByteArrayInputStream(bytes).use { stream ->
+          val exif = ExifInterface(stream)
+          exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+        }
 
     val bitmap = bytes.toBitmap()
-    val rotatedBitmap = when (orientation) {
-      ExifInterface.ORIENTATION_ROTATE_90 -> rotateBitmap(bitmap, 90f)
-      ExifInterface.ORIENTATION_ROTATE_180 -> rotateBitmap(bitmap, 180f)
-      ExifInterface.ORIENTATION_ROTATE_270 -> rotateBitmap(bitmap, 270f)
-      else -> bitmap
-    }
+    val rotatedBitmap =
+        when (orientation) {
+          ExifInterface.ORIENTATION_ROTATE_90 -> rotateBitmap(bitmap, 90f)
+          ExifInterface.ORIENTATION_ROTATE_180 -> rotateBitmap(bitmap, 180f)
+          ExifInterface.ORIENTATION_ROTATE_270 -> rotateBitmap(bitmap, 270f)
+          else -> bitmap
+        }
 
     // Now compress the correctly-oriented bitmap
     return ByteArrayOutputStream().use { stream ->
