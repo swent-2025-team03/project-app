@@ -791,21 +791,13 @@ class E2ETest : FirebaseEmulatorsTest() {
     scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
     waitUntilTestTag(AddReportScreenTestTags.LOCATION_BUTTON)
     composeTestRule.onNodeWithTag(AddReportScreenTestTags.LOCATION_BUTTON).performClick()
-    composeTestRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
-      composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).isDisplayed()
-    }
+    waitUntilTestTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON)
     composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).performClick()
-    composeTestRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
-      composeTestRule.onNodeWithTag(LocationPickerTestTags.CONFIRMATION_PROMPT).isDisplayed()
-    }
-    composeTestRule
-        .onNodeWithTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
+    waitUntilTestTag(LocationPickerTestTags.CONFIRMATION_PROMPT)
+    composeTestRule.onNodeWithTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON).performClick()
     composeTestRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
       composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER).isDisplayed()
     }
-    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithText(officeName).isDisplayed()
     }
