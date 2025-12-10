@@ -4,8 +4,10 @@ import androidx.credentials.Credential
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.user.User
 import com.google.firebase.auth.FirebaseAuthException
+import kotlinx.coroutines.delay
 
-class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository {
+class FakeAuthRepository(private var isOnline: Boolean = true, private val delayMs: Long = 0L) :
+    AuthRepository {
 
   private val credentials = mutableMapOf<String, String>()
 
@@ -16,6 +18,7 @@ class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository 
   }
 
   override suspend fun changePassword(password: String): Result<Unit> {
+    delay(delayMs)
     if (isOnline) {
       if (currentUser == null) {
         return Result.failure(IllegalStateException("no user logged in"))
@@ -36,6 +39,7 @@ class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository 
   }
 
   override suspend fun reAuthenticate(email: String, password: String): Result<Unit> {
+    delay(delayMs)
     if (isOnline) {
       // not important
       return Result.success(Unit)
