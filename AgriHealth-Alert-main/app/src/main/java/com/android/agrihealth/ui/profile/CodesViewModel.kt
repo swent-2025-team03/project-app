@@ -63,6 +63,7 @@ class CodesViewModel(
       val result = connectionRepository.claimCode(code)
       result.fold(
           onSuccess = { officeId ->
+            val destinationUids = officeRepository.getVetsInOffice(officeId)
             when (user) {
               is Farmer -> { // Update farmer: add officeId to linkedOffices (avoid duplicates)
                 val updatedLinkedOffices = (user.linkedOffices + officeId).distinct()
@@ -73,7 +74,6 @@ class CodesViewModel(
                 userViewModel.updateUser(updatedFarmer)
 
                 // Send a notification
-                val destinationUids = officeRepository.getVetsInOffice(officeId)
                 val description = "A new farmer: '${userName}' just got connected to your office!"
                 destinationUids.forEach { uid ->
                   val notification =
@@ -97,7 +97,6 @@ class CodesViewModel(
                   officeRepository.updateOffice(updatedOffice)
 
                   // Send a notification
-                  val destinationUids = officeRepository.getVetsInOffice(officeId)
                   val description = "A new vet: '${userName}' just joined your office!"
                   destinationUids.forEach { uid ->
                     val notification =

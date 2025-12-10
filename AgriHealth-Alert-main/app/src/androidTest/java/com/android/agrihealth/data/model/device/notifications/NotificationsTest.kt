@@ -113,6 +113,14 @@ class NotificationsTest {
   }
 
   @Test
+  fun uploadNotification_failsWithEmptyUid() = runTest {
+    val notifNullUid = Notification.NewReport(destinationUid = "", description = "Empty UID test")
+    messagingService.uploadNotification(notifNullUid) { success ->
+      assertFalse("Notification with empty UID should fail", success)
+    }
+  }
+
+  @Test
   fun uploadNotification_failsWhenUserHasNoTokens() = runTest {
     userRepository.addUser(user2.copyCommon(deviceTokensFCM = setOf()))
 
