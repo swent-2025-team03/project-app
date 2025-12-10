@@ -147,20 +147,10 @@ class OverviewScreenTest {
 
     val viewModel = OverviewViewModel(reportRepository = reportRepo, alertRepository = alertRepo)
 
-    val user =
-        Farmer(
-            uid = "farmer_001",
-            firstname = "Test",
-            lastname = "User",
-            email = "test@test.com",
-            address = Location(46.5, 6.5),
-            linkedOffices = emptyList(),
-            defaultOffice = null)
-
     composeTestRule.setContent {
       OverviewScreen(
           userRole = UserRole.FARMER,
-          user = user,
+          user = farmer,
           overviewViewModel = viewModel,
           onAddReport = {},
           onReportClick = {},

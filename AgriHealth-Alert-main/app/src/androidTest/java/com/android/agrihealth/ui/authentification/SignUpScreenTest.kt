@@ -226,7 +226,6 @@ class SignUpScreenTest {
 
   @Test
   fun signUpScreen_showsAndHidesLoadingOverlay() {
-    // --- Setup ---
     val authRepo = FakeAuthRepository(delayMs = 300L)
     val vm = SignUpViewModel(authRepo)
 
@@ -255,13 +254,10 @@ class SignUpScreenTest {
         .onNodeWithTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD)
         .performTextInput("StrongPass123")
 
-    // Sélection du rôle (obligatoire)
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.FARMER_PILL).performClick()
 
-    // --- Cliquer sur "Save" => déclenche signUp() => loading ---
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).performClick()
 
-    // --- Vérifier apparition / disparition du LoadingOverlay ---
     composeTestRule.assertOverlayDuringLoading(
         isLoading = { vm.uiState.value.isLoading },
         timeoutStart = TestConstants.DEFAULT_TIMEOUT,

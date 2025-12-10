@@ -35,7 +35,7 @@ class FakeAlertRepository(private val delayMs: Long = 0L) : AlertRepository {
           Alert(
               "4",
               "Another mock alert item to test what happens if details are too long!",
-              "So I have to write a really long description here...",
+              "So I have to write a really long description here... blah blah mousudeni netagire de nanikakebaiika wakaranai kara toriaezu nihongo ni sureba meccha mojisuu kasegerukigasuru waai, unn motto kakuhituyouga arisoudesu! doushiyo, nanikakoukana, kyouha ohiru nanitabeyoukana- hisashiburi ni indian no toko ikitaina- saikinn channtoshita shokuji amari tottenaikara channto yasai to gohan wo tabeyou!",
               LocalDate.of(2025, 11, 29),
               "Montreux",
               listOf(AlertZone(Location(46.4316, 6.9119), 10_000.0))))

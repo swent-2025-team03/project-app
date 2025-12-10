@@ -100,14 +100,14 @@ class AddReportScreenTest {
 
   @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-  // --- Helpers ---
-
+  // Waits until the dialog is shown
   private fun assertDialogIsShown(testTag: String) {
     composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeRule.onAllNodesWithTag(testTag).fetchSemanticsNodes().isNotEmpty()
     }
   }
 
+  // Checks if all the components of the dialog work correctly
   private fun assertDialogWorks(
       dialogTestTag: String,
       dialogTitle: String,
@@ -120,42 +120,69 @@ class AddReportScreenTest {
     composeRule.onNodeWithTag(dismissTestTag).assertHasClickAction()
   }
 
+  // Scrolls down
   private fun scrollToUploadSection() {
     composeRule
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
         .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
   }
 
-  private fun fillAndCreateReport(
-      title: String = "",
-      description: String = "",
+  // Manually fills a report
+  private fun fillReportWith(
+      title: String,
+      description: String,
+      doSubmitReport: Boolean,
       officeId: String? = null,
       address: Location? = null,
-      fillQuestions: Boolean = false,
-      submit: Boolean = true,
       viewModel: AddReportViewModel? = null,
   ) {
+    composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput(title)
+    composeRule
+        .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
+        .performTextInput(description)
 
-    if (title.isNotBlank()) {
-      composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput(title)
-    }
+    val scrollContainer = composeRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+    var index = 0
+    while (true) {
+      composeRule.waitForIdle()
 
-    if (description.isNotBlank()) {
-      composeRule
-          .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
-          .performTextInput(description)
+      val openTag = "QUESTION_${index}_OPEN"
+      val yesNoTag = "QUESTION_${index}_YESORNO"
+      val mcqTag = "QUESTION_${index}_MCQ"
+      val mcqOTag = "QUESTION_${index}_MCQO"
+
+      when {
+        composeRule.onAllNodesWithTag(openTag).fetchSemanticsNodes().firstOrNull() != null -> {
+          scrollContainer.performScrollToNode(hasTestTag(openTag))
+          composeRule.onNodeWithTag(openTag).performTextInput("answer $index")
+        }
+        composeRule.onAllNodesWithTag(yesNoTag).fetchSemanticsNodes().firstOrNull() != null -> {
+          scrollContainer.performScrollToNode(hasTestTag(yesNoTag))
+          composeRule.onAllNodesWithTag(yesNoTag)[0].performClick()
+        }
+        composeRule.onAllNodesWithTag(mcqTag).fetchSemanticsNodes().firstOrNull() != null -> {
+          scrollContainer.performScrollToNode(hasTestTag(mcqTag))
+          composeRule.onAllNodesWithTag(mcqTag)[0].performClick()
+        }
+        composeRule.onAllNodesWithTag(mcqOTag).fetchSemanticsNodes().firstOrNull() != null -> {
+          scrollContainer.performScrollToNode(hasTestTag(mcqOTag))
+          composeRule.onAllNodesWithTag(mcqOTag)[0].performClick()
+        }
+        else -> break
+      }
+
+      index++
     }
 
     if (officeId != null) {
-      composeRule
-          .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-          .performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
-
+      scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
       composeRule.onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN).performClick()
 
       composeRule
           .onNodeWithTag(
-              AddReportScreenTestTags.getTestTagForOffice(officeId), useUnmergedTree = true)
+              AddReportScreenTestTags.getTestTagForOffice(officeId),
+              useUnmergedTree = true,
+          )
           .performClick()
 
       viewModel?.setOffice(officeId)
@@ -165,43 +192,8 @@ class AddReportScreenTest {
       viewModel.setAddress(address)
     }
 
-    if (fillQuestions) {
-      val scroll = composeRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-      var index = 0
-      while (true) {
-        composeRule.waitForIdle()
-        val openTag = "QUESTION_${index}_OPEN"
-        val yesNoTag = "QUESTION_${index}_YESORNO"
-        val mcqTag = "QUESTION_${index}_MCQ"
-        val mcqOTag = "QUESTION_${index}_MCQO"
-
-        when {
-          composeRule.onAllNodesWithTag(openTag).fetchSemanticsNodes().isNotEmpty() -> {
-            scroll.performScrollToNode(hasTestTag(openTag))
-            composeRule.onNodeWithTag(openTag).performTextInput("answer $index")
-          }
-          composeRule.onAllNodesWithTag(yesNoTag).fetchSemanticsNodes().isNotEmpty() -> {
-            scroll.performScrollToNode(hasTestTag(yesNoTag))
-            composeRule.onAllNodesWithTag(yesNoTag)[0].performClick()
-          }
-          composeRule.onAllNodesWithTag(mcqTag).fetchSemanticsNodes().isNotEmpty() -> {
-            scroll.performScrollToNode(hasTestTag(mcqTag))
-            composeRule.onAllNodesWithTag(mcqTag)[0].performClick()
-          }
-          composeRule.onAllNodesWithTag(mcqOTag).fetchSemanticsNodes().isNotEmpty() -> {
-            scroll.performScrollToNode(hasTestTag(mcqOTag))
-            composeRule.onAllNodesWithTag(mcqOTag)[0].performClick()
-          }
-          else -> break
-        }
-        index++
-      }
-    }
-
-    if (submit) {
-      composeRule
-          .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-          .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
+    if (doSubmitReport) {
+      scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
       composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
     }
   }
@@ -332,12 +324,7 @@ class AddReportScreenTest {
       }
     }
 
-    fillAndCreateReport(
-        title = "title",
-        description = "description",
-        fillQuestions = true,
-        submit = true,
-    )
+    fillReportWith("title", "description", true)
 
     assertDialogWorks(
         AddReportScreenTestTags.DIALOG_SUCCESS,
@@ -356,12 +343,7 @@ class AddReportScreenTest {
       }
     }
 
-    fillAndCreateReport(
-        title = "title",
-        description = "description",
-        fillQuestions = true,
-        submit = true,
-    )
+    fillReportWith("title", "description", true)
 
     composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeRule.onAllNodesWithText(AddReportDialogTexts.OK).fetchSemanticsNodes().isNotEmpty()
@@ -497,12 +479,7 @@ class AddReportScreenTest {
       }
     }
 
-    fillAndCreateReport(
-        title = "title",
-        description = "description",
-        fillQuestions = true,
-        submit = true,
-    )
+    fillReportWith("title", "description", true)
 
     assertDialogWorks(
         AddReportScreenTestTags.DIALOG_SUCCESS,
@@ -562,13 +539,12 @@ class AddReportScreenTest {
       }
     }
 
-    fillAndCreateReport(
+    fillReportWith(
         title = "Slow Test",
         description = "Desc",
+        doSubmitReport = true,
         officeId = "Best Office Ever!",
         address = Location(0.0, 0.0, "Test address"),
-        fillQuestions = true,
-        submit = true,
         viewModel = viewModel,
     )
 

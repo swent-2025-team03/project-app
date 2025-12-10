@@ -11,6 +11,7 @@ import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertLoadingO
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testutil.FakeAuthRepository
 import com.android.agrihealth.testutil.FakeChangePasswordViewModel
+import com.android.agrihealth.testutil.TestConstants
 import junit.framework.TestCase.assertFalse
 import org.junit.Before
 import org.junit.Rule
@@ -103,6 +104,8 @@ class ChangePasswordScreenTest {
     composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
 
     composeTestRule.assertOverlayDuringLoading(
-        isLoading = { viewModel.uiState.value.isLoading }, timeoutStart = 1500L, timeoutEnd = 1500L)
+        isLoading = { viewModel.uiState.value.isLoading },
+        timeoutStart = TestConstants.DEFAULT_TIMEOUT,
+        timeoutEnd = TestConstants.DEFAULT_TIMEOUT)
   }
 }

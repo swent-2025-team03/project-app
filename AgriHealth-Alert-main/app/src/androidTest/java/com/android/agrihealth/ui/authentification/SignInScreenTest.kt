@@ -103,10 +103,8 @@ class SignInScreenTest {
         .onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD)
         .performTextInput("strongPassword123!")
 
-    // 3) Clique sur "Log In" pour déclencher signInWithEmailAndPassword()
     composeTestRule.onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON).performClick()
 
-    // 4) Vérifie que le LoadingOverlay apparaît puis disparaît
     composeTestRule.assertOverlayDuringLoading(
         isLoading = { vm.uiState.value.isLoading },
         timeoutStart = TestConstants.DEFAULT_TIMEOUT,
