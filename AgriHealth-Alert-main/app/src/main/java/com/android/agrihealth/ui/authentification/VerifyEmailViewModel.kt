@@ -20,7 +20,7 @@ class VerifyEmailViewModel(
   val uiState: StateFlow<VerifyEmailUIState> = _uiState.asStateFlow()
 
   fun sendVerifyEmail() {
-    viewModelScope.launch { authRepository.sendVerificationEmail().fold({}) {} }
+    viewModelScope.launch { authRepository.sendVerificationEmail() }
   }
 
   fun pollingRefresh() {

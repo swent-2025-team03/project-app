@@ -12,9 +12,9 @@ import androidx.compose.ui.test.performClick
 import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
+import com.android.agrihealth.data.model.authentification.verifyUser
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.testutil.TestConstants
-import com.android.agrihealth.testutil.verifyUser
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.VerifyEmailScreenTestTags
 import com.android.agrihealth.ui.map.MapScreenTestTags
@@ -57,7 +57,7 @@ class NavigationTest : FirebaseEmulatorsTest() {
     assert(Firebase.auth.currentUser != null)
     runTest { verifyUser(Firebase.auth.uid!!) }
     composeTestRule.setContent { AgriHealthApp() }
-    composeTestRule.waitUntil(10_000) {
+    composeTestRule.waitUntil(TestConstants.VERY_LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(VerifyEmailScreenTestTags.WELCOME).isNotDisplayed()
     }
     composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).performClick()

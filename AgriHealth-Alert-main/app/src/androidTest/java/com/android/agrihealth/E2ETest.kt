@@ -11,6 +11,7 @@ import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
+import com.android.agrihealth.data.model.authentification.verifyUser
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.location.LocationPickerTestTags
@@ -19,7 +20,6 @@ import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.FakeOfficeRepository
 import com.android.agrihealth.testutil.TestConstants
-import com.android.agrihealth.testutil.verifyUser
 import com.android.agrihealth.ui.alert.AlertViewScreenTestTags
 import com.android.agrihealth.ui.authentification.RoleSelectionScreenTestTags
 import com.android.agrihealth.ui.authentification.SignInErrorMsg
@@ -181,6 +181,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     checkEditProfileScreenIsDisplayed()
     goBack()
     goBack()
+    checkOverviewScreenIsDisplayed()
     createReport("Report 1", "Description 1", "Deleted Office")
     createReport("Report 2", "Description 2", user1.linkedOffices.last())
 
@@ -388,8 +389,8 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(VerifyEmailScreenTestTags.WELCOME).isDisplayed()
     }
-    runTest { verifyUser(Firebase.auth.uid ?: "") }
-    composeTestRule.waitUntil(10_000) {
+    runTest { verifyUser(Firebase.auth.uid!!) }
+    composeTestRule.waitUntil(TestConstants.VERY_LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(VerifyEmailScreenTestTags.WELCOME).isNotDisplayed()
     }
   }

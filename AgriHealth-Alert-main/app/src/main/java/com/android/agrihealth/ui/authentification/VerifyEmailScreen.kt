@@ -22,20 +22,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.testutil.FakeAuthRepository
-import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.user.UserViewModelContract
-import com.android.agrihealth.ui.user.defaultUser
 
 // imports for debug button
 /*
@@ -43,7 +36,17 @@ import androidx.compose.material.icons.filled.Preview
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.runBlocking
-import com.android.agrihealth.testutil.verifyUser
+import com.android.agrihealth.data.model.authentification.verifyUser
+ */
+
+// imports for preview
+/*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.testutil.FakeAuthRepository
+import com.android.agrihealth.testutil.FakeUserViewModel
+import com.android.agrihealth.ui.user.defaultUser
  */
 object VerifyEmailScreenTestTags {
   const val WELCOME = "Welcome"
@@ -51,15 +54,12 @@ object VerifyEmailScreenTestTags {
 }
 
 /**
- * Minimalist composable function to display a screen to new google users, this should only display
- * when the user logs in with a new google account for the first time. The point of this screen is
- * to let the user choose a role as the other user information will be provided through the profile
- * screen.
+ * Screen used to keep unverified users away from the main app, must be present for unverified users
+ * right after authentication.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VerifyEmailScreen(
-    credentialManager: CredentialManager = CredentialManager.create(LocalContext.current),
     vm: VerifyEmailViewModel = viewModel(),
     onBack: () -> Unit = {},
     onVerified: () -> Unit = {},
@@ -77,7 +77,7 @@ fun VerifyEmailScreen(
 
   LaunchedEffect(uiState.value.verified) {
     if (uiState.value.verified) {
-      onVerified.invoke()
+      onVerified()
     }
   }
 
@@ -131,6 +131,7 @@ fun VerifyEmailScreen(
       }
 }
 
+/*
 @Preview
 @Composable
 fun VerifyEmailScreenPreview() {
@@ -140,3 +141,4 @@ fun VerifyEmailScreenPreview() {
         userViewModel = FakeUserViewModel(defaultUser.copy(email = "ma@email.coom")))
   }
 }
+*/
