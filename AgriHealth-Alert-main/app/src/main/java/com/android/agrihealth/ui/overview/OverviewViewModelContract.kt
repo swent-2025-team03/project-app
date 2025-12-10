@@ -11,10 +11,10 @@ interface OverviewViewModelContract {
   fun loadReports(user: User)
 
   fun updateFiltersForReports(
-      status: ReportStatus?,
-      officeId: String?,
-      farmerId: String?,
-      assignment: AssignmentFilter?
+      status: FilterArg<ReportStatus> = FilterArg.Unset,
+      officeId: FilterArg<String> = FilterArg.Unset,
+      farmerId: FilterArg<String> = FilterArg.Unset,
+      assignment: FilterArg<AssignmentFilter> = FilterArg.Unset
   )
 
   fun loadAlerts(user: User)

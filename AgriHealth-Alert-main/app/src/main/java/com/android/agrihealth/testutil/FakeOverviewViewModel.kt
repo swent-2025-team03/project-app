@@ -12,6 +12,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.ui.overview.AlertUiState
 import com.android.agrihealth.ui.overview.AssignmentFilter
+import com.android.agrihealth.ui.overview.FilterArg
 import com.android.agrihealth.ui.overview.OverviewUIState
 import com.android.agrihealth.ui.overview.OverviewViewModelContract
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,10 +58,10 @@ class FakeOverviewViewModel(
   override fun loadReports(user: User) {}
 
   override fun updateFiltersForReports(
-      status: ReportStatus?,
-      officeId: String?,
-      farmerId: String?,
-      assignment: AssignmentFilter?
+      status: FilterArg<ReportStatus>,
+      officeId: FilterArg<String>,
+      farmerId: FilterArg<String>,
+      assignment: FilterArg<AssignmentFilter>
   ) {}
 
   override fun loadAlerts(user: User) {}
