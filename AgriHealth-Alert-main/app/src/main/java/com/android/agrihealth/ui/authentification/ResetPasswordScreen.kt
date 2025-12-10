@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -47,6 +49,8 @@ fun ResetPasswordScreen(onBack: () -> Unit = {}, vm: ResetPasswordViewModel = vi
 
   val uiState by vm.uiState.collectAsState()
 
+  val scrollState = rememberScrollState()
+
   Scaffold(
       topBar = {
         TopAppBar(
@@ -66,7 +70,13 @@ fun ResetPasswordScreen(onBack: () -> Unit = {}, vm: ResetPasswordViewModel = vi
       },
   ) { pd ->
     Column(
-        modifier = Modifier.padding(pd).padding(horizontal = 16.dp, vertical = 48.dp),
+        modifier =
+            Modifier.padding(pd)
+                .padding(horizontal = 16.dp, vertical = 48.dp)
+                .verticalScroll(
+                    state = scrollState,
+                    enabled = true,
+                ),
         verticalArrangement = Arrangement.spacedBy(24.dp)) {
           Text(
               "Enter your email and you will receive a form to reset your password.",
