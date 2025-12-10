@@ -464,6 +464,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithText(reportName).performClick()
 
     waitUntilTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
+    waitUntilTestTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
     composeTestRule
         .onNodeWithTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
         .performScrollToNode(hasTestTag(ReportViewScreenTestTags.CLAIM_BUTTON))
