@@ -193,7 +193,6 @@ fun AgriHealthApp(
     navigation(startDestination = Screen.EmailVerify.route, route = Screen.EmailVerify.name) {
       composable(Screen.EmailVerify.route) {
         VerifyEmailScreen(
-            credentialManager = credentialManager,
             onBack = { navigationActions.navigateToAuthAndClear() },
             onVerified = { navigationActions.navigateTo(Screen.EditProfile) },
             userViewModel = userViewModel)
