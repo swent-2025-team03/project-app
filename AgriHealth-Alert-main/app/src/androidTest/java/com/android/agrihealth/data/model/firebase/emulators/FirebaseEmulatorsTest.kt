@@ -40,8 +40,8 @@ open class FirebaseEmulatorsTest() {
           "Uruha",
           "email1@thing.com",
           Location(latitude = 46.5191, longitude = 6.5668),
-          listOf("Best Office Ever!", "Meh Office.", "off1"),
-          "off1")
+          listOf("Best Office Ever!", "Meh Office."),
+          "Test?")
   val user2 = Farmer("def456", "mike", "neko", "email2@aaaaa.balls", null, emptyList(), null)
   val user3 = Vet("ghi789", "Nazuna", "Amemiya", "email3@kms.josh", null, officeId = "off1")
   val user4 = Farmer("jklABC", "John", "Fake", "fakeUser.glorp", null, emptyList(), null)

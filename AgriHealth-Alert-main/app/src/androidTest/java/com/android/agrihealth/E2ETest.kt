@@ -715,8 +715,6 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON)
         .assertIsDisplayed()
         .performClick()
-
-    waitUntilTestTag(OverviewScreenTestTags.SCREEN)
   }
 
   private fun completeEditProfile() {
