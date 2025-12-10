@@ -789,18 +789,18 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
     composeTestRule.onNodeWithTag(AddReportScreenTestTags.LOCATION_BUTTON).performClick()
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
       composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).isDisplayed()
     }
     composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).performClick()
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
       composeTestRule.onNodeWithTag(LocationPickerTestTags.CONFIRMATION_PROMPT).isDisplayed()
     }
     composeTestRule
         .onNodeWithTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON)
         .assertIsDisplayed()
         .performClick()
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
       composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER).isDisplayed()
     }
     scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
