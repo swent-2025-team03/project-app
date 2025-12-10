@@ -203,6 +203,9 @@ dependencies {
     // ------- Using Coil for image handling --------------
     implementation("io.coil-kt:coil-compose:2.4.0")
 
+    // ---- For EXIF data manipulation ------
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
+
 }
 
 tasks.withType<Test> {
