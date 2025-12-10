@@ -10,8 +10,11 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testutil.FakeAlertRepository
+import com.android.agrihealth.testutil.FakeOverviewViewModel
 import com.android.agrihealth.testutil.InMemoryReportRepository
+import com.android.agrihealth.testutil.TestConstants
 import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -115,50 +118,6 @@ class OverviewScreenTest {
 
     assertEquals("Option 1", selectedOption)
   }
-  /*
-  @Test
-  fun overview_showsLoadingOverlayWhileLoadingReports_fakeRepo() {
-    val sample =
-        Report(
-            id = "R1",
-            title = "Coughing cow",
-            description = "cough...",
-            farmerId = "F1",
-            vetId = "V1",
-            status = ReportStatus.PENDING,
-            questionForms = emptyList(),
-            answer = null,
-            photoUri = null,
-            location = null,
-        )
-
-    val slowRepo =
-        SlowFakeReportRepository(
-            reports = listOf(sample),
-        )
-
-    val vm = OverviewViewModel(reportRepository = slowRepo)
-
-    composeTestRule.setContent {
-      val nav = rememberNavController()
-      OverviewScreen(
-          userRole = UserRole.FARMER,
-          userId = "F1",
-          overviewViewModel = vm,
-          navigationActions = NavigationActions(nav),
-      )
-    }
-
-    composeTestRule.waitUntil(TestConstants.SHORT_TIMEOUT) { vm.uiState.value.isLoading }
-
-    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
-
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) { !vm.uiState.value.isLoading }
-
-    composeTestRule.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
-    composeTestRule.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
-  }
 
   // --- TEST 8: Verify that alerts are sorted correctly by proximity ---
   @Test
@@ -180,6 +139,37 @@ class OverviewScreenTest {
       }
     }
   }
-  */
 
+  @Test
+  fun overviewScreen_showsAndHidesLoadingOverlay_duringLoadAlerts() {
+    val alertRepo = FakeAlertRepository(delayMs = 500)
+    val reportRepo = InMemoryReportRepository(delayMs = 500)
+
+    val viewModel = OverviewViewModel(reportRepository = reportRepo, alertRepository = alertRepo)
+
+    val user =
+        Farmer(
+            uid = "farmer_001",
+            firstname = "Test",
+            lastname = "User",
+            email = "test@test.com",
+            address = Location(46.5, 6.5),
+            linkedOffices = emptyList(),
+            defaultOffice = null)
+
+    composeTestRule.setContent {
+      OverviewScreen(
+          userRole = UserRole.FARMER,
+          user = user,
+          overviewViewModel = viewModel,
+          onAddReport = {},
+          onReportClick = {},
+          onAlertClick = {})
+    }
+
+    composeTestRule.assertOverlayDuringLoading(
+        isLoading = { viewModel.uiState.value.isLoading },
+        timeoutStart = TestConstants.DEFAULT_TIMEOUT,
+        timeoutEnd = TestConstants.DEFAULT_TIMEOUT)
+  }
 }
