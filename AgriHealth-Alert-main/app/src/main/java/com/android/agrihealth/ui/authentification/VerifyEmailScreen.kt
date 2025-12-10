@@ -8,7 +8,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Preview
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,6 +37,14 @@ import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.user.UserViewModelContract
 import com.android.agrihealth.ui.user.defaultUser
 
+// imports for debug button
+/*
+import androidx.compose.material.icons.filled.Preview
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import kotlinx.coroutines.runBlocking
+import com.android.agrihealth.testutil.verifyUser
+ */
 object VerifyEmailScreenTestTags {
   const val WELCOME = "Welcome"
   const val FARMER = "FarmerButton"
@@ -117,6 +124,13 @@ fun VerifyEmailScreen(
                       Text("Send new email")
                     }
                 Text("Didn't receive the email?", style = MaterialTheme.typography.bodyMedium)
+
+                // Debug button to enable any account
+                /*
+                Button(onClick = { runBlocking { verifyUser(Firebase.auth.uid ?: "") } }) {
+                  Text("Haxchi")
+                }
+                */
               }
             }
       }
