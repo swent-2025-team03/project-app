@@ -3,9 +3,14 @@ package com.android.agrihealth.testutil
 import androidx.credentials.Credential
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.ui.authentification.EmailSendStatus
 import com.google.firebase.auth.FirebaseAuthException
+import kotlinx.coroutines.delay
 
-class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository {
+class FakeAuthRepository(
+    private var isOnline: Boolean = true,
+    private var resetPasswordResult: EmailSendStatus = EmailSendStatus.Success
+) : AuthRepository {
 
   private val credentials = mutableMapOf<String, String>()
 
@@ -26,7 +31,15 @@ class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository 
   }
 
   override suspend fun sendResetPasswordEmail(email: String): Result<Unit> {
-    return Result.success(Unit)
+    return when (resetPasswordResult) {
+      is EmailSendStatus.Success -> Result.success(Unit)
+      is EmailSendStatus.Fail -> Result.failure(IllegalArgumentException())
+      is EmailSendStatus.Waiting -> {
+        delay(10000)
+        Result.success(Unit)
+      }
+      is EmailSendStatus.None -> Result.failure(IllegalArgumentException())
+    }
   }
 
   override suspend fun deleteAccount(): Result<Unit> {
