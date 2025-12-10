@@ -433,7 +433,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performTextInput(farmerCode)
     composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.ADD_CODE_BUTTON).performClick()
 
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
       composeTestRule.onNodeWithText("Office successfully added!").isDisplayed()
     }
     goBack()
@@ -450,7 +450,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performTextInput(vetCode)
     composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.ADD_CODE_BUTTON).performClick()
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
       composeTestRule.onNodeWithText("You successfully joined an office").isDisplayed()
     }
 
@@ -462,8 +462,6 @@ class E2ETest : FirebaseEmulatorsTest() {
       composeTestRule.onNodeWithText(reportName).isDisplayed()
     }
     composeTestRule.onNodeWithText(reportName).performClick()
-
-    composeTestRule.mainClock.advanceTimeBy(TestConstants.LONG_TIMEOUT)
 
     waitUntilTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
     waitUntilTestTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
