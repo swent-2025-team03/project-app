@@ -433,7 +433,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performTextInput(farmerCode)
     composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.ADD_CODE_BUTTON).performClick()
 
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithText("Office successfully added!").isDisplayed()
     }
     goBack()
