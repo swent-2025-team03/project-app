@@ -1,7 +1,5 @@
 package com.android.agrihealth
 
-import android.content.ClipboardManager
-import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
@@ -9,7 +7,6 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
@@ -335,10 +332,10 @@ class E2ETest : FirebaseEmulatorsTest() {
     val vet2Password = "vet2vet2"
     val farmerPassword = "farmfarm"
 
-    val clipboard =
-        InstrumentationRegistry.getInstrumentation()
-            .targetContext
-            .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    //    val clipboard =
+    //        InstrumentationRegistry.getInstrumentation()
+    //            .targetContext
+    //            .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.waitForIdle()
@@ -353,10 +350,11 @@ class E2ETest : FirebaseEmulatorsTest() {
     createOffice()
     goBack()
     generateFarmerCode()
+    val copiedCode = readGeneratedCodeFromUi()
     signOutFromScreen()
 
-    val clipData = clipboard.primaryClip
-    val copiedCode = clipData?.getItemAt(0)?.text.toString()
+    //    val clipData = clipboard.primaryClip
+    //    val copiedCode = clipData?.getItemAt(0)?.text.toString()
 
     completeSignUp("Test", "Farmer", farmerEmail, farmerPassword, false)
     checkEditProfileScreenIsDisplayed()
@@ -376,11 +374,12 @@ class E2ETest : FirebaseEmulatorsTest() {
     goToProfileFromOverview()
     goToManageOffice()
     generateOfficeCode()
+    val copiedCode2 = readGeneratedCodeFromUi()
     goBack()
     signOutFromScreen()
 
-    val clipData2 = clipboard.primaryClip
-    val copiedCode2 = clipData2?.getItemAt(0)?.text.toString()
+    //    val clipData2 = clipboard.primaryClip
+    //    val copiedCode2 = clipData2?.getItemAt(0)?.text.toString()
 
     completeSignUp("Test", "Vet2", vet2Email, vet2Password, true)
     checkEditProfileScreenIsDisplayed()
@@ -403,14 +402,43 @@ class E2ETest : FirebaseEmulatorsTest() {
     OfficeRepositoryProvider.reset()
   }
 
+  private fun readGeneratedCodeFromUi(): String {
+    val tag = CodeComposableComponentsTestTags.GENERATE_FIELD
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(tag).isDisplayed()
+    }
+    val nodes = composeTestRule.onAllNodesWithTag(tag)
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      nodes.fetchSemanticsNodes().any { semantics ->
+        val t = semantics.config.getOrNull(SemanticsProperties.Text)
+        t != null && t.isNotEmpty() && t.joinToString("").contains("Generated Code:")
+      }
+    }
+
+    val semantics = nodes.fetchSemanticsNodes().first()
+    val textList = semantics.config.getOrNull(SemanticsProperties.Text)!!
+    val fullText = textList.joinToString("")
+
+    val code = fullText.substringAfter("Generated Code:").trim()
+
+    if (code.isBlank()) {
+      composeTestRule.onRoot().printToLog("E2E_CODE_PARSE_FAILED")
+      throw AssertionError("Generated code appeared, but parsing failed. Text was: \"$fullText\"")
+    }
+
+    return code
+  }
+
   private fun goToManageOffice() {
     waitUntilTestTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON)
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON).performClick()
   }
 
   private fun generateFarmerCode() {
-    waitUntilTestTag(ProfileScreenTestTags.GENERATE_CODE_BUTTON)
-    composeTestRule.onNodeWithTag(ProfileScreenTestTags.GENERATE_CODE_BUTTON).performClick()
+    waitUntilTestTag(CodeComposableComponentsTestTags.GENERATE_BUTTON)
+    composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.GENERATE_BUTTON).performClick()
     waitUntilTestTag(CodeComposableComponentsTestTags.COPY_CODE)
     composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.COPY_CODE).performClick()
   }
