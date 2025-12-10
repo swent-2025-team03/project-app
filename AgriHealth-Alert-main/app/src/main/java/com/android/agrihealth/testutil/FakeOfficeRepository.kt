@@ -32,4 +32,8 @@ class FakeOfficeRepository(initialOffices: List<Office> = emptyList()) : OfficeR
     return offices[id]?.let { Result.success(it) }
         ?: Result.failure(NoSuchElementException(OFFICE_NOT_FOUND))
   }
+
+  override suspend fun getVetsInOffice(officeId: String): List<String> {
+    return offices[officeId]?.vets ?: emptyList()
+  }
 }

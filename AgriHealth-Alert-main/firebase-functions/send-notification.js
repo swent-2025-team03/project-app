@@ -4,7 +4,7 @@ const admin = require("firebase-admin");
 
 admin.initializeApp();
 
-exports.sendNotification = functions.https.onCall(async (data, context) => {
+module.exports = functions.https.onCall(async (data, context) => {
   // log(data["data"]);
   const payload = data["data"];
   const destinationUid = payload["destinationUid"];
