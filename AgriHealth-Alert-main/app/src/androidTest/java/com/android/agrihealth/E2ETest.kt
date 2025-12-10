@@ -725,6 +725,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performTextInput(description)
 
     // --- Answer all questions ---
+    waitUntilTestTag(AddReportScreenTestTags.SCROLL_CONTAINER)
     val scrollContainer = composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
     var index = 0
     while (true) {
@@ -788,6 +789,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     }
 
     scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
+    waitUntilTestTag(AddReportScreenTestTags.LOCATION_BUTTON)
     composeTestRule.onNodeWithTag(AddReportScreenTestTags.LOCATION_BUTTON).performClick()
     composeTestRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
       composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).isDisplayed()
