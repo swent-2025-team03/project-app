@@ -219,7 +219,7 @@ private fun SignUpScreenPreview() {
         override suspend fun signInWithEmailAndPassword(
             email: String,
             password: String
-        ): Result<String> {
+        ): Result<Boolean> {
           TODO("Not yet implemented")
         }
 

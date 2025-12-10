@@ -7,10 +7,10 @@ interface AuthRepository {
   /**
    * Signs in the user using their email and password.
    *
-   * @return A [Result] containing a [String] on success representing the uid of the user, or an
-   *   exception on failure.
+   * @return A [Result] containing a [Boolean] on success representing the verification status of
+   *   the user, or an exception on failure.
    */
-  suspend fun signInWithEmailAndPassword(email: String, password: String): Result<String>
+  suspend fun signInWithEmailAndPassword(email: String, password: String): Result<Boolean>
 
   /**
    * Re-signs in the User for sensitive account modifications (ex: changing password)

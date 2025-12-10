@@ -43,13 +43,16 @@ class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository 
     return Result.failure(IllegalStateException("timeout"))
   }
 
-  override suspend fun signInWithEmailAndPassword(email: String, password: String): Result<String> {
+  override suspend fun signInWithEmailAndPassword(
+      email: String,
+      password: String
+  ): Result<Boolean> {
     if (isOnline) {
       if (currentUser != null) {
         return Result.failure(IllegalStateException("user $currentUser already logged in"))
       } else if (credentials[email] == password) {
         currentUser = "testUser"
-        return Result.success("testUser")
+        return Result.success(true)
       } else
           return Result.failure(
               FirebaseAuthException("invalid credentials", "we don't have this user"))

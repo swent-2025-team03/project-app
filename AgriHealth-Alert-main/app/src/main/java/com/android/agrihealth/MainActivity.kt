@@ -168,7 +168,11 @@ fun AgriHealthApp(
               navigationActions.navigateTo(Screen.Overview)
             },
             goToSignUp = { navigationActions.navigateTo(Screen.SignUp) },
-            onNewGoogle = { navigationActions.navigateTo(Screen.RoleSelection) })
+            onNewGoogle = { navigationActions.navigateTo(Screen.RoleSelection) },
+            onNotVerified = {
+              userViewModel.refreshCurrentUser()
+              navigationActions.navigateTo(Screen.EmailVerify)
+            })
       }
       composable(Screen.SignUp.route) {
         SignUpScreen(

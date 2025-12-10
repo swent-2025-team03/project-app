@@ -19,13 +19,15 @@ class AuthRepositoryFirebase(
     private val helper: GoogleSignInHelper = DefaultGoogleSignInHelper()
 ) : AuthRepository {
 
-  override suspend fun signInWithEmailAndPassword(email: String, password: String): Result<String> {
+  override suspend fun signInWithEmailAndPassword(
+      email: String,
+      password: String
+  ): Result<Boolean> {
     return try {
       val loginResult = auth.signInWithEmailAndPassword(email, password).await()
-      val user =
-          loginResult.user?.uid ?: return Result.failure(NullPointerException("Log in failed"))
+      val user = loginResult.user ?: return Result.failure(NullPointerException("Log in failed"))
 
-      Result.success(user)
+      Result.success(user.isEmailVerified)
     } catch (e: Exception) {
       Result.failure(e)
     }
