@@ -13,7 +13,7 @@ import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testutil.FakeOverviewViewModel
-import com.android.agrihealth.testutil.SlowFakeReportRepository
+import com.android.agrihealth.testutil.InMemoryReportRepository
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
 import com.android.agrihealth.testutil.TestReportRepository
@@ -486,7 +486,7 @@ class ReportViewScreenTest {
   @Test
   fun reportView_showsLoadingOverlayWhileFetchingReport() {
     val sampleReport = ReportViewUIState().report.copy(id = "RPT_SLOW")
-    val slowRepo: ReportRepository = SlowFakeReportRepository(listOf(sampleReport))
+    val slowRepo: ReportRepository = InMemoryReportRepository(listOf(sampleReport), 500L)
     val vm = ReportViewViewModel(repository = slowRepo)
 
     composeTestRule.setContent {
