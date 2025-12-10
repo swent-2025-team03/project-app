@@ -46,4 +46,12 @@ interface OfficeRepository {
    * Always returns a Result, never throws.
    */
   suspend fun getOffice(id: String): Result<Office>
+
+  /**
+   * Gets the IDs of all Vet users belonging to the given office ID.
+   *
+   * @param officeId The ID of the office to filter Vets by.
+   * @return A list of Vet user IDs assigned to that office.
+   */
+  suspend fun getVetsInOffice(officeId: String): List<String>
 }
