@@ -1,6 +1,7 @@
 package com.android.agrihealth.ui.authentification
 
 import androidx.activity.ComponentActivity
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.isDisplayed
@@ -11,8 +12,10 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testutil.FakeAuthRepository
 import com.android.agrihealth.testutil.TestConstants
+import com.android.agrihealth.ui.user.UserViewModel
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -219,6 +222,51 @@ class SignUpScreenTest {
     composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.TIMEOUT).isDisplayed()
     }
+  }
+
+  @Test
+  fun signUpScreen_showsAndHidesLoadingOverlay() {
+    // --- Setup ---
+    val authRepo = FakeAuthRepository(delayMs = 300L)
+    val vm = SignUpViewModel(authRepo)
+
+    composeTestRule.setContent {
+      MaterialTheme {
+        SignUpScreen(
+            signUpViewModel = vm,
+            userViewModel = UserViewModel(),
+        )
+      }
+    }
+
+    composeTestRule.onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD).performTextInput("John")
+
+    composeTestRule.onNodeWithTag(SignUpScreenTestTags.LASTNAME_FIELD).performTextInput("Doe")
+
+    composeTestRule
+        .onNodeWithTag(SignUpScreenTestTags.EMAIL_FIELD)
+        .performTextInput("john@example.com")
+
+    composeTestRule
+        .onNodeWithTag(SignUpScreenTestTags.PASSWORD_FIELD)
+        .performTextInput("StrongPass123")
+
+    composeTestRule
+        .onNodeWithTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD)
+        .performTextInput("StrongPass123")
+
+    // Sélection du rôle (obligatoire)
+    composeTestRule.onNodeWithTag(SignUpScreenTestTags.FARMER_PILL).performClick()
+
+    // --- Cliquer sur "Save" => déclenche signUp() => loading ---
+    composeTestRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).performClick()
+
+    // --- Vérifier apparition / disparition du LoadingOverlay ---
+    composeTestRule.assertOverlayDuringLoading(
+        isLoading = { vm.uiState.value.isLoading },
+        timeoutStart = TestConstants.DEFAULT_TIMEOUT,
+        timeoutEnd = TestConstants.DEFAULT_TIMEOUT,
+    )
   }
 
   @After

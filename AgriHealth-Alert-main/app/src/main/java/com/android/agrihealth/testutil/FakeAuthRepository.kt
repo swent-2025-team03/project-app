@@ -29,6 +29,7 @@ class FakeAuthRepository(private var isOnline: Boolean = true, private val delay
   }
 
   override suspend fun deleteAccount(): Result<Unit> {
+    delay(delayMs)
     if (isOnline) {
       if (currentUser == null) {
         return Result.failure(IllegalStateException("no user logged in"))
@@ -48,6 +49,7 @@ class FakeAuthRepository(private var isOnline: Boolean = true, private val delay
   }
 
   override suspend fun signInWithEmailAndPassword(email: String, password: String): Result<String> {
+    delay(delayMs)
     if (isOnline) {
       if (currentUser != null) {
         return Result.failure(IllegalStateException("user $currentUser already logged in"))
@@ -62,6 +64,7 @@ class FakeAuthRepository(private var isOnline: Boolean = true, private val delay
   }
 
   override suspend fun signInWithGoogle(credential: Credential): Result<String> {
+    delay(delayMs)
     if (isOnline) {
       // no-op because no
       return Result.success("success!!")
@@ -79,6 +82,7 @@ class FakeAuthRepository(private var isOnline: Boolean = true, private val delay
       password: String,
       userData: User
   ): Result<String> {
+    delay(delayMs)
     if (isOnline) {
       if (credentials[email] != null) {
         return Result.failure(

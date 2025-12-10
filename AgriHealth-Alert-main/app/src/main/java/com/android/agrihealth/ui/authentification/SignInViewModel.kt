@@ -42,7 +42,7 @@ data class SignInUIState(
     get() = email.isNotEmpty() && password.isNotEmpty()
 }
 
-class SignInViewModel(
+open class SignInViewModel(
     private val authRepository: AuthRepository = AuthRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository
 ) : ViewModel() {

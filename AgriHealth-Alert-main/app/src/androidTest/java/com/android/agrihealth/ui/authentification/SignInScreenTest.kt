@@ -1,6 +1,7 @@
 package com.android.agrihealth.ui.authentification
 
 import androidx.activity.ComponentActivity
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.isDisplayed
@@ -9,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testutil.FakeAuthRepository
 import com.android.agrihealth.testutil.TestConstants
 import org.junit.Rule
@@ -76,5 +78,39 @@ class SignInScreenTest {
     composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignInErrorMsg.TIMEOUT).isDisplayed()
     }
+  }
+
+  @Test
+  fun signInScreen_showsAndHidesLoadingOverlay() {
+
+    val authRepo = FakeAuthRepository(delayMs = 300L)
+    val userRepo = FakeUserRepository()
+
+    val vm = SignInViewModel(authRepo, userRepo)
+    composeTestRule.setContent {
+      MaterialTheme {
+        SignInScreen(
+            signInViewModel = vm,
+        )
+      }
+    }
+
+    composeTestRule
+        .onNodeWithTag(SignInScreenTestTags.EMAIL_FIELD)
+        .performTextInput("user@example.com")
+
+    composeTestRule
+        .onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD)
+        .performTextInput("strongPassword123!")
+
+    // 3) Clique sur "Log In" pour déclencher signInWithEmailAndPassword()
+    composeTestRule.onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON).performClick()
+
+    // 4) Vérifie que le LoadingOverlay apparaît puis disparaît
+    composeTestRule.assertOverlayDuringLoading(
+        isLoading = { vm.uiState.value.isLoading },
+        timeoutStart = TestConstants.DEFAULT_TIMEOUT,
+        timeoutEnd = TestConstants.DEFAULT_TIMEOUT,
+    )
   }
 }
