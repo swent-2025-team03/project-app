@@ -61,7 +61,7 @@ object VerifyEmailScreenTexts {
   const val NO_EMAIL_QUESTIONMARK = "Didn't receive the email?"
 
   fun textForCountdown(cd: Int): String {
-    return if (cd >= 0) "Can resend email in $cd seconds" else ""
+    return if (cd > 0) "Can resend email in $cd seconds" else ""
   }
 }
 

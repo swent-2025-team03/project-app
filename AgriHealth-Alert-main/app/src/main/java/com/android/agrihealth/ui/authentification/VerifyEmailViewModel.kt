@@ -41,8 +41,8 @@ class VerifyEmailViewModel(
           _uiState.value = _uiState.value.copy(enabled = false)
           _uiState.value = _uiState.value.copy(countdown = 30)
           while (_uiState.value.countdown > 0) {
-            _uiState.value = _uiState.value.copy(countdown = _uiState.value.countdown - 1)
             delay(1000)
+            _uiState.value = _uiState.value.copy(countdown = _uiState.value.countdown - 1)
           }
         }) {
           _uiState.value = _uiState.value.copy(errorMsg = VerifyEmailErrorMsg.FAIL)
