@@ -1,15 +1,21 @@
 package com.android.agrihealth.ui.report
 
+import android.net.Uri
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.test.platform.app.InstrumentationRegistry
+import com.android.agrihealth.data.model.images.ImageViewModel
+import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testutil.FakeImageRepository
 import com.android.agrihealth.testutil.FakeOverviewViewModel
 import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
 import com.android.agrihealth.testutil.TestReportRepository
@@ -18,9 +24,15 @@ import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
+import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+
+/** Fake photo used when creating a new report */
+const val PLACEHOLDER_PHOTO_FILE = "report_image_cat.jpg"
+
+const val FAKE_PHOTO_PATH = "some/fake/path/to/photo"
 
 /**
  * UI tests for [ReportViewScreen]. These tests ensure that all interactive and display elements
@@ -29,8 +41,6 @@ import org.junit.Test
 class ReportViewScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
-
-  private val fakeRepo = TestReportRepository()
 
   /** Sets up the ReportViewScreen for a given role (Vet or Farmer). */
   private fun setReportViewScreen(
@@ -50,10 +60,12 @@ class ReportViewScreenTest {
   }
 
   // --- Role-specific helpers (wrappers) ---
-  private fun setVetScreen(viewModel: ReportViewViewModel = ReportViewViewModel(fakeRepo)) =
+  private fun setVetScreen(
+      reportViewModel: ReportViewViewModel = ReportViewViewModel(TestReportRepository())
+  ) =
       setReportViewScreen(
           role = UserRole.VET,
-          viewModel,
+          reportViewModel,
           user =
               Vet(
                   uid = "vet_id",
@@ -63,10 +75,12 @@ class ReportViewScreenTest {
                   address = null,
                   officeId = "OFF_456"))
 
-  private fun setValidVetScreen(viewModel: ReportViewViewModel = ReportViewViewModel(fakeRepo)) =
+  private fun setValidVetScreen(
+      reportViewModel: ReportViewViewModel = ReportViewViewModel(TestReportRepository())
+  ) =
       setReportViewScreen(
           role = UserRole.VET,
-          viewModel,
+          reportViewModel,
           user =
               Vet(
                   uid = "valid_vet_id",
@@ -76,10 +90,12 @@ class ReportViewScreenTest {
                   address = null,
                   officeId = "OFF_456"))
 
-  private fun setFarmerScreen(viewModel: ReportViewViewModel = ReportViewViewModel(fakeRepo)) =
+  private fun setFarmerScreen(
+      reportViewModel: ReportViewViewModel = ReportViewViewModel(TestReportRepository())
+  ) =
       setReportViewScreen(
           role = UserRole.FARMER,
-          viewModel,
+          reportViewModel,
           user =
               Farmer(
                   uid = "farmer_id",
@@ -88,6 +104,72 @@ class ReportViewScreenTest {
                   email = "mail@mail",
                   address = null,
                   defaultOffice = "OFF_456"))
+
+  private fun createFakeReport(withPhoto: Boolean = true): Report {
+    return Report(
+        id = "RPT001",
+        title = "My sheep is acting strange",
+        description = "Since this morning, my sheep keeps getting on its front knees.",
+        questionForms = emptyList(),
+        photoURL = if (withPhoto) FAKE_PHOTO_PATH else null,
+        farmerId = "FARMER_123",
+        officeId = "OFF_456",
+        status = ReportStatus.PENDING,
+        answer = null,
+        location = Location(46.5191, 6.5668, "Lausanne Farm"),
+        assignedVet = "valid_vet_id")
+  }
+
+  private fun getImageBytesFromUri(uri: Uri): ByteArray {
+    val context = InstrumentationRegistry.getInstrumentation().context
+    return context.contentResolver.openInputStream(uri)?.use { inputStream ->
+      inputStream.readBytes()
+    } ?: ByteArray(0)
+  }
+
+  private fun addPlaceholderPhotoToReport(imageRepository: FakeImageRepository) {
+    val fakeImageUri = getUriFrom(PLACEHOLDER_PHOTO_FILE)
+    val fakePhotoBytes = getImageBytesFromUri(fakeImageUri)
+    imageRepository.forceUploadImage(fakePhotoBytes)
+  }
+
+  // Returned by the setup function so we can retrieve what was created
+  private data class TestDependencies(
+      val reportViewModel: ReportViewViewModel,
+      val imageViewModel: ImageViewModel,
+      val imageRepository: FakeImageRepository
+  )
+
+  private fun setUpScreenAndRepositories(withPhoto: Boolean = true): TestDependencies {
+    val testReport = createFakeReport(withPhoto)
+    val repoWithPhoto = TestReportRepository(initialReports = listOf(testReport))
+    val reportViewModel = ReportViewViewModel(repository = repoWithPhoto)
+
+    val fakeImageRepository = FakeImageRepository()
+    val imageViewModel = ImageViewModel(fakeImageRepository)
+
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      val navigationActions = NavigationActions(navController)
+
+      ReportViewScreen(
+          navigationActions = navigationActions,
+          userRole = UserRole.VET,
+          viewModel = reportViewModel,
+          imageViewModel = imageViewModel,
+          reportId = "RPT001",
+          user =
+              Vet(
+                  uid = "vet_id",
+                  firstname = "alice",
+                  lastname = "alice",
+                  email = "mail@mail",
+                  address = null,
+                  officeId = "OFF_456"))
+    }
+
+    return TestDependencies(reportViewModel, imageViewModel, fakeImageRepository)
+  }
 
   // --- TEST 1: Vet typing in answer field ---
   @Test
@@ -130,6 +212,9 @@ class ReportViewScreenTest {
   @Test
   fun vet_canOpenSpamDialog() {
     setValidVetScreen()
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
+        .performScrollToNode(hasTestTag(ReportViewScreenTestTags.SPAM_BUTTON))
     composeTestRule.onNodeWithTag(ReportViewScreenTestTags.SPAM_BUTTON).performClick()
     composeTestRule.onNodeWithText("Report as spam?").assertIsDisplayed()
     composeTestRule.onNodeWithText("Confirm").assertIsDisplayed()
@@ -477,5 +562,97 @@ class ReportViewScreenTest {
     composeTestRule
         .onNodeWithTag(ReportComposableCommonsTestTags.COLLECTED_SWITCH)
         .assertIsDisplayed()
+  }
+
+  @Test
+  fun photoDisplay_showsLoadingIndicator_whenImageIsLoading() {
+    val dependencies = setUpScreenAndRepositories()
+    dependencies.imageRepository.freezeRepoConnection()
+
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun photoDisplay_showsImage_whenDownloadSucceeds() {
+    val dependencies = setUpScreenAndRepositories()
+    dependencies.imageRepository.freezeRepoConnection()
+
+    composeTestRule.waitForIdle()
+
+    addPlaceholderPhotoToReport(dependencies.imageRepository)
+    dependencies.imageRepository.unfreezeRepoConnection()
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER).isDisplayed()
+    }
+
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
+        .assertIsNotDisplayed()
+  }
+
+  @Test
+  fun photoDisplay_showsErrorText_whenDownloadFails() {
+    val dependencies = setUpScreenAndRepositories()
+    dependencies.imageRepository.makeRepoThrowError()
+    dependencies.imageRepository.unfreezeRepoConnection()
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT).isDisplayed()
+    }
+
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT)
+        .assertIsDisplayed()
+        .assertTextEquals(ReportViewScreenTexts.PHOTO_ERROR_TEXT)
+
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER).assertIsNotDisplayed()
+  }
+
+  @Test
+  fun photoDisplay_showsNothing_whenNoPhotoURL() {
+    val dependencies = setUpScreenAndRepositories(withPhoto = false)
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER).assertIsNotDisplayed()
+
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
+        .assertIsNotDisplayed()
+
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT).assertIsNotDisplayed()
+  }
+
+  @Test
+  fun photoDisplay_transitionsFromLoadingToSuccess() {
+    val dependencies = setUpScreenAndRepositories()
+    dependencies.imageRepository.freezeRepoConnection()
+    addPlaceholderPhotoToReport(dependencies.imageRepository)
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION).isDisplayed()
+    }
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT).assertIsNotDisplayed()
+
+    dependencies.imageRepository.unfreezeRepoConnection()
+
+    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER).isDisplayed()
+    }
+    composeTestRule
+        .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
+        .assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT).assertIsNotDisplayed()
   }
 }

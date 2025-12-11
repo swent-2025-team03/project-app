@@ -7,6 +7,8 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.android.agrihealth.R
+import com.android.agrihealth.data.model.device.notifications.Notification.ConnectOffice
+import com.android.agrihealth.data.model.device.notifications.Notification.JoinOffice
 import com.android.agrihealth.data.model.device.notifications.Notification.NewReport
 import com.android.agrihealth.data.model.device.notifications.Notification.VetAnswer
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -30,15 +32,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.authentification.USERS_COLLECTION_PATH
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
-import com.google.firebase.firestore.firestore
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.data.model.authentification.USERS_COLLECTION_PATH
 */
 
 @SuppressLint("MissingFirebaseInstanceTokenRefresh") // Tokens are handled in MainActivity
@@ -49,6 +51,8 @@ class NotificationHandlerFirebase(
 
   private val channelNewReport = "new_report_channel"
   private val channelVetAnswer = "vet_answer_channel"
+  private val channelJoinOffice = "join_office_channel"
+  private val channelConnectOffice = "connect_office_channel"
 
   override fun onCreate() {
     super.onCreate()
@@ -61,11 +65,11 @@ class NotificationHandlerFirebase(
    *
    * @param onComplete Action to take with the returned token. May be null
    */
-  override fun getToken(onComplete: (token: String?) -> Unit) {
-    tokenResolver.token.addOnCompleteListener { task ->
+  override fun getToken(onComplete: (deviceToken: String?) -> Unit) {
+    tokenResolver.deviceToken.addOnCompleteListener { task ->
       if (task.isSuccessful) {
-        val token = task.result
-        onComplete(token)
+        val deviceToken = task.result
+        onComplete(deviceToken?.token)
       } else onComplete(null)
     }
   }
@@ -89,9 +93,12 @@ class NotificationHandlerFirebase(
 
     val (title, body, channelId) =
         when (notification) {
-          is NewReport -> Triple("New report", notification.reportTitle, channelNewReport)
-          is VetAnswer ->
-              Triple("A vet has answered your report", notification.answer, channelVetAnswer)
+          is NewReport -> Triple("New Report Created", notification.description, channelNewReport)
+          is VetAnswer -> Triple("Report Updated", notification.description, channelVetAnswer)
+          is JoinOffice ->
+              Triple("New Vet Joined Office", notification.description, channelJoinOffice)
+          is ConnectOffice ->
+              Triple("New Farmer Connected", notification.description, channelConnectOffice)
         }
 
     val systemNotification =
@@ -128,6 +135,14 @@ class NotificationHandlerFirebase(
 
       nm.createNotificationChannel(
           NotificationChannel(channelVetAnswer, "Vet answers", NotificationManager.IMPORTANCE_HIGH))
+
+      nm.createNotificationChannel(
+          NotificationChannel(
+              channelJoinOffice, "Join office", NotificationManager.IMPORTANCE_HIGH))
+
+      nm.createNotificationChannel(
+          NotificationChannel(
+              channelConnectOffice, "Connect office", NotificationManager.IMPORTANCE_HIGH))
     }
   }
 }
@@ -135,15 +150,7 @@ class NotificationHandlerFirebase(
 // Serialization and Deserialization
 
 fun Notification.toDataMap(): Map<String, String> =
-    when (this) {
-      is NewReport ->
-          mapOf(
-              "type" to type.toName(),
-              "destinationUid" to destinationUid,
-              "reportTitle" to reportTitle)
-      is VetAnswer ->
-          mapOf("type" to type.toName(), "destinationUid" to destinationUid, "answer" to answer)
-    }
+    mapOf("type" to type.toName(), "destinationUid" to destinationUid, "description" to description)
 
 fun Map<String, String>.toNotification(): Notification? {
   val type = NotificationType.fromName(this["type"] ?: return null)
@@ -151,9 +158,15 @@ fun Map<String, String>.toNotification(): Notification? {
 
   return when (type) {
     NotificationType.NEW_REPORT ->
-        NewReport(destinationUid = destinationUid, reportTitle = this["reportTitle"] ?: return null)
+        NewReport(destinationUid = destinationUid, description = this["description"] ?: return null)
     NotificationType.VET_ANSWER ->
-        VetAnswer(destinationUid = destinationUid, answer = this["answer"] ?: return null)
+        VetAnswer(destinationUid = destinationUid, description = this["description"] ?: return null)
+    NotificationType.JOIN_OFFICE ->
+        JoinOffice(
+            destinationUid = destinationUid, description = this["description"] ?: return null)
+    NotificationType.CONNECT_OFFICE ->
+        ConnectOffice(
+            destinationUid = destinationUid, description = this["description"] ?: return null)
     null -> null
   }
 }
