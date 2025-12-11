@@ -12,12 +12,14 @@ import kotlinx.coroutines.launch
 
 object VerifyEmailErrorMsg {
   const val FAIL = "Something went wrong, make sure you are connected to the internet."
+  const val SUCCESS = "Email successfully sent!"
 }
 
 data class VerifyEmailUIState(
     val verified: Boolean = false,
     val errorMsg: String? = null,
-    val enabled: Boolean = false
+    val enabled: Boolean = false,
+    val countdown: Int = -1
 )
 
 class VerifyEmailViewModel(
@@ -35,12 +37,17 @@ class VerifyEmailViewModel(
     viewModelScope.launch {
       try {
         authRepository.sendVerificationEmail().fold({
+          _uiState.value = _uiState.value.copy(errorMsg = VerifyEmailErrorMsg.SUCCESS)
           _uiState.value = _uiState.value.copy(enabled = false)
+          _uiState.value = _uiState.value.copy(countdown = 30)
+          while (_uiState.value.countdown > 0) {
+            _uiState.value = _uiState.value.copy(countdown = _uiState.value.countdown - 1)
+            delay(1000)
+          }
         }) {
           _uiState.value = _uiState.value.copy(errorMsg = VerifyEmailErrorMsg.FAIL)
           _uiState.value = _uiState.value.copy(enabled = true)
         }
-        delay(30_000)
         _uiState.value = _uiState.value.copy(enabled = true)
       } catch (_: Exception) {
         _uiState.value = _uiState.value.copy(errorMsg = VerifyEmailErrorMsg.FAIL)
@@ -51,7 +58,7 @@ class VerifyEmailViewModel(
   fun pollingRefresh() {
     viewModelScope.launch {
       try {
-        while (1 == "1".toInt()) {
+        while (true) {
           delay(5000)
           _uiState.value = _uiState.value.copy(verified = authRepository.checkIsVerified())
         }

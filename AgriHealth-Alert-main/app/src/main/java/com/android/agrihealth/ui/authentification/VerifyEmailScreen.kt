@@ -59,6 +59,10 @@ object VerifyEmailScreenTexts {
   const val GREETING = "One last step! Confirm your email address to have full access to our app"
   const val SEND_BUTTON = "Send new email"
   const val NO_EMAIL_QUESTIONMARK = "Didn't receive the email?"
+
+  fun textForCountdown(cd: Int): String {
+    return if (cd >= 0) "Can resend email in $cd seconds" else ""
+  }
 }
 
 /**
@@ -135,6 +139,7 @@ fun VerifyEmailScreen(
                     modifier = Modifier.testTag(VerifyEmailScreenTestTags.SEND_EMAIL)) {
                       Text(VerifyEmailScreenTexts.SEND_BUTTON)
                     }
+                Text(VerifyEmailScreenTexts.textForCountdown(uiState.value.countdown))
 
                 // Debug button to enable any account
                 /*
