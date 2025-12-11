@@ -76,11 +76,7 @@ class OverviewViewModelTest {
 
     val officeId = viewModel.uiState.value.officeOptions.firstOrNull()
 
-    viewModel.updateFiltersForReports(
-        status = FilterArg.Unset,
-        officeId = FilterArg.Value(officeId),
-        farmerId = FilterArg.Unset,
-        assignment = FilterArg.Unset)
+    viewModel.updateFiltersForReports(officeId = FilterArg.Value(officeId))
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
