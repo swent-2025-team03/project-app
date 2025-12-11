@@ -70,6 +70,16 @@ object OverviewScreenTestTags {
   fun alertItemTag(page: Int) = "ALERT_ITEM_$page"
 }
 
+object AssignedVetTagTexts {
+  const val ASSIGNED_TO_CURRENT_VET = "Assigned to You"
+}
+
+object AssigneeFilterTexts {
+  const val ASSIGNED_TO_ME = "Assigned to me"
+  const val UNASSIGNED = "Unassigned"
+  const val ASSIGNED_TO_OTHERS = "Assigned to others"
+}
+
 /**
  * Composable screen displaying the Overview UI. Shows latest alerts and a list of past reports.
  * Button for creating a new report will only be displayed for farmer accounts. For the list,
@@ -246,9 +256,12 @@ fun OverviewScreen(
                                 uiState.selectedAssignmentFilter?.let {
                                   add(
                                       when (it) {
-                                        AssignmentFilter.ASSIGNED_TO_CURRENT_VET -> "Assigned to me"
-                                        AssignmentFilter.UNASSIGNED -> "Unassigned"
-                                        AssignmentFilter.ASSIGNED_TO_OTHERS -> "Assigned to others"
+                                        AssignmentFilter.ASSIGNED_TO_CURRENT_VET ->
+                                            AssigneeFilterTexts.ASSIGNED_TO_ME
+                                        AssignmentFilter.UNASSIGNED ->
+                                            AssigneeFilterTexts.UNASSIGNED
+                                        AssignmentFilter.ASSIGNED_TO_OTHERS ->
+                                            AssigneeFilterTexts.ASSIGNED_TO_OTHERS
                                       })
                                 }
                               }
@@ -329,9 +342,11 @@ fun OverviewScreen(
                               labelProvider = { assignment ->
                                 when (assignment) {
                                   null -> "-"
-                                  AssignmentFilter.ASSIGNED_TO_CURRENT_VET -> "Assigned to Me"
-                                  AssignmentFilter.UNASSIGNED -> "Unassigned"
-                                  AssignmentFilter.ASSIGNED_TO_OTHERS -> "Assigned to Others"
+                                  AssignmentFilter.ASSIGNED_TO_CURRENT_VET ->
+                                      AssigneeFilterTexts.ASSIGNED_TO_ME
+                                  AssignmentFilter.UNASSIGNED -> AssigneeFilterTexts.UNASSIGNED
+                                  AssignmentFilter.ASSIGNED_TO_OTHERS ->
+                                      AssigneeFilterTexts.ASSIGNED_TO_OTHERS
                                 }
                               })
                         }
@@ -468,7 +483,8 @@ private fun AssignedVetTag(
     snackbarHostState: SnackbarHostState
 ) {
   val coroutineScope = rememberCoroutineScope()
-  val label = if (isCurrentVet) "Assigned to You" else rememberUserName(vetId)
+  val label =
+      if (isCurrentVet) AssignedVetTagTexts.ASSIGNED_TO_CURRENT_VET else rememberUserName(vetId)
 
   val isClickable = !isCurrentVet
 

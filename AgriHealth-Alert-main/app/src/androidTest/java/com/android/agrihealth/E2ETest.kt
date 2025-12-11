@@ -28,6 +28,8 @@ import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags
+import com.android.agrihealth.ui.overview.AssignedVetTagTexts
+import com.android.agrihealth.ui.overview.AssigneeFilterTexts
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.android.agrihealth.ui.profile.ChangePasswordScreenTestTags
 import com.android.agrihealth.ui.profile.CodeComposableComponentsTestTags
@@ -175,6 +177,9 @@ class E2ETest : FirebaseEmulatorsTest() {
     checkOverviewScreenIsDisplayed()
     createReport("Report 1", "Description 1", "Deleted Office")
     createReport("Report 2", "Description 2", user1.linkedOffices.last())
+
+    waitUntilTestTag(OverviewScreenTestTags.FILTERS_TOGGLE)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTERS_TOGGLE).performClick()
 
     // Report 1 appears when filtering for "Pending"
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN).performClick()
@@ -381,7 +386,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     goBack()
     goBack()
     claimReport("Report 2")
-    checkAssignedVetDisplayedOnOverview()
+    checkAssignedVetDisplayedOnOverview("Test Vet")
   }
 
   // ----------- Helper functions -----------
@@ -505,40 +510,45 @@ class E2ETest : FirebaseEmulatorsTest() {
     waitUntilTestTag(OverviewScreenTestTags.SCREEN)
   }
 
-  //    private fun claimReport(reportName: String) {
-  //    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-  //      composeTestRule.onNodeWithText(reportName).isDisplayed()
-  //    }
-  //    composeTestRule.onNodeWithText(reportName).performClick()
-  //
-  //    waitUntilTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
-  //    waitUntilTestTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
-  //    composeTestRule
-  //        .onNodeWithTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
-  //        .performScrollToNode(hasTestTag(ReportViewScreenTestTags.CLAIM_BUTTON))
-  //    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.CLAIM_BUTTON).performClick()
-  //
-  //    goBack()
-  //
-  //    // TODO remove once discard change is fixed
-  //    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-  //      composeTestRule.onNodeWithText("Discard changes").isDisplayed()
-  //    }
-  //    composeTestRule.onNodeWithText("Discard changes").performClick()
-  //
-  //    waitUntilTestTag(OverviewScreenTestTags.SCREEN)
-  //  }
-
-  private fun checkAssignedVetDisplayedOnOverview() {
-    val vet = "Test Vet"
-    val assignedToYou = "Assigned to You"
-
+  private fun checkAssignedVetDisplayedOnOverview(vet: String) {
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithText(vet).isDisplayed()
     }
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onNodeWithText(assignedToYou).isDisplayed()
+      composeTestRule.onNodeWithText(AssignedVetTagTexts.ASSIGNED_TO_CURRENT_VET).isDisplayed()
     }
+
+    waitUntilTestTag(OverviewScreenTestTags.FILTERS_TOGGLE)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTERS_TOGGLE).performClick()
+
+    waitUntilTestTag(OverviewScreenTestTags.ASSIGNEE_FILTER)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).performClick()
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithText(AssigneeFilterTexts.ASSIGNED_TO_ME).isDisplayed()
+    }
+    composeTestRule.onNodeWithText(AssigneeFilterTexts.ASSIGNED_TO_ME).performClick()
+    composeTestRule.onNodeWithText(vet).assertIsNotDisplayed()
+
+    waitUntilTestTag(OverviewScreenTestTags.ASSIGNEE_FILTER)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).performClick()
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithText(AssigneeFilterTexts.ASSIGNED_TO_OTHERS).isDisplayed()
+    }
+    composeTestRule.onNodeWithText(AssigneeFilterTexts.ASSIGNED_TO_OTHERS).performClick()
+    composeTestRule
+        .onNodeWithText(AssignedVetTagTexts.ASSIGNED_TO_CURRENT_VET)
+        .assertIsNotDisplayed()
+
+    waitUntilTestTag(OverviewScreenTestTags.ASSIGNEE_FILTER)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).performClick()
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithText(AssigneeFilterTexts.UNASSIGNED).isDisplayed()
+    }
+    composeTestRule.onNodeWithText(AssigneeFilterTexts.UNASSIGNED).performClick()
+    composeTestRule
+        .onNodeWithText(AssignedVetTagTexts.ASSIGNED_TO_CURRENT_VET)
+        .assertIsNotDisplayed()
+    composeTestRule.onNodeWithText(vet).assertIsNotDisplayed()
   }
 
   private fun completeSignUp(
