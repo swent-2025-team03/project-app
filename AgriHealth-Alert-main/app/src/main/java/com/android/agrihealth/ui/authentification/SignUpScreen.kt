@@ -233,6 +233,10 @@ private fun SignUpScreenPreview() {
           TODO("Not yet implemented")
         }
 
+        override suspend fun sendResetPasswordEmail(email: String): Result<Unit> {
+          TODO("Not yet implemented")
+        }
+
         override suspend fun signInWithGoogle(credential: Credential): Result<String> {
           TODO("Not yet implemented")
         }

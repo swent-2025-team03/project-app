@@ -44,6 +44,7 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.UserViewModelContract
 
 object ProfileScreenTestTags {
 
@@ -56,20 +57,21 @@ object ProfileScreenTestTags {
   const val DEFAULT_OFFICE_FIELD = "DefaultOfficeField"
   const val CODE_BUTTON_FARMER = "CodeButtonFarmer"
   const val MANAGE_OFFICE_BUTTON = "ManageOfficeButton"
+  const val GENERATE_CODE_BUTTON = "GenerateCodeButton"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    userViewModel: UserViewModel = viewModel<UserViewModel>(),
+    userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
     onGoBack: () -> Unit = {},
     onLogout: () -> Unit = {},
     onEditProfile: () -> Unit = {},
     onCodeFarmer: () -> Unit = {},
     onManageOffice: () -> Unit = {},
 ) {
-  val uiS by userViewModel.uiState.collectAsState()
-  val user = ui.user
+  val uiState by userViewModel.uiState.collectAsState()
+  val user = uiState.user
   val userRole = user.role
 
   val factory = remember {

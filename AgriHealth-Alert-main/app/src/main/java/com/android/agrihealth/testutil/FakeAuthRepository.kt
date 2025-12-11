@@ -3,11 +3,17 @@ package com.android.agrihealth.testutil
 import androidx.credentials.Credential
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.ui.authentification.EmailSendStatus
 import com.google.firebase.auth.FirebaseAuthException
 import kotlinx.coroutines.delay
 
-class FakeAuthRepository(private var isOnline: Boolean = true, private val delayMs: Long = 0L) :
-    AuthRepository {
+class FakeAuthRepository(
+    private var isOnline: Boolean = true,
+    private var resetPasswordResult: EmailSendStatus = EmailSendStatus.Success,
+    private val delayMs: Long = 0L
+
+) : AuthRepository {
+
 
   private val credentials = mutableMapOf<String, String>()
 
@@ -28,9 +34,22 @@ class FakeAuthRepository(private var isOnline: Boolean = true, private val delay
     return Result.failure(IllegalStateException("timeout"))
   }
 
+  override suspend fun sendResetPasswordEmail(email: String): Result<Unit> {
+      delay(delayMs)
+      return when (resetPasswordResult) {
+      is EmailSendStatus.Success -> Result.success(Unit)
+      is EmailSendStatus.Fail -> Result.failure(IllegalArgumentException())
+      is EmailSendStatus.Waiting -> {
+        delay(10000)
+        Result.success(Unit)
+      }
+      is EmailSendStatus.None -> Result.failure(IllegalArgumentException())
+    }
+  }
+
   override suspend fun deleteAccount(): Result<Unit> {
-    delay(delayMs)
-    if (isOnline) {
+      delay(delayMs)
+      if (isOnline) {
       if (currentUser == null) {
         return Result.failure(IllegalStateException("no user logged in"))
       } else credentials.remove(currentUser)
@@ -40,8 +59,8 @@ class FakeAuthRepository(private var isOnline: Boolean = true, private val delay
   }
 
   override suspend fun reAuthenticate(email: String, password: String): Result<Unit> {
-    delay(delayMs)
-    if (isOnline) {
+      delay(delayMs)
+      if (isOnline) {
       // not important
       return Result.success(Unit)
     }
@@ -49,8 +68,8 @@ class FakeAuthRepository(private var isOnline: Boolean = true, private val delay
   }
 
   override suspend fun signInWithEmailAndPassword(email: String, password: String): Result<String> {
-    delay(delayMs)
-    if (isOnline) {
+      delay(delayMs)
+      if (isOnline) {
       if (currentUser != null) {
         return Result.failure(IllegalStateException("user $currentUser already logged in"))
       } else if (credentials[email] == password) {
@@ -64,8 +83,8 @@ class FakeAuthRepository(private var isOnline: Boolean = true, private val delay
   }
 
   override suspend fun signInWithGoogle(credential: Credential): Result<String> {
-    delay(delayMs)
-    if (isOnline) {
+      delay(delayMs)
+      if (isOnline) {
       // no-op because no
       return Result.success("success!!")
     }
@@ -73,7 +92,7 @@ class FakeAuthRepository(private var isOnline: Boolean = true, private val delay
   }
 
   override fun signOut(): Result<Unit> {
-    currentUser = null
+      currentUser = null
     return Result.success(Unit)
   }
 
@@ -82,8 +101,8 @@ class FakeAuthRepository(private var isOnline: Boolean = true, private val delay
       password: String,
       userData: User
   ): Result<String> {
-    delay(delayMs)
-    if (isOnline) {
+      delay(delayMs)
+      if (isOnline) {
       if (credentials[email] != null) {
         return Result.failure(
             FirebaseAuthException("already used email", "this throws if I leave it empty"))

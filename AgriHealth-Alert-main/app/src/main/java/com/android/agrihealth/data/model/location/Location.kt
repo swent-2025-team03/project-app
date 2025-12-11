@@ -10,6 +10,10 @@ fun Location.toLatLng(): LatLng {
   return LatLng(this.latitude, this.longitude)
 }
 
+fun LatLng.toLocation(): Location {
+  return Location(this.latitude, this.longitude)
+}
+
 /** Generate a Location object from a data map, used to convert firestore documents. */
 fun locationFromMap(locationData: Map<*, *>?): Location? {
   return locationData?.let {

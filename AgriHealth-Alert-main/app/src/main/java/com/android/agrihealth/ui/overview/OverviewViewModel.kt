@@ -34,8 +34,23 @@ data class OverviewUIState(
     val farmerOptions: List<String> = emptyList(),
     val filteredReports: List<Report> = emptyList(),
     val sortedAlerts: List<AlertUiState> = emptyList(),
+    val selectedAssignmentFilter: AssignmentFilter? = null,
     val isLoading: Boolean = false,
 )
+
+enum class AssignmentFilter {
+  ASSIGNED_TO_CURRENT_VET,
+  UNASSIGNED,
+  ASSIGNED_TO_OTHERS
+}
+
+sealed class FilterArg<out T> {
+  object Unset : FilterArg<Nothing>()
+
+  object Reset : FilterArg<Nothing>()
+
+  data class Value<T>(val value: T?) : FilterArg<T>()
+}
 
 /**
  * ViewModel holding the state of reports displayed on the Overview screen. Currently uses mock data
@@ -51,55 +66,101 @@ class OverviewViewModel(
 
   private lateinit var authRepository: AuthRepository
 
+  private var currentUserId: String = ""
+
   /**
    * Loads reports for the user based on role and updates UIState. Applies selected filters to
    * generate filteredReports.
    */
   override fun loadReports(user: User) {
-    viewModelScope.launch {
-      _uiState.withLoadingState(
-          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
-            try {
-              val reports =
-                  reportRepository.getAllReports(user.uid).sortedByDescending { it.createdAt }
-              val officeOptions = reports.map { it.officeId }.distinct()
-              val farmerOptions = reports.map { it.farmerId }.distinct()
-              val filtered =
-                  applyFiltersForReports(
-                      reports,
-                      _uiState.value.selectedStatus,
-                      _uiState.value.selectedOffice,
-                      _uiState.value.selectedFarmer,
-                  )
+      viewModelScope.launch {
+          _uiState.withLoadingState(
+              applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+              try {
+                  val reports =
+                      reportRepository.getAllReports(user.uid).sortedByDescending { it.createdAt }
+                  val officeOptions = reports.map { it.officeId }.distinct()
+                  val farmerOptions = reports.map { it.farmerId }.distinct()
+                  val filtered =
+                      applyFiltersForReports(
+                          reports,
+                          _uiState.value.selectedStatus,
+                          _uiState.value.selectedOffice,
+                          _uiState.value.selectedFarmer,
+                          _uiState.value.selectedAssignmentFilter,
+                          currentUserId = user.uid
+                      )
 
-              _uiState.value =
-                  _uiState.value.copy(
-                      reports = reports,
-                      officeOptions = officeOptions,
-                      farmerOptions = farmerOptions,
-                      filteredReports = filtered)
-            } catch (e: Exception) {
-              _uiState.value = _uiState.value.copy(reports = emptyList())
-            }
+                  _uiState.value =
+                      _uiState.value.copy(
+                          reports = reports,
+                          officeOptions = officeOptions,
+                          farmerOptions = farmerOptions,
+                          filteredReports = filtered
+                      )
+
+                  currentUserId = user.uid
+              } catch (e: Exception) {
+                  _uiState.value = _uiState.value.copy(reports = emptyList())
+              }
           }
-    }
+      }
   }
 
   /**
-   * Updates the selected report filters in UIState and recalculates filteredReports. Each filter is
-   * optional; only non-null filters are applied.
+   * Updates the selected report filters in UIState and recalculates filteredReports.
+   *
+   * Each parameter is a FilterArg:
+   * - FilterArg.Unset -> keep the current selection
+   * - FilterArg.Value(v) -> set the selection to v (v may be null which clears the filter)
    */
   override fun updateFiltersForReports(
-      status: ReportStatus?,
-      officeId: String?,
-      farmerId: String?
+      status: FilterArg<ReportStatus>,
+      officeId: FilterArg<String>,
+      farmerId: FilterArg<String>,
+      assignment: FilterArg<AssignmentFilter>
   ) {
-    val filtered = applyFiltersForReports(_uiState.value.reports, status, officeId, farmerId)
+    val current = _uiState.value
+    val newStatus =
+        when (status) {
+          is FilterArg.Value -> status.value
+          FilterArg.Unset -> current.selectedStatus
+          FilterArg.Reset -> null
+        }
+    val newOffice =
+        when (officeId) {
+          is FilterArg.Value -> officeId.value
+          FilterArg.Unset -> current.selectedOffice
+          FilterArg.Reset -> null
+        }
+    val newFarmer =
+        when (farmerId) {
+          is FilterArg.Value -> farmerId.value
+          FilterArg.Unset -> current.selectedFarmer
+          FilterArg.Reset -> null
+        }
+    val newAssignment =
+        when (assignment) {
+          is FilterArg.Value -> assignment.value
+          FilterArg.Unset -> current.selectedAssignmentFilter
+          FilterArg.Reset -> null
+        }
+
+    val filtered =
+        applyFiltersForReports(
+            reports = current.reports,
+            status = newStatus,
+            officeId = newOffice,
+            farmerId = newFarmer,
+            assignment = newAssignment,
+            currentUserId = currentUserId)
+
     _uiState.value =
-        _uiState.value.copy(
-            selectedStatus = status,
-            selectedOffice = officeId,
-            selectedFarmer = farmerId,
+        current.copy(
+            selectedStatus = newStatus,
+            selectedOffice = newOffice,
+            selectedFarmer = newFarmer,
+            selectedAssignmentFilter = newAssignment,
             filteredReports = filtered)
   }
 
@@ -111,12 +172,25 @@ class OverviewViewModel(
       reports: List<Report>,
       status: ReportStatus?,
       officeId: String?,
-      farmerId: String?
+      farmerId: String?,
+      assignment: AssignmentFilter?,
+      currentUserId: String
   ): List<Report> {
     return reports.filter { report ->
-      (status == null || report.status == status) &&
-          (officeId == null || report.officeId == officeId) &&
-          (farmerId == null || report.farmerId == farmerId)
+      val matchesStatus = (status == null || report.status == status)
+      val matchesOffice = (officeId == null || report.officeId == officeId)
+      val matchesFarmer = (farmerId == null || report.farmerId == farmerId)
+
+      val matchesAssignment =
+          when (assignment) {
+            null -> true
+            AssignmentFilter.ASSIGNED_TO_CURRENT_VET -> report.assignedVet == currentUserId
+            AssignmentFilter.UNASSIGNED -> report.assignedVet == null
+            AssignmentFilter.ASSIGNED_TO_OTHERS ->
+                report.assignedVet != null && report.assignedVet != currentUserId
+          }
+
+      matchesStatus && matchesOffice && matchesFarmer && matchesAssignment
     }
   }
 

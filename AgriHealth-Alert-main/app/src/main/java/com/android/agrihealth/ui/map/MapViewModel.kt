@@ -7,6 +7,9 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.agrihealth.data.model.alert.Alert
+import com.android.agrihealth.data.model.alert.AlertRepository
+import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
@@ -33,6 +36,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 
 data class MapUIState(
     val reports: List<SpiderifiedReport> = emptyList(),
+    val alerts: List<Alert> = emptyList(),
     val geocodedAddress: String? = null
 )
 
@@ -44,12 +48,14 @@ sealed class MapEvent {
 
 class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
+    private val alertRepository: AlertRepository = AlertRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
     private val locationViewModel: LocationViewModel,
     private val userId: String,
     val selectedReportId: String? = null,
     startingPosition: Location? = null,
-    showReports: Boolean = true
+    showReports: Boolean = true,
+    showAlerts: Boolean = true
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(MapUIState())
   val uiState: StateFlow<MapUIState> = _uiState.asStateFlow()
@@ -86,6 +92,10 @@ class MapViewModel(
     if (showReports) {
       refreshReports()
     }
+
+    if (showAlerts) {
+      refreshAlerts()
+    }
   }
 
   /** Fetches every report linked to the current user and exposes them in MapUIState */
@@ -96,6 +106,18 @@ class MapViewModel(
         updateState { copy(reports = newReports) }
       } catch (e: Exception) {
         Log.e("MapScreen", "Failed to load reports: ${e.message}")
+      }
+    }
+  }
+
+  /** Fetches every current alert and exposes them in MapUIState */
+  fun refreshAlerts() {
+    viewModelScope.launch {
+      try {
+        val newAlerts = alertRepository.getAlerts()
+        updateState { copy(alerts = newAlerts) }
+      } catch (e: Exception) {
+        Log.e("MapScreen", "Failed to load alerts: ${e.message}")
       }
     }
   }

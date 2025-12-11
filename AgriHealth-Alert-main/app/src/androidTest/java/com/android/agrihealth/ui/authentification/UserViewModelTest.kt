@@ -51,7 +51,7 @@ class UserViewModelTest {
     advanceUntilIdle()
 
     // Default role = FARMER
-    val role = viewModel.user.first()
+    val role = viewModel.uiState.value.user
     assertEquals(defaultUser, role)
   }
 
@@ -67,8 +67,8 @@ class UserViewModelTest {
     viewModel.loadUser(user3.uid)
     advanceUntilIdle()
 
-    // Then userRole StateFlow should be updated
-    val role = viewModel.user.first()
+    // Then user State should be updated
+    val role = viewModel.uiState.value.user
     assertEquals(user3, role)
   }
 
@@ -83,8 +83,8 @@ class UserViewModelTest {
     viewModel.loadUser("nonExistingUid")
     advanceUntilIdle()
 
-    // Then userRole StateFlow should remain default
-    val role = viewModel.user.first()
+    // Then user State should remain default
+    val role = viewModel.uiState.value.user
     assertEquals(defaultUser, role)
   }
 }

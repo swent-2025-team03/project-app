@@ -42,6 +42,7 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.navigation.Tab
+import com.android.agrihealth.ui.overview.OverviewScreenTestTags.ASSIGNED_VET_TAG
 import kotlinx.coroutines.launch
 
 // -- imports for preview --
@@ -60,11 +61,24 @@ object OverviewScreenTestTags {
   const val SCREEN = "OverviewScreen"
   const val REPORT_ITEM = "reportItem"
   const val PROFILE_BUTTON = "ProfileButton"
+  const val FILTERS_TOGGLE = "FiltersToggle"
   const val STATUS_DROPDOWN = "StatusFilterDropdown"
   const val OFFICE_ID_DROPDOWN = "OfficeIdFilterDropdown"
   const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
+  const val ASSIGNEE_FILTER = "AssigneeFilter"
+  const val ASSIGNED_VET_TAG = "AssignedVetTag"
 
   fun alertItemTag(page: Int) = "ALERT_ITEM_$page"
+}
+
+object AssignedVetTagTexts {
+  const val ASSIGNED_TO_CURRENT_VET = "Assigned to You"
+}
+
+object AssigneeFilterTexts {
+  const val ASSIGNED_TO_ME = "Assigned to Me"
+  const val UNASSIGNED = "Unassigned"
+  const val ASSIGNED_TO_OTHERS = "Assigned to Others"
 }
 
 /**
@@ -75,7 +89,8 @@ object OverviewScreenTestTags {
  * @param reports List of report to display kept only for backward compatibility and shouldn't be
  *   used
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun OverviewScreen(
     userRole: UserRole,
@@ -94,11 +109,17 @@ fun OverviewScreen(
   var lazySpace by remember { mutableStateOf(0.dp) }
   val minLazySpace = remember { 150.dp }
   val snackbarHostState = remember { SnackbarHostState() }
+  var filtersExpanded by remember { mutableStateOf(false) }
 
   LaunchedEffect(user) {
     overviewViewModel.loadReports(user)
     overviewViewModel.loadAlerts(user)
     onLogin()
+    overviewViewModel.updateFiltersForReports(
+        status = FilterArg.Reset,
+        officeId = FilterArg.Reset,
+        farmerId = FilterArg.Reset,
+        assignment = FilterArg.Reset)
   }
   Scaffold(
       // -- Top App Bar with logout icon --
@@ -158,86 +179,135 @@ fun OverviewScreen(
                         }
                         .testTag(OverviewScreenTestTags.SCREEN)
                         .verticalScroll(rememberScrollState())) {
-                  // -- Latest alert section --
-                  Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
+                // -- Latest alert section --
+                Text("Latest News / Alerts", style = MaterialTheme.typography.headlineSmall)
 
-                  Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                  val pagerState =
-                      rememberPagerState(initialPage = 0, pageCount = { uiState.sortedAlerts.size })
-                  val coroutineScope = rememberCoroutineScope()
-                  val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+                val pagerState =
+                    rememberPagerState(initialPage = 0, pageCount = { uiState.sortedAlerts.size })
+                val coroutineScope = rememberCoroutineScope()
+                val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 
-                  Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     if (uiState.sortedAlerts.isEmpty()) {
-                      Text(
-                          text = "No alerts available",
-                          style = MaterialTheme.typography.bodyMedium,
-                          modifier = Modifier.padding(16.dp))
+                        Text(
+                            text = "No alerts available",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(16.dp)
+                        )
                     } else {
-                      HorizontalPager(
-                          state = pagerState,
-                          modifier = Modifier.fillMaxWidth(),
-                          contentPadding = PaddingValues(horizontal = (screenWidth - 350.dp) / 2),
-                          pageSpacing = 16.dp) { page ->
+                        HorizontalPager(
+                            state = pagerState,
+                            modifier = Modifier.fillMaxWidth(),
+                            contentPadding = PaddingValues(horizontal = (screenWidth - 350.dp) / 2),
+                            pageSpacing = 16.dp
+                        ) { page ->
                             val alertUiState = uiState.sortedAlerts[page]
                             AlertItem(
                                 alertUiState = alertUiState,
                                 isCentered = pagerState.currentPage == page,
                                 onCenterClick = { onAlertClick(alertUiState.alert.id) },
                                 onNotCenterClick = {
-                                  coroutineScope.launch { pagerState.animateScrollToPage(page) }
+                                    coroutineScope.launch { pagerState.animateScrollToPage(page) }
                                 },
                                 modifier =
                                     Modifier.width(350.dp)
-                                        .testTag(OverviewScreenTestTags.alertItemTag(page)))
-                          }
+                                        .testTag(OverviewScreenTestTags.alertItemTag(page))
+                            )
+                        }
                     }
-                  }
-                  Spacer(modifier = Modifier.height(24.dp))
+                }
+                Spacer(modifier = Modifier.height(24.dp))
 
-                  // -- Create a new report button --
-                  // Display the button only if the user role is FARMER
-                  if (userRole == UserRole.FARMER) {
+                // -- Create a new report button --
+                // Display the button only if the user role is FARMER
+                if (userRole == UserRole.FARMER) {
                     Button(
                         onClick = onAddReport,
                         modifier =
                             Modifier.align(Alignment.CenterHorizontally)
-                                .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)) {
-                          Text("Create a new report")
-                        }
-                  }
+                                .testTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)
+                    ) {
+                        Text("Create a new report")
+                    }
+                }
 
-                  Spacer(modifier = Modifier.height(15.dp))
-                  // -- Past reports list --
-                  Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
-                  Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(15.dp))
+                // -- Past reports list --
+                Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+                // Filter Chips + Logic
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()) {
+                      AssistChip(
+                          onClick = { filtersExpanded = !filtersExpanded },
+                          label = {
+                            Text(
+                                text = if (filtersExpanded) "Hide filters" else "Filters",
+                                style = MaterialTheme.typography.bodyMedium)
+                          },
+                          modifier = Modifier.testTag(OverviewScreenTestTags.FILTERS_TOGGLE))
 
-                  Row(
-                      verticalAlignment = Alignment.CenterVertically,
-                      modifier = Modifier.fillMaxWidth()) {
-                        // -- Status filter --
+                      Spacer(modifier = Modifier.width(8.dp))
+
+                      // Adds selected filters displayed even we the filters not displayed
+                      val appliedSummaries =
+                          buildList {
+                                uiState.selectedStatus?.let { add(it.displayString()) }
+                                uiState.selectedOffice?.let { add(rememberOfficeName(it)) }
+                                uiState.selectedFarmer?.let { add(rememberUserName(it)) }
+                                uiState.selectedAssignmentFilter?.let {
+                                  add(
+                                      when (it) {
+                                        AssignmentFilter.ASSIGNED_TO_CURRENT_VET ->
+                                            AssigneeFilterTexts.ASSIGNED_TO_ME
+                                        AssignmentFilter.UNASSIGNED ->
+                                            AssigneeFilterTexts.UNASSIGNED
+                                        AssignmentFilter.ASSIGNED_TO_OTHERS ->
+                                            AssigneeFilterTexts.ASSIGNED_TO_OTHERS
+                                      })
+                                }
+                              }
+                              .joinToString(separator = " • ")
+                              .takeIf { it.isNotEmpty() } ?: "No filters"
+
+                      Text(
+                          text = appliedSummaries,
+                          style = MaterialTheme.typography.bodySmall,
+                          modifier = Modifier.weight(1f),
+                          maxLines = 1,
+                          overflow = TextOverflow.Ellipsis)
+                    }
+
+                if (filtersExpanded) {
+                  Column(
+                      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                      verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        // Status filter (common to both roles)
                         DropdownMenuWrapper(
                             options = listOf(null) + ReportStatus.entries,
                             selectedOption = uiState.selectedStatus,
-                            onOptionSelected = {
+                            onOptionSelected = { newStatus ->
                               overviewViewModel.updateFiltersForReports(
-                                  it, uiState.selectedOffice, uiState.selectedFarmer)
+                                  status = FilterArg.Value(newStatus))
                             },
                             modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN),
                             placeholder = "Filter by status",
                             labelProvider = { status -> status?.displayString() ?: "-" })
-                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
                         if (userRole == UserRole.FARMER) {
-                          // -- OfficeId filter (only for farmer) --
+                          // OfficeId filter (only for farmer)
                           DropdownMenuWrapper(
                               options = listOf(null) + uiState.officeOptions,
                               selectedOption = uiState.selectedOffice,
-                              onOptionSelected = {
+                              onOptionSelected = { newOffice ->
                                 overviewViewModel.updateFiltersForReports(
-                                    status = uiState.selectedStatus,
-                                    officeId = it,
-                                    farmerId = uiState.selectedFarmer)
+                                    officeId = FilterArg.Value(newOffice))
                               },
                               modifier =
                                   Modifier.testTag(OverviewScreenTestTags.OFFICE_ID_DROPDOWN),
@@ -246,15 +316,13 @@ fun OverviewScreen(
                                 if (officeId == null) "-" else rememberOfficeName(officeId)
                               })
                         } else if (userRole == UserRole.VET) {
-                          // -- FarmerId filter (only for vet) --
+                          // FarmerId filter (only for vet)
                           DropdownMenuWrapper(
                               options = listOf(null) + uiState.farmerOptions,
                               selectedOption = uiState.selectedFarmer,
-                              onOptionSelected = {
+                              onOptionSelected = { newFarmer ->
                                 overviewViewModel.updateFiltersForReports(
-                                    status = uiState.selectedStatus,
-                                    officeId = uiState.selectedOffice,
-                                    farmerId = it)
+                                    farmerId = FilterArg.Value(newFarmer))
                               },
                               modifier =
                                   Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN),
@@ -262,24 +330,51 @@ fun OverviewScreen(
                               labelProvider = { farmerId ->
                                 if (farmerId == null) "-" else rememberUserName(farmerId)
                               })
+
+                          Spacer(modifier = Modifier.height(4.dp))
+
+                          // Assignment filter (only for vets)
+                          DropdownMenuWrapper(
+                              options =
+                                  listOf<AssignmentFilter?>(null) +
+                                      AssignmentFilter.entries.toTypedArray(),
+                              selectedOption = uiState.selectedAssignmentFilter,
+                              onOptionSelected = { newAssignment ->
+                                overviewViewModel.updateFiltersForReports(
+                                    assignment = FilterArg.Value(newAssignment))
+                              },
+                              modifier = Modifier.testTag(OverviewScreenTestTags.ASSIGNEE_FILTER),
+                              placeholder = "Filter by Assignee",
+                              labelProvider = { assignment ->
+                                when (assignment) {
+                                  null -> "-"
+                                  AssignmentFilter.ASSIGNED_TO_CURRENT_VET ->
+                                      AssigneeFilterTexts.ASSIGNED_TO_ME
+                                  AssignmentFilter.UNASSIGNED -> AssigneeFilterTexts.UNASSIGNED
+                                  AssignmentFilter.ASSIGNED_TO_OTHERS ->
+                                      AssigneeFilterTexts.ASSIGNED_TO_OTHERS
+                                }
+                              })
                         }
                       }
+                }
 
-                  LazyColumn(modifier = Modifier.height(maxOf(lazySpace, minLazySpace))) {
-                    items(uiState.filteredReports) { report ->
-                      ReportItem(
-                          userRole = userRole,
-                          snackbarHostState = snackbarHostState,
-                          report = report,
-                          onClick = { onReportClick(report.id) },
-                          navigationActions = navigationActions)
-                      HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-                    }
+                LazyColumn(modifier = Modifier.height(maxOf(lazySpace, minLazySpace))) {
+                  items(uiState.filteredReports) { report ->
+                    ReportItem(
+                        userRole = userRole,
+                        snackbarHostState = snackbarHostState,
+                        report = report,
+                        onClick = { onReportClick(report.id) },
+                        navigationActions = navigationActions,
+                        user = user)
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                   }
                 }
-          }
+              }
         }
-      })
+      }
+  )
 }
 
 /** Composable displaying a simple dropdown menu for filtering or selecting options. */
@@ -315,53 +410,112 @@ fun <T> DropdownMenuWrapper(
 
 /**
  * Composable displaying a single report item in the list. Shows title, farmer ID, truncated
- * description, and status tag.
+ * description, and status tag. For Vets, it also shows the assignedVet if there is one.
  */
 @Composable
-fun ReportItem(
+private fun ReportItem(
     report: Report,
     onClick: () -> Unit,
     userRole: UserRole,
     snackbarHostState: SnackbarHostState,
-    navigationActions: NavigationActions? = null
+    navigationActions: NavigationActions? = null,
+    user: User? = null
 ) {
   val coroutineScope = rememberCoroutineScope()
 
-  Row(
+  Box(
       modifier =
-          Modifier.fillMaxWidth()
-              .testTag(OverviewScreenTestTags.REPORT_ITEM)
-              .clickable { onClick() }
-              .padding(vertical = 8.dp),
-      verticalAlignment = Alignment.CenterVertically) {
-        Column(modifier = Modifier.weight(1f)) {
-          Text(report.title, style = MaterialTheme.typography.titleSmall)
+          Modifier.fillMaxWidth().testTag(OverviewScreenTestTags.REPORT_ITEM).clickable {
+            onClick()
+          }) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+              Column(modifier = Modifier.weight(1f)) {
+                Text(report.title, style = MaterialTheme.typography.titleSmall)
 
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            if (userRole == UserRole.VET) {
-              AuthorName(
-                  uid = report.farmerId,
-                  onClick = { navigationActions?.navigateTo(Screen.ViewUser(report.farmerId)) })
-            } else
-                OfficeName(
-                    uid = report.officeId,
-                    onClick = {
-                      if (report.officeId.isNotBlank()) {
-                        navigationActions?.navigateTo(Screen.ViewOffice(report.officeId))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                  if (userRole == UserRole.VET) {
+                    AuthorName(
+                        uid = report.farmerId,
+                        onClick = {
+                          navigationActions?.navigateTo(Screen.ViewUser(report.farmerId))
+                        })
+                  } else {
+                    OfficeName(
+                        uid = report.officeId,
+                        onClick = {
+                          if (report.officeId.isNotBlank()) {
+                            navigationActions?.navigateTo(Screen.ViewOffice(report.officeId))
+                          } else {
+                            coroutineScope.launch {
+                              snackbarHostState.showSnackbar("This office no longer exists.")
+                            }
+                          }
+                        })
+                  }
+                }
+
+                Text(
+                    text =
+                        report.description.let { if (it.length > 50) it.take(50) + "..." else it },
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1)
+              }
+
+              ReportStatusTag(report.status)
+            }
+
+        if (userRole == UserRole.VET && report.assignedVet != null) {
+          Box(modifier = Modifier.align(Alignment.BottomEnd).offset(y = 4.dp)) {
+            AssignedVetTag(
+                vetId = report.assignedVet,
+                isCurrentVet = report.assignedVet == user?.uid,
+                navigationActions = navigationActions,
+                snackbarHostState = snackbarHostState)
+          }
+        }
+      }
+}
+
+/**
+ * Shows the Name of the assignedVet or "Assigned to You" or nothing depending on the situation.
+ * Only for Vets.
+ */
+@Composable
+private fun AssignedVetTag(
+    vetId: String,
+    isCurrentVet: Boolean,
+    navigationActions: NavigationActions?,
+    snackbarHostState: SnackbarHostState
+) {
+  val coroutineScope = rememberCoroutineScope()
+  val label =
+      if (isCurrentVet) AssignedVetTagTexts.ASSIGNED_TO_CURRENT_VET else rememberUserName(vetId)
+
+  val isClickable = !isCurrentVet
+
+  Text(
+      text = label,
+      style = MaterialTheme.typography.labelSmall,
+      color =
+          if (isClickable) MaterialTheme.colorScheme.primary
+          else MaterialTheme.colorScheme.onBackground,
+      modifier =
+          Modifier.testTag(ASSIGNED_VET_TAG)
+              .padding(horizontal = 8.dp, vertical = 4.dp)
+              .then(
+                  if (isClickable) {
+                    Modifier.clickable {
+                      if (vetId.isNotBlank()) {
+                        navigationActions?.navigateTo(Screen.ViewUser(vetId))
                       } else {
                         coroutineScope.launch {
-                          snackbarHostState.showSnackbar("This office no longer exists.")
+                          snackbarHostState.showSnackbar("This vet no longer exists.")
                         }
                       }
-                    })
-          }
-          Text(
-              text = report.description.let { if (it.length > 50) it.take(50) + "..." else it },
-              style = MaterialTheme.typography.bodySmall,
-              maxLines = 1)
-        }
-        ReportStatusTag(report.status)
-      }
+                    }
+                  } else Modifier.testTag(ASSIGNED_VET_TAG)))
 }
 
 /**

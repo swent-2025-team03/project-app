@@ -1,6 +1,8 @@
 package com.android.agrihealth.ui.overview
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -161,5 +163,38 @@ class OverviewScreenTest {
         isLoading = { viewModel.uiState.value.isLoading },
         timeoutStart = TestConstants.DEFAULT_TIMEOUT,
         timeoutEnd = TestConstants.DEFAULT_TIMEOUT)
+  }
+
+  // --- TEST 9: Verify Assignee Filter presence ---
+  @Test
+  fun assigneeFilterDropdown_isDisplayedAndSelectable() {
+    setVetScreen()
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTERS_TOGGLE).isDisplayed()
+    }
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTERS_TOGGLE).performClick()
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).isDisplayed()
+    }
+
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).performClick()
+    composeTestRule.onNodeWithText("Assigned to Me").performClick()
+    composeTestRule
+        .onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER)
+        .assertTextEquals("Assigned to Me")
+
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).performClick()
+    composeTestRule.onNodeWithText("Unassigned").performClick()
+    composeTestRule
+        .onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER)
+        .assertTextEquals("Unassigned")
+
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).performClick()
+    composeTestRule.onNodeWithText("Assigned to Others").performClick()
+    composeTestRule
+        .onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER)
+        .assertTextEquals("Assigned to Others")
   }
 }

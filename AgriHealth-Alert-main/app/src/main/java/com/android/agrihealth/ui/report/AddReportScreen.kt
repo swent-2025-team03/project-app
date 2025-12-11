@@ -124,8 +124,10 @@ fun AddReportScreen(
     addReportViewModel: AddReportViewModelContract
 ) {
 
-  val uiState by addReportViewModel.uiState.collectAsState()
-  val user by userViewModel.user.collectAsState()
+  val reportUi by addReportViewModel.uiState.collectAsState()
+  val userUi by userViewModel.uiState.collectAsState()
+  val user = userUi.user
+  val userRole = user.role
 
   val offices = remember { mutableStateMapOf<String, String>() }
 
@@ -143,7 +145,7 @@ fun AddReportScreen(
 
   LaunchedEffect(pickedLocation) { addReportViewModel.setAddress(pickedLocation) }
   LaunchedEffect(Unit) {
-    if (user.collected != uiState.collected) addReportViewModel.switchCollected()
+    if (user.collected != reportUi.collected) addReportViewModel.switchCollected()
   }
 
   // For the dropdown menu
@@ -180,7 +182,7 @@ fun AddReportScreen(
 
   LaunchedEffect(Unit) { addReportViewModel.setOffice(selectedOption) }
 
-  LoadingOverlay(isLoading = uiState.isLoading) {
+  LoadingOverlay(isLoading = userUi.isLoading) {
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
@@ -218,18 +220,18 @@ fun AddReportScreen(
                       .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
               verticalArrangement = Arrangement.Top) {
                 HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
-                TitleField(uiState.title, { addReportViewModel.setTitle(it) })
+                TitleField(reportUi.title, { addReportViewModel.setTitle(it) })
 
-                DescriptionField(uiState.description, { addReportViewModel.setDescription(it) })
+                DescriptionField(reportUi.description, { addReportViewModel.setDescription(it) })
 
                 QuestionList(
-                    questions = uiState.questionForms,
+                    questions = reportUi.questionForms,
                     onQuestionChange = { index, updated ->
                       addReportViewModel.updateQuestion(index, updated)
                     })
 
                 OutlinedTextField(
-                    value = uiState.address?.name ?: "Select a Location",
+                    value = reportUi.address?.name ?: "Select a Location",
                     placeholder = { Text("Select a Location") },
                     onValueChange = {},
                     readOnly = true,
@@ -252,15 +254,15 @@ fun AddReportScreen(
                       addReportViewModel.setOffice(officeId)
                     })
 
-                UploadedImagePreview(photoUri = uiState.photoUri)
+                UploadedImagePreview(photoUri = reportUi.photoUri)
 
                 UploadRemovePhotoSection(
-                    photoAlreadyPicked = uiState.photoUri != null,
+                    photoAlreadyPicked = reportUi.photoUri != null,
                     onPhotoPicked = { addReportViewModel.setPhoto(it) },
                     onPhotoRemoved = { addReportViewModel.removePhoto() },
                 )
 
-                CollectedSwitch(uiState.collected, { addReportViewModel.switchCollected() }, true)
+                CollectedSwitch(reportUi.collected, { addReportViewModel.switchCollected() }, true)
 
                 CreateReportButton(onClick = onCreateReportClick)
               }
