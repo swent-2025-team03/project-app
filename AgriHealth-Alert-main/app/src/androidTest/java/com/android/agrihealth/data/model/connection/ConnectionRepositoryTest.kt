@@ -5,6 +5,8 @@ import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.
 import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.VET_TO_OFFICE
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
+import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.ui.profile.CodeType
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
@@ -200,5 +202,61 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
     val res = repo.claimCode(code)
     assertTrue(res.isFailure)
     assertTrue(res.exceptionOrNull()!!.message!!.contains("Invalid office ID"))
+  }
+
+  @Test
+  // Verifies that getValidCodes returns only the user's unused (OPEN) active codes.
+  fun getValidCodes_returnsOnlyActiveCodes() = runTest {
+    val vet =
+        Vet(
+            uid = "ato",
+            firstname = "nishuukann",
+            lastname = "samishiina",
+            email = "koukannryuugaku@de.com",
+            address = null,
+            farmerConnectCodes = listOf("111111", "222222", "333333"),
+            vetConnectCodes = listOf("444444"),
+            officeId = "epflwoerannde",
+            isGoogleAccount = false,
+            description = null,
+            collected = false,
+            deviceTokensFCM = setOf("yokattana"))
+
+    // Prepare Firestore docs: 111111 (OPEN), 222222 (USED), 333333 (OPEN)
+    val coll = FARMER_TO_OFFICE + CONNECT_CODES
+
+    db.collection(coll)
+        .document("111111")
+        .set(
+            mapOf(
+                "code" to "111111",
+                "officeId" to user3.officeId!!,
+                "status" to "OPEN",
+                "createdAt" to Timestamp.now()))
+        .await()
+
+    db.collection(coll)
+        .document("222222")
+        .set(
+            mapOf(
+                "code" to "222222",
+                "officeId" to user3.officeId!!,
+                "status" to "USED",
+                "createdAt" to Timestamp.now()))
+        .await()
+
+    db.collection(coll)
+        .document("333333")
+        .set(
+            mapOf(
+                "code" to "333333",
+                "officeId" to user3.officeId!!,
+                "status" to "OPEN",
+                "createdAt" to Timestamp.now()))
+        .await()
+
+    val result = repo.getValidCodes(vet, CodeType.FARMER)
+
+    assertEquals(listOf("111111", "333333"), result.sorted())
   }
 }

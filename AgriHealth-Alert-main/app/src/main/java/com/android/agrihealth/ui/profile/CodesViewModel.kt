@@ -3,6 +3,8 @@ package com.android.agrihealth.ui.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.connection.ConnectionRepository
+import com.android.agrihealth.data.model.device.notifications.Notification
+import com.android.agrihealth.data.model.device.notifications.NotificationHandlerFirebase
 import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
@@ -52,10 +54,16 @@ class CodesViewModel(
 
   fun claimCode(code: String) {
     val user = userViewModel.user.value
+    val userName =
+        listOfNotNull(user.firstname, user.lastname)
+            .filter { it.isNotBlank() }
+            .joinToString(" ")
+            .ifBlank { user.uid }
     viewModelScope.launch {
       val result = connectionRepository.claimCode(code)
       result.fold(
           onSuccess = { officeId ->
+            val destinationUids = officeRepository.getVetsInOffice(officeId)
             when (user) {
               is Farmer -> { // Update farmer: add officeId to linkedOffices (avoid duplicates)
                 val updatedLinkedOffices = (user.linkedOffices + officeId).distinct()
@@ -64,6 +72,15 @@ class CodesViewModel(
                     user.copy(
                         linkedOffices = updatedLinkedOffices, defaultOffice = newDefaultOffice)
                 userViewModel.updateUser(updatedFarmer)
+
+                // Send a notification
+                val description = "A new farmer: '${userName}' just got connected to your office!"
+                destinationUids.forEach { uid ->
+                  val notification =
+                      Notification.ConnectOffice(destinationUid = uid, description = description)
+                  val messagingService = NotificationHandlerFirebase()
+                  messagingService.uploadNotification(notification)
+                }
 
                 _claimMessage.value = "Office successfully added!"
               }
@@ -78,6 +95,16 @@ class CodesViewModel(
                         throw IllegalStateException()
                       }
                   officeRepository.updateOffice(updatedOffice)
+
+                  // Send a notification
+                  val description = "A new vet: '${userName}' just joined your office!"
+                  destinationUids.forEach { uid ->
+                    val notification =
+                        Notification.JoinOffice(destinationUid = uid, description = description)
+                    val messagingService = NotificationHandlerFirebase()
+                    messagingService.uploadNotification(notification)
+                  }
+
                   _claimMessage.value = "You successfully joined an office"
                 } catch (_: Exception) {
                   if (_claimMessage.value == null)
