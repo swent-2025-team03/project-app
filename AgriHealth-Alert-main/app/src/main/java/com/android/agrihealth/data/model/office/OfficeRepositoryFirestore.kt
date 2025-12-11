@@ -1,5 +1,6 @@
 package com.android.agrihealth.data.model.office
 
+import android.util.Log
 import com.android.agrihealth.data.model.location.locationFromMap
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
@@ -62,5 +63,24 @@ class OfficeRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fir
         description = data["description"] as? String,
         vets = data["vets"] as? List<String> ?: emptyList(),
         ownerId = data["ownerId"] as String)
+  }
+
+  override suspend fun getVetsInOffice(officeId: String): List<String> {
+    return try {
+      val snapshot = db.collection("offices").document(officeId).get().await()
+
+      if (!snapshot.exists()) {
+        return emptyList()
+      }
+
+      val data = snapshot.data ?: return emptyList()
+
+      val vets = (data["vets"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+
+      vets
+    } catch (e: Exception) {
+      Log.e("UserRepository", "Error fetching vets: ${e.message}")
+      emptyList()
+    }
   }
 }

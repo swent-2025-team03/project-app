@@ -29,6 +29,14 @@ class FakeOfficeRepoForVM(private val office: Office? = null) : OfficeRepository
       Result.success(office)
     }
   }
+
+  override suspend fun getVetsInOffice(officeId: String): List<String> {
+    return if (office == null || office.id != officeId) {
+      emptyList()
+    } else {
+      office.vets
+    }
+  }
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)

@@ -2,20 +2,25 @@ package com.android.agrihealth.ui.report
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.android.agrihealth.data.model.device.notifications.Notification
+import com.android.agrihealth.data.model.device.notifications.NotificationHandlerFirebase
 import com.android.agrihealth.data.model.images.ImageUIState
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.office.OfficeRepository
+import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.report.HealthQuestionFactory
 import com.android.agrihealth.data.model.report.QuestionForm
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
-import com.android.agrihealth.ui.loading.withLoadingState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 data class AddReportUiState(
     val title: String = "",
@@ -55,9 +60,9 @@ sealed class CreateReportResult {
 class AddReportViewModel(
     private val userId: String,
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
+    private val officeRepository: OfficeRepository = OfficeRepositoryProvider.get(),
     private val imageViewModel: ImageViewModel = ImageViewModel(),
 ) : ViewModel(), AddReportViewModelContract {
-
   private val _uiState = MutableStateFlow(AddReportUiState())
   override val uiState: StateFlow<AddReportUiState> = _uiState.asStateFlow()
 
@@ -106,7 +111,6 @@ class AddReportViewModel(
 
   override suspend fun createReport(): CreateReportResult {
     val uiState = _uiState.value
-
     if (uiState.title.isBlank() ||
         uiState.description.isBlank() ||
         uiState.chosenOffice.isBlank() ||
@@ -124,62 +128,62 @@ class AddReportViewModel(
 
     var uploadedPath = uiState.uploadedImagePath
 
-    var result: CreateReportResult =
-        CreateReportResult.UploadError(IllegalStateException("Unknown error"))
+    // Photo upload (if a photo has been chosen)
+    if (uiState.photoUri != null) {
+      imageViewModel.upload(uiState.photoUri)
 
-    _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
-
-      // Photo upload (if a photo has been chosen)
-      if (uiState.photoUri != null) {
-        imageViewModel.upload(uiState.photoUri)
-
-        val resultState =
-            imageViewModel.uiState.first {
-              it is ImageUIState.UploadSuccess || it is ImageUIState.Error
-            }
-
-        when (resultState) {
-          is ImageUIState.UploadSuccess -> {
-            uploadedPath = resultState.path
-            _uiState.value = _uiState.value.copy(uploadedImagePath = resultState.path)
+      val resultState =
+          imageViewModel.uiState.first {
+            it is ImageUIState.UploadSuccess || it is ImageUIState.Error
           }
-          is ImageUIState.Error -> {
-            result = CreateReportResult.UploadError(resultState.e)
-            return@withLoadingState
-          }
-          else -> {
-            result =
-                CreateReportResult.UploadError(
-                    IllegalStateException(AddReportFeedbackTexts.UNKNOWN))
-            return@withLoadingState
-          }
+
+      when (resultState) {
+        is ImageUIState.UploadSuccess -> {
+          uploadedPath = resultState.path
+          _uiState.value = _uiState.value.copy(uploadedImagePath = resultState.path)
         }
-      }
-
-      val newReport =
-          Report(
-              id = reportRepository.getNewReportId(),
-              title = uiState.title,
-              description = uiState.description,
-              questionForms = uiState.questionForms,
-              photoURL = uploadedPath,
-              farmerId = userId,
-              officeId = uiState.chosenOffice,
-              status = ReportStatus.PENDING,
-              answer = null,
-              collected = uiState.collected,
-              location = uiState.address)
-
-      try {
-        reportRepository.addReport(newReport)
-        clearInputs()
-        result = CreateReportResult.Success
-      } catch (e: Exception) {
-        result = CreateReportResult.UploadError(e)
+        is ImageUIState.Error -> {
+          return CreateReportResult.UploadError(resultState.e)
+        }
+        else -> {
+          return CreateReportResult.UploadError(
+              IllegalStateException(AddReportFeedbackTexts.UNKNOWN))
+        }
       }
     }
 
-    return result
+    val newReport =
+        Report(
+            id = reportRepository.getNewReportId(),
+            title = uiState.title,
+            description = uiState.description,
+            questionForms = uiState.questionForms,
+            photoURL = uploadedPath,
+            farmerId = userId,
+            officeId = uiState.chosenOffice,
+            status = ReportStatus.PENDING,
+            answer = null,
+            collected = uiState.collected,
+            location = uiState.address)
+
+    viewModelScope.launch { reportRepository.addReport(newReport) }
+
+    // Send a notification
+    val vetIds = officeRepository.getVetsInOffice(newReport.officeId)
+    val description = "A new report: '${newReport.title}' was just created by a farmer"
+    vetIds.forEach { vetId ->
+      val notification = Notification.NewReport(destinationUid = vetId, description = description)
+      val messagingService = NotificationHandlerFirebase()
+      messagingService.uploadNotification(notification)
+    }
+
+    try {
+      reportRepository.addReport(newReport)
+      clearInputs()
+      return CreateReportResult.Success
+    } catch (e: Exception) {
+      return CreateReportResult.UploadError(e)
+    }
   }
 
   override fun clearInputs() {

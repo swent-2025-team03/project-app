@@ -86,22 +86,38 @@ class NotificationsTest {
   @Test
   fun uploadNotification_succeedsWithAllTypes() = runTest {
     val notificationNewReport =
-        Notification.NewReport(destinationUid = user1.uid, reportTitle = "drop drop it fire")
+        Notification.NewReport(destinationUid = user1.uid, description = "drop drop it fire")
 
     val notificationVetAnswer =
-        Notification.VetAnswer(destinationUid = user1.uid, answer = "rope neck asap")
+        Notification.VetAnswer(destinationUid = user1.uid, description = "rope neck asap")
+
+    val notificationJoinOffice =
+        Notification.JoinOffice(destinationUid = user1.uid, description = "sorahe mau")
+
+    val notificationConnectOffice =
+        Notification.ConnectOffice(destinationUid = user1.uid, description = "sekaino kanata")
 
     messagingService.uploadNotification(notificationNewReport) { assertTrue(it) }
     messagingService.uploadNotification(notificationVetAnswer) { assertTrue(it) }
+    messagingService.uploadNotification(notificationJoinOffice) { assertTrue(it) }
+    messagingService.uploadNotification(notificationConnectOffice) { assertTrue(it) }
   }
 
   @Test
   fun uploadNotification_failsWithUnknownUser() = runTest {
     val notif =
         Notification.NewReport(
-            destinationUid = user2.uid, reportTitle = "o o e o reaching high reaching higher")
+            destinationUid = user2.uid, description = "o o e o reaching high reaching higher")
 
     messagingService.uploadNotification(notif) { assertFalse(it) }
+  }
+
+  @Test
+  fun uploadNotification_failsWithEmptyUid() = runTest {
+    val notifNullUid = Notification.NewReport(destinationUid = "", description = "Empty UID test")
+    messagingService.uploadNotification(notifNullUid) { success ->
+      assertFalse("Notification with empty UID should fail", success)
+    }
   }
 
   @Test
@@ -109,7 +125,7 @@ class NotificationsTest {
     userRepository.addUser(user2.copyCommon(deviceTokensFCM = setOf()))
 
     val notif =
-        Notification.NewReport(destinationUid = user2.uid, reportTitle = "every night every day")
+        Notification.NewReport(destinationUid = user2.uid, description = "every night every day")
 
     messagingService.uploadNotification(notif) { assertFalse(it) }
   }
@@ -123,21 +139,36 @@ class NotificationsTest {
     every { spy.showNotification(capture(slot)) } just Runs
 
     val notificationNewReport =
-        Notification.NewReport(destinationUid = user1.uid, reportTitle = "makes me sick")
+        Notification.NewReport(destinationUid = user1.uid, description = "makes me sick")
     val notificationVetAnswer =
-        Notification.VetAnswer(destinationUid = user1.uid, answer = "when you're acting like that")
+        Notification.VetAnswer(
+            destinationUid = user1.uid, description = "when you're acting like that")
+    val notificationJoinOffice =
+        Notification.JoinOffice(destinationUid = user1.uid, description = "yamiwo terasu")
+    val notificationConnectOffice =
+        Notification.ConnectOffice(destinationUid = user1.uid, description = "kaisei")
 
     val messageNR = dataToRemoteMessage(notificationNewReport.toDataMap())
     val messageVA = dataToRemoteMessage(notificationVetAnswer.toDataMap())
+    val messageJO = dataToRemoteMessage(notificationJoinOffice.toDataMap())
+    val messageCO = dataToRemoteMessage(notificationConnectOffice.toDataMap())
 
     spy.onMessageReceived(messageNR)
     val capturedNR = slot.captured
     slot.clear()
     spy.onMessageReceived(messageVA)
     val capturedVA = slot.captured
+    slot.clear()
+    spy.onMessageReceived(messageJO)
+    val capturedJO = slot.captured
+    slot.clear()
+    spy.onMessageReceived(messageCO)
+    val capturedCO = slot.captured
 
     assertEquals(notificationNewReport, capturedNR)
     assertEquals(notificationVetAnswer, capturedVA)
+    assertEquals(notificationJoinOffice, capturedJO)
+    assertEquals(notificationConnectOffice, capturedCO)
 
     clearMocks(spy)
   }

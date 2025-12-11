@@ -4,11 +4,15 @@ import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepository
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import kotlinx.coroutines.delay
 
 private const val OFFICE_NOT_FOUND = "Office not found"
 
 /** In-memory fake implementation of OfficeRepository for testing purposes. */
-class FakeOfficeRepository(initialOffices: List<Office> = emptyList()) : OfficeRepository {
+class FakeOfficeRepository(
+    initialOffices: List<Office> = emptyList(),
+    private val delayMs: Long = 0L
+) : OfficeRepository {
 
   private val offices =
       ConcurrentHashMap<String, Office>().apply { initialOffices.forEach { put(it.id, it) } }
@@ -29,7 +33,12 @@ class FakeOfficeRepository(initialOffices: List<Office> = emptyList()) : OfficeR
   }
 
   override suspend fun getOffice(id: String): Result<Office> {
+    delay(delayMs)
     return offices[id]?.let { Result.success(it) }
         ?: Result.failure(NoSuchElementException(OFFICE_NOT_FOUND))
+  }
+
+  override suspend fun getVetsInOffice(officeId: String): List<String> {
+    return offices[officeId]?.vets ?: emptyList()
   }
 }

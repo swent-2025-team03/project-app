@@ -4,9 +4,11 @@ import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.graphics.scale
+import androidx.exifinterface.media.ExifInterface
 import com.android.agrihealth.data.model.images.ImageRepository.Companion.toBitmap
 import com.android.agrihealth.ui.user.UserViewModel
 import com.google.firebase.storage.FirebaseStorage
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.tasks.await
 
@@ -85,11 +87,42 @@ class ImageRepositoryFirebase : ImageRepository {
     return stream.toByteArray()
   }
 
+  // (Mostly) written with the help of an LLM
   override fun resolveUri(uri: Uri): ByteArray {
     val resolver: ContentResolver = storage.app.applicationContext.contentResolver
     val inputStream =
         resolver.openInputStream(uri)
             ?: throw IllegalArgumentException("Could not read file with URI $uri")
-    return inputStream.readBytes()
+    val bytes = inputStream.use { it.readBytes() }
+
+    // Read orientation and physically rotate the bitmap to ensure correct orientation when
+    // uploading to Firebase Storage
+    val orientation =
+        ByteArrayInputStream(bytes).use { stream ->
+          val exif = ExifInterface(stream)
+          exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+        }
+
+    val bitmap = bytes.toBitmap()
+    val rotatedBitmap =
+        when (orientation) {
+          ExifInterface.ORIENTATION_ROTATE_90 -> rotateBitmap(bitmap, 90f)
+          ExifInterface.ORIENTATION_ROTATE_180 -> rotateBitmap(bitmap, 180f)
+          ExifInterface.ORIENTATION_ROTATE_270 -> rotateBitmap(bitmap, 270f)
+          else -> bitmap
+        }
+
+    // Now compress the correctly-oriented bitmap
+    return ByteArrayOutputStream().use { stream ->
+      rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream)
+      stream.toByteArray()
+    }
+  }
+
+  // Written with the help of an LLM
+  private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
+    val matrix = android.graphics.Matrix()
+    matrix.postRotate(degrees)
+    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
   }
 }

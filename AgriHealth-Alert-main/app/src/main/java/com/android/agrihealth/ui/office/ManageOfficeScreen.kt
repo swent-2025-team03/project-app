@@ -15,12 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.StatusColors
-import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
-import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -61,26 +58,13 @@ fun ManageOfficeScreen(
     onGoBack: () -> Unit = {},
     onCreateOffice: () -> Unit = {},
     onJoinOffice: () -> Unit = {},
+    manageOfficeVmFactory: () -> ViewModelProvider.Factory,
+    codesVmFactory: () -> ViewModelProvider.Factory,
 ) {
   val snackbarHostState = remember { SnackbarHostState() }
-  val manageOfficeVm: ManageOfficeViewModel =
-      viewModel(
-          factory =
-              object : ViewModelProvider.Factory {
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                  return ManageOfficeViewModel(userViewModel, OfficeRepositoryFirestore()) as T
-                }
-              })
-  val connectionVm: CodesViewModel =
-      viewModel(
-          factory =
-              object : ViewModelProvider.Factory {
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                  return CodesViewModel(
-                      userViewModel, ConnectionRepositoryProvider.vetToOfficeRepository)
-                      as T
-                }
-              })
+  val manageOfficeVm: ManageOfficeViewModel = viewModel(factory = manageOfficeVmFactory())
+
+  val connectionVm: CodesViewModel = viewModel(factory = codesVmFactory())
 
   val uiState by manageOfficeVm.uiState.collectAsState()
 

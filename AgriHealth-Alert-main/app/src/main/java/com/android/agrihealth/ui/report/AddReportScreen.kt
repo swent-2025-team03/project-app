@@ -352,9 +352,7 @@ fun OfficeDropdown(
     onOfficeSelected: (String) -> Unit
 ) {
   var expanded by remember { mutableStateOf(false) }
-  var selectedOfficeName by remember {
-    mutableStateOf(offices[selectedOfficeId] ?: selectedOfficeId)
-  }
+  var selectedOfficeName = offices[selectedOfficeId] ?: selectedOfficeId
 
   ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
     OutlinedTextField(
@@ -527,9 +525,7 @@ fun UploadRemovePhotoButton(
     Text(
         text =
             if (photoAlreadyPicked) AddReportUploadButtonTexts.REMOVE_IMAGE
-            else AddReportUploadButtonTexts.UPLOAD_IMAGE,
-        style = MaterialTheme.typography.titleLarge,
-    )
+            else AddReportUploadButtonTexts.UPLOAD_IMAGE)
   }
 }
 
@@ -566,7 +562,7 @@ fun CreateReportButton(
   Button(
       onClick = onClick,
       modifier = Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
-        Text("Create Report", style = MaterialTheme.typography.titleLarge)
+        Text("Create Report")
       }
 }
 

@@ -15,12 +15,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.core.design.theme.statusColor
+import com.android.agrihealth.data.model.images.ImageUIState
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
 import com.android.agrihealth.data.model.report.OpenQuestion
@@ -60,8 +64,18 @@ object ReportViewScreenTestTags {
   const val UNSAVED_ALERT_BOX_DISCARD = "UnsavedChangesAlertDiscardButton"
   const val UNSAVED_ALERT_BOX_CANCEL = "UnsavedChangesAlertCancelButton"
   const val DELETE_REPORT_ALERT_BOX = "DeleteReportAlertBox"
+  const val PHOTO_RENDER = "PhotoRender"
+  const val PHOTO_LOADING_ANIMATION = "PhotoLoadingAnimation"
+  const val PHOTO_ERROR_TEXT = "PhotoErrorText"
+  const val PHOTO_ILLEGAL_TEXT = "PhotoIllegalStateText"
 
   fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
+}
+
+object ReportViewScreenTexts {
+  const val PHOTO_DESCRIPTION = "Photo associated to the report"
+  const val PHOTO_ERROR_TEXT = "Failed to load image"
+  const val PHOTO_ILLEGAL_TEXT = "An unexpected error happened. Please contact the developers!"
 }
 
 @Composable
@@ -88,6 +102,7 @@ fun ReportViewScreen(
     navigationActions: NavigationActions,
     userRole: UserRole,
     viewModel: ReportViewViewModel,
+    imageViewModel: ImageViewModel = ImageViewModel(),
     reportId: String = "",
     user: User? = null
 ) {
@@ -152,50 +167,51 @@ fun ReportViewScreen(
             handleGoBack(force = true)
           })
 
-  LoadingOverlay(isLoading = uiState.isLoading) {
-    Scaffold(
-        topBar = {
-          // Top bar with back arrow and title/status
-          TopAppBar(
-              title = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically) {
-                      Text(
-                          text = report.title,
-                          style = MaterialTheme.typography.titleLarge,
-                          fontWeight = FontWeight.Bold,
-                          maxLines = 1,
-                          overflow = TextOverflow.Ellipsis,
-                          modifier = Modifier.weight(1f))
-                      Box(
-                          modifier =
-                              Modifier.background(
-                                      color = statusColor(selectedStatus),
-                                      shape = MaterialTheme.shapes.small)
-                                  .padding(horizontal = 12.dp, vertical = 6.dp)
-                                  .testTag(ReportViewScreenTestTags.STATUS_BADGE_BOX)) {
-                            Text(
-                                text = selectedStatus.name.replace("_", " "),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier =
-                                    Modifier.testTag(ReportViewScreenTestTags.STATUS_BADGE_TEXT))
-                          }
-                    }
-              },
-              navigationIcon = {
-                IconButton(
-                    onClick = { handleGoBack() },
-                    modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
-                      Icon(
-                          imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                          contentDescription = "Back")
-                    }
-              })
-        },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { padding ->
+  Scaffold(
+      topBar = {
+        // Top bar with back arrow and title/status
+        TopAppBar(
+            title = {
+              Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = report.title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f))
+                    Box(
+                        modifier =
+                            Modifier.background(
+                                    color = statusColor(selectedStatus),
+                                    shape = MaterialTheme.shapes.small)
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                .testTag(ReportViewScreenTestTags.STATUS_BADGE_BOX)) {
+                          Text(
+                              text = selectedStatus.name.replace("_", " "),
+                              style = MaterialTheme.typography.labelLarge,
+                              color = MaterialTheme.colorScheme.onSurface,
+                              modifier =
+                                  Modifier.testTag(ReportViewScreenTestTags.STATUS_BADGE_TEXT))
+                        }
+                  }
+            },
+            navigationIcon = {
+              IconButton(
+                  onClick = { handleGoBack() },
+                  modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back")
+                  }
+            },
+        )
+      },
+      snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { padding ->
+        LoadingOverlay(isLoading = uiState.isLoading) {
 
           // Main scrollable content
           Column(
@@ -243,17 +259,6 @@ fun ReportViewScreen(
                       }
                     }
 
-                // ---- Photo ---- For now, I am skipping this part since I had trouble loading a
-                // placeholder image
-                /*Image(
-                    imageVector = Icons.Filled.Image,
-                    contentDescription = "Report photo",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                )*/
-
                 // ---- Description ----
                 Text(
                     text = "Description: ${report.description}",
@@ -266,6 +271,11 @@ fun ReportViewScreen(
                     fontWeight = FontWeight.SemiBold)
 
                 uiState.report.questionForms.forEach { QuestionItem(it) }
+
+                // Display photo if available
+                if (report.photoURL != null) {
+                  PhotoDisplay(photoURL = report.photoURL, imageViewModel = imageViewModel)
+                }
 
                 // ---- Collected switch ----
                 CollectedSwitch(report.collected)
@@ -549,7 +559,7 @@ fun ReportViewScreen(
                 }
               }
         }
-  }
+      }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -574,6 +584,55 @@ fun UnsavedChangesAlert(onDiscard: () -> Unit, onStay: () -> Unit) {
               Text("Cancel")
             }
       })
+}
+
+@Composable
+fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModel, modifier: Modifier = Modifier) {
+  val imageUiState by imageViewModel.uiState.collectAsState()
+
+  // Download the photo asynchronously so the screen is not blocked by download
+  LaunchedEffect(photoURL) {
+    if (photoURL != null) {
+      imageViewModel.download(photoURL)
+    }
+  }
+
+  when (val currentState = imageUiState) {
+    is ImageUIState.DownloadSuccess -> {
+      AsyncImage(
+          model = currentState.imageData,
+          contentDescription = ReportViewScreenTexts.PHOTO_DESCRIPTION,
+          modifier =
+              modifier
+                  .fillMaxWidth()
+                  .padding(vertical = 16.dp)
+                  .testTag(ReportViewScreenTestTags.PHOTO_RENDER),
+          contentScale = ContentScale.Fit)
+    }
+    is ImageUIState.Loading -> {
+      Box(
+          modifier = modifier.fillMaxWidth().height(200.dp).padding(vertical = 16.dp),
+          contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(
+                modifier = Modifier.testTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION))
+          }
+    }
+    is ImageUIState.Error -> {
+      Text(
+          text = ReportViewScreenTexts.PHOTO_ERROR_TEXT,
+          color = MaterialTheme.colorScheme.error,
+          modifier = modifier.padding(16.dp).testTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT))
+    }
+    is ImageUIState.Idle -> {
+      // Nothing happening yet
+    }
+    else -> {
+      Text(
+          text = ReportViewScreenTexts.PHOTO_ILLEGAL_TEXT,
+          color = MaterialTheme.colorScheme.error,
+          modifier = modifier.padding(16.dp).testTag(ReportViewScreenTestTags.PHOTO_ILLEGAL_TEXT))
+    }
+  }
 }
 
 /*  If you want to use the preview, just de-comment this block.
