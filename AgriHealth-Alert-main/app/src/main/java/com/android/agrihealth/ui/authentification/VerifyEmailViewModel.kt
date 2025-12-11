@@ -39,11 +39,12 @@ class VerifyEmailViewModel(
         authRepository.sendVerificationEmail().fold({
           _uiState.value = _uiState.value.copy(errorMsg = VerifyEmailErrorMsg.SUCCESS)
           _uiState.value = _uiState.value.copy(enabled = false)
-          _uiState.value = _uiState.value.copy(countdown = 30)
+          _uiState.value = _uiState.value.copy(countdown = 60)
           while (_uiState.value.countdown > 0) {
-            delay(1000)
             _uiState.value = _uiState.value.copy(countdown = _uiState.value.countdown - 1)
+            delay(1000)
           }
+          _uiState.value = _uiState.value.copy(enabled = true)
         }) {
           _uiState.value = _uiState.value.copy(errorMsg = VerifyEmailErrorMsg.FAIL)
           _uiState.value = _uiState.value.copy(enabled = true)
