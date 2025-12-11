@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.overview
 
+import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
@@ -74,11 +75,68 @@ class OverviewViewModelTest {
     advanceUntilIdle()
 
     val officeId = viewModel.uiState.value.officeOptions.firstOrNull()
-    viewModel.updateFiltersForReports(status = null, officeId = officeId, farmerId = null)
+
+    viewModel.updateFiltersForReports(officeId = FilterArg.Value(officeId))
+    advanceUntilIdle()
+
     val state = viewModel.uiState.value
 
     Assert.assertEquals(officeId, state.selectedOffice)
-    Assert.assertTrue(state.filteredReports.all { it.officeId == vet001.officeId })
+    Assert.assertTrue(state.filteredReports.all { it.officeId == officeId })
+  }
+
+  @Test
+  fun `updateFiltersForReports applies assignment filter correctly`() = runTest {
+    viewModel.loadReports(vet001)
+    advanceUntilIdle()
+
+    val currentVetId = vet001.uid
+
+    // --- ASSIGNED_TO_CURRENT_VET ---
+    viewModel.updateFiltersForReports(
+        assignment = FilterArg.Value(AssignmentFilter.ASSIGNED_TO_CURRENT_VET))
+    advanceUntilIdle()
+    val assignedToMeReports = viewModel.uiState.value.filteredReports
+    assert(assignedToMeReports.all { it.assignedVet == currentVetId })
+
+    // --- UNASSIGNED ---
+    viewModel.updateFiltersForReports(assignment = FilterArg.Value(AssignmentFilter.UNASSIGNED))
+    advanceUntilIdle()
+    val unassignedReports = viewModel.uiState.value.filteredReports
+    assert(unassignedReports.all { it.assignedVet == null })
+
+    // --- ASSIGNED_TO_OTHERS ---
+    viewModel.updateFiltersForReports(
+        assignment = FilterArg.Value(AssignmentFilter.ASSIGNED_TO_OTHERS))
+    advanceUntilIdle()
+    val assignedToOthersReports = viewModel.uiState.value.filteredReports
+    assert(assignedToOthersReports.all { it.assignedVet != null && it.assignedVet != currentVetId })
+  }
+
+  @Test
+  fun `updateFiltersForReports resets filters with FilterArg Reset`() = runTest {
+    viewModel.loadReports(vet001)
+    advanceUntilIdle()
+
+    // Apply a filter first
+    viewModel.updateFiltersForReports(
+        status = FilterArg.Value(ReportStatus.SPAM), assignment = FilterArg.Unset)
+    advanceUntilIdle()
+    Assert.assertNotNull(viewModel.uiState.value.selectedStatus)
+
+    // Reset filters
+    viewModel.updateFiltersForReports(
+        status = FilterArg.Reset,
+        officeId = FilterArg.Reset,
+        farmerId = FilterArg.Reset,
+        assignment = FilterArg.Reset)
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.value
+    Assert.assertNull(state.selectedStatus)
+    Assert.assertNull(state.selectedOffice)
+    Assert.assertNull(state.selectedFarmer)
+    Assert.assertNull(state.selectedAssignmentFilter)
   }
 
   @After
