@@ -60,6 +60,7 @@ object OverviewScreenTestTags {
   const val SCREEN = "OverviewScreen"
   const val REPORT_ITEM = "reportItem"
   const val PROFILE_BUTTON = "ProfileButton"
+  const val FILTERS_TOGGLE = "FiltersToggle"
   const val STATUS_DROPDOWN = "StatusFilterDropdown"
   const val OFFICE_ID_DROPDOWN = "OfficeIdFilterDropdown"
   const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
@@ -232,7 +233,7 @@ fun OverviewScreen(
                                 text = if (filtersExpanded) "Hide filters" else "Filters",
                                 style = MaterialTheme.typography.bodyMedium)
                           },
-                          modifier = Modifier.testTag("FiltersToggle"))
+                          modifier = Modifier.testTag(OverviewScreenTestTags.FILTERS_TOGGLE))
 
                       Spacer(modifier = Modifier.width(8.dp))
 

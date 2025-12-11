@@ -147,6 +147,11 @@ class OverviewScreenTest {
     setVetScreen()
 
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTERS_TOGGLE).isDisplayed()
+    }
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTERS_TOGGLE).performClick()
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).isDisplayed()
     }
 
