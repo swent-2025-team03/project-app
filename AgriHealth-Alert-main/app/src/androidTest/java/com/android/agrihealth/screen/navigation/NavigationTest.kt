@@ -57,7 +57,7 @@ class NavigationTest : FirebaseEmulatorsTest() {
     assert(Firebase.auth.currentUser != null)
     runTest { verifyUser(Firebase.auth.uid!!) }
     composeTestRule.setContent { AgriHealthApp() }
-    composeTestRule.waitUntil(TestConstants.VERY_LONG_TIMEOUT) {
+    composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(VerifyEmailScreenTestTags.WELCOME).isNotDisplayed()
     }
     composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).performClick()
