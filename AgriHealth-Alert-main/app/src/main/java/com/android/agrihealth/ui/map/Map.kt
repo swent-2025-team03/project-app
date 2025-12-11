@@ -1,8 +1,12 @@
 package com.android.agrihealth.ui.map
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,6 +23,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.alert.Alert
 import com.android.agrihealth.data.model.device.location.LocationPermissionsRequester
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.displayString
@@ -33,26 +38,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.rememberCameraPositionState
 
-object MapScreenTestTags {
-  const val GOOGLE_MAP_SCREEN = "googleMapScreen"
-  const val TOP_BAR_MAP_TITLE = "topBarMapTitle"
-  const val REPORT_INFO_BOX = "reportInfoBox"
-  const val REPORT_FILTER_MENU = "reportFilterDropdownMenu"
-  const val REPORT_NAVIGATION_BUTTON = "reportNavigationButton"
-  const val REFRESH_BUTTON = "mapRefreshButton"
-
-  // from bootcamp map
-  fun getTestTagForReportMarker(reportId: String): String = "reportMarker_$reportId"
-
-  fun getTestTagForReportTitle(reportId: String): String = "reportTitle_$reportId"
-
-  fun getTestTagForReportDesc(reportId: String): String = "reportDescription_$reportId"
-
-  fun getTestTagForFilter(filter: String?): String = "filter_$filter"
-}
-
-const val AllFilterText = "All reports"
-
 @Composable
 fun MapScreen(
     mapViewModel: MapViewModel = viewModel(),
@@ -65,12 +50,20 @@ fun MapScreen(
 
   val reports = uiState.reports
   val selectedReport by mapViewModel.selectedReport.collectAsState()
+  val alerts = uiState.alerts
+  var selectedAlerts by remember { mutableStateOf(listOf<Alert>()) }
 
   fun Report.isSelected() = this == selectedReport
-  fun Report.toggleSelect() = mapViewModel.setSelectedReport(if (this.isSelected()) null else this)
+  fun Report.toggleSelect() {
+    mapViewModel.setSelectedReport(if (this.isSelected()) null else this)
+    selectedAlerts = listOf()
+  }
 
   // Marker filter
   var selectedFilter by remember { mutableStateOf<String?>(null) }
+
+  // Alert filter
+  var showAlerts by remember { mutableStateOf(true) }
 
   // Initial camera state
   val mapInitialLocation by mapViewModel.startingLocation.collectAsState()
@@ -109,25 +102,59 @@ fun MapScreen(
                 selectedFilter == null || it.report.status.displayString() == selectedFilter
               }
 
+          val alertsToDisplay = alerts.filter { showAlerts }
+
           GoogleMap(
               cameraPositionState = cameraPositionState,
               properties = googleMapMapProperties,
               uiSettings = googleMapUiSettings,
               modifier = Modifier.testTag(MapScreenTestTags.GOOGLE_MAP_SCREEN),
-              onMapClick = { mapViewModel.setSelectedReport(null) }) {
+              onMapClick = { tapLatLng ->
+                // Reports: unselect
+                mapViewModel.setSelectedReport(null)
+
+                // Alerts: show info for every potential
+                val newAlerts = findAlertZonesUnderTap(alertsToDisplay, tapLatLng)
+                selectedAlerts = if (newAlerts == selectedAlerts) listOf() else newAlerts
+              }) {
                 ReportMarkers(
                     reports = reportsToDisplay,
                     isSelected = { it.isSelected() },
                     onClick = { it.toggleSelect() })
 
-                AlertAreas()
+                AlertAreas(alerts = alertsToDisplay)
               }
 
-          MapTestMarkers(reportsToDisplay) { it.toggleSelect() }
-
-          if (isViewedFromOverview) {
-            MapFilterMenu(selectedFilter) { selectedFilter = it }
+          MapTestReportMarkers(reportsToDisplay) { it.toggleSelect() }
+          MapTestAlertCircles(alertsToDisplay) {
+            val newList = listOf(it)
+            selectedAlerts = if (newList == selectedAlerts) listOf() else newList
           }
+
+          // Control what to display
+          Column(
+              modifier =
+                  Modifier.padding(16.dp)
+                      .align(Alignment.TopEnd)
+                      .background(
+                          color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6F),
+                          shape = RoundedCornerShape(16.dp))
+                      .testTag(MapScreenTestTags.VISIBILITY_MENU),
+              horizontalAlignment = Alignment.End) {
+                val showReports = selectedFilter != "None"
+
+                AlertVisibilitySwitch(showAlerts) {
+                  showAlerts = it
+                  selectedAlerts = listOf()
+                }
+                ReportVisibilitySwitch(showReports) { enabled ->
+                  selectedFilter = if (enabled) null else "None"
+                }
+
+                if (isViewedFromOverview && showReports) {
+                  MapFilterMenu(selectedFilter) { selectedFilter = it }
+                }
+              }
 
           val density = LocalDensity.current
           val reportInfoBoxHeightDp = with(density) { reportInfoBoxHeightPx.toDp() }
@@ -156,8 +183,39 @@ fun MapScreen(
           ) {
             navigationActions?.navigateTo(Screen.ViewReport(it))
           }
+
+          ShowAlertInfo(selectedAlerts) { alert ->
+            navigationActions?.navigateTo(Screen.ViewAlert(alert.id))
+          }
         }
       })
+}
+
+object MapScreenTestTags {
+  const val GOOGLE_MAP_SCREEN = "googleMapScreen"
+  const val TOP_BAR_MAP_TITLE = "topBarMapTitle"
+  const val INFO_BOX = "infoBox"
+  const val REPORT_FILTER_MENU = "reportFilterDropdownMenu"
+  const val INFO_NAVIGATION_BUTTON = "navigationButton"
+  const val REFRESH_BUTTON = "mapRefreshButton"
+  const val VISIBILITY_MENU = "mapDisplayVisibilityMenu"
+  const val REPORT_VISIBILITY_SWITCH = "reportVisibilitySwitch"
+  const val ALERT_VISIBILITY_SWITCH = "alertVisibilitySwitch"
+
+  // from bootcamp map
+  fun getTestTagForReportMarker(reportId: String): String = "reportMarker_$reportId"
+
+  fun getTestTagForReportTitle(reportId: String): String = "reportTitle_$reportId"
+
+  fun getTestTagForReportDesc(reportId: String): String = "reportDescription_$reportId"
+
+  fun getTestTagForAlertZone(alertId: String): String = "alertZone_$alertId"
+
+  fun getTestTagForAlertTitle(alertId: String): String = "alertTitle_$alertId"
+
+  fun getTestTagForAlertDesc(alertId: String): String = "alertDescription_$alertId"
+
+  fun getTestTagForFilter(filter: String?): String = "filter_$filter"
 }
 
 // Preview composable functions
