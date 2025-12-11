@@ -61,6 +61,8 @@ class ResetPasswordViewModel(
                   Log.e("ResetPasswordScreen", "Error sending reset password email", it)
                 })
       }
+    } else {
+      setEmailSendStatus(EmailSendStatus.None)
     }
   }
 

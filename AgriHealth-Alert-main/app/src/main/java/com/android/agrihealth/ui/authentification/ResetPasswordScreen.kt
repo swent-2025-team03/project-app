@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +44,15 @@ object ResetPasswordScreenTestTags {
   const val WAITING_FEEDBACK = "resetPasswordWaitingFeedBack"
 }
 
+object ResetPasswordStrings {
+  const val INSTRUCTION = "Enter your email and you will receive a form to reset your password."
+  const val SUCCESS_FEEDBACK = "The form was sent successfully !"
+  const val INBOX_FEEDBACK = "Check your Inbox !"
+  const val FAIL_FEEDBACK = "Something went wrong !"
+  const val WAITING_FEEDBACK = "Sending reset form !"
+  const val SEND_FORM_BUTTON = "Send reset form"
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResetPasswordScreen(onBack: () -> Unit = {}, vm: ResetPasswordViewModel = viewModel()) {
@@ -72,14 +82,15 @@ fun ResetPasswordScreen(onBack: () -> Unit = {}, vm: ResetPasswordViewModel = vi
     Column(
         modifier =
             Modifier.padding(pd)
-                .padding(horizontal = 16.dp, vertical = 48.dp)
+                .padding(horizontal = 16.dp)
                 .verticalScroll(
                     state = scrollState,
                     enabled = true,
                 ),
         verticalArrangement = Arrangement.spacedBy(24.dp)) {
+          HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
           Text(
-              "Enter your email and you will receive a form to reset your password.",
+              ResetPasswordStrings.INSTRUCTION,
               modifier = Modifier.testTag(ResetPasswordScreenTestTags.INSTRUCTION_TEXT))
 
           OutlinedTextField(
@@ -96,8 +107,9 @@ fun ResetPasswordScreen(onBack: () -> Unit = {}, vm: ResetPasswordViewModel = vi
               modifier =
                   Modifier.fillMaxWidth()
                       .testTag(ResetPasswordScreenTestTags.SEND_RESET_EMAIL_BUTTON),
-              onClick = vm::sendFormButtonClicked) {
-                Text("Send reset form")
+              onClick = vm::sendFormButtonClicked,
+              enabled = (uiState.emailSendStatus != EmailSendStatus.Waiting)) {
+                Text(ResetPasswordStrings.SEND_FORM_BUTTON)
               }
 
           SendingResetFormFeedbackText(status = uiState.emailSendStatus)
@@ -115,23 +127,23 @@ fun SendingResetFormFeedbackText(
     when (status) {
       is EmailSendStatus.Success -> {
         Text(
-            "The form was sent successfully !",
+            ResetPasswordStrings.SUCCESS_FEEDBACK,
             color = successColor(),
             modifier = Modifier.testTag(ResetPasswordScreenTestTags.SUCCESS_FEEDBACK))
-        Text("Check your Inbox !")
+        Text(ResetPasswordStrings.INBOX_FEEDBACK)
       }
       is EmailSendStatus.Fail -> {
         Text(
-            "Something went wrong !",
+            ResetPasswordStrings.FAIL_FEEDBACK,
             color = MaterialTheme.colorScheme.error,
             modifier = Modifier.testTag(ResetPasswordScreenTestTags.FAIL_FEEDBACK))
       }
       is EmailSendStatus.Waiting -> {
         Text(
-            "Sending reset form !",
+            ResetPasswordStrings.WAITING_FEEDBACK,
             modifier = Modifier.testTag(ResetPasswordScreenTestTags.WAITING_FEEDBACK))
       }
-      is EmailSendStatus.None -> {}
+      is EmailSendStatus.None -> Unit
     }
   }
 }
