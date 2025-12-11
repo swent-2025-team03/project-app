@@ -75,9 +75,9 @@ object AssignedVetTagTexts {
 }
 
 object AssigneeFilterTexts {
-  const val ASSIGNED_TO_ME = "Assigned to me"
+  const val ASSIGNED_TO_ME = "Assigned to Me"
   const val UNASSIGNED = "Unassigned"
-  const val ASSIGNED_TO_OTHERS = "Assigned to others"
+  const val ASSIGNED_TO_OTHERS = "Assigned to Others"
 }
 
 /**
