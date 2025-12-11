@@ -387,6 +387,10 @@ class E2ETest : FirebaseEmulatorsTest() {
     goBack()
     claimReport("Report 2")
     checkAssignedVetDisplayedOnOverview("Test Vet")
+    signOutFromScreen()
+
+    completeSignIn(vetEmail, vetPassword)
+    checkAssignedVetDisplayedOnOverview("Test Vet2")
   }
 
   // ----------- Helper functions -----------
@@ -769,10 +773,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     waitUntilTestTag(SignInScreenTestTags.SCREEN)
   }
 
-  private fun createReportWithOfficeName(title: String, description: String, officeName: String) {
-    waitUntilTestTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON).performClick()
-
+  private fun createReportBasis(title: String, description: String) {
     waitUntilTestTag(AddReportScreenTestTags.TITLE_FIELD)
     composeTestRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput(title)
     composeTestRule
@@ -843,6 +844,14 @@ class E2ETest : FirebaseEmulatorsTest() {
       }
       break
     }
+  }
+
+  private fun createReportWithOfficeName(title: String, description: String, officeName: String) {
+    waitUntilTestTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON).performClick()
+
+    val scrollContainer = composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+    createReportBasis(title, description)
 
     scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
     waitUntilTestTag(AddReportScreenTestTags.LOCATION_BUTTON)
@@ -851,9 +860,6 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).performClick()
     waitUntilTestTag(LocationPickerTestTags.CONFIRMATION_PROMPT)
     composeTestRule.onNodeWithTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON).performClick()
-    //    composeTestRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
-    //      composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER).isDisplayed()
-    //    }
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithText(officeName).isDisplayed()
     }
@@ -875,81 +881,11 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun createReport(title: String, description: String, officeId: String) {
-    composeTestRule
-        .onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-    composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD)
-        .assertIsDisplayed()
-        .performTextInput(title)
-    composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
-        .assertIsDisplayed()
-        .performTextInput(description)
+    waitUntilTestTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON).performClick()
 
-    // --- Answer all questions ---
     val scrollContainer = composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-    var index = 0
-    while (true) {
-      composeTestRule.waitForIdle()
-
-      // OpenQuestion
-      val openNode =
-          composeTestRule
-              .onAllNodesWithTag("QUESTION_${index}_OPEN")
-              .fetchSemanticsNodes()
-              .firstOrNull()
-      if (openNode != null) {
-        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_OPEN"))
-        composeTestRule.onNodeWithTag("QUESTION_${index}_OPEN").performTextInput("answer $index")
-        index++
-        continue
-      }
-
-      // YesOrNo
-      val yesNode =
-          composeTestRule
-              .onAllNodesWithTag("QUESTION_${index}_YESORNO")
-              .fetchSemanticsNodes()
-              .firstOrNull()
-      if (yesNode != null) {
-        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_YESORNO"))
-        val options = composeTestRule.onAllNodesWithTag("QUESTION_${index}_YESORNO")
-        options[0].performClick()
-        index++
-        continue
-      }
-
-      // MCQ
-      val mcqNode =
-          composeTestRule
-              .onAllNodesWithTag("QUESTION_${index}_MCQ")
-              .fetchSemanticsNodes()
-              .firstOrNull()
-      if (mcqNode != null) {
-        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQ"))
-        val options = composeTestRule.onAllNodesWithTag("QUESTION_${index}_MCQ")
-        options[0].performClick()
-        index++
-        continue
-      }
-
-      // MCQO
-      val mcqONode =
-          composeTestRule
-              .onAllNodesWithTag("QUESTION_${index}_MCQO")
-              .fetchSemanticsNodes()
-              .firstOrNull()
-      if (mcqONode != null) {
-        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQO"))
-        val options = composeTestRule.onAllNodesWithTag("QUESTION_${index}_MCQO")
-        options[0].performClick()
-        index++
-        continue
-      }
-      break
-    }
+    createReportBasis(title, description)
 
     scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.LOCATION_BUTTON))
     composeTestRule.onNodeWithTag(AddReportScreenTestTags.LOCATION_BUTTON).performClick()
