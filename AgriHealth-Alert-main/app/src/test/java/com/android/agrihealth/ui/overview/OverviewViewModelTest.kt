@@ -94,29 +94,19 @@ class OverviewViewModelTest {
 
     // --- ASSIGNED_TO_CURRENT_VET ---
     viewModel.updateFiltersForReports(
-        status = FilterArg.Unset,
-        officeId = FilterArg.Unset,
-        farmerId = FilterArg.Unset,
         assignment = FilterArg.Value(AssignmentFilter.ASSIGNED_TO_CURRENT_VET))
     advanceUntilIdle()
     val assignedToMeReports = viewModel.uiState.value.filteredReports
     assert(assignedToMeReports.all { it.assignedVet == currentVetId })
 
     // --- UNASSIGNED ---
-    viewModel.updateFiltersForReports(
-        status = FilterArg.Unset,
-        officeId = FilterArg.Unset,
-        farmerId = FilterArg.Unset,
-        assignment = FilterArg.Value(AssignmentFilter.UNASSIGNED))
+    viewModel.updateFiltersForReports(assignment = FilterArg.Value(AssignmentFilter.UNASSIGNED))
     advanceUntilIdle()
     val unassignedReports = viewModel.uiState.value.filteredReports
     assert(unassignedReports.all { it.assignedVet == null })
 
     // --- ASSIGNED_TO_OTHERS ---
     viewModel.updateFiltersForReports(
-        status = FilterArg.Unset,
-        officeId = FilterArg.Unset,
-        farmerId = FilterArg.Unset,
         assignment = FilterArg.Value(AssignmentFilter.ASSIGNED_TO_OTHERS))
     advanceUntilIdle()
     val assignedToOthersReports = viewModel.uiState.value.filteredReports
@@ -130,10 +120,7 @@ class OverviewViewModelTest {
 
     // Apply a filter first
     viewModel.updateFiltersForReports(
-        status = FilterArg.Value(ReportStatus.SPAM),
-        officeId = FilterArg.Unset,
-        farmerId = FilterArg.Unset,
-        assignment = FilterArg.Unset)
+        status = FilterArg.Value(ReportStatus.SPAM), assignment = FilterArg.Unset)
     advanceUntilIdle()
     Assert.assertNotNull(viewModel.uiState.value.selectedStatus)
 
