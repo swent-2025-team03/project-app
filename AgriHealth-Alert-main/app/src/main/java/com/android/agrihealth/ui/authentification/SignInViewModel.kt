@@ -66,10 +66,6 @@ class SignInViewModel(
     _uiState.value = _uiState.value.copy(email = email)
   }
 
-  fun setErrorMsgToNotYetImplemented() {
-    setErrorMsg("Not Yet Implemented")
-  }
-
   /** initiates the sign in using available credentials * */
   fun signInWithEmailAndPassword() {
     if (_uiState.value.isValid) {
