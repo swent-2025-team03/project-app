@@ -900,9 +900,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON)
         .assertIsDisplayed()
         .performClick()
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
-      composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER).isDisplayed()
-    }
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) { scrollContainer.isDisplayed() }
     scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN)
