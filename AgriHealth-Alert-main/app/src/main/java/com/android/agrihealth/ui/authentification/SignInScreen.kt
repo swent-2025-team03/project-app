@@ -72,109 +72,108 @@ fun SignInScreen(
   LaunchedEffect(signInUIState.uid) {
     signInUIState.uid?.let { if (signInUIState.isNewGoogle) onNewGoogle() else onSignedIn() }
   }
-    LoadingOverlay(isLoading = signInUIState.isLoading) {
+  LoadingOverlay(isLoading = signInUIState.isLoading) {
+    Scaffold(
+        modifier = modifier.testTag(SignInScreenTestTags.SCREEN),
+        snackbarHost = {
+          SnackbarHost(
+              hostState = snackbarHostState,
+              modifier = Modifier.padding(bottom = 16.dp).testTag(SignInScreenTestTags.SNACKBAR))
+        }) { padding ->
+          Column(
+              modifier =
+                  Modifier.padding(padding)
+                      .padding(horizontal = 32.dp)
+                      .verticalScroll(rememberScrollState()),
+              horizontalAlignment = Alignment.CenterHorizontally) {
+                Spacer(Modifier.height(96.dp))
 
-  Scaffold(
-      modifier = modifier.testTag(SignInScreenTestTags.SCREEN),
-      snackbarHost = {
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.padding(bottom = 16.dp).testTag(SignInScreenTestTags.SNACKBAR))
-      }) { padding ->
-        Column(
-            modifier =
-                Modifier.padding(padding)
-                    .padding(horizontal = 32.dp)
-                    .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally) {
-              Spacer(Modifier.height(96.dp))
-
-              Text(
-                  text = "AgriHealth",
-                  style = MaterialTheme.typography.displaySmall,
-                  modifier = Modifier.testTag(SignInScreenTestTags.LOGIN_TITLE))
-
-              Spacer(Modifier.height(56.dp))
-
-              TextField(
-                  value = signInUIState.email,
-                  onValueChange = { signInViewModel.setEmail(it) },
-                  placeholder = { Text("Email") },
-                  singleLine = true,
-                  isError = signInUIState.emailIsInvalid && signInUIState.email.isEmpty(),
-                  modifier =
-                      Modifier.fillMaxWidth()
-                          .height(56.dp)
-                          .testTag(SignInScreenTestTags.EMAIL_FIELD))
-
-              Spacer(Modifier.height(16.dp))
-
-              TextField(
-                  value = signInUIState.password,
-                  onValueChange = { signInViewModel.setPassword(it) },
-                  placeholder = { Text("Password") },
-                  singleLine = true,
-                  visualTransformation = PasswordVisualTransformation(),
-                  isError = signInUIState.passwordIsInvalid && signInUIState.password.isEmpty(),
-                  modifier =
-                      Modifier.fillMaxWidth()
-                          .height(56.dp)
-                          .testTag(SignInScreenTestTags.PASSWORD_FIELD))
-
-              Spacer(Modifier.height(8.dp))
-
-              Row(Modifier.fillMaxWidth()) {
-                Spacer(Modifier.weight(1f))
                 Text(
-                    text = "Forgot password",
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.End,
+                    text = "AgriHealth",
+                    style = MaterialTheme.typography.displaySmall,
+                    modifier = Modifier.testTag(SignInScreenTestTags.LOGIN_TITLE))
+
+                Spacer(Modifier.height(56.dp))
+
+                TextField(
+                    value = signInUIState.email,
+                    onValueChange = { signInViewModel.setEmail(it) },
+                    placeholder = { Text("Email") },
+                    singleLine = true,
+                    isError = signInUIState.emailIsInvalid && signInUIState.email.isEmpty(),
                     modifier =
-                        Modifier.padding(top = 4.dp)
-                            .clickable { onForgotPasswordClick() }
-                            .testTag(SignInScreenTestTags.FORGOT_PASSWORD))
+                        Modifier.fillMaxWidth()
+                            .height(56.dp)
+                            .testTag(SignInScreenTestTags.EMAIL_FIELD))
+
+                Spacer(Modifier.height(16.dp))
+
+                TextField(
+                    value = signInUIState.password,
+                    onValueChange = { signInViewModel.setPassword(it) },
+                    placeholder = { Text("Password") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    isError = signInUIState.passwordIsInvalid && signInUIState.password.isEmpty(),
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .height(56.dp)
+                            .testTag(SignInScreenTestTags.PASSWORD_FIELD))
+
+                Spacer(Modifier.height(8.dp))
+
+                Row(Modifier.fillMaxWidth()) {
+                  Spacer(Modifier.weight(1f))
+                  Text(
+                      text = "Forgot password",
+                      style = MaterialTheme.typography.bodyMedium,
+                      textAlign = TextAlign.End,
+                      modifier =
+                          Modifier.padding(top = 4.dp)
+                              .clickable { onForgotPasswordClick() }
+                              .testTag(SignInScreenTestTags.FORGOT_PASSWORD))
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                HorizontalDivider(
+                    thickness = 1.dp,
+                    modifier =
+                        Modifier.fillMaxWidth(0.8f).testTag(SignInScreenTestTags.LOGIN_DIVIDER))
+                Spacer(Modifier.height(24.dp))
+
+                Button(
+                    onClick = { signInViewModel.signInWithEmailAndPassword() },
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .height(56.dp)
+                            .testTag(SignInScreenTestTags.LOGIN_BUTTON)) {
+                      Text("Log In", color = MaterialTheme.colorScheme.onPrimary)
+                    }
+
+                Spacer(Modifier.height(16.dp))
+
+                Button(
+                    onClick = goToSignUp,
+                    shape = RoundedCornerShape(28.dp),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .height(56.dp)
+                            .testTag(SignInScreenTestTags.SIGN_UP_BUTTON)) {
+                      Text("Create an account")
+                    }
+                Spacer(Modifier.height(32.dp))
+                GoogleSignInButton {
+                  signInViewModel.signInWithGoogle(
+                      context = context, credentialManager = credentialManager)
+                }
               }
-
-              Spacer(Modifier.height(16.dp))
-
-              HorizontalDivider(
-                  thickness = 1.dp,
-                  modifier =
-                      Modifier.fillMaxWidth(0.8f).testTag(SignInScreenTestTags.LOGIN_DIVIDER))
-              Spacer(Modifier.height(24.dp))
-
-              Button(
-                  onClick = { signInViewModel.signInWithEmailAndPassword() },
-                  modifier =
-                      Modifier.fillMaxWidth()
-                          .height(56.dp)
-                          .testTag(SignInScreenTestTags.LOGIN_BUTTON)) {
-                    Text("Log In", color = MaterialTheme.colorScheme.onPrimary)
-                  }
-
-              Spacer(Modifier.height(16.dp))
-
-              Button(
-                  onClick = goToSignUp,
-                  shape = RoundedCornerShape(28.dp),
-                  colors =
-                      ButtonDefaults.buttonColors(
-                          containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                          contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
-                  modifier =
-                      Modifier.fillMaxWidth()
-                          .height(56.dp)
-                          .testTag(SignInScreenTestTags.SIGN_UP_BUTTON)) {
-                    Text("Create an account")
-                  }
-              Spacer(Modifier.height(32.dp))
-              GoogleSignInButton {
-                signInViewModel.signInWithGoogle(
-                    context = context, credentialManager = credentialManager)
-              }
-            }
-      }
-}
+        }
+  }
 }
 
 // function from bootcamp-25-B3-Solution

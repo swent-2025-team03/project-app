@@ -73,38 +73,36 @@ class OverviewViewModel(
    * generate filteredReports.
    */
   override fun loadReports(user: User) {
-      viewModelScope.launch {
-          _uiState.withLoadingState(
-              applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
-              try {
-                  val reports =
-                      reportRepository.getAllReports(user.uid).sortedByDescending { it.createdAt }
-                  val officeOptions = reports.map { it.officeId }.distinct()
-                  val farmerOptions = reports.map { it.farmerId }.distinct()
-                  val filtered =
-                      applyFiltersForReports(
-                          reports,
-                          _uiState.value.selectedStatus,
-                          _uiState.value.selectedOffice,
-                          _uiState.value.selectedFarmer,
-                          _uiState.value.selectedAssignmentFilter,
-                          currentUserId = user.uid
-                      )
+    viewModelScope.launch {
+      _uiState.withLoadingState(
+          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+            try {
+              val reports =
+                  reportRepository.getAllReports(user.uid).sortedByDescending { it.createdAt }
+              val officeOptions = reports.map { it.officeId }.distinct()
+              val farmerOptions = reports.map { it.farmerId }.distinct()
+              val filtered =
+                  applyFiltersForReports(
+                      reports,
+                      _uiState.value.selectedStatus,
+                      _uiState.value.selectedOffice,
+                      _uiState.value.selectedFarmer,
+                      _uiState.value.selectedAssignmentFilter,
+                      currentUserId = user.uid)
 
-                  _uiState.value =
-                      _uiState.value.copy(
-                          reports = reports,
-                          officeOptions = officeOptions,
-                          farmerOptions = farmerOptions,
-                          filteredReports = filtered
-                      )
+              _uiState.value =
+                  _uiState.value.copy(
+                      reports = reports,
+                      officeOptions = officeOptions,
+                      farmerOptions = farmerOptions,
+                      filteredReports = filtered)
 
-                  currentUserId = user.uid
-              } catch (e: Exception) {
-                  _uiState.value = _uiState.value.copy(reports = emptyList())
-              }
+              currentUserId = user.uid
+            } catch (e: Exception) {
+              _uiState.value = _uiState.value.copy(reports = emptyList())
+            }
           }
-      }
+    }
   }
 
   /**

@@ -11,9 +11,7 @@ class FakeAuthRepository(
     private var isOnline: Boolean = true,
     private var resetPasswordResult: EmailSendStatus = EmailSendStatus.Success,
     private val delayMs: Long = 0L
-
 ) : AuthRepository {
-
 
   private val credentials = mutableMapOf<String, String>()
 
@@ -35,8 +33,8 @@ class FakeAuthRepository(
   }
 
   override suspend fun sendResetPasswordEmail(email: String): Result<Unit> {
-      delay(delayMs)
-      return when (resetPasswordResult) {
+    delay(delayMs)
+    return when (resetPasswordResult) {
       is EmailSendStatus.Success -> Result.success(Unit)
       is EmailSendStatus.Fail -> Result.failure(IllegalArgumentException())
       is EmailSendStatus.Waiting -> {
@@ -48,8 +46,8 @@ class FakeAuthRepository(
   }
 
   override suspend fun deleteAccount(): Result<Unit> {
-      delay(delayMs)
-      if (isOnline) {
+    delay(delayMs)
+    if (isOnline) {
       if (currentUser == null) {
         return Result.failure(IllegalStateException("no user logged in"))
       } else credentials.remove(currentUser)
@@ -59,8 +57,8 @@ class FakeAuthRepository(
   }
 
   override suspend fun reAuthenticate(email: String, password: String): Result<Unit> {
-      delay(delayMs)
-      if (isOnline) {
+    delay(delayMs)
+    if (isOnline) {
       // not important
       return Result.success(Unit)
     }
@@ -68,8 +66,8 @@ class FakeAuthRepository(
   }
 
   override suspend fun signInWithEmailAndPassword(email: String, password: String): Result<String> {
-      delay(delayMs)
-      if (isOnline) {
+    delay(delayMs)
+    if (isOnline) {
       if (currentUser != null) {
         return Result.failure(IllegalStateException("user $currentUser already logged in"))
       } else if (credentials[email] == password) {
@@ -83,8 +81,8 @@ class FakeAuthRepository(
   }
 
   override suspend fun signInWithGoogle(credential: Credential): Result<String> {
-      delay(delayMs)
-      if (isOnline) {
+    delay(delayMs)
+    if (isOnline) {
       // no-op because no
       return Result.success("success!!")
     }
@@ -92,7 +90,7 @@ class FakeAuthRepository(
   }
 
   override fun signOut(): Result<Unit> {
-      currentUser = null
+    currentUser = null
     return Result.success(Unit)
   }
 
@@ -101,8 +99,8 @@ class FakeAuthRepository(
       password: String,
       userData: User
   ): Result<String> {
-      delay(delayMs)
-      if (isOnline) {
+    delay(delayMs)
+    if (isOnline) {
       if (credentials[email] != null) {
         return Result.failure(
             FirebaseAuthException("already used email", "this throws if I leave it empty"))
