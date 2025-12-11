@@ -41,7 +41,7 @@ fun ViewUserScreen(
     onBack: () -> Unit,
     userViewModel: UserViewModel = viewModel()
 ) {
-  val currentUser by userViewModel.user.collectAsState()
+  val currentUser by userViewModel.uiState.collectAsState()
   val uiState by viewModel.uiState
 
   val context = LocalContext.current

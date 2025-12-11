@@ -44,7 +44,6 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
-import com.android.agrihealth.ui.user.UserViewModelContract
 
 object ProfileScreenTestTags {
 
@@ -62,15 +61,15 @@ object ProfileScreenTestTags {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
+    userViewModel: UserViewModel = viewModel<UserViewModel>(),
     onGoBack: () -> Unit = {},
     onLogout: () -> Unit = {},
     onEditProfile: () -> Unit = {},
     onCodeFarmer: () -> Unit = {},
     onManageOffice: () -> Unit = {},
 ) {
-
-  val user by userViewModel.user.collectAsState()
+  val uiS by userViewModel.uiState.collectAsState()
+  val user = ui.user
   val userRole = user.role
 
   val factory = remember {

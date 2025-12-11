@@ -36,7 +36,7 @@ class ManageOfficeViewModel(
   fun loadOffice() {
     viewModelScope.launch {
       _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
-        val currentUser = userViewModel.user.value
+        val currentUser = userViewModel.uiState.value.user
         if (currentUser is Vet && currentUser.officeId != null) {
           val office = officeRepository.getOffice(currentUser.officeId).getOrNull()
           _uiState.value =
@@ -64,7 +64,7 @@ class ManageOfficeViewModel(
 
   fun leaveOffice(onSuccess: () -> Unit = {}, onError: (Throwable) -> Unit = {}) =
       viewModelScope.launch {
-        val user = userViewModel.user.value
+        val user = userViewModel.uiState.value.user
         val office = _uiState.value.office
 
         if (user !is Vet || office == null) return@launch

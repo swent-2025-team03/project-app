@@ -68,11 +68,14 @@ fun ManageOfficeScreen(
 
   val uiState by manageOfficeVm.uiState.collectAsState()
 
+  val userUi by userViewModel.uiState.collectAsState()
+  val currentUser = userUi.user
+
   var showLeaveDialog by remember { mutableStateOf(false) }
 
-  val isOwner = uiState.office?.ownerId == userViewModel.user.value.uid
+  val isOwner = uiState.office?.ownerId == currentUser.uid
 
-  LaunchedEffect(userViewModel.user.value) { manageOfficeVm.loadOffice() }
+  LaunchedEffect(currentUser) { manageOfficeVm.loadOffice() }
 
   Scaffold(
       topBar = {
