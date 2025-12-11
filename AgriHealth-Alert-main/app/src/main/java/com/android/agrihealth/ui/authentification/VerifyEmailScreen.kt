@@ -14,6 +14,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -28,7 +30,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
-import com.android.agrihealth.ui.user.UserViewModelContract
 
 // imports for debug button
 /*
@@ -51,6 +52,13 @@ import com.android.agrihealth.ui.user.defaultUser
 object VerifyEmailScreenTestTags {
   const val WELCOME = "Welcome"
   const val SEND_EMAIL = "SendEmail"
+  const val SNACKBAR = "Snackbar"
+}
+
+object VerifyEmailScreenTexts {
+  const val GREETING = "One last step! Confirm your email address to have full access to our app"
+  const val SEND_BUTTON = "Send new email"
+  const val NO_EMAIL_QUESTIONMARK = "Didn't receive the email?"
 }
 
 /**
@@ -62,13 +70,9 @@ object VerifyEmailScreenTestTags {
 fun VerifyEmailScreen(
     vm: VerifyEmailViewModel = viewModel(),
     onBack: () -> Unit = {},
-    onVerified: () -> Unit = {},
-    userViewModel: UserViewModelContract
+    onVerified: () -> Unit = {}
 ) {
   val uiState = vm.uiState.collectAsState()
-  val userGreeting = remember {
-    "One last step! Confirm your email address to have full access to our app"
-  }
 
   LaunchedEffect(Unit) {
     vm.sendVerifyEmail()
@@ -81,9 +85,22 @@ fun VerifyEmailScreen(
     }
   }
 
-  val user = userViewModel.user.collectAsState()
+  val errorMsg = uiState.value.errorMsg
+  val snackbarHostState = remember { SnackbarHostState() }
+
+  LaunchedEffect(errorMsg) {
+    if (errorMsg != null) {
+      snackbarHostState.showSnackbar(errorMsg)
+      vm.clearError()
+    }
+  }
 
   Scaffold(
+      snackbarHost = {
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.testTag(VerifyEmailScreenTestTags.SNACKBAR))
+      },
       topBar = {
         TopAppBar(
             title = {},
@@ -103,22 +120,21 @@ fun VerifyEmailScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically)) {
               Text(
-                  text = userGreeting,
+                  text = VerifyEmailScreenTexts.GREETING,
                   style = MaterialTheme.typography.headlineLarge,
                   overflow = TextOverflow.Visible,
                   textAlign = TextAlign.Center,
                   modifier = Modifier.testTag(VerifyEmailScreenTestTags.WELCOME).fillMaxWidth())
               Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "email was successfully sent to ${user.value.email}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center)
+                    VerifyEmailScreenTexts.NO_EMAIL_QUESTIONMARK,
+                    style = MaterialTheme.typography.bodyMedium)
                 Button(
                     onClick = { vm.sendVerifyEmail() },
+                    enabled = uiState.value.enabled,
                     modifier = Modifier.testTag(VerifyEmailScreenTestTags.SEND_EMAIL)) {
-                      Text("Send new email")
+                      Text(VerifyEmailScreenTexts.SEND_BUTTON)
                     }
-                Text("Didn't receive the email?", style = MaterialTheme.typography.bodyMedium)
 
                 // Debug button to enable any account
                 /*
