@@ -288,7 +288,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     // Wait for the code to appear in StateFlow
     val officeCode = runBlocking { codesViewModel.generatedCode.first { it != null } }
 
-    completeSignUp("Test", "User", farmerEmail, password, isVet = true)
+    completeSignUp("Test", "User", farmerEmail, password, isVet = false)
     checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
@@ -633,6 +633,7 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun useCode(officeCode: String?) {
+    waitUntilTestTag(ProfileScreenTestTags.CODE_BUTTON_FARMER)
     composeTestRule
         .onNodeWithTag(ProfileScreenTestTags.CODE_BUTTON_FARMER)
         .assertIsDisplayed()
