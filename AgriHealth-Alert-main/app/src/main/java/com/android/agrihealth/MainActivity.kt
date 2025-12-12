@@ -47,6 +47,8 @@ import com.android.agrihealth.data.model.user.copyCommon
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.alert.AlertViewModel
 import com.android.agrihealth.ui.alert.AlertViewScreen
+import com.android.agrihealth.ui.authentification.ResetPasswordScreen
+import com.android.agrihealth.ui.authentification.ResetPasswordViewModel
 import com.android.agrihealth.ui.authentification.RoleSelectionScreen
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
@@ -163,6 +165,7 @@ fun AgriHealthApp(
       composable(Screen.Auth.route) {
         SignInScreen(
             credentialManager = credentialManager,
+            onForgotPasswordClick = { navigationActions.navigateTo(Screen.ResetPassword) },
             onSignedIn = {
               userViewModel.refreshCurrentUser()
               navigationActions.navigateTo(Screen.Overview)
@@ -179,6 +182,11 @@ fun AgriHealthApp(
             userViewModel = userViewModel,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
             onSignedUp = { navigationActions.navigateTo(Screen.EmailVerify) })
+      }
+
+      composable(Screen.ResetPassword.route) {
+        val vm: ResetPasswordViewModel = viewModel()
+        ResetPasswordScreen(onBack = navigationActions::goBack, vm)
       }
     }
     navigation(startDestination = Screen.RoleSelection.route, route = Screen.RoleSelection.name) {

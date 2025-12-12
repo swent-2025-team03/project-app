@@ -25,6 +25,14 @@ interface AuthRepository {
    * @return A [Result] indicating success or failure.
    */
   suspend fun changePassword(password: String): Result<Unit>
+
+  /**
+   * sends a reset password email.
+   *
+   * @return A [Result] indicating success or failure.
+   */
+  suspend fun sendResetPasswordEmail(email: String): Result<Unit>
+
   /**
    * Signs in the user using their google account.
    *

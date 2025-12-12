@@ -231,6 +231,10 @@ private fun SignUpScreenPreview() {
           throw NotImplementedError()
         }
 
+        override suspend fun sendResetPasswordEmail(email: String): Result<Unit> {
+          TODO("Not yet implemented")
+        }
+
         override suspend fun signInWithGoogle(credential: Credential): Result<String> {
           throw NotImplementedError()
         }

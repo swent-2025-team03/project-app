@@ -51,6 +51,15 @@ class AuthRepositoryFirebase(
     }
   }
 
+  override suspend fun sendResetPasswordEmail(email: String): Result<Unit> {
+    return try {
+      auth.sendPasswordResetEmail(email).await()
+      Result.success(Unit)
+    } catch (e: Exception) {
+      Result.failure(e)
+    }
+  }
+
   override suspend fun signInWithGoogle(credential: Credential): Result<String> {
     return try {
       if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
