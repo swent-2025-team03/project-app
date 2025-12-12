@@ -516,9 +516,8 @@ class MapScreenTest {
     composeTestRule.runOnUiThread { mapViewModel.setStartingLocation(null) }
 
     composeTestRule.waitUntil(timeoutMillis = TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onAllNodesWithText("Loading position…").fetchSemanticsNodes().isNotEmpty()
+      composeTestRule.onAllNodesWithText("Loading location...").fetchSemanticsNodes().isNotEmpty()
     }
-
-    composeTestRule.onNodeWithText("Loading position…").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Loading location...").assertIsDisplayed()
   }
 }

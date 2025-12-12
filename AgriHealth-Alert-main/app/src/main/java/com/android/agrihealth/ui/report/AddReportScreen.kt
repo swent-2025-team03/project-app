@@ -1,6 +1,7 @@
 package com.android.agrihealth.ui.report
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -93,6 +94,10 @@ object AddReportDialogTexts {
   const val TITLE_FAILURE = "Error!"
 }
 
+// Tags de debug pour AddReportScreen et OfficeDropdown
+private const val TAG_ADD_REPORT = "AddReportScreenDebug"
+private const val TAG_OFFICE_DD = "OfficeDropdownDebug"
+
 // Helper function to format the error message shown in the error dialog when creating a report
 // failed
 private fun generateCreateReportErrorMessage(e: Throwable?): String {
@@ -129,6 +134,13 @@ fun AddReportScreen(
   val user = userUi.user
   val userRole = user.role
 
+  // LOG A) état initial utilisateur et collected
+  LaunchedEffect(user.uid, reportUi.collected) {
+    Log.d(
+        TAG_ADD_REPORT,
+        "compose: user.uid=${user.uid} role=${user.role} collected(user)=${user.collected} collected(reportUi)=${reportUi.collected}")
+  }
+
   val offices = remember { mutableStateMapOf<String, String>() }
 
   // For each linked office, load their name
@@ -137,7 +149,13 @@ fun AddReportScreen(
     val label by vm.uiState.collectAsState()
 
     LaunchedEffect(officeId) {
+      Log.d(TAG_ADD_REPORT, "loadOffice requested for officeId=$officeId")
       vm.loadOffice(uid = officeId, deletedOffice = "Deleted office", noneOffice = "Unknown office")
+    }
+
+    // LOG C) suivi des mises à jour de label par office
+    LaunchedEffect(label) {
+      Log.d(TAG_ADD_REPORT, "office label updated: officeId=$officeId -> '$label'")
     }
 
     offices[officeId] = label
@@ -150,6 +168,13 @@ fun AddReportScreen(
 
   // For the dropdown menu
   var selectedOption by remember { mutableStateOf((user as Farmer).defaultOffice ?: "") }
+
+  // LOG B) suivi des changements d'option sélectionnée
+  LaunchedEffect(selectedOption) {
+    Log.d(
+        TAG_ADD_REPORT,
+        "selectedOption changed -> '$selectedOption', officesKnown=${offices.size}, officeLabel='${offices[selectedOption]}'")
+  }
 
   // For the confirmation snackbar (i.e alter window)
   val snackbarHostState = remember { SnackbarHostState() }
@@ -181,36 +206,35 @@ fun AddReportScreen(
   }
 
   LaunchedEffect(Unit) { addReportViewModel.setOffice(selectedOption) }
+  Scaffold(
+      snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+      topBar = {
+        // Top bar with back arrow and title/status
+        TopAppBar(
+            title = {
+              Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = Screen.AddReport.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.weight(1f).testTag(NavigationTestTags.TOP_BAR_TITLE))
+                  }
+            },
+            navigationIcon = {
+              IconButton(
+                  onClick = onBack,
+                  modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back")
+                  }
+            })
+      }) { padding ->
 
-  LoadingOverlay(isLoading = userUi.isLoading) {
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        topBar = {
-          // Top bar with back arrow and title/status
-          TopAppBar(
-              title = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically) {
-                      Text(
-                          text = Screen.AddReport.name,
-                          style = MaterialTheme.typography.titleLarge,
-                          modifier = Modifier.weight(1f).testTag(NavigationTestTags.TOP_BAR_TITLE))
-                    }
-              },
-              navigationIcon = {
-                IconButton(
-                    onClick = onBack,
-                    modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
-                      Icon(
-                          imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                          contentDescription = "Back")
-                    }
-              })
-        }) { padding ->
-
-          // Main scrollable content
+        // Main scrollable content
+        LoadingOverlay(isLoading = reportUi.isLoading) {
           Column(
               modifier =
                   Modifier.padding(padding)
@@ -250,8 +274,12 @@ fun AddReportScreen(
                     offices = offices,
                     selectedOfficeId = selectedOption,
                     onOfficeSelected = { officeId ->
+                      Log.d(
+                          TAG_ADD_REPORT,
+                          "onOfficeSelected called with officeId=$officeId label='${offices[officeId]}' BEFORE setOffice")
                       selectedOption = officeId
                       addReportViewModel.setOffice(officeId)
+                      Log.d(TAG_ADD_REPORT, "onOfficeSelected done: selectedOption=$selectedOption")
                     })
 
                 UploadedImagePreview(photoUri = reportUi.photoUri)
@@ -280,7 +308,7 @@ fun AddReportScreen(
               errorMessage = errorDialogMessage,
               onDismiss = { showErrorDialog = false })
         }
-  }
+      }
 }
 
 /**
@@ -356,29 +384,76 @@ fun OfficeDropdown(
   var expanded by remember { mutableStateOf(false) }
   var selectedOfficeName = offices[selectedOfficeId] ?: selectedOfficeId
 
-  ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-    OutlinedTextField(
-        value = selectedOfficeName,
-        onValueChange = {}, // No direct text editing
-        readOnly = true,
-        label = { Text("Choose an Office") },
-        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-        modifier =
-            Modifier.menuAnchor().fillMaxWidth().testTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
-
-    ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-      offices.forEach { (option, displayName) ->
-        DropdownMenuItem(
-            text = { Text(displayName) },
-            onClick = {
-              selectedOfficeName = displayName
-              onOfficeSelected(option)
-              expanded = false
-            },
-            modifier = Modifier.testTag(AddReportScreenTestTags.getTestTagForOffice(option)))
-      }
-    }
+  // LOG: dump complet de la map offices (taille + contenu) et état sélectionné
+  LaunchedEffect(offices.size, selectedOfficeId, selectedOfficeName) {
+    Log.d(TAG_OFFICE_DD, "map: offices.size=${offices.size} offices=${offices}")
+    Log.d(
+        TAG_OFFICE_DD,
+        "state: selectedOfficeId=${selectedOfficeId} selectedOfficeName='${selectedOfficeName}'")
   }
+
+  // LOG 3a) rendu du dropdown avec état courant
+  LaunchedEffect(selectedOfficeId, offices.size, selectedOfficeName) {
+    Log.d(
+        TAG_OFFICE_DD,
+        "render: selectedOfficeId=${selectedOfficeId} selectedOfficeName='${selectedOfficeName}' offices.size=${offices.size}")
+  }
+
+  ExposedDropdownMenuBox(
+      expanded = expanded,
+      onExpandedChange = {
+        expanded = !expanded
+        Log.d(
+            TAG_OFFICE_DD,
+            "expanded toggled -> ${expanded} (selectedOfficeId=${selectedOfficeId} name='${selectedOfficeName}')")
+      }) {
+        OutlinedTextField(
+            value = selectedOfficeName,
+            onValueChange = {}, // No direct text editing
+            readOnly = true,
+            label = { Text("Choose an Office") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier =
+                Modifier.menuAnchor()
+                    .fillMaxWidth()
+                    .testTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
+
+        // LOG: contenu exact du menu au moment de l'ouverture
+        LaunchedEffect(expanded) {
+          if (expanded) {
+            val items =
+                offices.entries.joinToString(prefix = "[", postfix = "]") { (id, name) ->
+                  "{optionId=" + id + ", displayName='" + name + "'}"
+                }
+            Log.d(TAG_OFFICE_DD, "menu open: items=${items}")
+          }
+        }
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = {
+              expanded = false
+              Log.d(TAG_OFFICE_DD, "menu dismissed")
+            }) {
+              offices.forEach { (option, displayName) ->
+                DropdownMenuItem(
+                    text = { Text(displayName) },
+                    onClick = {
+                      Log.d(
+                          TAG_OFFICE_DD,
+                          "item click: optionId=${option} displayName='${displayName}'")
+                      selectedOfficeName = displayName
+                      onOfficeSelected(option)
+                      expanded = false
+                      Log.d(
+                          TAG_OFFICE_DD,
+                          "after click: expanded=${expanded} selectedOfficeId(after)=${option}")
+                    },
+                    modifier =
+                        Modifier.testTag(AddReportScreenTestTags.getTestTagForOffice(option)))
+              }
+            }
+      }
 }
 
 /**

@@ -15,9 +15,11 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.printToLog
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
@@ -313,6 +315,11 @@ class AddReportScreenTest {
         .assertExists()
         .performClick()
 
+    // Log de l’arbre après sélection de l’office pour analyser où le texte est présent
+    composeRule.onRoot(useUnmergedTree = true).printToLog("TREE_AFTER_SELECT")
+
+    // Log de l’arbre juste avant l’assertion pour confirmer l’état actuel
+    composeRule.onRoot(useUnmergedTree = true).printToLog("TREE_BEFORE_ASSERT")
     composeRule.onNodeWithText(firstOfficeName, useUnmergedTree = true).assertIsDisplayed()
   }
 
