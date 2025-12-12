@@ -18,13 +18,15 @@ class AuthRepositoryFirebase(
     private val helper: GoogleSignInHelper = DefaultGoogleSignInHelper()
 ) : AuthRepository {
 
-  override suspend fun signInWithEmailAndPassword(email: String, password: String): Result<String> {
+  override suspend fun signInWithEmailAndPassword(
+      email: String,
+      password: String
+  ): Result<Boolean> {
     return try {
       val loginResult = auth.signInWithEmailAndPassword(email, password).await()
-      val user =
-          loginResult.user?.uid ?: return Result.failure(NullPointerException("Log in failed"))
+      val user = loginResult.user ?: return Result.failure(NullPointerException("Log in failed"))
 
-      Result.success(user)
+      Result.success(user.isEmailVerified)
     } catch (e: Exception) {
       Result.failure(e)
     }
@@ -70,6 +72,7 @@ class AuthRepositoryFirebase(
                 ?: return Result.failure(
                     IllegalStateException("Login failed : Could not retrieve user information"))
 
+        verifyUser(user.uid)
         Result.success(user.uid)
       } else {
         return Result.failure(
@@ -138,5 +141,19 @@ class AuthRepositoryFirebase(
     } catch (e: Exception) {
       Result.failure(e)
     }
+  }
+
+  override suspend fun checkIsVerified(): Boolean {
+    auth.currentUser?.reload()?.await()
+    return auth.currentUser?.isEmailVerified ?: false
+  }
+
+  override suspend fun sendVerificationEmail(): Result<Unit> {
+    try {
+      auth.currentUser?.sendEmailVerification()?.await()
+    } catch (e: Exception) {
+      return Result.failure(e)
+    }
+    return Result.success(Unit)
   }
 }

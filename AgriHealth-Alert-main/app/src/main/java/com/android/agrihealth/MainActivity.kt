@@ -52,6 +52,7 @@ import com.android.agrihealth.ui.authentification.ResetPasswordViewModel
 import com.android.agrihealth.ui.authentification.RoleSelectionScreen
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
+import com.android.agrihealth.ui.authentification.VerifyEmailScreen
 import com.android.agrihealth.ui.map.MapScreen
 import com.android.agrihealth.ui.map.MapViewModel
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -147,8 +148,12 @@ fun AgriHealthApp(
   LaunchedEffect(currentUser.address) { pickedLocation.value = currentUser.address }
 
   val startDestination = remember {
-    if (Firebase.auth.currentUser == null) Screen.Auth.name
-    else if (currentUser == defaultUser) Screen.RoleSelection.name else Screen.Overview.name
+    when {
+      Firebase.auth.currentUser == null -> Screen.Auth.name
+      !(Firebase.auth.currentUser?.isEmailVerified ?: false) -> Screen.EmailVerify.name
+      currentUser == defaultUser -> Screen.RoleSelection.name
+      else -> Screen.Overview.name
+    }
   }
 
   NavHost(navController = navController, startDestination = startDestination) {
@@ -166,13 +171,17 @@ fun AgriHealthApp(
               navigationActions.navigateTo(Screen.Overview)
             },
             goToSignUp = { navigationActions.navigateTo(Screen.SignUp) },
-            onNewGoogle = { navigationActions.navigateTo(Screen.RoleSelection) })
+            onNewGoogle = { navigationActions.navigateTo(Screen.RoleSelection) },
+            onNotVerified = {
+              userViewModel.refreshCurrentUser()
+              navigationActions.navigateTo(Screen.EmailVerify)
+            })
       }
       composable(Screen.SignUp.route) {
         SignUpScreen(
             userViewModel = userViewModel,
             onBack = { navigationActions.navigateTo(Screen.Auth) },
-            onSignedUp = { navigationActions.navigateTo(Screen.EditProfile) })
+            onSignedUp = { navigationActions.navigateTo(Screen.EmailVerify) })
       }
 
       composable(Screen.ResetPassword.route) {
@@ -187,6 +196,13 @@ fun AgriHealthApp(
             onBack = { navigationActions.navigateTo(Screen.Auth) },
             onButtonPressed = { navigationActions.navigateTo(Screen.EditProfile) },
             userViewModel = userViewModel)
+      }
+    }
+    navigation(startDestination = Screen.EmailVerify.route, route = Screen.EmailVerify.name) {
+      composable(Screen.EmailVerify.route) {
+        VerifyEmailScreen(
+            onBack = { navigationActions.navigateToAuthAndClear() },
+            onVerified = { navigationActions.navigateTo(Screen.EditProfile) })
       }
     }
 
