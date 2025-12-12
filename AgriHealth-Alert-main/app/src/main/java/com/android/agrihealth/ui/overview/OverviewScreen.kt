@@ -110,6 +110,7 @@ fun OverviewScreen(
   val minLazySpace = remember { 150.dp }
   val snackbarHostState = remember { SnackbarHostState() }
   var filtersExpanded by remember { mutableStateOf(false) }
+  val isLoading = uiState.isAlertLoading || uiState.isReportLoading
 
   LaunchedEffect(user) {
     overviewViewModel.loadReports(user)
@@ -161,7 +162,7 @@ fun OverviewScreen(
 
       // -- Main content area --
       content = { paddingValues ->
-        LoadingOverlay(isLoading = uiState.isLoading) {
+        LoadingOverlay(isLoading = isLoading) {
           val topPadding = paddingValues.calculateTopPadding()
           val bottomPadding = paddingValues.calculateBottomPadding()
           BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
@@ -233,137 +234,141 @@ fun OverviewScreen(
                   // -- Past reports list --
                   Text("Past Reports", style = MaterialTheme.typography.headlineSmall)
                   Spacer(modifier = Modifier.height(12.dp))
-                }
-            // Filter Chips + Logic
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()) {
-                  AssistChip(
-                      onClick = { filtersExpanded = !filtersExpanded },
-                      label = {
+
+                  // Filter Chips + Logic
+                  Row(
+                      verticalAlignment = Alignment.CenterVertically,
+                      modifier = Modifier.fillMaxWidth()) {
+                        AssistChip(
+                            onClick = { filtersExpanded = !filtersExpanded },
+                            label = {
+                              Text(
+                                  text = if (filtersExpanded) "Hide filters" else "Filters",
+                                  style = MaterialTheme.typography.bodyMedium)
+                            },
+                            modifier = Modifier.testTag(OverviewScreenTestTags.FILTERS_TOGGLE))
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        // Adds selected filters displayed even we the filters not displayed
+                        val appliedSummaries =
+                            buildList {
+                                  uiState.selectedStatus?.let { add(it.displayString()) }
+                                  uiState.selectedOffice?.let { add(rememberOfficeName(it)) }
+                                  uiState.selectedFarmer?.let { add(rememberUserName(it)) }
+                                  uiState.selectedAssignmentFilter?.let {
+                                    add(
+                                        when (it) {
+                                          AssignmentFilter.ASSIGNED_TO_CURRENT_VET ->
+                                              AssigneeFilterTexts.ASSIGNED_TO_ME
+                                          AssignmentFilter.UNASSIGNED ->
+                                              AssigneeFilterTexts.UNASSIGNED
+                                          AssignmentFilter.ASSIGNED_TO_OTHERS ->
+                                              AssigneeFilterTexts.ASSIGNED_TO_OTHERS
+                                        })
+                                  }
+                                }
+                                .joinToString(separator = " • ")
+                                .takeIf { it.isNotEmpty() } ?: "No filters"
+
                         Text(
-                            text = if (filtersExpanded) "Hide filters" else "Filters",
-                            style = MaterialTheme.typography.bodyMedium)
-                      },
-                      modifier = Modifier.testTag(OverviewScreenTestTags.FILTERS_TOGGLE))
+                            text = appliedSummaries,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.weight(1f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis)
+                      }
 
-                  Spacer(modifier = Modifier.width(8.dp))
+                  if (filtersExpanded) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                          // Status filter (common to both roles)
+                          DropdownMenuWrapper(
+                              options = listOf(null) + ReportStatus.entries,
+                              selectedOption = uiState.selectedStatus,
+                              onOptionSelected = { newStatus ->
+                                overviewViewModel.updateFiltersForReports(
+                                    status = FilterArg.Value(newStatus))
+                              },
+                              modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN),
+                              placeholder = "Filter by status",
+                              labelProvider = { status -> status?.displayString() ?: "-" })
 
-                  // Adds selected filters displayed even we the filters not displayed
-                  val appliedSummaries =
-                      buildList {
-                            uiState.selectedStatus?.let { add(it.displayString()) }
-                            uiState.selectedOffice?.let { add(rememberOfficeName(it)) }
-                            uiState.selectedFarmer?.let { add(rememberUserName(it)) }
-                            uiState.selectedAssignmentFilter?.let {
-                              add(
-                                  when (it) {
+                          Spacer(modifier = Modifier.height(4.dp))
+
+                          if (userRole == UserRole.FARMER) {
+                            // OfficeId filter (only for farmer)
+                            DropdownMenuWrapper(
+                                options = listOf(null) + uiState.officeOptions,
+                                selectedOption = uiState.selectedOffice,
+                                onOptionSelected = { newOffice ->
+                                  overviewViewModel.updateFiltersForReports(
+                                      officeId = FilterArg.Value(newOffice))
+                                },
+                                modifier =
+                                    Modifier.testTag(OverviewScreenTestTags.OFFICE_ID_DROPDOWN),
+                                placeholder = "Filter by offices",
+                                labelProvider = { officeId ->
+                                  if (officeId == null) "-" else rememberOfficeName(officeId)
+                                })
+                          } else if (userRole == UserRole.VET) {
+                            // FarmerId filter (only for vet)
+                            DropdownMenuWrapper(
+                                options = listOf(null) + uiState.farmerOptions,
+                                selectedOption = uiState.selectedFarmer,
+                                onOptionSelected = { newFarmer ->
+                                  overviewViewModel.updateFiltersForReports(
+                                      farmerId = FilterArg.Value(newFarmer))
+                                },
+                                modifier =
+                                    Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN),
+                                placeholder = "Filter by farmers",
+                                labelProvider = { farmerId ->
+                                  if (farmerId == null) "-" else rememberUserName(farmerId)
+                                })
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            // Assignment filter (only for vets)
+                            DropdownMenuWrapper(
+                                options =
+                                    listOf<AssignmentFilter?>(null) +
+                                        AssignmentFilter.entries.toTypedArray(),
+                                selectedOption = uiState.selectedAssignmentFilter,
+                                onOptionSelected = { newAssignment ->
+                                  overviewViewModel.updateFiltersForReports(
+                                      assignment = FilterArg.Value(newAssignment))
+                                },
+                                modifier = Modifier.testTag(OverviewScreenTestTags.ASSIGNEE_FILTER),
+                                placeholder = "Filter by Assignee",
+                                labelProvider = { assignment ->
+                                  when (assignment) {
+                                    null -> "-"
                                     AssignmentFilter.ASSIGNED_TO_CURRENT_VET ->
                                         AssigneeFilterTexts.ASSIGNED_TO_ME
                                     AssignmentFilter.UNASSIGNED -> AssigneeFilterTexts.UNASSIGNED
                                     AssignmentFilter.ASSIGNED_TO_OTHERS ->
                                         AssigneeFilterTexts.ASSIGNED_TO_OTHERS
-                                  })
-                            }
+                                  }
+                                })
                           }
-                          .joinToString(separator = " • ")
-                          .takeIf { it.isNotEmpty() } ?: "No filters"
+                        }
+                  }
 
-                  Text(
-                      text = appliedSummaries,
-                      style = MaterialTheme.typography.bodySmall,
-                      modifier = Modifier.weight(1f),
-                      maxLines = 1,
-                      overflow = TextOverflow.Ellipsis)
-                }
-
-            if (filtersExpanded) {
-              Column(
-                  modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                  verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    // Status filter (common to both roles)
-                    DropdownMenuWrapper(
-                        options = listOf(null) + ReportStatus.entries,
-                        selectedOption = uiState.selectedStatus,
-                        onOptionSelected = { newStatus ->
-                          overviewViewModel.updateFiltersForReports(
-                              status = FilterArg.Value(newStatus))
-                        },
-                        modifier = Modifier.testTag(OverviewScreenTestTags.STATUS_DROPDOWN),
-                        placeholder = "Filter by status",
-                        labelProvider = { status -> status?.displayString() ?: "-" })
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    if (userRole == UserRole.FARMER) {
-                      // OfficeId filter (only for farmer)
-                      DropdownMenuWrapper(
-                          options = listOf(null) + uiState.officeOptions,
-                          selectedOption = uiState.selectedOffice,
-                          onOptionSelected = { newOffice ->
-                            overviewViewModel.updateFiltersForReports(
-                                officeId = FilterArg.Value(newOffice))
-                          },
-                          modifier = Modifier.testTag(OverviewScreenTestTags.OFFICE_ID_DROPDOWN),
-                          placeholder = "Filter by offices",
-                          labelProvider = { officeId ->
-                            if (officeId == null) "-" else rememberOfficeName(officeId)
-                          })
-                    } else if (userRole == UserRole.VET) {
-                      // FarmerId filter (only for vet)
-                      DropdownMenuWrapper(
-                          options = listOf(null) + uiState.farmerOptions,
-                          selectedOption = uiState.selectedFarmer,
-                          onOptionSelected = { newFarmer ->
-                            overviewViewModel.updateFiltersForReports(
-                                farmerId = FilterArg.Value(newFarmer))
-                          },
-                          modifier = Modifier.testTag(OverviewScreenTestTags.FARMER_ID_DROPDOWN),
-                          placeholder = "Filter by farmers",
-                          labelProvider = { farmerId ->
-                            if (farmerId == null) "-" else rememberUserName(farmerId)
-                          })
-
-                      Spacer(modifier = Modifier.height(4.dp))
-
-                      // Assignment filter (only for vets)
-                      DropdownMenuWrapper(
-                          options =
-                              listOf<AssignmentFilter?>(null) +
-                                  AssignmentFilter.entries.toTypedArray(),
-                          selectedOption = uiState.selectedAssignmentFilter,
-                          onOptionSelected = { newAssignment ->
-                            overviewViewModel.updateFiltersForReports(
-                                assignment = FilterArg.Value(newAssignment))
-                          },
-                          modifier = Modifier.testTag(OverviewScreenTestTags.ASSIGNEE_FILTER),
-                          placeholder = "Filter by Assignee",
-                          labelProvider = { assignment ->
-                            when (assignment) {
-                              null -> "-"
-                              AssignmentFilter.ASSIGNED_TO_CURRENT_VET ->
-                                  AssigneeFilterTexts.ASSIGNED_TO_ME
-                              AssignmentFilter.UNASSIGNED -> AssigneeFilterTexts.UNASSIGNED
-                              AssignmentFilter.ASSIGNED_TO_OTHERS ->
-                                  AssigneeFilterTexts.ASSIGNED_TO_OTHERS
-                            }
-                          })
+                  LazyColumn(modifier = Modifier.height(maxOf(lazySpace, minLazySpace))) {
+                    items(uiState.filteredReports) { report ->
+                      ReportItem(
+                          userRole = userRole,
+                          snackbarHostState = snackbarHostState,
+                          report = report,
+                          onClick = { onReportClick(report.id) },
+                          navigationActions = navigationActions,
+                          user = user)
+                      HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                     }
                   }
-            }
-
-            LazyColumn(modifier = Modifier.height(maxOf(lazySpace, minLazySpace))) {
-              items(uiState.filteredReports) { report ->
-                ReportItem(
-                    userRole = userRole,
-                    snackbarHostState = snackbarHostState,
-                    report = report,
-                    onClick = { onReportClick(report.id) },
-                    navigationActions = navigationActions,
-                    user = user)
-                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-              }
-            }
+                }
           }
         }
       })

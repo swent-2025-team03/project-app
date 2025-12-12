@@ -1,12 +1,7 @@
 package com.android.agrihealth.ui.overview
 
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertTextEquals
-import androidx.compose.ui.test.isDisplayed
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
@@ -160,7 +155,9 @@ class OverviewScreenTest {
     }
 
     composeTestRule.assertOverlayDuringLoading(
-        isLoading = { viewModel.uiState.value.isLoading },
+        isLoading = {
+          viewModel.uiState.value.isAlertLoading || viewModel.uiState.value.isReportLoading
+        },
         timeoutStart = TestConstants.DEFAULT_TIMEOUT,
         timeoutEnd = TestConstants.DEFAULT_TIMEOUT)
   }
