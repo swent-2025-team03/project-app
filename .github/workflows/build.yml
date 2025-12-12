@@ -83,6 +83,15 @@ jobs:
       - name: Run tests
         run: ./gradlew check --parallel --build-cache
 
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker image prune --all --force
+          df -h
+
       - name: Run instrumentation tests
         timeout-minutes: 60
         uses: reactivecircus/android-emulator-runner@v2
