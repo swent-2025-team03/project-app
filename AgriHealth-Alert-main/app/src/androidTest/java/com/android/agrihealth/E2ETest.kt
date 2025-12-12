@@ -526,12 +526,6 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     goBack()
 
-    // TODO remove once discard change is fixed
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onNodeWithText("Discard changes").isDisplayed()
-    }
-    composeTestRule.onNodeWithText("Discard changes").performClick()
-
     waitUntilTestTag(OverviewScreenTestTags.SCREEN)
   }
 
