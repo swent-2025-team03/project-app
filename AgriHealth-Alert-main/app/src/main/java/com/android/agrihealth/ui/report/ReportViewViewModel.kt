@@ -64,34 +64,23 @@ class ReportViewViewModel(
   /** Loads a report by its ID and updates the state. */
   fun loadReport(reportID: String) {
     viewModelScope.launch {
-      Log.d("DEBUG_VM", "loadReport: START, id=${'$'}reportID, before withLoadingState")
       _uiState.withLoadingState(
           applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
-            Log.d("DEBUG_VM", "loadReport: repo call BEGIN, id=${'$'}reportID")
             try {
               val fetchedReport = repository.getReportById(reportID)
-              Log.d(
-                  "DEBUG_VM",
-                  "loadReport: repo call END, id=${'$'}reportID, fetched=${'$'}{fetchedReport != null}")
               if (fetchedReport != null) {
                 _uiState.value =
                     ReportViewUIState(
                         report = fetchedReport,
                         answerText = fetchedReport.answer ?: "",
                         status = fetchedReport.status)
-                Log.d(
-                    "DEBUG_VM",
-                    "loadReport: UI updated, isLoading(after update)=${'$'}{_uiState.value.isLoading}")
               } else {
-                Log.e("DEBUG_VM", "loadReport: Report not found, id=${'$'}reportID")
+                Log.e("ReportViewModel", "Report with ID $reportID not found.")
               }
             } catch (e: Exception) {
-              Log.e("DEBUG_VM", "loadReport: error for id=${'$'}reportID", e)
+              Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
             }
           }
-      Log.d(
-          "DEBUG_VM",
-          "loadReport: END, id=${'$'}reportID, isLoading(final)=${'$'}{_uiState.value.isLoading}")
     }
   }
 
@@ -125,12 +114,9 @@ class ReportViewViewModel(
   /** Saves the modified report, then triggers the saveCompleted flag on success. */
   fun onSave() {
     viewModelScope.launch {
-      Log.d("DEBUG_VM", "onSave: START, before withLoadingState")
       _uiState.withLoadingState(
           applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
             try {
-              Log.d(
-                  "DEBUG_VM", "onSave: repo edit BEGIN, reportId=${'$'}{_uiState.value.report.id}")
               val currentReport = _uiState.value.report
               val newAnswer = _uiState.value.answerText
               val newStatus = _uiState.value.status
@@ -138,27 +124,20 @@ class ReportViewViewModel(
               if (currentReport.answer != newAnswer || currentReport.status != newStatus) {
                 val updatedReport = currentReport.copy(answer = newAnswer, status = newStatus)
                 repository.editReport(updatedReport.id, updatedReport)
-                Log.d("DEBUG_VM", "onSave: repo edit END, reportId=${'$'}{updatedReport.id}")
 
                 // Send a notification
                 val farmerId = updatedReport.farmerId
-                val description = "Your report '${'$'}{updatedReport.title}' has new changes!"
+                val description = "Your report '${updatedReport.title}' has new changes!"
                 val notification =
                     Notification.VetAnswer(destinationUid = farmerId, description = description)
                 val messagingService = NotificationHandlerFirebase()
                 messagingService.uploadNotification(notification)
-              } else {
-                Log.d("DEBUG_VM", "onSave: no changes to persist")
               }
               _saveCompleted.value = true
-              Log.d(
-                  "DEBUG_VM",
-                  "onSave: UI flag saveCompleted set=true, isLoading(after block)=${'$'}{_uiState.value.isLoading}")
             } catch (e: Exception) {
-              Log.e("DEBUG_VM", "onSave: error during save", e)
+              Log.e("ReportViewModel", "Error saving report", e)
             }
           }
-      Log.d("DEBUG_VM", "onSave: END, isLoading(final)=${'$'}{_uiState.value.isLoading}")
     }
   }
 

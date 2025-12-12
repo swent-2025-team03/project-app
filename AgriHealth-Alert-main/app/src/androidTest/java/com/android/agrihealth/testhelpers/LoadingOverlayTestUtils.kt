@@ -1,6 +1,5 @@
 package com.android.agrihealth.testhelpers
 
-import android.util.Log
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -8,78 +7,46 @@ import com.android.agrihealth.ui.loading.LoadingTestTags
 
 object LoadingOverlayTestUtils {
 
-  private const val TAG = "LoadingOverlayTest"
-
   fun ComposeContentTestRule.assertLoadingOverlayVisible() {
-    Log.d(TAG, "assertLoadingOverlayVisible: checking SCRIM & SPINNER are displayed")
+    // Assert that both scrim and spinner are visible
     onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
     onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
   }
 
   fun ComposeContentTestRule.assertLoadingOverlayHidden() {
-    Log.d(TAG, "assertLoadingOverlayHidden: checking SCRIM & SPINNER are not present")
+    // Assert that both scrim and spinner are not present
     onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
     onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
   }
 
   fun ComposeContentTestRule.waitForLoadingToStart(timeoutMillis: Long, isLoading: () -> Boolean) {
-    Log.d(
-        TAG,
-        "waitForLoadingToStart: timeout=${'$'}timeoutMillis, initial isLoading=${'$'}{isLoading()}")
-    val start = System.currentTimeMillis()
+    // Wait until isLoading becomes true or timeout elapses
     waitUntil(timeoutMillis) { isLoading() }
-        .also {
-          val took = System.currentTimeMillis() - start
-          Log.d(
-              TAG,
-              "waitForLoadingToStart: finished in ${'$'}took ms, final isLoading=${'$'}{isLoading()}")
-        }
   }
 
   fun ComposeContentTestRule.waitForLoadingToFinish(timeoutMillis: Long, isLoading: () -> Boolean) {
-    Log.d(
-        TAG,
-        "waitForLoadingToFinish: timeout=${'$'}timeoutMillis, initial isLoading=${'$'}{isLoading()}")
-    val start = System.currentTimeMillis()
+    // Wait until isLoading becomes false or timeout elapses
     waitUntil(timeoutMillis) { !isLoading() }
-        .also {
-          val took = System.currentTimeMillis() - start
-          Log.d(
-              TAG,
-              "waitForLoadingToFinish: finished in ${'$'}took ms, final isLoading=${'$'}{isLoading()}")
-        }
   }
 
   /**
-   * Enchaîne tout le cycle :
-   * - attend que isLoading passe à true
-   * - vérifie que l'overlay est visible
-   * - attend que isLoading repasse à false
-   * - vérifie que l'overlay a disparu
+   * Orchestrates the full cycle:
+   * - waits for isLoading to become true
+   * - asserts overlay is visible
+   * - waits for isLoading to become false
+   * - asserts overlay is hidden
    */
   fun ComposeContentTestRule.assertOverlayDuringLoading(
       isLoading: () -> Boolean,
       timeoutStart: Long,
       timeoutEnd: Long,
   ) {
-    Log.d(
-        TAG,
-        "assertOverlayDuringLoading: START, timeoutStart=${'$'}timeoutStart, timeoutEnd=${'$'}timeoutEnd, initial isLoading=${'$'}{isLoading()}")
-    val totalStart = System.currentTimeMillis()
-
+    // Wait for loading to start and verify overlay is visible
     waitForLoadingToStart(timeoutStart, isLoading)
-    Log.d(
-        TAG,
-        "assertOverlayDuringLoading: after waitForLoadingToStart, isLoading=${'$'}{isLoading()}")
     assertLoadingOverlayVisible()
 
+    // Wait for loading to finish and verify overlay is hidden
     waitForLoadingToFinish(timeoutEnd, isLoading)
-    Log.d(
-        TAG,
-        "assertOverlayDuringLoading: after waitForLoadingToFinish, isLoading=${'$'}{isLoading()}")
     assertLoadingOverlayHidden()
-
-    val total = System.currentTimeMillis() - totalStart
-    Log.d(TAG, "assertOverlayDuringLoading: END, total=${'$'}total ms")
   }
 }

@@ -1,6 +1,5 @@
 package com.android.agrihealth.testutil
 
-import android.util.Log
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.repository.ReportRepository
 import kotlinx.coroutines.delay
@@ -23,9 +22,7 @@ open class InMemoryReportRepository(
   }
 
   override suspend fun getReportById(reportId: String): Report? {
-    Log.d("DEBUG_REPO", "Repo getReportById called, delay=$delayMs")
     delay(delayMs)
-    Log.d("DEBUG_REPO", "Repo finished delay")
     return reports.find { it.id == reportId }
         ?: throw NoSuchElementException("InMemoryReportRepository: Report not found")
   }
