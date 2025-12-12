@@ -124,7 +124,7 @@ fun GenerateCode(
         horizontalArrangement = Arrangement.Center) {
           if (!isError) {
             Text(
-                "Generated Code: $code",
+                if (code?.length == 6) "Generated Code: $code" else code!!,
                 style = MaterialTheme.typography.bodyLarge,
                 modifier =
                     modifier
