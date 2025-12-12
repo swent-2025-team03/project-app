@@ -93,8 +93,7 @@ jobs:
           avd-name: github
           working-directory: ./AgriHealth-Alert-main
           force-avd-creation: true
-          disk-size: 4096M
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 1080x2400
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 1080x2400 -partition-size 512
           disable-animations: true
           script: |
             ls -alh
