@@ -82,7 +82,7 @@ jobs:
 
       - name: Run tests
         run: ./gradlew check --parallel --build-cache
-
+          
       - name: Run instrumentation tests
         timeout-minutes: 60
         uses: reactivecircus/android-emulator-runner@v2
