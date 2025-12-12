@@ -136,6 +136,6 @@ fun RoleSelectionScreen(
 
 @Preview
 @Composable
-fun ScreenPreview() {
+fun RoleSelectionScreenPreview() {
   RoleSelectionScreen()
 }

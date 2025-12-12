@@ -11,6 +11,7 @@ import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
+import com.android.agrihealth.data.model.authentification.verifyUser
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.location.LocationPickerTestTags
@@ -24,6 +25,7 @@ import com.android.agrihealth.ui.authentification.RoleSelectionScreenTestTags
 import com.android.agrihealth.ui.authentification.SignInErrorMsg
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
+import com.android.agrihealth.ui.authentification.VerifyEmailScreenTestTags
 import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags
@@ -103,6 +105,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     signOutFromScreen()
     var uid = Firebase.auth.uid
     completeSignUp("Test", "User", email, pwd, isVet = true)
+    checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
     goBack()
@@ -123,6 +126,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     val pwd = "StrongPwd!123"
 
     completeSignUp("Test", "User", email, pwd, isVet = true)
+    checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
     goBack()
@@ -142,8 +146,9 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     checkWrongSignIn()
     completeSignIn(user1.email, "12345678")
-    checkOverviewScreenIsDisplayed()
-    goToProfileFromOverview()
+    checkEmailVerification()
+    checkEditProfileScreenIsDisplayed()
+    goBack()
     clickAddVetCode()
     goBack()
     clickEditProfile()
@@ -174,6 +179,10 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.waitForIdle()
     completeSignIn(user1.email, "12345678")
+    checkEmailVerification()
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
     checkOverviewScreenIsDisplayed()
     createReport("Report 1", "Description 1", "Deleted Office")
     createReport("Report 2", "Description 2", user1.linkedOffices.last())
@@ -230,6 +239,10 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.waitForIdle()
 
     completeSignIn(user1.email, "12345678")
+    checkEmailVerification()
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
     checkOverviewScreenIsDisplayed()
 
     composeTestRule.onNodeWithTag("ALERT_ITEM_0").assertIsDisplayed()
@@ -276,6 +289,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     val officeCode = runBlocking { codesViewModel.generatedCode.first { it != null } }
 
     completeSignUp("Test", "User", farmerEmail, password, isVet = false)
+    checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
     useCode(officeCode)
@@ -309,6 +323,10 @@ class E2ETest : FirebaseEmulatorsTest() {
     codesViewModel.generateCode()
 
     completeSignIn(email, password)
+    checkEmailVerification()
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
     checkOverviewScreenIsDisplayed()
     goToProfileFromOverview()
     composeTestRule
@@ -341,6 +359,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.waitForIdle()
 
     completeSignUp("Test", "Vet", vetEmail, vetPassword, true)
+    checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
     goBack()
@@ -354,6 +373,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     signOutFromScreen()
 
     completeSignUp("Test", "Farmer", farmerEmail, farmerPassword, false)
+    checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
     goBack()
@@ -376,6 +396,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     signOutFromScreen()
 
     completeSignUp("Test", "Vet2", vet2Email, vet2Password, true)
+    checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
     goBack()
@@ -601,7 +622,18 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performClick()
   }
 
+  private fun checkEmailVerification() {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(VerifyEmailScreenTestTags.WELCOME).isDisplayed()
+    }
+    runTest { verifyUser(Firebase.auth.uid!!) }
+    composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(VerifyEmailScreenTestTags.WELCOME).isNotDisplayed()
+    }
+  }
+
   private fun useCode(officeCode: String?) {
+    waitUntilTestTag(ProfileScreenTestTags.CODE_BUTTON_FARMER)
     composeTestRule
         .onNodeWithTag(ProfileScreenTestTags.CODE_BUTTON_FARMER)
         .assertIsDisplayed()

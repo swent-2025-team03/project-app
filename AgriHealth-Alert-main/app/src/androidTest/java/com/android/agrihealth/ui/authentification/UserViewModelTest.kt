@@ -1,9 +1,8 @@
 package com.android.agrihealth.ui.authentification
 
 import com.android.agrihealth.data.model.authentification.UserRepository
-import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.user.User
-import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.defaultUser
 import com.google.firebase.auth.FirebaseAuth
@@ -21,10 +20,7 @@ import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class UserViewModelTest {
-
-  val user1 = Farmer("abc123", "Rushia", "Uruha", "email1@thing.com", null, emptyList(), null)
-  val user3 = Vet("ghi789", "Nazuna", "Amemiya", "email3@kms.josh", null)
+class UserViewModelTest : FirebaseEmulatorsTest() {
 
   private val testDispatcher = StandardTestDispatcher()
   private lateinit var repository: FakeUserRepository
@@ -32,7 +28,8 @@ class UserViewModelTest {
   val auth = FirebaseAuth.getInstance()
 
   @Before
-  fun setUp() {
+  override fun setUp() {
+    super.setUp()
     Dispatchers.setMain(testDispatcher)
     repository = FakeUserRepository()
   }
