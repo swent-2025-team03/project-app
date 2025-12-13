@@ -13,9 +13,7 @@ import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.ui.loading.withLoadingState
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuthException
-import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -33,7 +31,7 @@ data class SignInUIState(
     val password: String = "",
     val emailIsInvalid: Boolean = false,
     val passwordIsInvalid: Boolean = false,
-    val uid: String? = Firebase.auth.uid,
+    val verified: Boolean? = null,
     val isNewGoogle: Boolean = false,
     val errorMsg: String? = null,
     val isLoading: Boolean = false,
@@ -72,17 +70,17 @@ open class SignInViewModel(
   fun signInWithEmailAndPassword() {
     if (_uiState.value.isValid) {
       viewModelScope.launch {
-        _uiState.withLoadingState(
-            applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+          uiState.withLoadingState(
+              applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
               authRepository
-                  .signInWithEmailAndPassword(_uiState.value.email, _uiState.value.password)
-                  .fold({ uid -> _uiState.update { it.copy(uid = uid) } }) { failure ->
-                    when (failure) {
-                      is FirebaseAuthException -> setErrorMsg(SignInErrorMsg.INVALID_CREDENTIALS)
-                      else -> setErrorMsg(SignInErrorMsg.TIMEOUT)
-                    }
-                  }
+            .signInWithEmailAndPassword(_uiState.value.email, _uiState.value.password)
+            .fold({ verified -> _uiState.update { it.copy(verified = verified) } }) { failure ->
+              when (failure) {
+                is FirebaseAuthException -> setErrorMsg(SignInErrorMsg.INVALID_CREDENTIALS)
+                else -> setErrorMsg(SignInErrorMsg.TIMEOUT)
+              }
             }
+      }
       }
     } else {
       if (_uiState.value.email.isEmpty()) {
@@ -122,22 +120,21 @@ open class SignInViewModel(
               // Launch Credential Manager UI safely
               val credential = getCredential(context, signInRequest, credentialManager)
 
-              // Pass the credential to your repository
-              authRepository.signInWithGoogle(credential).fold({ uid ->
-                if (userRepository.getUserFromId(uid).isFailure)
-                    _uiState.update { it.copy(uid = uid, isNewGoogle = true) }
-                else _uiState.update { it.copy(uid = uid) }
-              }) { failure ->
-                _uiState.update { it.copy(uid = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
-              }
-            } catch (e: GetCredentialCancellationException) {
-              // User cancelled the sign-in flow
-              _uiState.update { it.copy(uid = null) }
-            } catch (e: Exception) {
-              // Unexpected errors
-              _uiState.update { it.copy(uid = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
-            }
-          }
+        // Pass the credential to your repository
+        authRepository.signInWithGoogle(credential).fold({ uid ->
+          if (userRepository.getUserFromId(uid).isFailure)
+              _uiState.update { it.copy(verified = true, isNewGoogle = true) }
+          else _uiState.update { it.copy(verified = true) }
+        }) { failure ->
+          _uiState.update { it.copy(verified = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
+        }
+      } catch (e: GetCredentialCancellationException) {
+        // User cancelled the sign-in flow
+        _uiState.update { it.copy(verified = null) }
+      } catch (e: Exception) {
+        // Unexpected errors
+        _uiState.update { it.copy(verified = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
+      }
     }
   }
 }

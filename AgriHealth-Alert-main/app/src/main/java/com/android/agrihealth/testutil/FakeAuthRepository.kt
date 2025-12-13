@@ -65,14 +65,17 @@ class FakeAuthRepository(
     return Result.failure(IllegalStateException("timeout"))
   }
 
-  override suspend fun signInWithEmailAndPassword(email: String, password: String): Result<String> {
-    delay(delayMs)
-    if (isOnline) {
+  override suspend fun signInWithEmailAndPassword(
+      email: String,
+      password: String
+  ): Result<Boolean> {
+      delay(delayMs)
+      if (isOnline) {
       if (currentUser != null) {
         return Result.failure(IllegalStateException("user $currentUser already logged in"))
       } else if (credentials[email] == password) {
         currentUser = "testUser"
-        return Result.success("testUser")
+        return Result.success(true)
       } else
           return Result.failure(
               FirebaseAuthException("invalid credentials", "we don't have this user"))
@@ -110,5 +113,13 @@ class FakeAuthRepository(
       return Result.success("testUser")
     }
     return Result.failure(IllegalStateException("timeout"))
+  }
+
+  override suspend fun checkIsVerified(): Boolean {
+    return true
+  }
+
+  override suspend fun sendVerificationEmail(): Result<Unit> {
+    return Result.success(Unit)
   }
 }

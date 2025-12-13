@@ -52,6 +52,7 @@ fun SignInScreen(
     onForgotPasswordClick: () -> Unit = {},
     onSignedIn: () -> Unit = {},
     onNewGoogle: () -> Unit = {},
+    onNotVerified: () -> Unit = {},
     goToSignUp: () -> Unit = {},
     signInViewModel: SignInViewModel = viewModel()
 ) {
@@ -68,9 +69,11 @@ fun SignInScreen(
   }
 
   val context = LocalContext.current
-
-  LaunchedEffect(signInUIState.uid) {
-    signInUIState.uid?.let { if (signInUIState.isNewGoogle) onNewGoogle() else onSignedIn() }
+  LaunchedEffect(signInUIState.verified) {
+    signInUIState.verified?.let {
+      if (signInUIState.isNewGoogle) onNewGoogle()
+      else if (signInUIState.verified!!) onSignedIn() else onNotVerified()
+    }
   }
   LoadingOverlay(isLoading = signInUIState.isLoading) {
     Scaffold(

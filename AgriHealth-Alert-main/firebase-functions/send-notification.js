@@ -2,8 +2,6 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 // const log = require("firebase-functions/logger");
 
-admin.initializeApp();
-
 module.exports = functions.https.onCall(async (data, context) => {
   // log(data["data"]);
   const payload = data["data"];

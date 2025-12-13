@@ -221,16 +221,16 @@ private fun SignUpScreenPreview() {
         override suspend fun signInWithEmailAndPassword(
             email: String,
             password: String
-        ): Result<String> {
-          TODO("Not yet implemented")
+        ): Result<Boolean> {
+          throw NotImplementedError()
         }
 
         override suspend fun reAuthenticate(email: String, password: String): Result<Unit> {
-          TODO("Not yet implemented")
+          throw NotImplementedError()
         }
 
         override suspend fun changePassword(password: String): Result<Unit> {
-          TODO("Not yet implemented")
+          throw NotImplementedError()
         }
 
         override suspend fun sendResetPasswordEmail(email: String): Result<Unit> {
@@ -238,7 +238,7 @@ private fun SignUpScreenPreview() {
         }
 
         override suspend fun signInWithGoogle(credential: Credential): Result<String> {
-          TODO("Not yet implemented")
+          throw NotImplementedError()
         }
 
         override suspend fun signUpWithEmailAndPassword(
@@ -246,15 +246,23 @@ private fun SignUpScreenPreview() {
             password: String,
             userData: User
         ): Result<String> {
-          TODO("Not yet implemented")
+          throw NotImplementedError()
         }
 
         override fun signOut(): Result<Unit> {
-          TODO("Not yet implemented")
+          throw NotImplementedError()
         }
 
         override suspend fun deleteAccount(): Result<Unit> {
-          TODO("Not yet implemented")
+          throw NotImplementedError()
+        }
+
+        override suspend fun checkIsVerified(): Boolean {
+          throw NotImplementedError()
+        }
+
+        override suspend fun sendVerificationEmail(): Result<Unit> {
+          throw NotImplementedError()
         }
       }
   val vm = object : SignUpViewModel(authRepo) {}

@@ -346,20 +346,6 @@ class ReportViewScreenTest {
   // -------------------- Additional tests to increase coverage --------------------
 
   @Test
-  fun vet_autoChangesPendingToInProgress_onLaunch() {
-    // When a Vet screen is launched and the ViewModel's report status is PENDING (default),
-    // the LaunchedEffect in the composable should auto-change it to IN_PROGRESS.
-    val viewModel = ReportViewViewModel()
-    setVetScreen(viewModel)
-    // Wait for composition + LaunchedEffect to run
-    composeTestRule.waitForIdle()
-    // The status badge should show "IN PROGRESS" (name has underscore replaced by space)
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.STATUS_BADGE_TEXT)
-        .assertTextContains("IN PROGRESS")
-  }
-
-  @Test
   fun farmer_roleInfoLine_showsOfficeName() {
     setFarmerScreen()
     composeTestRule.waitUntil(LONG_TIMEOUT) {

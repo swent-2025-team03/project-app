@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.isDisplayed
+import androidx.compose.ui.test.isNotDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -11,9 +12,11 @@ import androidx.compose.ui.test.performClick
 import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
+import com.android.agrihealth.data.model.authentification.verifyUser
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
+import com.android.agrihealth.ui.authentification.VerifyEmailScreenTestTags
 import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
@@ -52,8 +55,13 @@ class NavigationTest : FirebaseEmulatorsTest() {
     val repository = AuthRepositoryProvider.repository
     runTest { repository.signUpWithEmailAndPassword("navigation@test.ff", "123456", user1) }
     assert(Firebase.auth.currentUser != null)
+    runTest { verifyUser(Firebase.auth.uid!!) }
     composeTestRule.setContent { AgriHealthApp() }
-    sleep(TestConstants.SHORT_TIMEOUT)
+    composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(VerifyEmailScreenTestTags.WELCOME).isNotDisplayed()
+    }
+    composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).performClick()
     composeTestRule
         .onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE)
         .assertTextContains(Screen.Overview.name)

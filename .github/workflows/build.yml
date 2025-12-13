@@ -57,6 +57,17 @@ jobs:
           else
             echo "::warning::GOOGLE_SERVICES secret is not set. google-services.json will not be created. Should be present"
           fi
+          
+      - name: Start Firebase emulators
+        run: |
+          cd firebase-functions
+          npm install -g firebase-tools
+          npm install
+          firebase emulators:start --only auth,firestore,storage,functions --project agrihealth-alert & 
+          sleep 15 
+          curl -X PATCH "http://localhost:9099/emulator/v1/projects/agrihealth-alert/config" \
+          -H "Content-Type: application/json" \
+          -d '{"signIn": {"allowDuplicateEmails": true}}'
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
@@ -65,24 +76,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
 
       - name: Assemble
         run: ./gradlew assembleDebug lint --parallel --build-cache
 
       - name: Run tests
         run: ./gradlew check --parallel --build-cache
-
-      - name: Start Firebase emulators
-        run: |
-          firebase emulators:start --only auth,firestore,storage,functions --project agrihealth-alert & 
-          sleep 15 
-          curl -X PATCH "http://localhost:9099/emulator/v1/projects/agrihealth-alert/config" \
-          -H "Content-Type: application/json" \
-          -d '{"signIn": {"allowDuplicateEmails": true}}'
-
+          
       - name: Run instrumentation tests
         timeout-minutes: 60
         uses: reactivecircus/android-emulator-runner@v2
