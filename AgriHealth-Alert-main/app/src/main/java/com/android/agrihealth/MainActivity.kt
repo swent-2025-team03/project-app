@@ -24,6 +24,7 @@ import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -41,8 +42,10 @@ import com.android.agrihealth.data.model.device.location.LocationRepositoryProvi
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.device.notifications.NotificationHandlerProvider
 import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.location.LocationPicker
+import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.data.model.user.copyCommon
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.alert.AlertViewModel
@@ -56,6 +59,7 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.office.CreateOfficeScreen
 import com.android.agrihealth.ui.office.ManageOfficeScreen
+import com.android.agrihealth.ui.office.ManageOfficeViewModel
 import com.android.agrihealth.ui.office.ViewOfficeScreen
 import com.android.agrihealth.ui.office.ViewOfficeViewModel
 import com.android.agrihealth.ui.overview.OverviewScreen
@@ -109,6 +113,17 @@ fun AgriHealthApp(
   val userViewModel: UserViewModel = viewModel()
 
   val overviewViewModel: OverviewViewModel = viewModel()
+
+  val manageOfficeVm: ManageOfficeViewModel =
+      viewModel(
+          factory =
+              object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return ManageOfficeViewModel(userViewModel, OfficeRepositoryFirestore()) as T
+                }
+              })
+
+  val imageViewModel: ImageViewModel = viewModel()
 
   // Location services: Use the ViewModel and not the repository
   LocationRepositoryProvider.repository = LocationRepository(context)
@@ -327,6 +342,8 @@ fun AgriHealthApp(
         ManageOfficeScreen(
             navigationActions = navigationActions,
             userViewModel = userViewModel,
+            manageOfficeViewModel = manageOfficeVm,
+            imageViewModel = imageViewModel,
             onGoBack = { navigationActions.goBack() },
             onCreateOffice = { navigationActions.navigateTo(Screen.CreateOffice) },
             onJoinOffice = { navigationActions.navigateTo(Screen.ClaimCode(VET_TO_OFFICE)) })

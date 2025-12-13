@@ -6,22 +6,26 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.profile.RemotePhotoDisplay
 
 object ViewOfficeScreenTestTags {
   const val LOADING_INDICATOR = "ViewOfficeLoadingIndicator"
@@ -39,7 +43,8 @@ object ViewOfficeScreenTestTags {
 fun ViewOfficeScreen(
     viewModel: ViewOfficeViewModel,
     onBack: () -> Unit,
-    onOpenUser: (String) -> Unit = {}
+    onOpenUser: (String) -> Unit = {},
+    imageViewModel: ImageViewModel = ImageViewModel()
 ) {
   val uiState by viewModel.uiState
 
@@ -89,7 +94,11 @@ fun ViewOfficeScreen(
                 }
             is ViewOfficeUiState.Success -> {
               val success = uiState as ViewOfficeUiState.Success
-              ViewOfficeContent(office = success.office, onOpenUser = onOpenUser)
+              ViewOfficeContent(
+                  office = success.office,
+                  onOpenUser = onOpenUser,
+                  photoUrl = success.office.photoUrl,
+                  imageViewModel = imageViewModel)
             }
           }
         }
@@ -97,7 +106,12 @@ fun ViewOfficeScreen(
 }
 
 @Composable
-private fun ViewOfficeContent(office: Office, onOpenUser: (String) -> Unit) {
+private fun ViewOfficeContent(
+    office: Office,
+    onOpenUser: (String) -> Unit,
+    photoUrl: String?,
+    imageViewModel: ImageViewModel
+) {
   val scroll = rememberScrollState()
   val noInteraction = remember { MutableInteractionSource() }
 
@@ -110,10 +124,12 @@ private fun ViewOfficeContent(office: Office, onOpenUser: (String) -> Unit) {
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.spacedBy(8.dp)) {
         HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
-        Icon(
-            imageVector = Icons.Default.AccountCircle,
-            contentDescription = "Office",
-            modifier = Modifier.size(120.dp).testTag(ViewOfficeScreenTestTags.OFFICE_ICON))
+
+        RemotePhotoDisplay(
+            photoURL = photoUrl,
+            imageViewModel = imageViewModel,
+            modifier = Modifier.size(120.dp).clip(CircleShape),
+            contentDescription = "Office photo")
 
         OutlinedTextField(
             value = office.name,

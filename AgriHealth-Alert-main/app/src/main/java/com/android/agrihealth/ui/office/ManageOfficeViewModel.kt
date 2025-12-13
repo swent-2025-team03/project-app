@@ -1,14 +1,20 @@
 package com.android.agrihealth.ui.office
 
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.agrihealth.data.model.images.ImageUIState
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.user.UserViewModelContract
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 data class ManageOfficeUiState(
@@ -17,12 +23,15 @@ data class ManageOfficeUiState(
     val editableDescription: String = "",
     val editableAddress: String = "",
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val photoUri: Uri? = null,
+    val uploadedImagePath: String? = null
 )
 
 class ManageOfficeViewModel(
     private val userViewModel: UserViewModelContract,
-    private val officeRepository: OfficeRepository
+    private val officeRepository: OfficeRepository,
+    private val imageViewModel: ImageViewModel = ImageViewModel()
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(ManageOfficeUiState())
@@ -44,7 +53,8 @@ class ManageOfficeViewModel(
                 office = office,
                 editableName = office?.name ?: "",
                 editableDescription = office?.description ?: "",
-                editableAddress = office?.address?.toString() ?: "")
+                editableAddress = office?.address?.toString() ?: "",
+                photoUri = null)
       }
 
       _uiState.value = _uiState.value.copy(isLoading = false)
@@ -85,16 +95,57 @@ class ManageOfficeViewModel(
         }
       }
 
-  fun updateOffice(onSuccess: () -> Unit = {}, newAddress: Location? = null) =
+  fun updateOffice(
+      onSuccess: () -> Unit = {},
+      onError: (Throwable) -> Unit = {},
+      newAddress: Location? = null
+  ) =
       viewModelScope.launch {
-        val office = _uiState.value.office ?: return@launch
-        val updatedOffice =
-            office.copy(
-                name = _uiState.value.editableName,
-                description = _uiState.value.editableDescription,
-                address = newAddress)
-        officeRepository.updateOffice(updatedOffice)
-        _uiState.value = _uiState.value.copy(office = updatedOffice)
-        onSuccess()
+        var uploadedPath = _uiState.value.uploadedImagePath
+        _uiState.value.photoUri?.let { uri ->
+          imageViewModel.upload(uri)
+          val resultState =
+              imageViewModel.uiState.first {
+                it is ImageUIState.UploadSuccess || it is ImageUIState.Error
+              }
+          when (resultState) {
+            is ImageUIState.UploadSuccess -> {
+              uploadedPath = resultState.path
+              Log.d("ManageOfficeViewModel", "uploadedPath = $uploadedPath")
+              _uiState.value = _uiState.value.copy(uploadedImagePath = resultState.path)
+
+              val office = _uiState.value.office ?: return@launch
+              val updatedOffice =
+                  office.copy(
+                      name = _uiState.value.editableName,
+                      description = _uiState.value.editableDescription,
+                      address = newAddress,
+                      photoUrl = uploadedPath)
+              officeRepository.updateOffice(updatedOffice)
+              _uiState.value = _uiState.value.copy(office = updatedOffice)
+              onSuccess()
+            }
+            is ImageUIState.Error -> {
+              onError(resultState.e)
+              return@launch
+            }
+            else -> {
+              onError(IllegalStateException(AddReportFeedbackTexts.UNKNOWN))
+              return@launch
+            }
+          }
+        }
       }
+
+  fun setPhoto(uri: Uri?) {
+    _uiState.value = _uiState.value.copy(photoUri = uri)
+  }
+
+  fun removePhoto() {
+    _uiState.value = _uiState.value.copy(photoUri = null)
+  }
+
+  fun setUploadedPhotoUrl(url: String?) {
+    _uiState.value = _uiState.value.copy(uploadedImagePath = url)
+  }
 }
