@@ -32,7 +32,7 @@ class AuthorNameViewModel(private val repo: UserDirectoryDataSource = UserDirect
         _label.value = unassignedText
         return@launch
       }
-      val user = runCatching { repo.getUserSummary(uid) }.getOrNull()
+      val user = repo.getUserSummary(uid)
       _label.value =
           when {
             user == null -> deletedText
