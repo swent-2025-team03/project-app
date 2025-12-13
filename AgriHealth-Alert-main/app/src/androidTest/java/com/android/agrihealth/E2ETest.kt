@@ -10,8 +10,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.data.model.authentification.AuthRepositoryFirebase
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
-import com.android.agrihealth.data.model.authentification.FakeCredentialManager
-import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.authentification.verifyUser
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.ui.common.LocationPickerTestTags
@@ -46,6 +44,8 @@ import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.TestTimeout.SUPER_LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.TestUser.farmer1
 import com.android.agrihealth.testhelpers.TestUser.farmer2
+import com.android.agrihealth.testhelpers.fakes.FakeCredentialManager
+import com.android.agrihealth.testhelpers.fakes.FakeJwtGenerator
 import com.android.agrihealth.testhelpers.templates.FirebaseUITest
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
