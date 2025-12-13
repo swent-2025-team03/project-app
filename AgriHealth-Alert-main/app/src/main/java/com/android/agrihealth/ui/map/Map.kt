@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -66,11 +68,26 @@ fun MapScreen(
   var showAlerts by remember { mutableStateOf(true) }
 
   // Initial camera state
+  val snackbarHostState = remember { SnackbarHostState() }
+
+  LaunchedEffect(uiState.isLoadingLocation) {
+    if (uiState.isLoadingLocation) {
+      snackbarHostState.showSnackbar("Loading location...")
+    }
+  }
+
   val mapInitialLocation by mapViewModel.startingLocation.collectAsState()
   val mapInitialZoom by mapViewModel.zoom.collectAsState()
   val cameraPositionState = rememberCameraPositionState {}
 
-  if (forceStartingPosition) mapViewModel.setStartingLocation(mapInitialLocation)
+  var forcedOnce by remember { mutableStateOf(false) }
+
+  LaunchedEffect(forceStartingPosition) {
+    if (forceStartingPosition && !forcedOnce) {
+      forcedOnce = true
+      mapViewModel.setStartingLocation(mapViewModel.startingLocation.value)
+    }
+  }
 
   LaunchedEffect(mapInitialLocation) {
     cameraPositionState.position =
@@ -93,6 +110,7 @@ fun MapScreen(
                 onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
                 modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU))
       },
+      snackbarHost = { SnackbarHost(snackbarHostState) },
       content = { pd ->
         Box(modifier = Modifier.fillMaxSize().padding(pd)) {
           LocationPermissionsRequester(onComplete = { /* Set starting position? */})

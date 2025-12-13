@@ -22,7 +22,7 @@ class CreateOfficeViewModel(
     private val officeRepository: OfficeRepository = OfficeRepositoryProvider.get()
 ) : ViewModel() {
 
-  private val user = userViewModel.user.value
+  private val user = userViewModel.uiState.value.user
   private val _uiState = MutableStateFlow(CreateOfficeUiState(address = user.address?.name ?: ""))
   val uiState = _uiState.asStateFlow()
 

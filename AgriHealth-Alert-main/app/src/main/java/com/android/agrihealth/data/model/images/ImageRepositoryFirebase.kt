@@ -22,7 +22,7 @@ class ImageRepositoryFirebase : ImageRepository {
 
   override suspend fun uploadImage(bytes: ByteArray): Result<String> {
     return try {
-      val uid = UserViewModel().user.value.uid
+      val uid = UserViewModel().uiState.value.user.uid
       val fileName = System.currentTimeMillis()
       val childPath = "$uid/$fileName.jpg"
       val imageRef = storage.reference.child(childPath)

@@ -5,7 +5,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.StateFlow
 
 interface UserViewModelContract {
-  val user: StateFlow<User>
+  val uiState: StateFlow<UserUiState>
 
   fun setUser(user: User)
 

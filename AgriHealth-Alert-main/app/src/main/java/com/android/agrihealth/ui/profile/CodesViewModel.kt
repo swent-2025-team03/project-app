@@ -32,7 +32,7 @@ class CodesViewModel(
   val claimMessage: StateFlow<String?> = _claimMessage
 
   fun generateCode() {
-    val currentUser = userViewModel.user.value
+    val currentUser = userViewModel.uiState.value.user
     val vet = currentUser as? Vet ?: return
 
     viewModelScope.launch {
@@ -53,7 +53,7 @@ class CodesViewModel(
   }
 
   fun claimCode(code: String) {
-    val user = userViewModel.user.value
+    val user = userViewModel.uiState.value.user
     val userName =
         listOfNotNull(user.firstname, user.lastname)
             .filter { it.isNotBlank() }

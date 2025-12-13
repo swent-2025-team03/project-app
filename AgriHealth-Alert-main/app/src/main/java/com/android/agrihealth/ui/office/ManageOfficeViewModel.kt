@@ -6,6 +6,7 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.ui.loading.withLoadingState
 import com.android.agrihealth.ui.user.UserViewModelContract
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,20 +35,18 @@ class ManageOfficeViewModel(
 
   fun loadOffice() {
     viewModelScope.launch {
-      _uiState.value = _uiState.value.copy(isLoading = true)
-
-      val currentUser = userViewModel.user.value
-      if (currentUser is Vet && currentUser.officeId != null) {
-        val office = officeRepository.getOffice(currentUser.officeId).getOrNull()
-        _uiState.value =
-            _uiState.value.copy(
-                office = office,
-                editableName = office?.name ?: "",
-                editableDescription = office?.description ?: "",
-                editableAddress = office?.address?.toString() ?: "")
+      _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
+        val currentUser = userViewModel.uiState.value.user
+        if (currentUser is Vet && currentUser.officeId != null) {
+          val office = officeRepository.getOffice(currentUser.officeId).getOrNull()
+          _uiState.value =
+              _uiState.value.copy(
+                  office = office,
+                  editableName = office?.name ?: "",
+                  editableDescription = office?.description ?: "",
+                  editableAddress = office?.address?.toString() ?: "")
+        }
       }
-
-      _uiState.value = _uiState.value.copy(isLoading = false)
     }
   }
 
@@ -65,7 +64,7 @@ class ManageOfficeViewModel(
 
   fun leaveOffice(onSuccess: () -> Unit = {}, onError: (Throwable) -> Unit = {}) =
       viewModelScope.launch {
-        val user = userViewModel.user.value
+        val user = userViewModel.uiState.value.user
         val office = _uiState.value.office
 
         if (user !is Vet || office == null) return@launch
