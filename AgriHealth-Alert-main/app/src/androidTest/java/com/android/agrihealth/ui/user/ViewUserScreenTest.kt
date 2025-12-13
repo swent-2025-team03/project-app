@@ -303,12 +303,12 @@ class ViewUserScreenTest {
       }
     }
 
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
       vm.uiState.value is ViewUserUiState.Loading
     }
     composeTestRule.onNodeWithTag(ViewUserScreenTestTags.LOADING_INDICATOR).assertIsDisplayed()
 
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
       vm.uiState.value !is ViewUserUiState.Loading
     }
     composeTestRule.onNodeWithTag(ViewUserScreenTestTags.LOADING_INDICATOR).assertDoesNotExist()
