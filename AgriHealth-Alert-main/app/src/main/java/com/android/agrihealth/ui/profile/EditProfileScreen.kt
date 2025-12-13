@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
@@ -35,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
@@ -73,6 +75,10 @@ import com.mr0xf00.easycrop.crop
 import com.mr0xf00.easycrop.rememberImageCropper
 import com.mr0xf00.easycrop.ui.ImageCropperDialog
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
+import androidx.compose.ui.graphics.asAndroidBitmap
+import com.android.agrihealth.ui.report.CreateReportErrorDialog
+
 
 enum class CodeType {
   FARMER,
@@ -159,7 +165,7 @@ fun EditProfileScreen(
 
   var showPhotoPickerDialog by remember { mutableStateOf(false) }
   var showPhotoCropper by remember { mutableStateOf(false) }
-  var chosenUri : Uri? by remember {mutableStateOf(null)}
+  var chosenPhoto : ByteArray? by remember {mutableStateOf(null)}
   val imageCropper = rememberImageCropper()
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
@@ -208,7 +214,13 @@ fun EditProfileScreen(
 
             // Camera icon overlay
             FloatingActionButton(
-              onClick = { showPhotoPickerDialog = true },
+              onClick = {
+                if (chosenPhoto == null) {
+                  showPhotoPickerDialog = true
+                } else {
+                  chosenPhoto == null
+                }
+              },
               modifier = Modifier
                 .size(40.dp)
                 .align(Alignment.BottomEnd)
@@ -217,7 +229,7 @@ fun EditProfileScreen(
               contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ) {
               Icon(
-                imageVector = Icons.Default.CameraAlt,
+                imageVector = if (chosenPhoto == null) Icons.Default.CameraAlt else Icons.Default.Clear,
                 contentDescription = "Edit profile picture",
                 modifier = Modifier.size(20.dp)
               )
@@ -432,14 +444,13 @@ fun EditProfileScreen(
     ImagePickerDialog(
       onDismiss = { showPhotoPickerDialog = false },
       onImageSelected = { uri ->
-        chosenUri = uri
         scope.launch {
           val bitmap = uri.toBitmap(context).asImageBitmap()
           val result = imageCropper.crop(bmp = bitmap)
           when (result) {
             is CropResult.Cancelled -> {showPhotoPickerDialog = true}
             is CropError -> { TODO("Handle error") }
-            is CropResult.Success -> { TODO("Upload photo") }
+            is CropResult.Success -> { chosenPhoto = result.bitmap.toByteArray() }
           }
         }
       }
@@ -523,9 +534,16 @@ fun ImageCropperDialogControls(state: CropState) {
   )
 }
 
+// Created with the help of an LLM
+private fun ImageBitmap.toByteArray(format: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG, quality: Int = 100): ByteArray {
+  val bitmap = this.asAndroidBitmap()
+  val outputStream = ByteArrayOutputStream()
+  bitmap.compress(format, quality, outputStream)
+  return outputStream.toByteArray()
+}
 
 // Created with the help of an LLM
-fun Uri.toBitmap(context: Context): Bitmap {
+private fun Uri.toBitmap(context: Context): Bitmap {
   val source = ImageDecoder.createSource(context.contentResolver, this)
   return ImageDecoder.decodeBitmap(source)
 }
