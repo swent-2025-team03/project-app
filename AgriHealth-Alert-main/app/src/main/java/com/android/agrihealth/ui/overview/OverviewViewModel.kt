@@ -93,9 +93,7 @@ class OverviewViewModel(
                 filteredReports = filtered)
 
         currentUserId = user.uid
-      } catch (e: Exception) {
-        _uiState.value = _uiState.value.copy(reports = emptyList())
-      }
+      } catch (_: Exception) {}
     }
   }
 
