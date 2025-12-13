@@ -48,7 +48,7 @@ class CodesViewModel(
                 }
             userViewModel.updateUser(updatedVet)
           },
-          onFailure = { e ->
+          onFailure = { _ ->
             _generatedCode.value =
                 "Something went wrong, please make sure you are connected to the internet."
           })
