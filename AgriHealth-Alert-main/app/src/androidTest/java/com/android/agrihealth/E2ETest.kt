@@ -90,6 +90,8 @@ class E2ETest : FirebaseUITest() {
     }
   }
 
+  override fun displayAllComponents() {}
+
   // ----------- End to End Tests -----------
 
   // ----------- Scenario: Vet -----------

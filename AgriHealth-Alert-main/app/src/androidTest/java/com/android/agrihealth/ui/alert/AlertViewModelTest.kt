@@ -15,20 +15,8 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class AlertViewModelTest {
 
-  private lateinit var repository: FakeAlertRepository
+  val repository = FakeAlertRepository()
   private lateinit var viewModel: AlertViewModel
-  private val dispatcher = StandardTestDispatcher()
-
-  @Before
-  fun setup() {
-    Dispatchers.setMain(dispatcher)
-    repository = FakeAlertRepository()
-  }
-
-  @After
-  fun tearDown() {
-    Dispatchers.resetMain()
-  }
 
   @Test
   fun initial_state_isFirstAlert_ifExists() {

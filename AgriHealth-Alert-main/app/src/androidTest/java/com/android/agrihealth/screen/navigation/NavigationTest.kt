@@ -68,6 +68,10 @@ class NavigationTest : FirebaseUITest() {
         .assertTextContains(Screen.Overview.name)
   }
 
+  override fun displayAllComponents() {
+    TODO("Not yet implemented")
+  }
+
   @Test
   fun overviewScreen_displaysCorrectTitle() {
     // Assert that the title of the top bar is "Overview"
