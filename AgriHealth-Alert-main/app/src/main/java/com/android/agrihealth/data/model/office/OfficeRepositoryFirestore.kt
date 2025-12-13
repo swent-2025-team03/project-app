@@ -1,11 +1,11 @@
 package com.android.agrihealth.data.model.office
 
 import android.util.Log
+import com.android.agrihealth.data.model.helpers.runWithTimeout
 import com.android.agrihealth.data.model.location.locationFromMap
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.tasks.await
 
 private const val OFFICES_COLLECTION_PATH = "offices"
 
@@ -17,20 +17,22 @@ class OfficeRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fir
   }
 
   override suspend fun addOffice(office: Office) {
-    db.collection(OFFICES_COLLECTION_PATH).document(office.id).set(mapFromOffice(office)).await()
+    runWithTimeout(
+        db.collection(OFFICES_COLLECTION_PATH).document(office.id).set(mapFromOffice(office)))
   }
 
   override suspend fun updateOffice(office: Office) {
-    db.collection(OFFICES_COLLECTION_PATH).document(office.id).update(mapFromOffice(office)).await()
+    runWithTimeout(
+        db.collection(OFFICES_COLLECTION_PATH).document(office.id).update(mapFromOffice(office)))
   }
 
   override suspend fun deleteOffice(id: String) {
-    db.collection(OFFICES_COLLECTION_PATH).document(id).delete().await()
+    runWithTimeout(db.collection(OFFICES_COLLECTION_PATH).document(id).delete())
   }
 
   override suspend fun getOffice(id: String): Result<Office> {
     return try {
-      val snapshot = db.collection(OFFICES_COLLECTION_PATH).document(id).get().await()
+      val snapshot = runWithTimeout(db.collection(OFFICES_COLLECTION_PATH).document(id).get())
 
       if (!snapshot.exists()) {
         return Result.failure(NullPointerException("Office not found"))
@@ -67,7 +69,7 @@ class OfficeRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fir
 
   override suspend fun getVetsInOffice(officeId: String): List<String> {
     return try {
-      val snapshot = db.collection("offices").document(officeId).get().await()
+      val snapshot = runWithTimeout(db.collection("offices").document(officeId).get())
 
       if (!snapshot.exists()) {
         return emptyList()
