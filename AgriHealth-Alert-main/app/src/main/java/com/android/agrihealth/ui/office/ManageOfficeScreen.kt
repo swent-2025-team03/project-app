@@ -68,8 +68,7 @@ fun ManageOfficeScreen(
 
   val uiState by manageOfficeVm.uiState.collectAsState()
 
-  val userUi by userViewModel.uiState.collectAsState()
-  val currentUser = userUi.user
+  val currentUser = userViewModel.uiState.collectAsState().value.user
 
   var showLeaveDialog by remember { mutableStateOf(false) }
 

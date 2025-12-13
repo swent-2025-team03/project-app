@@ -16,6 +16,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -30,7 +31,6 @@ val defaultUser =
         defaultOffice = null,
         isGoogleAccount = false)
 
-/** UI state unifié pour l'utilisateur. */
 data class UserUiState(val user: User = defaultUser, val isLoading: Boolean = false)
 
 /**
@@ -47,7 +47,7 @@ open class UserViewModel(
 
   // private val _userRole = MutableStateFlow<UserRole>(UserRole.FARMER)
   private val _uiState = MutableStateFlow(UserUiState(user = initialUser ?: defaultUser))
-  override val uiState: StateFlow<UserUiState> = _uiState
+  override val uiState: StateFlow<UserUiState> = _uiState.asStateFlow()
 
   // user id can be accessed using Firebase.auth.currentUser?.uid
 

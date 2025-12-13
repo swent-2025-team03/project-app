@@ -121,8 +121,7 @@ fun AgriHealthApp(
   val locationViewModel: LocationViewModel = viewModel()
 
   var reloadReports by remember { mutableStateOf(false) }
-  val ui by userViewModel.uiState.collectAsState()
-  val currentUser = ui.user
+  val currentUser = userViewModel.uiState.collectAsState().value.user
   val currentUserId = currentUser.uid
   val currentUserRole = currentUser.role
   val currentUserEmail = currentUser.email

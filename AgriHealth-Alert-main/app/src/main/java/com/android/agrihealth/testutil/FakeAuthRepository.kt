@@ -116,10 +116,12 @@ class FakeAuthRepository(
   }
 
   override suspend fun checkIsVerified(): Boolean {
+    delay(delayMs)
     return true
   }
 
   override suspend fun sendVerificationEmail(): Result<Unit> {
+    delay(delayMs)
     return Result.success(Unit)
   }
 }

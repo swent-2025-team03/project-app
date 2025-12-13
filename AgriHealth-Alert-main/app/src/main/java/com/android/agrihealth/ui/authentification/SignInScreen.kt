@@ -75,6 +75,7 @@ fun SignInScreen(
       else if (signInUIState.verified!!) onSignedIn() else onNotVerified()
     }
   }
+
   LoadingOverlay(isLoading = signInUIState.isLoading) {
     Scaffold(
         modifier = modifier.testTag(SignInScreenTestTags.SCREEN),

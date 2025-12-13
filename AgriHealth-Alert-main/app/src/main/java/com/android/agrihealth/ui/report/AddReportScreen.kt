@@ -127,7 +127,6 @@ fun AddReportScreen(
   val reportUi by addReportViewModel.uiState.collectAsState()
   val userUi by userViewModel.uiState.collectAsState()
   val user = userUi.user
-  val userRole = user.role
 
   val offices = remember { mutableStateMapOf<String, String>() }
 

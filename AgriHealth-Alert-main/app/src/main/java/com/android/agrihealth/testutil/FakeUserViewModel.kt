@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class FakeUserViewModel(initialUser: User) : UserViewModelContract {
-
   private val _uiState = MutableStateFlow(UserUiState(user = initialUser, isLoading = false))
   override val uiState: StateFlow<UserUiState> = _uiState
 

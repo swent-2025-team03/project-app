@@ -40,7 +40,7 @@ data class SignInUIState(
     get() = email.isNotEmpty() && password.isNotEmpty()
 }
 
-open class SignInViewModel(
+class SignInViewModel(
     private val authRepository: AuthRepository = AuthRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository
 ) : ViewModel() {
@@ -71,9 +71,7 @@ open class SignInViewModel(
     if (_uiState.value.isValid) {
       viewModelScope.launch {
         _uiState.withLoadingState(
-            applyLoading = { state: SignInUIState, loading: Boolean ->
-              state.copy(isLoading = loading)
-            }) {
+            applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
               authRepository
                   .signInWithEmailAndPassword(_uiState.value.email, _uiState.value.password)
                   .fold({ verified -> _uiState.update { it.copy(verified = verified) } }) { failure

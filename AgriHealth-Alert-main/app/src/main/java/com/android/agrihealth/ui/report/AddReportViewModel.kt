@@ -111,7 +111,6 @@ class AddReportViewModel(
   override suspend fun createReport(): CreateReportResult {
     val uiState = _uiState.value
 
-    // 1) Validations (pas de loading)
     if (uiState.title.isBlank() ||
         uiState.description.isBlank() ||
         uiState.chosenOffice.isBlank() ||
@@ -178,12 +177,12 @@ class AddReportViewModel(
         return@withLoadingState
       }
 
-      // Notifications (si tu veux aussi les inclure dans le loading)
       val vetIds = officeRepository.getVetsInOffice(newReport.officeId)
       val description = "A new report: '${newReport.title}' was just created by a farmer"
       vetIds.forEach { vetId ->
         val notification = Notification.NewReport(destinationUid = vetId, description = description)
-        NotificationHandlerFirebase().uploadNotification(notification)
+        val messagingService = NotificationHandlerFirebase()
+        messagingService.uploadNotification(notification)
       }
     }
 
