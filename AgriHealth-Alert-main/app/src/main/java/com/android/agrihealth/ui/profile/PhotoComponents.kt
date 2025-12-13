@@ -4,8 +4,6 @@ import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Button
@@ -23,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -60,6 +57,8 @@ object PhotoComponentsTexts {
  * @param contentDescription Content description for accessibility.
  * @param showPlaceHolder If true and the photoURI is null, a default account icon is displayed
  *   instead.
+ * @param placeholder Composable shown when `photoURL` is null and `showPlaceHolder` is true.
+ *   Defaults to a standard account icon.
  */
 @Composable
 fun RemotePhotoDisplay(
@@ -67,7 +66,8 @@ fun RemotePhotoDisplay(
     imageViewModel: ImageViewModel,
     modifier: Modifier = Modifier,
     contentDescription: String?,
-    showPlaceHolder: Boolean = false
+    showPlaceHolder: Boolean = false,
+    placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
 ) {
   val imageUiState by imageViewModel.uiState.collectAsState()
 
@@ -94,10 +94,7 @@ fun RemotePhotoDisplay(
     }
     is ImageUIState.Error -> {
       if (showPlaceHolder) {
-        Icon(
-            imageVector = Icons.Default.AccountCircle,
-            contentDescription = "Default icon",
-            modifier = modifier.testTag(PhotoComponentsTestTags.DEFAULT_ICON))
+        placeholder(modifier)
       } else {
         Text(
             text = PhotoComponentsTexts.PHOTO_ERROR_TEXT,
@@ -107,10 +104,7 @@ fun RemotePhotoDisplay(
     }
     else -> {
       if (showPlaceHolder) {
-        Icon(
-            imageVector = Icons.Default.AccountCircle,
-            contentDescription = "Default icon",
-            modifier = modifier.testTag(PhotoComponentsTestTags.DEFAULT_ICON))
+        placeholder(modifier)
       } else {
         Text(
             text = PhotoComponentsTexts.PHOTO_ILLEGAL_TEXT,
@@ -129,12 +123,15 @@ fun RemotePhotoDisplay(
  * @param modifier Modifier used to customize the layout (e.g. profile picture vs report image).
  * @param showPlaceHolder If true and the photoURI is null, a default account icon is displayed
  *   instead.
+ * @param placeholder Composable shown when `photoURI` is null and `showPlaceHolder` is true.
+ *   Defaults to a standard account icon.
  */
 @Composable
 fun LocalPhotoDisplay(
     photoURI: Uri?,
     modifier: Modifier = Modifier,
-    showPlaceHolder: Boolean = false
+    showPlaceHolder: Boolean = false,
+    placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
 ) {
   if (photoURI != null) {
     AsyncImage(
@@ -143,12 +140,16 @@ fun LocalPhotoDisplay(
         modifier = modifier.testTag(PhotoComponentsTestTags.IMAGE_PREVIEW),
         contentScale = ContentScale.Fit)
   } else if (showPlaceHolder) {
-    Icon(
-        imageVector = Icons.Default.AccountCircle,
-        contentDescription = "Default icon",
-        modifier =
-            Modifier.size(120.dp).clip(CircleShape).testTag(PhotoComponentsTestTags.DEFAULT_ICON))
+    placeholder(modifier)
   }
+}
+
+@Composable
+fun DefaultIconPlaceholder(modifier: Modifier = Modifier) {
+  Icon(
+      imageVector = Icons.Default.AccountCircle,
+      contentDescription = "Default icon",
+      modifier = modifier.testTag(PhotoComponentsTestTags.DEFAULT_ICON))
 }
 
 /**

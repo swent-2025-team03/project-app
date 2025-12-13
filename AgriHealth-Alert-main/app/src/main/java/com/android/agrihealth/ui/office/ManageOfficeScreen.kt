@@ -66,7 +66,7 @@ fun ManageOfficeScreen(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel = viewModel(),
     manageOfficeViewModel: ManageOfficeViewModel,
-    imageViewModel: ImageViewModel = ImageViewModel(),
+    imageViewModel: ImageViewModel = viewModel(),
     onGoBack: () -> Unit = {},
     onCreateOffice: () -> Unit = {},
     onJoinOffice: () -> Unit = {},
@@ -231,7 +231,7 @@ fun UploadRemoveOfficePhotoSection(
     onPhotoPicked: (Uri?) -> Unit,
     onPhotoRemoved: () -> Unit,
     uiState: ManageOfficeUiState,
-    imageViewModel: ImageViewModel = ImageViewModel()
+    imageViewModel: ImageViewModel = viewModel()
 ) {
 
   var initialLoad by rememberSaveable { mutableStateOf(true) }
