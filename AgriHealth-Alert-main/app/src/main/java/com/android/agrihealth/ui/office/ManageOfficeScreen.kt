@@ -2,7 +2,6 @@ package com.android.agrihealth.ui.office
 
 import android.annotation.SuppressLint
 import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,20 +11,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.images.ImageViewModel
@@ -44,10 +40,11 @@ import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_VET_LI
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
 import com.android.agrihealth.ui.profile.CodesViewModel
 import com.android.agrihealth.ui.profile.GenerateCode
+import com.android.agrihealth.ui.profile.LocalPhotoDisplay
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.profile.RemotePhotoDisplay
+import com.android.agrihealth.ui.profile.UploadRemovePhotoButton
 import com.android.agrihealth.ui.user.UserViewModel
-import com.android.agrihealth.ui.utils.ImagePickerDialog
 import kotlinx.coroutines.launch
 
 object ManageOfficeScreenTestTags {
@@ -234,55 +231,29 @@ fun UploadRemoveOfficePhotoSection(
     uiState: ManageOfficeUiState,
     imageViewModel: ImageViewModel = ImageViewModel()
 ) {
-  var showImagePicker by remember { mutableStateOf(false) }
 
   var initialLoad by rememberSaveable { mutableStateOf(true) }
-
   val showRemote = initialLoad && uiState.photoUri == null
-  Log.d("ManageOfficeScreen", "initialLoad = $initialLoad, uiState.photoUri = ${uiState.photoUri}")
 
   if (showRemote) {
-    Log.d("ManageOfficeScreen", "Showing REMOTE office.photoUrl (initial load)")
     RemotePhotoDisplay(
         photoURL = uiState.office?.photoUrl,
         imageViewModel = imageViewModel,
         modifier = Modifier.size(120.dp).clip(CircleShape),
-        contentDescription = "Office photo")
+        contentDescription = "Office photo",
+        showPlaceHolder = true)
   } else {
-    if (uiState.photoUri != null) {
-      Log.d("ManageOfficeScreen", "Showing LOCAL uiState.photoUri")
-      AsyncImage(
-          model = uiState.photoUri,
-          modifier = Modifier.size(120.dp).clip(CircleShape),
-          contentScale = ContentScale.Fit,
-          contentDescription = "Office photo")
-    } else {
-      Icon(
-          imageVector = Icons.Default.AccountCircle,
-          contentDescription = "Default icon",
-          modifier = Modifier.size(120.dp).clip(CircleShape))
-    }
+    LocalPhotoDisplay(
+        photoURI = uiState.photoUri,
+        modifier = Modifier.size(120.dp).clip(CircleShape),
+        showPlaceHolder = true)
   }
 
-  Button(
-      onClick = {
-        if (photoAlreadyPicked) {
-          onPhotoRemoved()
-          initialLoad = false
-        } else showImagePicker = true
-      },
-      modifier =
-          Modifier.fillMaxWidth()
-              .padding(vertical = 16.dp)
-              .testTag("UploadOfficeImageButton"), // TODO: change the tag
-      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
-        Text(
-            if (photoAlreadyPicked) "Remove Image"
-            else "Upload Image") // TODO: make the comments constant
-  }
-
-  if (showImagePicker) {
-    ImagePickerDialog(
-        onDismiss = { showImagePicker = false }, onImageSelected = { uri -> onPhotoPicked(uri) })
-  }
+  UploadRemovePhotoButton(
+      photoAlreadyPicked = photoAlreadyPicked,
+      onPhotoPicked = onPhotoPicked,
+      onPhotoRemoved = {
+        onPhotoRemoved
+        initialLoad = false
+      })
 }

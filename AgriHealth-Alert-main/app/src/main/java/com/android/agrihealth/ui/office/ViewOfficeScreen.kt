@@ -19,7 +19,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.ui.common.AuthorName
