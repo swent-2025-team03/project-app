@@ -1,39 +1,35 @@
 package com.android.agrihealth.ui.authentification
 
-import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
+import com.android.agrihealth.testhelpers.templates.BaseUITest
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import org.junit.Assert.assertTrue
-import org.junit.Rule
 import org.junit.Test
 
-class ResetPasswordTest {
-  @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+class ResetPasswordTest : BaseUITest() {
 
   fun setContent(onBack: () -> Unit = {}, status: EmailSendStatus = EmailSendStatus.Success) {
     val vm = ResetPasswordViewModel(FakeAuthRepository(resetPasswordResult = status))
-    composeTestRule.setContent { ResetPasswordScreen(onBack, vm) }
+    setContent { ResetPasswordScreen(onBack, vm) }
   }
 
   fun assertFeedBackBox(status: EmailSendStatus) {
-    val tagMap =
-        mapOf(
-            EmailSendStatus.Success to ResetPasswordScreenTestTags.SUCCESS_FEEDBACK,
-            EmailSendStatus.Fail to ResetPasswordScreenTestTags.FAIL_FEEDBACK,
-            EmailSendStatus.Waiting to ResetPasswordScreenTestTags.WAITING_FEEDBACK,
-        )
+    val tagMap = with(ResetPasswordScreenTestTags) {
+      mapOf(
+        EmailSendStatus.Success to SUCCESS_FEEDBACK,
+        EmailSendStatus.Fail to FAIL_FEEDBACK,
+        EmailSendStatus.Waiting to WAITING_FEEDBACK,
+      )
+    }
 
     tagMap.forEach { (s, tag) ->
-      val node = composeTestRule.onNodeWithTag(tag)
+      val node = node(tag)
       if (s == status) node.assertIsDisplayed() else node.assertDoesNotExist()
     }
   }
@@ -45,12 +41,10 @@ class ResetPasswordTest {
       assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Error))
 
   fun sendResetPasswordRequest() {
-    composeTestRule
-        .onNodeWithTag(ResetPasswordScreenTestTags.EMAIL)
-        .performTextInput("email.test@test.com")
-    composeTestRule
-        .onNodeWithTag(ResetPasswordScreenTestTags.SEND_RESET_EMAIL_BUTTON)
-        .performClick()
+    with(ResetPasswordScreenTestTags) {
+      writeIn(EMAIL, "email.text@test.com")
+      clickOn(SEND_RESET_EMAIL_BUTTON)
+    }
   }
 
   fun testFeedbackBoxForStatus(status: EmailSendStatus) {
@@ -60,36 +54,38 @@ class ResetPasswordTest {
   }
 
   @Test
-  fun componentsAreDisplayed() {
+  override fun displayAllComponents() {
     setContent()
-    composeTestRule.onNodeWithTag(ResetPasswordScreenTestTags.INSTRUCTION_TEXT)
-    composeTestRule.onNodeWithTag(ResetPasswordScreenTestTags.EMAIL)
-    composeTestRule.onNodeWithTag(ResetPasswordScreenTestTags.SEND_RESET_EMAIL_BUTTON)
+
+    with(ResetPasswordScreenTestTags) {
+      assertNodesAreDisplayed(INSTRUCTION_TEXT, EMAIL, SEND_RESET_EMAIL_BUTTON)
+    }
+
     assertFeedBackBox(EmailSendStatus.None)
   }
 
   @Test
   fun emailShowsErrorOnEmailMalformed() {
     setContent()
-    val node = composeTestRule.onNodeWithTag(ResetPasswordScreenTestTags.EMAIL)
-    node.assertIsNotError()
-    node.performTextInput("mail")
-    composeTestRule
-        .onNodeWithTag(ResetPasswordScreenTestTags.SEND_RESET_EMAIL_BUTTON)
-        .performClick()
-    node.assertIsError()
-    node.performTextInput("mail@test.com")
-    composeTestRule
-        .onNodeWithTag(ResetPasswordScreenTestTags.SEND_RESET_EMAIL_BUTTON)
-        .performClick()
-    node.assertIsNotError()
+
+    with(ResetPasswordScreenTestTags) {
+      val emailField = node(EMAIL)
+
+      emailField.assertIsNotError().performTextInput("mail")
+      clickOn(SEND_RESET_EMAIL_BUTTON)
+      emailField.assertIsError()
+
+      emailField.performTextInput("mail@test.com")
+      clickOn(SEND_RESET_EMAIL_BUTTON)
+      emailField.assertIsNotError()
+    }
   }
 
   @Test
   fun backButtonTest() {
     var goBackCalled = false
-    setContent({ goBackCalled = true })
-    composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).performClick()
+    setContent(onBack = { goBackCalled = true })
+    clickOn(NavigationTestTags.GO_BACK_BUTTON)
     assertTrue(goBackCalled)
   }
 

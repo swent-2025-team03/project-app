@@ -24,14 +24,7 @@ class AlertViewScreenTest : BaseUITest() {
     setAlertViewScreen()
 
     with(AlertViewScreenTestTags) {
-      assertNodeIsDisplayed(ALERT_DESCRIPTION)
-      assertNodeIsDisplayed(ALERT_DATE)
-      assertNodeIsDisplayed(ALERT_REGION)
-
-      assertNodeIsDisplayed(PREVIOUS_ALERT_ARROW)
-      assertNodeIsDisplayed(NEXT_ALERT_ARROW)
-
-      assertNodeIsDisplayed(VIEW_ON_MAP)
+      assertNodesAreDisplayed(ALERT_DESCRIPTION, ALERT_DATE, ALERT_REGION, PREVIOUS_ALERT_ARROW, NEXT_ALERT_ARROW, VIEW_ON_MAP)
     }
   }
 

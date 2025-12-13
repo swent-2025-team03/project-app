@@ -7,6 +7,7 @@ import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.testhelpers.TestTimeout
 import org.junit.Rule
@@ -45,8 +46,17 @@ abstract class BaseUITest {
     }
   }
 
+  protected fun assertNodesAreDisplayed(vararg tags: String) {
+    for (tag in tags) assertNodeIsDisplayed(tag)
+  }
+
   /** Clicks on the node corresponding to the provided tag */
   protected fun clickOn(tag: String) {
     node(tag).assertIsDisplayed().performClick()
+  }
+
+  /** Performs a text input of the given text on the node corresponding to the given tag */
+  protected fun writeIn(tag: String, text: String) {
+    node(tag).assertIsDisplayed().performTextInput(text)
   }
 }
