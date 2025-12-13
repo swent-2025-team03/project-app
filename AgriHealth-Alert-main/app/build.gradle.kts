@@ -207,7 +207,9 @@ dependencies {
     implementation("androidx.exifinterface:exifinterface:1.3.7")
 
     // ---- Used for cropping images -----
-    implementation("com.vanniktech:android-image-cropper:4.3.3")
+    //implementation("com.vanniktech:android-image-cropper:4.3.3")
+    //implementation("com.github.Tanish-Ranjan:crop-kit:version")
+    implementation("io.github.mr0xf00:easycrop:0.1.1")
 
 }
 

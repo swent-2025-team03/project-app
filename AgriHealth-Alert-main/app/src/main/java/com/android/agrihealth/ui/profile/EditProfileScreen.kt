@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.profile
 
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -42,6 +44,8 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
+import com.android.agrihealth.ui.utils.ImagePickerDialog
+import com.mr0xf00.easycrop.rememberImageCropper
 
 enum class CodeType {
   FARMER,
@@ -66,6 +70,7 @@ object EditProfileScreenTestTags {
   const val SAVE_BUTTON = "SaveButton"
   const val PASSWORD_BUTTON = "PasswordButton"
   const val COPY_CODE_BUTTON = "CopyActiveCodeListElementButton"
+  const val EDIT_PROFILE_PICTURE_BUTTON = "EditProfilePictureButton"
 
   fun dropdownTag(type: String) = "ACTIVE_CODES_DROPDOWN_$type"
 
@@ -125,6 +130,11 @@ fun EditProfileScreen(
   var expandedVetDropdown by remember { mutableStateOf(false) }
   var collected by remember { mutableStateOf(user.collected) }
 
+  var showPhotoPickerDialog by remember { mutableStateOf(false) }
+  var showPhotoCropper by remember { mutableStateOf(false) }
+  var chosenUri : Uri? by remember {mutableStateOf(null)}
+  val imageCropper = rememberImageCropper()
+
   Scaffold(
       topBar = {
         TopAppBar(
@@ -152,12 +162,37 @@ fun EditProfileScreen(
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
 
-              // Profile Image Placeholder
+          Box(
+            modifier = Modifier.size(120.dp),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(
+              imageVector = Icons.Default.AccountCircle,
+              contentDescription = "Profile Picture",
+              modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .testTag(PROFILE_IMAGE),
+              tint = MaterialTheme.colorScheme.primary
+            )
+
+            // Camera icon overlay
+            FloatingActionButton(
+              onClick = { showPhotoPickerDialog = true },
+              modifier = Modifier
+                .size(40.dp)
+                .align(Alignment.BottomEnd)
+                .testTag(EditProfileScreenTestTags.EDIT_PROFILE_PICTURE_BUTTON),
+              containerColor = MaterialTheme.colorScheme.primaryContainer,
+              contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ) {
               Icon(
-                  imageVector = Icons.Default.AccountCircle,
-                  contentDescription = "Profile Picture",
-                  modifier = Modifier.size(120.dp).clip(CircleShape).testTag(PROFILE_IMAGE),
-                  tint = MaterialTheme.colorScheme.primary)
+                imageVector = Icons.Default.CameraAlt,
+                contentDescription = "Edit profile picture",
+                modifier = Modifier.size(20.dp)
+              )
+            }
+          }
 
               Spacer(modifier = Modifier.height(24.dp))
 
@@ -347,6 +382,14 @@ fun EditProfileScreen(
                   }
             }
       }
+
+  if (showPhotoPickerDialog) {
+    ImagePickerDialog({showPhotoPickerDialog = false}, { uri -> chosenUri = uri; showPhotoCropper = true })
+  }
+
+  if (showPhotoCropper) {
+
+  }
 }
 
 /*
