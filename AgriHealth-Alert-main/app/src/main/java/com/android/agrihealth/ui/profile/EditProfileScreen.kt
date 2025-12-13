@@ -1,12 +1,14 @@
 package com.android.agrihealth.ui.profile
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
@@ -17,20 +19,28 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.Restore
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -53,15 +63,27 @@ import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
 import com.android.agrihealth.ui.utils.ImagePickerDialog
+import com.mr0xf00.easycrop.AspectRatio
 import com.mr0xf00.easycrop.CircleCropShape
 import com.mr0xf00.easycrop.CropError
 import com.mr0xf00.easycrop.CropResult
+import com.mr0xf00.easycrop.CropState
 import com.mr0xf00.easycrop.CropperStyle
 import com.mr0xf00.easycrop.ImageCropper
+import com.mr0xf00.easycrop.LocalCropperStyle
 import com.mr0xf00.easycrop.crop
+import com.mr0xf00.easycrop.flipHorizontal
+import com.mr0xf00.easycrop.flipVertical
 import com.mr0xf00.easycrop.images.ImageSrc
 import com.mr0xf00.easycrop.rememberImageCropper
+import com.mr0xf00.easycrop.rotLeft
+import com.mr0xf00.easycrop.rotRight
+import com.mr0xf00.easycrop.ui.AspectSelectionMenu
+import com.mr0xf00.easycrop.ui.ButtonsBar
+import com.mr0xf00.easycrop.ui.CropperControls
 import com.mr0xf00.easycrop.ui.ImageCropperDialog
+import com.mr0xf00.easycrop.ui.LocalVerticalControls
+import com.mr0xf00.easycrop.ui.ShapeSelectionMenu
 import kotlinx.coroutines.launch
 
 enum class CodeType {
@@ -427,7 +449,7 @@ fun EditProfileScreen(
           val bitmap = uri.toBitmap(context).asImageBitmap()
           val result = imageCropper.crop(bmp = bitmap)
           when (result) {
-            is CropResult.Cancelled -> { TODO("When cancelled") }
+            is CropResult.Cancelled -> {showPhotoPickerDialog = true}
             is CropError -> { TODO("Handle error") }
             is CropResult.Success -> { TODO("Upload photo") }
           }
@@ -438,15 +460,96 @@ fun EditProfileScreen(
 
   val cropState = imageCropper.cropState
   if(cropState != null) {
-    ImageCropperDialog(state = cropState)
+    // Setting this once
+    LaunchedEffect(cropState) {
+      // Force the region to be square by triggering an update
+      val currentRegion = cropState.region
+      val size = minOf(currentRegion.width, currentRegion.height)
+      val centerX = currentRegion.center.x
+      val centerY = currentRegion.center.y
+
+      cropState.region = Rect(
+        left = centerX - size / 2f,
+        top = centerY - size / 2f,
+        right = centerX + size / 2f,
+        bottom = centerY + size / 2f
+      )
+
+      cropState.aspectLock = true
+      cropState.shape = CircleCropShape
+
+
+    }
+
+    ImageCropperDialog(
+      state = cropState,
+      topBar = { ImageCropperDialogControls(cropState) },
+      style = CropperStyle(
+        autoZoom = true,
+        guidelines = null,
+        shapes = listOf(CircleCropShape),
+        aspects = listOf(AspectRatio(1, 1))
+    ))
   }
 
 
 
 }
 
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ImageCropperDialogControls(state: CropState) {
+  TopAppBar(title = {},
+    navigationIcon = {
+      IconButton(onClick = { state.done(accept = false) }) {
+        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Cancel cropping")
+      }
+    },
+    actions = {
+      IconButton(onClick = {
+        state.reset()
+        // Force the region to be square by triggering an update
+        val currentRegion = state.region
+        val size = minOf(currentRegion.width, currentRegion.height)
+        val centerX = currentRegion.center.x
+        val centerY = currentRegion.center.y
+
+        state.region = Rect(
+          left = centerX - size / 2f,
+          top = centerY - size / 2f,
+          right = centerX + size / 2f,
+          bottom = centerY + size / 2f
+        )
+
+        state.aspectLock = true
+        state.shape = CircleCropShape
+      }) {
+        Icon(Icons.Default.Restore, contentDescription = "Restore")
+      }
+      IconButton(onClick = { state.done(accept = true) }, enabled = !state.accepted) {
+        Icon(Icons.Default.Done, contentDescription = "Submit")
+      }
+    }
+  )
+}
+
+@Composable
+private fun BoxScope.DefaultControls(state: CropState) {
+  val verticalControls =
+    LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+  CropperControls(
+    isVertical = verticalControls,
+    state = state,
+    modifier = Modifier
+      .align(if (!verticalControls) Alignment.BottomCenter else Alignment.CenterEnd)
+      .padding(12.dp),
+  )
+}
+
+
+
 // Created with the help of an LLM
-@RequiresApi(Build.VERSION_CODES.P)
 fun Uri.toBitmap(context: Context): Bitmap {
   val source = ImageDecoder.createSource(context.contentResolver, this)
   return ImageDecoder.decodeBitmap(source)
