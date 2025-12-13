@@ -109,6 +109,16 @@ fun EditProfileScreen(
         }
       }
 
+  val editProfileViewModel: EditProfileViewModel =
+      viewModel(
+          factory =
+              object : androidx.lifecycle.ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return EditProfileViewModel(officeRepository = OfficeRepositoryProvider.get())
+                      as T
+                }
+              })
+
   val manageOfficeVm: ManageOfficeViewModel = viewModel(factory = createManageOfficeViewModel)
 
   val isOwner = manageOfficeVm.uiState.collectAsState().value.office?.ownerId == user.uid
@@ -319,31 +329,16 @@ fun EditProfileScreen(
               // Save Changes Button
               Button(
                   onClick = {
-                    val updatedDescription = description.ifBlank { null }
-                    // Construct updated user object
                     scope.launch {
-                      if (userRole == UserRole.VET) {
-                        manageOfficeVm.updateOffice(newAddress = pickedLocation)
-                      }
                       val updatedUser =
-                          when (userRole) {
-                            UserRole.FARMER ->
-                                (user as? Farmer)?.copy(
-                                    firstname = firstname,
-                                    lastname = lastname,
-                                    address = pickedLocation,
-                                    defaultOffice = selectedDefaultOffice,
-                                    description = updatedDescription,
-                                    collected = collected)
-                            UserRole.VET -> {
-                              (user as? Vet)?.copy(
-                                  firstname = firstname,
-                                  lastname = lastname,
-                                  address = pickedLocation,
-                                  description = updatedDescription,
-                                  collected = collected)
-                            }
-                          }
+                          editProfileViewModel.saveProfileChanges(
+                              user = user,
+                              firstname = firstname,
+                              lastname = lastname,
+                              pickedLocation = pickedLocation,
+                              selectedDefaultOffice = selectedDefaultOffice,
+                              description = description,
+                              collected = collected)
                       updatedUser?.let { onSave(it) }
                     }
                   },
