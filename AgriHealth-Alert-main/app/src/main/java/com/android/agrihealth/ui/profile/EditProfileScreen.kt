@@ -69,21 +69,9 @@ import com.mr0xf00.easycrop.CropError
 import com.mr0xf00.easycrop.CropResult
 import com.mr0xf00.easycrop.CropState
 import com.mr0xf00.easycrop.CropperStyle
-import com.mr0xf00.easycrop.ImageCropper
-import com.mr0xf00.easycrop.LocalCropperStyle
 import com.mr0xf00.easycrop.crop
-import com.mr0xf00.easycrop.flipHorizontal
-import com.mr0xf00.easycrop.flipVertical
-import com.mr0xf00.easycrop.images.ImageSrc
 import com.mr0xf00.easycrop.rememberImageCropper
-import com.mr0xf00.easycrop.rotLeft
-import com.mr0xf00.easycrop.rotRight
-import com.mr0xf00.easycrop.ui.AspectSelectionMenu
-import com.mr0xf00.easycrop.ui.ButtonsBar
-import com.mr0xf00.easycrop.ui.CropperControls
 import com.mr0xf00.easycrop.ui.ImageCropperDialog
-import com.mr0xf00.easycrop.ui.LocalVerticalControls
-import com.mr0xf00.easycrop.ui.ShapeSelectionMenu
 import kotlinx.coroutines.launch
 
 enum class CodeType {
@@ -484,6 +472,7 @@ fun EditProfileScreen(
     ImageCropperDialog(
       state = cropState,
       topBar = { ImageCropperDialogControls(cropState) },
+      cropControls = {},
       style = CropperStyle(
         autoZoom = true,
         guidelines = null,
@@ -533,20 +522,6 @@ fun ImageCropperDialogControls(state: CropState) {
     }
   )
 }
-
-@Composable
-private fun BoxScope.DefaultControls(state: CropState) {
-  val verticalControls =
-    LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-  CropperControls(
-    isVertical = verticalControls,
-    state = state,
-    modifier = Modifier
-      .align(if (!verticalControls) Alignment.BottomCenter else Alignment.CenterEnd)
-      .padding(12.dp),
-  )
-}
-
 
 
 // Created with the help of an LLM
