@@ -25,6 +25,7 @@ object CodeComposableComponentsTestTags {
   const val GENERATE_BUTTON = "GenerateButton"
   const val GENERATE_FIELD = "GenerateField"
   const val SAVE_BUTTON = "SaveButton"
+  const val COPY_CODE = "CopyCode"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -123,7 +124,7 @@ fun GenerateCode(
         horizontalArrangement = Arrangement.Center) {
           if (!isError) {
             Text(
-                "Generated Code: $code",
+                if (code?.length == 6) "Generated Code: $code" else code!!,
                 style = MaterialTheme.typography.bodyLarge,
                 modifier =
                     modifier
@@ -133,7 +134,8 @@ fun GenerateCode(
                 onClick = {
                   clipboard.setText(AnnotatedString(code!!))
                   scope.launch { snackbarHostState.showSnackbar("Code copied!") }
-                }) {
+                },
+                modifier = Modifier.testTag(CodeComposableComponentsTestTags.COPY_CODE)) {
                   Icon(imageVector = Icons.Filled.ContentCopy, contentDescription = "Copy Code")
                 }
           } else {

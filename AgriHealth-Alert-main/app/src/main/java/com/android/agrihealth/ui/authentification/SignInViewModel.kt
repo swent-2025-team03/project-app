@@ -12,9 +12,7 @@ import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuthException
-import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -32,7 +30,7 @@ data class SignInUIState(
     val password: String = "",
     val emailIsInvalid: Boolean = false,
     val passwordIsInvalid: Boolean = false,
-    val uid: String? = Firebase.auth.uid,
+    val verified: Boolean? = null,
     val isNewGoogle: Boolean = false,
     val errorMsg: String? = null,
 ) {
@@ -66,17 +64,13 @@ class SignInViewModel(
     _uiState.value = _uiState.value.copy(email = email)
   }
 
-  fun setErrorMsgToNotYetImplemented() {
-    setErrorMsg("Not Yet Implemented")
-  }
-
   /** initiates the sign in using available credentials * */
   fun signInWithEmailAndPassword() {
     if (_uiState.value.isValid) {
       viewModelScope.launch {
         authRepository
             .signInWithEmailAndPassword(_uiState.value.email, _uiState.value.password)
-            .fold({ uid -> _uiState.update { it.copy(uid = uid) } }) { failure ->
+            .fold({ verified -> _uiState.update { it.copy(verified = verified) } }) { failure ->
               when (failure) {
                 is FirebaseAuthException -> setErrorMsg(SignInErrorMsg.INVALID_CREDENTIALS)
                 else -> setErrorMsg(SignInErrorMsg.TIMEOUT)
@@ -122,17 +116,17 @@ class SignInViewModel(
         // Pass the credential to your repository
         authRepository.signInWithGoogle(credential).fold({ uid ->
           if (userRepository.getUserFromId(uid).isFailure)
-              _uiState.update { it.copy(uid = uid, isNewGoogle = true) }
-          else _uiState.update { it.copy(uid = uid) }
+              _uiState.update { it.copy(verified = true, isNewGoogle = true) }
+          else _uiState.update { it.copy(verified = true) }
         }) { failure ->
-          _uiState.update { it.copy(uid = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
+          _uiState.update { it.copy(verified = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
         }
       } catch (e: GetCredentialCancellationException) {
         // User cancelled the sign-in flow
-        _uiState.update { it.copy(uid = null) }
+        _uiState.update { it.copy(verified = null) }
       } catch (e: Exception) {
         // Unexpected errors
-        _uiState.update { it.copy(uid = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
+        _uiState.update { it.copy(verified = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
       }
     }
   }

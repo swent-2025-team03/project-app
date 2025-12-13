@@ -7,10 +7,10 @@ interface AuthRepository {
   /**
    * Signs in the user using their email and password.
    *
-   * @return A [Result] containing a [String] on success representing the uid of the user, or an
-   *   exception on failure.
+   * @return A [Result] containing a [Boolean] on success representing the verification status of
+   *   the user, or an exception on failure.
    */
-  suspend fun signInWithEmailAndPassword(email: String, password: String): Result<String>
+  suspend fun signInWithEmailAndPassword(email: String, password: String): Result<Boolean>
 
   /**
    * Re-signs in the User for sensitive account modifications (ex: changing password)
@@ -25,6 +25,14 @@ interface AuthRepository {
    * @return A [Result] indicating success or failure.
    */
   suspend fun changePassword(password: String): Result<Unit>
+
+  /**
+   * sends a reset password email.
+   *
+   * @return A [Result] indicating success or failure.
+   */
+  suspend fun sendResetPasswordEmail(email: String): Result<Unit>
+
   /**
    * Signs in the user using their google account.
    *
@@ -57,4 +65,18 @@ interface AuthRepository {
    * @return A [Result] indicating success or failure.
    */
   suspend fun deleteAccount(): Result<Unit>
+
+  /**
+   * Checks if the current user has verified their email address.
+   *
+   * @return A [Boolean] indicating if the user's email is verified or not.
+   */
+  suspend fun checkIsVerified(): Boolean
+
+  /**
+   * Sends a verification email to the user.
+   *
+   * @return A [Result] indicating success or failure.
+   */
+  suspend fun sendVerificationEmail(): Result<Unit>
 }

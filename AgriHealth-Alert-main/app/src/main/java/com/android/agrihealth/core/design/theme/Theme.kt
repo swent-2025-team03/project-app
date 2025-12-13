@@ -157,3 +157,8 @@ fun zoneColor(isInside: Boolean): Color {
   val colors = LocalAlertZoneColors.current
   return if (isInside) colors.inZone else colors.outOfZone
 }
+
+@Composable
+fun successColor(): Color {
+  return LocalSuccessColors.current.success
+}

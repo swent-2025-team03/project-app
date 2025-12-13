@@ -3,9 +3,14 @@ package com.android.agrihealth.testutil
 import androidx.credentials.Credential
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.ui.authentification.EmailSendStatus
 import com.google.firebase.auth.FirebaseAuthException
+import kotlinx.coroutines.delay
 
-class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository {
+class FakeAuthRepository(
+    private var isOnline: Boolean = true,
+    private var resetPasswordResult: EmailSendStatus = EmailSendStatus.Success
+) : AuthRepository {
 
   private val credentials = mutableMapOf<String, String>()
 
@@ -23,6 +28,18 @@ class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository 
       return Result.success(Unit)
     }
     return Result.failure(IllegalStateException("timeout"))
+  }
+
+  override suspend fun sendResetPasswordEmail(email: String): Result<Unit> {
+    return when (resetPasswordResult) {
+      is EmailSendStatus.Success -> Result.success(Unit)
+      is EmailSendStatus.Fail -> Result.failure(IllegalArgumentException())
+      is EmailSendStatus.Waiting -> {
+        delay(10000)
+        Result.success(Unit)
+      }
+      is EmailSendStatus.None -> Result.failure(IllegalArgumentException())
+    }
   }
 
   override suspend fun deleteAccount(): Result<Unit> {
@@ -43,13 +60,16 @@ class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository 
     return Result.failure(IllegalStateException("timeout"))
   }
 
-  override suspend fun signInWithEmailAndPassword(email: String, password: String): Result<String> {
+  override suspend fun signInWithEmailAndPassword(
+      email: String,
+      password: String
+  ): Result<Boolean> {
     if (isOnline) {
       if (currentUser != null) {
         return Result.failure(IllegalStateException("user $currentUser already logged in"))
       } else if (credentials[email] == password) {
         currentUser = "testUser"
-        return Result.success("testUser")
+        return Result.success(true)
       } else
           return Result.failure(
               FirebaseAuthException("invalid credentials", "we don't have this user"))
@@ -85,5 +105,13 @@ class FakeAuthRepository(private var isOnline: Boolean = true) : AuthRepository 
       return Result.success("testUser")
     }
     return Result.failure(IllegalStateException("timeout"))
+  }
+
+  override suspend fun checkIsVerified(): Boolean {
+    return true
+  }
+
+  override suspend fun sendVerificationEmail(): Result<Unit> {
+    return Result.success(Unit)
   }
 }

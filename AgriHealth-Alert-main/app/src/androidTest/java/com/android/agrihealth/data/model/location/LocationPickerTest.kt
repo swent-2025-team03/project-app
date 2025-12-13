@@ -40,7 +40,8 @@ class LocationPickerTest {
             locationViewModel = LocationViewModel(),
             userId = "test-user",
             startingPosition = position,
-            showReports = false)
+            showReports = false,
+            showAlerts = false)
 
     var confirmClicked = false
 

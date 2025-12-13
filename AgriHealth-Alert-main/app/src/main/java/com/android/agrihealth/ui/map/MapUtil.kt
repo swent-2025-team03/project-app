@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Preview
@@ -26,12 +28,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -53,13 +57,19 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import com.android.agrihealth.R
 import com.android.agrihealth.core.design.theme.statusColor
+import com.android.agrihealth.data.model.alert.Alert
+import com.android.agrihealth.data.model.alert.distanceMeters
+import com.android.agrihealth.data.model.location.toLatLng
+import com.android.agrihealth.data.model.location.toLocation
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
@@ -112,6 +122,7 @@ fun getUISettingsAndTheme(): Pair<MapUiSettings, MapProperties> {
 }
 
 // === Map components ===
+// === Reports ===
 
 /**
  * Displays the given spiderified reports
@@ -151,11 +162,177 @@ fun ReportMarkers(
   }
 }
 
+/**
+ * Bottom menu to show info on the selected [report].
+ *
+ * Contain a 2 line Report title, and the entire description. Also has an IconButton that executes
+ * [onReportClick]
+ *
+ * @param modifier Modifier on the visible Column.
+ * @param report The report whose information will be displayed.
+ * @param onReportClick run when IconButton is clicked.
+ */
+@Composable
+fun ShowReportInfo(
+    modifier: Modifier = Modifier,
+    report: Report?,
+    onReportClick: (String) -> Unit = {}
+) {
+  if (report == null) return
+
+  Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.INFO_BOX)) {
+    InfoElement(
+        Modifier.align(Alignment.BottomCenter),
+        report.title,
+        report.description,
+        "View report",
+        { onReportClick(report.id) },
+        MapScreenTestTags.getTestTagForReportTitle(report.id),
+        MapScreenTestTags.getTestTagForReportDesc(report.id))
+  }
+}
+
+// === Alerts ===
+
 /** Displays relevant areas for every current alert */
 @Composable
-fun AlertAreas() {
-  /* TODO */
+fun AlertAreas(alerts: List<Alert>) {
+  alerts.forEach { alert ->
+    alert.zones?.forEach { zone ->
+      Circle(
+          center = zone.center.toLatLng(),
+          radius = zone.radiusMeters,
+          fillColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3F),
+          strokeColor = MaterialTheme.colorScheme.primary,
+          strokeWidth = 4f)
+    }
+  }
 }
+
+/** Menu to show info about every alert provided */
+@Composable
+fun ShowAlertInfo(alerts: List<Alert>, onClick: (alert: Alert) -> Unit) {
+  if (alerts.isEmpty()) return
+
+  Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.INFO_BOX)) {
+    LazyColumn(
+        modifier =
+            Modifier.background(color = MaterialTheme.colorScheme.surface)
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()) {
+          items(alerts) { alert ->
+            InfoElement(
+                title = alert.title,
+                description = alert.description,
+                buttonDesc = "View alert",
+                onButtonClick = { onClick(alert) },
+                titleTestTag = MapScreenTestTags.getTestTagForAlertTitle(alert.id),
+                descTestTag = MapScreenTestTags.getTestTagForAlertDesc(alert.id))
+
+            if (alerts.last() != alert)
+                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3F))
+          }
+        }
+  }
+}
+
+fun findAlertZonesUnderTap(alerts: List<Alert>, tap: LatLng): List<Alert> {
+  return alerts.filter { alert ->
+    alert.zones?.any { zone ->
+      val center = zone.center
+      val radius = zone.radiusMeters
+      val distance = distanceMeters(center, tap.toLocation())
+      distance <= radius
+    } == true
+  }
+}
+
+// === UI ===
+
+@Composable
+fun InfoElement(
+    modifier: Modifier = Modifier,
+    title: String,
+    description: String,
+    buttonDesc: String,
+    onButtonClick: () -> Unit,
+    titleTestTag: String,
+    descTestTag: String
+) {
+  Column(
+      modifier =
+          Modifier.background(color = MaterialTheme.colorScheme.surface)
+              .fillMaxWidth()
+              .padding(16.dp)
+              .then(modifier)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+          Text(
+              text = title,
+              style = MaterialTheme.typography.titleLarge,
+              maxLines = 2,
+              overflow = TextOverflow.Ellipsis,
+              modifier = Modifier.weight(1f).padding(end = 8.dp).testTag(titleTestTag))
+
+          IconButton(
+              onClick = onButtonClick,
+              modifier =
+                  Modifier.align(Alignment.CenterVertically)
+                      .size(32.dp)
+                      .testTag(MapScreenTestTags.INFO_NAVIGATION_BUTTON),
+              colors =
+                  IconButtonColors(
+                      MaterialTheme.colorScheme.primaryContainer,
+                      MaterialTheme.colorScheme.onPrimaryContainer,
+                      disabledContainerColor = MaterialTheme.colorScheme.surface,
+                      disabledContentColor = MaterialTheme.colorScheme.onSurface)) {
+                Icon(
+                    imageVector = Icons.Default.Preview,
+                    contentDescription = buttonDesc,
+                    modifier = Modifier.size(24.dp))
+              }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = description, modifier = Modifier.testTag(descTestTag))
+        Spacer(modifier = Modifier.height(8.dp))
+      }
+}
+
+/** Displays a switch to show/hide reports on the map */
+@Composable
+fun ReportVisibilitySwitch(shouldDisplay: Boolean, onChange: (Boolean) -> Unit) {
+  VisibilitySwitch(
+      "Show reports", shouldDisplay, onChange, MapScreenTestTags.REPORT_VISIBILITY_SWITCH)
+}
+
+/** Displays a switch to show/hide alerts on the map */
+@Composable
+fun AlertVisibilitySwitch(shouldDisplay: Boolean, onChange: (Boolean) -> Unit) {
+  VisibilitySwitch(
+      "Show alerts", shouldDisplay, onChange, MapScreenTestTags.ALERT_VISIBILITY_SWITCH)
+}
+
+@Composable
+private fun VisibilitySwitch(
+    text: String,
+    shouldDisplay: Boolean,
+    onChange: (Boolean) -> Unit,
+    tag: String = ""
+) {
+  Row(modifier = Modifier.padding(horizontal = 8.dp)) {
+    Text(
+        text,
+        Modifier.align(Alignment.CenterVertically),
+        color = MaterialTheme.colorScheme.onSurface)
+    Spacer(Modifier.size(8.dp))
+    Switch(
+        checked = shouldDisplay,
+        onCheckedChange = { enabled -> onChange(enabled) },
+        modifier = Modifier.testTag(tag))
+  }
+}
+
+const val AllFilterText = "All reports"
 
 /** Displays a dropdown menu to filter reports based on their status */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -178,7 +355,7 @@ fun MapFilterMenu(selectedOption: String?, onOptionSelected: (String?) -> Unit) 
   ExposedDropdownMenuBox(
       expanded = expanded,
       onExpandedChange = { expanded = !expanded },
-      modifier = Modifier.padding(16.dp).width(dropdownWidth.dp)) {
+      modifier = Modifier.padding(8.dp).width(dropdownWidth.dp)) {
         OutlinedTextField(
             value = selectedOption ?: AllFilterText,
             onValueChange = {},
@@ -202,76 +379,15 @@ fun MapFilterMenu(selectedOption: String?, onOptionSelected: (String?) -> Unit) 
                     },
                     text = { Text(option ?: AllFilterText) },
                     modifier = Modifier.testTag(MapScreenTestTags.getTestTagForFilter(option)))
+
+                if (option == AllFilterText)
+                    HorizontalDivider(
+                        modifier = Modifier.padding(8.dp),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        thickness = 1.dp)
               }
             }
       }
-}
-
-/**
- * Bottom menu to show info on the selected [report].
- *
- * Contain a 2 line Report title, and the entire description. Also has an IconButton that executes
- * [onReportClick]
- *
- * @param modifier Modifier on the visible Column.
- * @param report The report whose information will be displayed.
- * @param onReportClick run when IconButton is clicked.
- */
-@Composable
-fun ShowReportInfo(
-    modifier: Modifier = Modifier,
-    report: Report?,
-    onReportClick: (String) -> Unit = {}
-) {
-  if (report == null) return
-
-  Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.REPORT_INFO_BOX)) {
-    Column(
-        modifier =
-            modifier
-                .background(color = MaterialTheme.colorScheme.surface)
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(16.dp)) {
-          Row(
-              modifier = Modifier.fillMaxWidth(),
-              horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(
-                    text = report.title,
-                    style = MaterialTheme.typography.titleLarge,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier =
-                        Modifier.weight(1f)
-                            .padding(end = 8.dp)
-                            .testTag(MapScreenTestTags.getTestTagForReportTitle(report.id)))
-
-                IconButton(
-                    onClick = { onReportClick(report.id) },
-                    modifier =
-                        Modifier.align(Alignment.CenterVertically)
-                            .size(32.dp)
-                            .testTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON),
-                    colors =
-                        IconButtonColors(
-                            MaterialTheme.colorScheme.primaryContainer,
-                            MaterialTheme.colorScheme.onPrimaryContainer,
-                            disabledContainerColor = MaterialTheme.colorScheme.surface,
-                            disabledContentColor = MaterialTheme.colorScheme.onSurface)) {
-                      Icon(
-                          imageVector = Icons.Default.Preview,
-                          contentDescription = "View Report",
-                          modifier = Modifier.size(24.dp))
-                    }
-              }
-
-          Spacer(modifier = Modifier.height(4.dp))
-          Text(
-              text = report.description,
-              modifier = Modifier.testTag(MapScreenTestTags.getTestTagForReportDesc(report.id)))
-          Spacer(modifier = Modifier.height(8.dp))
-        }
-  }
 }
 
 @Composable
@@ -323,7 +439,7 @@ private fun createCircleMarker(
  * markers
  */
 @Composable
-fun MapTestMarkers(reports: List<SpiderifiedReport>, onClick: (Report) -> Unit) {
+fun MapTestReportMarkers(reports: List<SpiderifiedReport>, onClick: (Report) -> Unit) {
   reports.forEach {
     val report = it.report
 
@@ -335,5 +451,24 @@ fun MapTestMarkers(reports: List<SpiderifiedReport>, onClick: (Report) -> Unit) 
                 .size(1.dp)) {
           Text(":)") // Box doesn't exist if it's not visible
     }
+  }
+}
+
+/**
+ * Displays debug boxes to act as clickable circles during instrumented tests. This is because
+ * Google maps circles cannot be accessed during testing. onClick should have the same behavior as
+ * the real circles
+ */
+@Composable
+fun MapTestAlertCircles(alerts: List<Alert>, onClick: (Alert) -> Unit) {
+  alerts.forEach { alert ->
+    Box(
+        modifier =
+            Modifier.testTag(MapScreenTestTags.getTestTagForAlertZone(alert.id))
+                .clickable { onClick(alert) }
+                .alpha(0f)
+                .size(1.dp)) {
+          Text(":)")
+        }
   }
 }

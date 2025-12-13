@@ -26,6 +26,8 @@ sealed class Screen(
   object ChangePassword :
       Screen(route = "changePassword", name = "Change Your Password", isTopLevelDestination = true)
 
+  object ResetPassword : Screen(route = "resetPassword", name = "Reset Your Password")
+
   object EditProfile :
       Screen(route = "edit_profile", name = "Edit Profile", isTopLevelDestination = true)
 
@@ -40,6 +42,8 @@ sealed class Screen(
   object SignUp : Screen(route = "sign_up", name = "Sign Up")
 
   object RoleSelection : Screen(route = "role", name = "Role")
+
+  object EmailVerify : Screen(route = "email_verification", name = "Email Verification")
 
   object LocationPicker : Screen(route = "location_picker", name = "Select a Location")
 

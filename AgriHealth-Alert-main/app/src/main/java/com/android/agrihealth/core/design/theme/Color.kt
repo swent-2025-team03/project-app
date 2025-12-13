@@ -36,3 +36,7 @@ data class AlertZoneColors(
 )
 
 val LocalAlertZoneColors = staticCompositionLocalOf { AlertZoneColors() }
+
+class SuccessColors(val success: Color = Color(0xFFA5D6A7), val onSuccess: Color = Color.Black)
+
+val LocalSuccessColors = staticCompositionLocalOf { SuccessColors() }

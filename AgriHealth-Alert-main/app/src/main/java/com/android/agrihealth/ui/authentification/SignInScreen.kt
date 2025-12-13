@@ -51,6 +51,7 @@ fun SignInScreen(
     onForgotPasswordClick: () -> Unit = {},
     onSignedIn: () -> Unit = {},
     onNewGoogle: () -> Unit = {},
+    onNotVerified: () -> Unit = {},
     goToSignUp: () -> Unit = {},
     signInViewModel: SignInViewModel = viewModel()
 ) {
@@ -67,9 +68,11 @@ fun SignInScreen(
   }
 
   val context = LocalContext.current
-
-  LaunchedEffect(signInUIState.uid) {
-    signInUIState.uid?.let { if (signInUIState.isNewGoogle) onNewGoogle() else onSignedIn() }
+  LaunchedEffect(signInUIState.verified) {
+    signInUIState.verified?.let {
+      if (signInUIState.isNewGoogle) onNewGoogle()
+      else if (signInUIState.verified!!) onSignedIn() else onNotVerified()
+    }
   }
 
   Scaffold(
@@ -129,10 +132,7 @@ fun SignInScreen(
                     textAlign = TextAlign.End,
                     modifier =
                         Modifier.padding(top = 4.dp)
-                            .clickable {
-                              onForgotPasswordClick()
-                              signInViewModel.setErrorMsgToNotYetImplemented()
-                            }
+                            .clickable { onForgotPasswordClick() }
                             .testTag(SignInScreenTestTags.FORGOT_PASSWORD))
               }
 

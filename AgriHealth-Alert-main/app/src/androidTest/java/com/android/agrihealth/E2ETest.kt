@@ -11,6 +11,7 @@ import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
+import com.android.agrihealth.data.model.authentification.verifyUser
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.location.LocationPickerTestTags
@@ -24,10 +25,13 @@ import com.android.agrihealth.ui.authentification.RoleSelectionScreenTestTags
 import com.android.agrihealth.ui.authentification.SignInErrorMsg
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
+import com.android.agrihealth.ui.authentification.VerifyEmailScreenTestTags
 import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags
+import com.android.agrihealth.ui.overview.AssignedVetTagTexts
+import com.android.agrihealth.ui.overview.AssigneeFilterTexts
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.android.agrihealth.ui.profile.ChangePasswordScreenTestTags
 import com.android.agrihealth.ui.profile.CodeComposableComponentsTestTags
@@ -100,7 +104,8 @@ class E2ETest : FirebaseEmulatorsTest() {
     completeEditProfile()
     signOutFromScreen()
     var uid = Firebase.auth.uid
-    completeSignUp(email, pwd, isVet = true)
+    completeSignUp("Test", "User", email, pwd, isVet = true)
+    checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
     goBack()
@@ -120,7 +125,8 @@ class E2ETest : FirebaseEmulatorsTest() {
     val email = "vet@example.com"
     val pwd = "StrongPwd!123"
 
-    completeSignUp(email, pwd, isVet = true)
+    completeSignUp("Test", "User", email, pwd, isVet = true)
+    checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
     goBack()
@@ -140,8 +146,9 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     checkWrongSignIn()
     completeSignIn(user1.email, "12345678")
-    checkOverviewScreenIsDisplayed()
-    goToProfileFromOverview()
+    checkEmailVerification()
+    checkEditProfileScreenIsDisplayed()
+    goBack()
     clickAddVetCode()
     goBack()
     clickEditProfile()
@@ -172,9 +179,16 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.waitForIdle()
     completeSignIn(user1.email, "12345678")
+    checkEmailVerification()
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
     checkOverviewScreenIsDisplayed()
     createReport("Report 1", "Description 1", "Deleted Office")
     createReport("Report 2", "Description 2", user1.linkedOffices.last())
+
+    waitUntilTestTag(OverviewScreenTestTags.FILTERS_TOGGLE)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTERS_TOGGLE).performClick()
 
     // Report 1 appears when filtering for "Pending"
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN).performClick()
@@ -225,6 +239,10 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.waitForIdle()
 
     completeSignIn(user1.email, "12345678")
+    checkEmailVerification()
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
     checkOverviewScreenIsDisplayed()
 
     composeTestRule.onNodeWithTag("ALERT_ITEM_0").assertIsDisplayed()
@@ -270,7 +288,8 @@ class E2ETest : FirebaseEmulatorsTest() {
     // Wait for the code to appear in StateFlow
     val officeCode = runBlocking { codesViewModel.generatedCode.first { it != null } }
 
-    completeSignUp(farmerEmail, password, isVet = false)
+    completeSignUp("Test", "User", farmerEmail, password, isVet = false)
+    checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
     useCode(officeCode)
@@ -304,6 +323,10 @@ class E2ETest : FirebaseEmulatorsTest() {
     codesViewModel.generateCode()
 
     completeSignIn(email, password)
+    checkEmailVerification()
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
     checkOverviewScreenIsDisplayed()
     goToProfileFromOverview()
     composeTestRule
@@ -320,6 +343,77 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
   }
 
+  // ----------- Scenario: Both Users -----------
+
+  @Test
+  fun testCompleteConnectionFlow() {
+    val vetEmail = "vet@email.com"
+    val vet2Email = "vet2@email.com"
+    val farmerEmail = "farm@email.com"
+
+    val vetPassword = "vetvetvet"
+    val vet2Password = "vet2vet2"
+    val farmerPassword = "farmfarm"
+
+    composeTestRule.setContent { AgriHealthApp() }
+    composeTestRule.waitForIdle()
+
+    completeSignUp("Test", "Vet", vetEmail, vetPassword, true)
+    checkEmailVerification()
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
+    checkOverviewScreenIsDisplayed()
+    goToProfileFromOverview()
+    goToManageOffice()
+    createOffice()
+    goBack()
+    generateFarmerCode()
+    val copiedCode = readGeneratedCodeFromUi()
+    signOutFromScreen()
+
+    completeSignUp("Test", "Farmer", farmerEmail, farmerPassword, false)
+    checkEmailVerification()
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
+    checkOverviewScreenIsDisplayed()
+    goToProfileFromOverview()
+    farmerJoinOffice(copiedCode)
+    goBack()
+    createReportWithOfficeName("Report 1", "Description 1", "Vet Office")
+    createReportWithOfficeName("Report 2", "Description 2", "Vet Office")
+    createReportWithOfficeName("Report 3", "Description 3", "Vet Office")
+    signOutFromScreen()
+
+    completeSignIn(vetEmail, vetPassword)
+    claimReport("Report 1")
+    goToProfileFromOverview()
+    goToManageOffice()
+    generateOfficeCode()
+    val copiedCode2 = readGeneratedCodeFromUi()
+    goBack()
+    signOutFromScreen()
+
+    completeSignUp("Test", "Vet2", vet2Email, vet2Password, true)
+    checkEmailVerification()
+    checkEditProfileScreenIsDisplayed()
+    goBack()
+    goBack()
+    checkOverviewScreenIsDisplayed()
+    goToProfileFromOverview()
+    goToManageOffice()
+    vetJoinOffice(copiedCode2)
+    goBack()
+    goBack()
+    claimReport("Report 2")
+    checkAssignedVetDisplayedOnOverview("Test Vet")
+    signOutFromScreen()
+
+    completeSignIn(vetEmail, vetPassword)
+    checkAssignedVetDisplayedOnOverview("Test Vet2")
+  }
+
   // ----------- Helper functions -----------
 
   @After
@@ -327,7 +421,162 @@ class E2ETest : FirebaseEmulatorsTest() {
     OfficeRepositoryProvider.reset()
   }
 
-  private fun completeSignUp(email: String, password: String, isVet: Boolean) {
+  private fun readGeneratedCodeFromUi(): String {
+    val tag = CodeComposableComponentsTestTags.GENERATE_FIELD
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(tag).isDisplayed()
+    }
+    val nodes = composeTestRule.onAllNodesWithTag(tag)
+
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      nodes.fetchSemanticsNodes().any { semantics ->
+        val t = semantics.config.getOrNull(SemanticsProperties.Text)
+        t != null && t.isNotEmpty() && t.joinToString("").contains("Generated Code:")
+      }
+    }
+
+    val semantics = nodes.fetchSemanticsNodes().first()
+    val textList = semantics.config.getOrNull(SemanticsProperties.Text)!!
+    val fullText = textList.joinToString("")
+
+    val code = fullText.substringAfter("Generated Code:").trim()
+
+    if (code.isBlank()) {
+      composeTestRule.onRoot().printToLog("E2E_CODE_PARSE_FAILED")
+      throw AssertionError("Generated code appeared, but parsing failed. Text was: \"$fullText\"")
+    }
+
+    return code
+  }
+
+  private fun goToManageOffice() {
+    waitUntilTestTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON)
+    composeTestRule.onNodeWithTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON).performClick()
+  }
+
+  private fun generateFarmerCode() {
+    waitUntilTestTag(CodeComposableComponentsTestTags.GENERATE_BUTTON)
+    composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.GENERATE_BUTTON).performClick()
+    waitUntilTestTag(CodeComposableComponentsTestTags.COPY_CODE)
+    composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.COPY_CODE).performClick()
+  }
+
+  private fun generateOfficeCode() {
+    waitUntilTestTag(CodeComposableComponentsTestTags.GENERATE_BUTTON)
+    composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.GENERATE_BUTTON).performClick()
+    waitUntilTestTag(CodeComposableComponentsTestTags.COPY_CODE)
+    composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.COPY_CODE).performClick()
+  }
+
+  private fun farmerJoinOffice(farmerCode: String) {
+    waitUntilTestTag(ProfileScreenTestTags.CODE_BUTTON_FARMER)
+    composeTestRule.onNodeWithTag(ProfileScreenTestTags.CODE_BUTTON_FARMER).performClick()
+
+    waitUntilTestTag(CodeComposableComponentsTestTags.ADD_CODE_BUTTON)
+    composeTestRule
+        .onNodeWithTag(CodeComposableComponentsTestTags.CODE_FIELD)
+        .assertIsDisplayed()
+        .performTextInput(farmerCode)
+    composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.ADD_CODE_BUTTON).performClick()
+
+    composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
+      composeTestRule.onNodeWithText("Office successfully added!").isDisplayed()
+    }
+    goBack()
+    waitUntilTestTag(ProfileScreenTestTags.PROFILE_IMAGE)
+  }
+
+  private fun vetJoinOffice(vetCode: String) {
+    waitUntilTestTag(ManageOfficeScreenTestTags.JOIN_OFFICE_BUTTON)
+    composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.JOIN_OFFICE_BUTTON).performClick()
+
+    waitUntilTestTag(CodeComposableComponentsTestTags.ADD_CODE_BUTTON)
+    composeTestRule
+        .onNodeWithTag(CodeComposableComponentsTestTags.CODE_FIELD)
+        .assertIsDisplayed()
+        .performTextInput(vetCode)
+    composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.ADD_CODE_BUTTON).performClick()
+    composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
+      composeTestRule.onNodeWithText("You successfully joined an office").isDisplayed()
+    }
+
+    goBack()
+  }
+
+  private fun claimReport(reportName: String) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onAllNodes(hasText(reportName)).fetchSemanticsNodes().isNotEmpty()
+    }
+    composeTestRule.onNodeWithText(reportName).performClick()
+
+    waitUntilTestTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
+
+    val scroll = composeTestRule.onNodeWithTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
+    // Ensure claim button exists (poll)
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule
+          .onAllNodesWithTag(ReportViewScreenTestTags.CLAIM_BUTTON)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+    // Scroll until claim button is visible and click it
+    scroll.performScrollToNode(hasTestTag(ReportViewScreenTestTags.CLAIM_BUTTON))
+    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.CLAIM_BUTTON).performClick()
+
+    goBack()
+
+    waitUntilTestTag(OverviewScreenTestTags.SCREEN)
+  }
+
+  private fun checkAssignedVetDisplayedOnOverview(vet: String) {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithText(vet).isDisplayed()
+    }
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithText(AssignedVetTagTexts.ASSIGNED_TO_CURRENT_VET).isDisplayed()
+    }
+
+    waitUntilTestTag(OverviewScreenTestTags.FILTERS_TOGGLE)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTERS_TOGGLE).performClick()
+
+    waitUntilTestTag(OverviewScreenTestTags.ASSIGNEE_FILTER)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).performClick()
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithText(AssigneeFilterTexts.ASSIGNED_TO_ME).isDisplayed()
+    }
+    composeTestRule.onNodeWithText(AssigneeFilterTexts.ASSIGNED_TO_ME).performClick()
+    composeTestRule.onNodeWithText(vet).assertIsNotDisplayed()
+
+    waitUntilTestTag(OverviewScreenTestTags.ASSIGNEE_FILTER)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).performClick()
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithText(AssigneeFilterTexts.ASSIGNED_TO_OTHERS).isDisplayed()
+    }
+    composeTestRule.onNodeWithText(AssigneeFilterTexts.ASSIGNED_TO_OTHERS).performClick()
+    composeTestRule
+        .onNodeWithText(AssignedVetTagTexts.ASSIGNED_TO_CURRENT_VET)
+        .assertIsNotDisplayed()
+
+    waitUntilTestTag(OverviewScreenTestTags.ASSIGNEE_FILTER)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).performClick()
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithText(AssigneeFilterTexts.UNASSIGNED).isDisplayed()
+    }
+    composeTestRule.onNodeWithText(AssigneeFilterTexts.UNASSIGNED).performClick()
+    composeTestRule
+        .onNodeWithText(AssignedVetTagTexts.ASSIGNED_TO_CURRENT_VET)
+        .assertIsNotDisplayed()
+    composeTestRule.onNodeWithText(vet).assertIsNotDisplayed()
+  }
+
+  private fun completeSignUp(
+      firstname: String,
+      lastname: String,
+      email: String,
+      password: String,
+      isVet: Boolean
+  ) {
     composeTestRule
         .onNodeWithTag(SignInScreenTestTags.SIGN_UP_BUTTON)
         .assertIsDisplayed()
@@ -335,12 +584,12 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD)
         .assertIsDisplayed()
-        .performTextInput("Test")
+        .performTextInput(firstname)
 
     composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.LASTNAME_FIELD)
         .assertIsDisplayed()
-        .performTextInput("User")
+        .performTextInput(lastname)
 
     composeTestRule
         .onNodeWithTag(SignUpScreenTestTags.EMAIL_FIELD)
@@ -367,7 +616,18 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performClick()
   }
 
+  private fun checkEmailVerification() {
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(VerifyEmailScreenTestTags.WELCOME).isDisplayed()
+    }
+    runTest { verifyUser(Firebase.auth.uid!!) }
+    composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(VerifyEmailScreenTestTags.WELCOME).isNotDisplayed()
+    }
+  }
+
   private fun useCode(officeCode: String?) {
+    waitUntilTestTag(ProfileScreenTestTags.CODE_BUTTON_FARMER)
     composeTestRule
         .onNodeWithTag(ProfileScreenTestTags.CODE_BUTTON_FARMER)
         .assertIsDisplayed()
@@ -533,29 +793,22 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun signOutFromScreen() {
-    composeTestRule
-        .onNodeWithTag(OverviewScreenTestTags.LOGOUT_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
+    waitUntilTestTag(OverviewScreenTestTags.LOGOUT_BUTTON)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.LOGOUT_BUTTON).performClick()
 
     waitUntilTestTag(SignInScreenTestTags.SCREEN)
   }
 
-  private fun createReport(title: String, description: String, officeId: String) {
-    composeTestRule
-        .onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-    composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD)
-        .assertIsDisplayed()
-        .performTextInput(title)
+  private fun createReportBasis(title: String, description: String) {
+    waitUntilTestTag(AddReportScreenTestTags.TITLE_FIELD)
+    composeTestRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput(title)
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
         .assertIsDisplayed()
         .performTextInput(description)
 
     // --- Answer all questions ---
+    waitUntilTestTag(AddReportScreenTestTags.SCROLL_CONTAINER)
     val scrollContainer = composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
     var index = 0
     while (true) {
@@ -617,10 +870,50 @@ class E2ETest : FirebaseEmulatorsTest() {
       }
       break
     }
+  }
 
+  private fun createReportWithOfficeName(title: String, description: String, officeName: String) {
+    waitUntilTestTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON).performClick()
+
+    val scrollContainer = composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+    createReportBasis(title, description)
+
+    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
+    waitUntilTestTag(AddReportScreenTestTags.LOCATION_BUTTON)
+    composeTestRule.onNodeWithTag(AddReportScreenTestTags.LOCATION_BUTTON).performClick()
+    waitUntilTestTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON)
+    composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).performClick()
+    waitUntilTestTag(LocationPickerTestTags.CONFIRMATION_PROMPT)
+    composeTestRule.onNodeWithTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON).performClick()
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithText(officeName).isDisplayed()
+    }
+
+    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
     composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.LOCATION_BUTTON))
+        .onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS).isDisplayed()
+    }
+    composeTestRule
+        .onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS_OK)
+        .assertIsDisplayed()
+        .performClick()
+
+    waitUntilTestTag(OverviewScreenTestTags.SCREEN)
+  }
+
+  private fun createReport(title: String, description: String, officeId: String) {
+    waitUntilTestTag(OverviewScreenTestTags.ADD_REPORT_BUTTON)
+    composeTestRule.onNodeWithTag(OverviewScreenTestTags.ADD_REPORT_BUTTON).performClick()
+
+    val scrollContainer = composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
+    createReportBasis(title, description)
+
+    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.LOCATION_BUTTON))
     composeTestRule.onNodeWithTag(AddReportScreenTestTags.LOCATION_BUTTON).performClick()
     composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).isDisplayed()
@@ -633,12 +926,8 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON)
         .assertIsDisplayed()
         .performClick()
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
-      composeTestRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER).isDisplayed()
-    }
-    composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) { scrollContainer.isDisplayed() }
+    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN)
         .assertIsDisplayed()
@@ -651,9 +940,7 @@ class E2ETest : FirebaseEmulatorsTest() {
       composeTestRule.onAllNodesWithText(officeName).onFirst().performClick()
     }
 
-    composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
+    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON)
         .assertIsDisplayed()
@@ -701,8 +988,8 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun mapClickViewReport() {
-    waitUntilTestTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON)
-    composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_NAVIGATION_BUTTON).performClick()
+    waitUntilTestTag(MapScreenTestTags.INFO_NAVIGATION_BUTTON)
+    composeTestRule.onNodeWithTag(MapScreenTestTags.INFO_NAVIGATION_BUTTON).performClick()
   }
 
   private fun goToProfileFromOverview() {
