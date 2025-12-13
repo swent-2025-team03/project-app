@@ -1,6 +1,6 @@
 package com.android.agrihealth.ui.alert
 
-import com.android.agrihealth.testutil.FakeAlertRepository
+import com.android.agrihealth.testhelpers.fakes.FakeAlertRepository
 import com.android.agrihealth.ui.overview.AlertUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

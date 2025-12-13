@@ -22,7 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.ui.navigation.NavigationActions
-import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
 
 object AlertViewScreenTestTags {
@@ -154,7 +154,7 @@ fun AlertViewScreen(navigationActions: NavigationActions, viewModel: AlertViewMo
 @Preview(showBackground = true)
 @Composable
 fun AlertViewScreenPreview() {
-    val fakeRepo = com.android.agrihealth.testutil.FakeAlertRepository()
+    val fakeRepo = com.android.agrihealth.testhelpers.fakes.FakeAlertRepository()
     val viewModel = AlertViewModel(fakeRepo)
 
     val navController = androidx.navigation.compose.rememberNavController()

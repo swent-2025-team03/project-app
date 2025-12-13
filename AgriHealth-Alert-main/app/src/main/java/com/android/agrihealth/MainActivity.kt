@@ -33,8 +33,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
-import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.FARMER_TO_OFFICE
-import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.VET_TO_OFFICE
+import com.android.agrihealth.core.constants.FirestoreSchema.Collections.FARMER_TO_OFFICE
+import com.android.agrihealth.core.constants.FirestoreSchema.Collections.VET_TO_OFFICE
 import com.android.agrihealth.data.model.device.location.LocationPermissionsRequester
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
@@ -42,7 +42,7 @@ import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.device.notifications.NotificationHandlerProvider
 import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.location.LocationPicker
+import com.android.agrihealth.ui.common.LocationPicker
 import com.android.agrihealth.data.model.user.copyCommon
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.alert.AlertViewModel
@@ -74,10 +74,10 @@ import com.android.agrihealth.ui.report.AddReportScreen
 import com.android.agrihealth.ui.report.AddReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.report.ReportViewViewModel
-import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.ui.user.ViewUserScreen
 import com.android.agrihealth.ui.user.ViewUserViewModel
-import com.android.agrihealth.ui.user.defaultUser
+import com.android.agrihealth.data.model.user.defaultUser
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 

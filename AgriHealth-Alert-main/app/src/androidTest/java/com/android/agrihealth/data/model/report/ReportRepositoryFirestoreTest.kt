@@ -2,7 +2,7 @@ package com.android.agrihealth.data.model.report
 
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.repository.ReportRepositoryFirestore
+import com.android.agrihealth.data.model.report.form.OpenQuestion
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
@@ -23,32 +23,34 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   val openQuestion = OpenQuestion("hello", "hi")
 
   val baseReport1 =
-      Report(
-          id = "0",
-          title = "report1",
-          description = "description1",
-          photoURL = null,
-          questionForms = listOf(openQuestion),
-          farmerId = user1.uid,
-          officeId = user3.uid,
-          status = ReportStatus.PENDING,
-          answer = null,
-          location = null,
-          createdAt = now)
+    Report(
+      id = "0",
+      title = "report1",
+      description = "description1",
+      photoURL = null,
+      questionForms = listOf(openQuestion),
+      farmerId = user1.uid,
+      officeId = user3.uid,
+      status = ReportStatus.PENDING,
+      answer = null,
+      location = null,
+      createdAt = now
+    )
 
   val baseReport2 =
-      Report(
-          id = "1",
-          title = "report2",
-          description = "description2",
-          photoURL = null,
-          questionForms = listOf(openQuestion),
-          farmerId = user2.uid,
-          officeId = "Off2",
-          status = ReportStatus.RESOLVED,
-          answer = "this is the answer",
-          location = Location(42.0, 6.7, "the nice farm were all the dogs go when they are old"),
-          createdAt = now)
+    Report(
+      id = "1",
+      title = "report2",
+      description = "description2",
+      photoURL = null,
+      questionForms = listOf(openQuestion),
+      farmerId = user2.uid,
+      officeId = "Off2",
+      status = ReportStatus.RESOLVED,
+      answer = "this is the answer",
+      location = Location(42.0, 6.7, "the nice farm were all the dogs go when they are old"),
+      createdAt = now
+    )
 
   val baseReport3 = baseReport1.copy(id = "2", title = "report3", description = "description3")
 

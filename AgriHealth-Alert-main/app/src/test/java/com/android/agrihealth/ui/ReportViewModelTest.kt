@@ -3,7 +3,7 @@ package com.android.agrihealth.ui
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
-import com.android.agrihealth.data.repository.ReportRepository
+import com.android.agrihealth.data.model.report.ReportRepository
 import com.android.agrihealth.ui.report.ReportViewViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

@@ -22,7 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.testutil.FakeChangePasswordViewModel
-import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 
 /** Tags for the various components. For testing purposes */

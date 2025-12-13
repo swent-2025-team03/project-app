@@ -9,8 +9,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import com.android.agrihealth.testutil.FakeAuthRepository
-import com.android.agrihealth.testutil.TestConstants
+import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
+import com.android.agrihealth.testhelpers.TestConstants
 import org.junit.Rule
 import org.junit.Test
 

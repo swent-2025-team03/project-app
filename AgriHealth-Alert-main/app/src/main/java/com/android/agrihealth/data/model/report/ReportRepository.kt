@@ -1,0 +1,51 @@
+package com.android.agrihealth.data.model.report
+
+/** Repository interface for managing reports. */
+interface ReportRepository {
+
+  /** Generate a unique ID for a new report. */
+  fun getNewReportId(): String
+
+  /**
+   * Retrieves all reports concerning this userId from the repository.
+   *
+   * @param userId The ID of the user.
+   * @return List of all reports.
+   */
+  suspend fun getAllReports(userId: String): List<Report>
+
+  /**
+   * Retrieves a report by its unique ID.
+   *
+   * @param reportId The ID of the report.
+   * @return The report if found, null otherwise.
+   */
+  suspend fun getReportById(reportId: String): Report?
+
+  /**
+   * Adds a new report to the repository.
+   *
+   * @param report The report to be added.
+   */
+  suspend fun addReport(report: Report)
+
+  /**
+   * Edits an existing report in the repository.
+   *
+   * @param newReport The report with updated information.
+   */
+  suspend fun editReport(reportId: String, newReport: Report)
+
+  /**
+   * Deletes a report from the repository.
+   *
+   * @param reportId The ID of the report to be deleted.
+   */
+  suspend fun deleteReport(reportId: String)
+
+  /** Assigns a report to a vet. */
+  suspend fun assignReportToVet(reportId: String, vetId: String)
+
+  /** Unassigns a report from a vet. */
+  suspend fun unassignReport(reportId: String)
+}

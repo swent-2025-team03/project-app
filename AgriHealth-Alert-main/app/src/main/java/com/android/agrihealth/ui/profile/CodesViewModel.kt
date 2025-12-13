@@ -9,8 +9,8 @@ import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.ui.user.UserViewModel
-import com.android.agrihealth.ui.user.UserViewModelContract
+import com.android.agrihealth.data.model.user.UserViewModel
+import com.android.agrihealth.data.model.user.UserViewModelContract
 import java.lang.IllegalStateException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

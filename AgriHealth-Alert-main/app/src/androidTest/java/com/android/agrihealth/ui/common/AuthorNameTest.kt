@@ -6,9 +6,12 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
-import com.android.agrihealth.data.model.user.UserDirectoryDataSource
-import com.android.agrihealth.data.model.user.UserDirectoryRepository
+import com.android.agrihealth.ui.common.resolver.UserDirectoryDataSource
+import com.android.agrihealth.ui.common.resolver.UserDirectoryRepository
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.ui.common.resolver.AuthorName
+import com.android.agrihealth.ui.common.resolver.AuthorNameViewModel
+import com.android.agrihealth.ui.common.resolver.rememberUserName
 import org.junit.Rule
 import org.junit.Test
 

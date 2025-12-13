@@ -6,8 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.android.agrihealth.data.model.office.Office
-import com.android.agrihealth.testutil.FakeOfficeRepository
-import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import org.junit.Rule
 import org.junit.Test
 

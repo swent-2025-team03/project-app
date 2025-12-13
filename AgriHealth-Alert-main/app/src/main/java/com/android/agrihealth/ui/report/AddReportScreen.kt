@@ -30,18 +30,18 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.report.MCQ
-import com.android.agrihealth.data.model.report.MCQO
-import com.android.agrihealth.data.model.report.OpenQuestion
-import com.android.agrihealth.data.model.report.QuestionForm
-import com.android.agrihealth.data.model.report.YesOrNoQuestion
+import com.android.agrihealth.data.model.report.form.MCQ
+import com.android.agrihealth.data.model.report.form.MCQO
+import com.android.agrihealth.data.model.report.form.OpenQuestion
+import com.android.agrihealth.data.model.report.form.QuestionForm
+import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.ui.common.OfficeNameViewModel
-import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
-import com.android.agrihealth.ui.user.UserViewModel
-import com.android.agrihealth.ui.user.UserViewModelContract
-import com.android.agrihealth.ui.utils.ImagePickerDialog
+import com.android.agrihealth.data.model.user.UserViewModel
+import com.android.agrihealth.data.model.user.UserViewModelContract
+import com.android.agrihealth.ui.common.ImagePickerDialog
 import kotlin.collections.forEachIndexed
 import kotlinx.coroutines.launch
 
@@ -49,7 +49,7 @@ import kotlinx.coroutines.launch
 /*
 import androidx.compose.ui.tooling.preview.Preview
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.testutil.FakeAddReportViewModel
+import com.android.agrihealth.testhelpers.fakes.FakeAddReportViewModel
  */
 
 /** Tags for the various components. For testing purposes */

@@ -32,15 +32,15 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.ui.common.AuthorName
-import com.android.agrihealth.ui.common.OfficeName
-import com.android.agrihealth.ui.common.rememberOfficeName
-import com.android.agrihealth.ui.common.rememberUserName
-import com.android.agrihealth.ui.navigation.BottomNavigationMenu
+import com.android.agrihealth.ui.common.resolver.AuthorName
+import com.android.agrihealth.ui.common.resolver.OfficeName
+import com.android.agrihealth.ui.common.resolver.rememberOfficeName
+import com.android.agrihealth.ui.common.resolver.rememberUserName
+import com.android.agrihealth.ui.common.layout.BottomNavigationMenu
 import com.android.agrihealth.ui.navigation.NavigationActions
-import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
-import com.android.agrihealth.ui.navigation.Tab
+import com.android.agrihealth.ui.common.layout.Tab
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.ASSIGNED_VET_TAG
 import kotlinx.coroutines.launch
 
@@ -50,7 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.testutil.FakeOverviewViewModel
+import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
 */
 
 object OverviewScreenTestTags {

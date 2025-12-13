@@ -1,0 +1,17 @@
+package com.android.agrihealth.data.model.report
+
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+
+object ReportRepositoryProvider {
+
+  /**
+   * Provides a single instance of the repository in the app. `repository` is mutable for testing
+   * purposes.
+   */
+  private val _repository: ReportRepository by lazy {
+    ReportRepositoryFirestore(Firebase.firestore)
+  }
+
+  var repository: ReportRepository = _repository
+}

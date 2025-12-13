@@ -15,12 +15,12 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.testutil.FakeImageRepository
-import com.android.agrihealth.testutil.FakeOverviewViewModel
-import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
-import com.android.agrihealth.testutil.TestReportRepository
+import com.android.agrihealth.testhelpers.fakes.FakeImageRepository
+import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
+import com.android.agrihealth.testhelpers.TestConstants.LONG_TIMEOUT
+import com.android.agrihealth.testhelpers.fakes.TestReportRepository
 import com.android.agrihealth.ui.navigation.NavigationActions
-import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags

@@ -10,12 +10,12 @@ import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
-import com.android.agrihealth.data.model.report.HealthQuestionFactory
-import com.android.agrihealth.data.model.report.QuestionForm
+import com.android.agrihealth.data.model.report.form.HealthQuestionFactory
+import com.android.agrihealth.data.model.report.form.QuestionForm
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
-import com.android.agrihealth.data.repository.ReportRepository
-import com.android.agrihealth.data.repository.ReportRepositoryProvider
+import com.android.agrihealth.data.model.report.ReportRepository
+import com.android.agrihealth.data.model.report.ReportRepositoryProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,10 +1,10 @@
 package com.android.agrihealth.ui.authentification
 
-import com.android.agrihealth.data.model.authentification.UserRepository
+import com.android.agrihealth.data.model.user.UserRepository
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.user.User
-import com.android.agrihealth.ui.user.UserViewModel
-import com.android.agrihealth.ui.user.defaultUser
+import com.android.agrihealth.data.model.user.UserViewModel
+import com.android.agrihealth.data.model.user.defaultUser
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

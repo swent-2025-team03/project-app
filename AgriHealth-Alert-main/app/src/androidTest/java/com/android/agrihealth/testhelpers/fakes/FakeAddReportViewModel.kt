@@ -1,0 +1,78 @@
+package com.android.agrihealth.testhelpers.fakes
+
+import android.net.Uri
+import androidx.lifecycle.ViewModel
+import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.report.form.MCQ
+import com.android.agrihealth.data.model.report.form.MCQO
+import com.android.agrihealth.data.model.report.form.OpenQuestion
+import com.android.agrihealth.data.model.report.form.QuestionForm
+import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
+import com.android.agrihealth.ui.report.AddReportUiState
+import com.android.agrihealth.ui.report.AddReportViewModelContract
+import com.android.agrihealth.ui.report.CreateReportResult
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+
+class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
+  private val _uiState =
+      MutableStateFlow(
+          AddReportUiState(
+              questionForms =
+                  listOf(
+                      OpenQuestion("Open Question 1", ""),
+                      YesOrNoQuestion("Yes/No Question 1", 0),
+                      MCQ("MCQ Question 1", listOf("Option A", "Option B"), -1),
+                      MCQO("MCQO Question 1", listOf("Option A", "Option B"), -1, ""))))
+  override val uiState: StateFlow<AddReportUiState> = _uiState
+
+  override fun switchCollected() {
+    _uiState.value = _uiState.value.copy(collected = !uiState.value.collected)
+  }
+
+  override fun setTitle(newTitle: String) {
+    _uiState.value = _uiState.value.copy(title = newTitle)
+  }
+
+  override fun setDescription(newDescription: String) {
+    _uiState.value = _uiState.value.copy(description = newDescription)
+  }
+
+  override fun setOffice(officeId: String) {
+    _uiState.value = _uiState.value.copy(chosenOffice = officeId)
+  }
+
+  override fun setAddress(address: Location?) {
+    _uiState.value = _uiState.value.copy(address = address)
+  }
+
+  override fun updateQuestion(index: Int, updated: QuestionForm) {
+    val updatedList = _uiState.value.questionForms.toMutableList()
+    updatedList[index] = updated
+    _uiState.value = _uiState.value.copy(questionForms = updatedList)
+  }
+
+  override suspend fun createReport(): CreateReportResult {
+    if (_uiState.value.title.isNotBlank() && _uiState.value.description.isNotBlank()) {
+      return CreateReportResult.Success
+    } else {
+      return CreateReportResult.ValidationError
+    }
+  }
+
+  override fun clearInputs() {
+    _uiState.value = AddReportUiState()
+  }
+
+  override fun setPhoto(uri: Uri?) {
+    _uiState.value = _uiState.value.copy(photoUri = uri)
+  }
+
+  override fun removePhoto() {
+    _uiState.value = _uiState.value.copy(photoUri = null)
+  }
+
+  override fun setUploadedImagePath(path: String?) {
+    _uiState.value = _uiState.value.copy(uploadedImagePath = path)
+  }
+}

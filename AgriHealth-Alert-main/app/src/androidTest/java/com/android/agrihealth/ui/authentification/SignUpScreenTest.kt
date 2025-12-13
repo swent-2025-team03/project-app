@@ -11,8 +11,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.testutil.FakeAuthRepository
-import com.android.agrihealth.testutil.TestConstants
+import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
+import com.android.agrihealth.testhelpers.TestConstants
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before

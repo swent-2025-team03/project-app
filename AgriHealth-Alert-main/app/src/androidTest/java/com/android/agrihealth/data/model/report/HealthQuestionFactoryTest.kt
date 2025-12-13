@@ -1,5 +1,7 @@
 package com.android.agrihealth.data.model.report
 
+import com.android.agrihealth.data.model.report.form.HealthQuestionFactory
+import com.android.agrihealth.data.model.report.form.Species
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

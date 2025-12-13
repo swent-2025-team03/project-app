@@ -14,11 +14,11 @@ import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.verifyUser
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
-import com.android.agrihealth.testutil.TestConstants
+import com.android.agrihealth.testhelpers.TestConstants
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.VerifyEmailScreenTestTags
 import com.android.agrihealth.ui.map.MapScreenTestTags
-import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.google.firebase.Firebase

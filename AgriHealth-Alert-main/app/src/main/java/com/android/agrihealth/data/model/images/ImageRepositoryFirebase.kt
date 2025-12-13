@@ -6,7 +6,7 @@ import android.net.Uri
 import androidx.core.graphics.scale
 import androidx.exifinterface.media.ExifInterface
 import com.android.agrihealth.data.model.images.ImageRepository.Companion.toBitmap
-import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.data.model.user.UserViewModel
 import com.google.firebase.storage.FirebaseStorage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream

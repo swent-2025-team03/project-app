@@ -7,7 +7,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import com.android.agrihealth.testutil.FakeChangePasswordViewModel
+import com.android.agrihealth.testhelpers.fakes.FakeChangePasswordViewModel
 import junit.framework.TestCase.assertFalse
 import org.junit.Before
 import org.junit.Rule

@@ -26,7 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.credentials.Credential
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.authentification.AuthRepository
-import com.android.agrihealth.data.model.authentification.UserRepository
+import com.android.agrihealth.data.model.user.UserRepository
 import com.android.agrihealth.data.model.user.User
 import com.google.firebase.auth.FirebaseUser
 */

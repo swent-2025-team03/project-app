@@ -17,7 +17,7 @@ import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.CREATE_BUTTON
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.DESCRIPTION_FIELD
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.NAME_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
-import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.data.model.user.UserViewModel
 
 object CreateOfficeScreenTestTags {
   const val NAME_FIELD = "CreateOfficeNameField"

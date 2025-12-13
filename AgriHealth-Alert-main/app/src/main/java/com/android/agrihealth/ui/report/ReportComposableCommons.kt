@@ -14,10 +14,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.android.agrihealth.data.model.report.MCQ
-import com.android.agrihealth.data.model.report.MCQO
-import com.android.agrihealth.data.model.report.OpenQuestion
-import com.android.agrihealth.data.model.report.YesOrNoQuestion
+import com.android.agrihealth.data.model.report.form.MCQ
+import com.android.agrihealth.data.model.report.form.MCQO
+import com.android.agrihealth.data.model.report.form.OpenQuestion
+import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
 
 object ReportComposableCommonsTestTags {
   const val COLLECTED_SWITCH = "collectedSwitch"

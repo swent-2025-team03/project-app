@@ -1,7 +1,7 @@
 package com.android.agrihealth.data.model.report
 
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.testutil.InMemoryReportRepository
+import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -16,18 +16,18 @@ class ReportRepositoryLocalTest {
   private lateinit var repository: InMemoryReportRepository
 
   private val report =
-      Report(
-          id = "1",
-          title = "Test Report",
-          description = "This is a test report",
-          questionForms = emptyList(),
-          photoURL = null,
-          farmerId = "farmer123",
-          officeId = "off456",
-          status = ReportStatus.PENDING,
-          answer = "answerTest",
-          location = Location(latitude = 10.0, longitude = 20.0, name = "Test Location"),
-      )
+    Report(
+      id = "1",
+      title = "Test Report",
+      description = "This is a test report",
+      questionForms = emptyList(),
+      photoURL = null,
+      farmerId = "farmer123",
+      officeId = "off456",
+      status = ReportStatus.PENDING,
+      answer = "answerTest",
+      location = Location(latitude = 10.0, longitude = 20.0, name = "Test Location"),
+    )
 
   @Before
   fun setup() {

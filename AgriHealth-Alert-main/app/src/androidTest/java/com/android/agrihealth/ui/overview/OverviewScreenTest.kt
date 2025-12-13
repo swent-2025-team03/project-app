@@ -12,10 +12,10 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.testutil.FakeAlertRepository
-import com.android.agrihealth.testutil.FakeOverviewViewModel
-import com.android.agrihealth.testutil.InMemoryReportRepository
-import com.android.agrihealth.testutil.TestConstants
+import com.android.agrihealth.testhelpers.fakes.FakeAlertRepository
+import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
+import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
+import com.android.agrihealth.testhelpers.TestConstants
 import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Rule

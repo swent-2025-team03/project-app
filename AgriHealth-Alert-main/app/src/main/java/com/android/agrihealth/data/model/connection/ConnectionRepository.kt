@@ -1,7 +1,8 @@
 package com.android.agrihealth.data.model.connection
 
-import com.android.agrihealth.data.model.authentification.UserRepository
-import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.core.constants.FirestoreSchema
+import com.android.agrihealth.data.model.user.UserRepository
+import com.android.agrihealth.data.model.user.UserRepositoryProvider
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.ui.profile.CodeType
 import com.google.firebase.Firebase

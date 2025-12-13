@@ -3,9 +3,9 @@ package com.android.agrihealth.data.model.device.notifications
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.data.model.user.copyCommon
-import com.android.agrihealth.testutil.FakeNotificationSender
-import com.android.agrihealth.testutil.FakeNotificationTokenResolver
-import com.android.agrihealth.testutil.FakeUserRepository
+import com.android.agrihealth.testhelpers.fakes.FakeNotificationSender
+import com.android.agrihealth.testhelpers.fakes.FakeNotificationTokenResolver
+import com.android.agrihealth.testhelpers.fakes.FakeUserRepository
 import com.google.firebase.messaging.RemoteMessage
 import io.mockk.Runs
 import io.mockk.clearMocks

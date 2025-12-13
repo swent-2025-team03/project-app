@@ -1,12 +1,12 @@
 package com.android.agrihealth.ui.report
 
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.report.MCQ
-import com.android.agrihealth.data.model.report.MCQO
-import com.android.agrihealth.data.model.report.OpenQuestion
+import com.android.agrihealth.data.model.report.form.MCQ
+import com.android.agrihealth.data.model.report.form.MCQO
+import com.android.agrihealth.data.model.report.form.OpenQuestion
 import com.android.agrihealth.data.model.report.ReportStatus
-import com.android.agrihealth.data.model.report.YesOrNoQuestion
-import com.android.agrihealth.testutil.TestReportRepository
+import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
+import com.android.agrihealth.testhelpers.fakes.TestReportRepository
 import com.android.agrihealth.utils.TestAssetUtils
 import com.android.agrihealth.utils.TestAssetUtils.cleanupTestAssets
 import kotlinx.coroutines.Dispatchers

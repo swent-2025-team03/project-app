@@ -4,9 +4,9 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.*
-import com.android.agrihealth.testutil.FakeUserViewModel
-import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
-import com.android.agrihealth.ui.navigation.NavigationTestTags.TOP_BAR_TITLE
+import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
+import com.android.agrihealth.ui.common.layout.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.common.layout.NavigationTestTags.TOP_BAR_TITLE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import org.junit.Rule
 import org.junit.Test

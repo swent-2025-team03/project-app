@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
-import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.data.model.user.UserViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 

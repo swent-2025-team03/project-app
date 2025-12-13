@@ -10,8 +10,8 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import com.android.agrihealth.testutil.FakeAuthRepository
-import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test

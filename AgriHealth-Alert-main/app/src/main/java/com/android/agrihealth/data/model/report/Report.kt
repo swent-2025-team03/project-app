@@ -1,6 +1,7 @@
 package com.android.agrihealth.data.model.report
 
 import com.android.agrihealth.data.model.location.Location
+import com.android.agrihealth.data.model.report.form.QuestionForm
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.LocalTime

@@ -8,9 +8,10 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.testutil.FakeOfficeRepository
-import com.android.agrihealth.testutil.FakeUserRepository
+import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
+import com.android.agrihealth.testhelpers.fakes.FakeUserRepository
 import org.junit.Rule
 import org.junit.Test
 

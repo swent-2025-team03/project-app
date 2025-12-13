@@ -6,8 +6,11 @@ import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import com.android.agrihealth.data.model.office.Office
-import com.android.agrihealth.testutil.FakeOfficeRepository
-import com.android.agrihealth.testutil.TestConstants
+import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
+import com.android.agrihealth.testhelpers.TestConstants
+import com.android.agrihealth.ui.common.resolver.OfficeName
+import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
+import com.android.agrihealth.ui.common.resolver.rememberOfficeName
 import org.junit.Rule
 import org.junit.Test
 

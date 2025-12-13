@@ -29,7 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 
 // imports for debug button
 /*
@@ -45,9 +45,9 @@ import com.android.agrihealth.data.model.authentification.verifyUser
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.testutil.FakeAuthRepository
-import com.android.agrihealth.testutil.FakeUserViewModel
-import com.android.agrihealth.ui.user.defaultUser
+import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
+import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
+import com.android.agrihealth.data.model.user.defaultUser
  */
 object VerifyEmailScreenTestTags {
   const val WELCOME = "Welcome"

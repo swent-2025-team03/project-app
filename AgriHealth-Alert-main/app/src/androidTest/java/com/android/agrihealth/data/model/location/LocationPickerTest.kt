@@ -9,8 +9,10 @@ import androidx.compose.ui.test.performClick
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
-import com.android.agrihealth.testutil.TestConstants.DEFAULT_TIMEOUT
-import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
+import com.android.agrihealth.testhelpers.TestConstants.DEFAULT_TIMEOUT
+import com.android.agrihealth.testhelpers.TestConstants.LONG_TIMEOUT
+import com.android.agrihealth.ui.common.LocationPicker
+import com.android.agrihealth.ui.common.LocationPickerTestTags
 import com.android.agrihealth.ui.map.MapViewModel
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
@@ -47,15 +49,15 @@ class LocationPickerTest {
 
     composeTestRule.setContent {
       LocationPicker(
-          mapViewModel = mapViewModel,
-          onLatLng = { lat, lng ->
-            val selectedPosition = Location(lat, lng)
-            assertEquals(position, selectedPosition)
-          },
-          onAddress = { address ->
-            confirmClicked = true
-            assertTrue(address?.contains(cityName) == true)
-          })
+        mapViewModel = mapViewModel,
+        onLatLng = { lat, lng ->
+          val selectedPosition = Location(lat, lng)
+          assertEquals(position, selectedPosition)
+        },
+        onAddress = { address ->
+          confirmClicked = true
+          assertTrue(address?.contains(cityName) == true)
+        })
     }
 
     composeTestRule.waitUntil(LONG_TIMEOUT) {

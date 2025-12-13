@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
-import com.android.agrihealth.data.repository.ReportRepository
-import com.android.agrihealth.data.repository.ReportRepositoryProvider
+import com.android.agrihealth.data.model.report.ReportRepository
+import com.android.agrihealth.data.model.report.ReportRepositoryProvider
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
