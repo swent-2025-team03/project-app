@@ -52,14 +52,14 @@ object PhotoComponentsTexts {
 }
 
 /**
- * Handles the display of the remote photo Url, not local uri
+ * Handles the display of a remote photo URL (already uploaded).
  *
- * @param photoURL Url of the photo, already uploaded and in remote
- * @param imageViewModel
- * @param modifier Can change between normal pictures on reports or profile pictures
- * @param contentDescription
- * @param showPlaceHolder if photoURL is empty or null, whether it'll display the default account
- *   icon or not
+ * @param photoURL URL of the photo that is already uploaded and stored remotely.
+ * @param imageViewModel ViewModel responsible for downloading and exposing the image state.
+ * @param modifier Modifier used to customize the layout (e.g. profile picture vs report image).
+ * @param contentDescription Content description for accessibility.
+ * @param showPlaceHolder If true and the photoURI is null, a default account icon is displayed
+ *   instead.
  */
 @Composable
 fun RemotePhotoDisplay(
@@ -122,13 +122,13 @@ fun RemotePhotoDisplay(
 }
 
 /**
- * Displays the photo that was picked by the user before being uploaded and possible compressed by
- * the image repository
+ * Displays the photo picked by the user before it is uploaded
+ * * (local image referenced by a URI).
  *
- * @param photoURI URI of the photo, not yet uploaded so it is local
- * @param modifier Can change between normal pictures on reports or profile pictures
- * @param showPlaceHolder Whether it'll display the default account icon or not, when photoURI is
- *   empty or null
+ * @param photoURI URI of the local photo that has not yet been uploaded.
+ * @param modifier Modifier used to customize the layout (e.g. profile picture vs report image).
+ * @param showPlaceHolder If true and the photoURI is null, a default account icon is displayed
+ *   instead.
  */
 @Composable
 fun LocalPhotoDisplay(
@@ -154,9 +154,9 @@ fun LocalPhotoDisplay(
 /**
  * Handles adding or removing a photo from the report
  *
- * @param photoAlreadyPicked true if a photo has already ben added to the report, false otherwise
- * @param onPhotoPicked Called when a photo has been picked for the report
- * @param onPhotoRemoved Called when the selected photo has been removed from the report
+ * @param photoAlreadyPicked True if a photo has already been selected, false otherwise.
+ * @param onPhotoPicked Called when a photo has been picked by the user.
+ * @param onPhotoRemoved Called when the currently selected photo is removed.
  */
 @Composable
 fun UploadRemovePhotoButton(

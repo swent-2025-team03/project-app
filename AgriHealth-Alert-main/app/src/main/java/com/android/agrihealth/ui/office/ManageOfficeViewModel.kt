@@ -138,8 +138,4 @@ class ManageOfficeViewModel(
   fun removePhoto() {
     _uiState.value = _uiState.value.copy(photoUri = null)
   }
-
-  fun setUploadedPhotoUrl(url: String?) {
-    _uiState.value = _uiState.value.copy(uploadedImagePath = url)
-  }
 }
