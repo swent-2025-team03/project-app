@@ -123,6 +123,7 @@ fun ManageOfficeScreen(
                     }
               } else {
                 UploadRemoveOfficePhotoSection(
+                    isOwner = isOwner,
                     photoAlreadyPicked = uiState.photoUri != null,
                     onPhotoPicked = { manageOfficeViewModel.setPhoto(it) },
                     onPhotoRemoved = { manageOfficeViewModel.removePhoto() },
@@ -225,6 +226,7 @@ fun ManageOfficeScreen(
 
 @Composable
 fun UploadRemoveOfficePhotoSection(
+    isOwner: Boolean = false,
     photoAlreadyPicked: Boolean,
     onPhotoPicked: (Uri?) -> Unit,
     onPhotoRemoved: () -> Unit,
@@ -249,11 +251,13 @@ fun UploadRemoveOfficePhotoSection(
         showPlaceHolder = true)
   }
 
-  UploadRemovePhotoButton(
-      photoAlreadyPicked = photoAlreadyPicked,
-      onPhotoPicked = onPhotoPicked,
-      onPhotoRemoved = {
-        onPhotoRemoved
-        initialLoad = false
-      })
+  if (isOwner) {
+    UploadRemovePhotoButton(
+        photoAlreadyPicked = photoAlreadyPicked,
+        onPhotoPicked = onPhotoPicked,
+        onPhotoRemoved = {
+          onPhotoRemoved
+          initialLoad = false
+        })
+  }
 }
