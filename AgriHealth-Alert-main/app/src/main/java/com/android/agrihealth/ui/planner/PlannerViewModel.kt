@@ -43,7 +43,7 @@ data class PlannerUIState(
     val setTime: LocalTime = LocalTime.now(),
     val setDuration: LocalTime = LocalTime.of(1, 0),
     val reportToSetTheDateFor: Report? = null,
-    val isAllowedToSetDate: Boolean = false,
+    val isAllowedToSetDate: Boolean = true,
 
     // Unsaved Changes
     val isUnsavedAlertShowing: Boolean = false
