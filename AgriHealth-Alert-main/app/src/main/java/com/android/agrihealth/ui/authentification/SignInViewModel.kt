@@ -70,17 +70,20 @@ open class SignInViewModel(
   fun signInWithEmailAndPassword() {
     if (_uiState.value.isValid) {
       viewModelScope.launch {
-          uiState.withLoadingState(
-              applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+        _uiState.withLoadingState(
+            applyLoading = { state: SignInUIState, loading: Boolean ->
+              state.copy(isLoading = loading)
+            }) {
               authRepository
-            .signInWithEmailAndPassword(_uiState.value.email, _uiState.value.password)
-            .fold({ verified -> _uiState.update { it.copy(verified = verified) } }) { failure ->
-              when (failure) {
-                is FirebaseAuthException -> setErrorMsg(SignInErrorMsg.INVALID_CREDENTIALS)
-                else -> setErrorMsg(SignInErrorMsg.TIMEOUT)
-              }
+                  .signInWithEmailAndPassword(_uiState.value.email, _uiState.value.password)
+                  .fold({ verified -> _uiState.update { it.copy(verified = verified) } }) { failure
+                    ->
+                    when (failure) {
+                      is FirebaseAuthException -> setErrorMsg(SignInErrorMsg.INVALID_CREDENTIALS)
+                      else -> setErrorMsg(SignInErrorMsg.TIMEOUT)
+                    }
+                  }
             }
-      }
       }
     } else {
       if (_uiState.value.email.isEmpty()) {
@@ -112,7 +115,9 @@ open class SignInViewModel(
 
     viewModelScope.launch {
       _uiState.withLoadingState(
-          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+          applyLoading = { state: SignInUIState, loading: Boolean ->
+            state.copy(isLoading = loading)
+          }) {
             val signInOptions = getSignInOptions(context)
             val signInRequest = signInRequest(signInOptions)
 
@@ -120,21 +125,22 @@ open class SignInViewModel(
               // Launch Credential Manager UI safely
               val credential = getCredential(context, signInRequest, credentialManager)
 
-        // Pass the credential to your repository
-        authRepository.signInWithGoogle(credential).fold({ uid ->
-          if (userRepository.getUserFromId(uid).isFailure)
-              _uiState.update { it.copy(verified = true, isNewGoogle = true) }
-          else _uiState.update { it.copy(verified = true) }
-        }) { failure ->
-          _uiState.update { it.copy(verified = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
-        }
-      } catch (e: GetCredentialCancellationException) {
-        // User cancelled the sign-in flow
-        _uiState.update { it.copy(verified = null) }
-      } catch (e: Exception) {
-        // Unexpected errors
-        _uiState.update { it.copy(verified = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
-      }
+              // Pass the credential to your repository
+              authRepository.signInWithGoogle(credential).fold({ uid ->
+                if (userRepository.getUserFromId(uid).isFailure)
+                    _uiState.update { it.copy(verified = true, isNewGoogle = true) }
+                else _uiState.update { it.copy(verified = true) }
+              }) { failure ->
+                _uiState.update { it.copy(verified = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
+              }
+            } catch (e: GetCredentialCancellationException) {
+              // User cancelled the sign-in flow
+              _uiState.update { it.copy(verified = null) }
+            } catch (e: Exception) {
+              // Unexpected errors
+              _uiState.update { it.copy(verified = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
+            }
+          }
     }
   }
 }

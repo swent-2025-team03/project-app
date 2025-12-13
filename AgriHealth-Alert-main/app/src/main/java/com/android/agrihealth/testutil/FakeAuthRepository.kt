@@ -69,8 +69,8 @@ class FakeAuthRepository(
       email: String,
       password: String
   ): Result<Boolean> {
-      delay(delayMs)
-      if (isOnline) {
+    delay(delayMs)
+    if (isOnline) {
       if (currentUser != null) {
         return Result.failure(IllegalStateException("user $currentUser already logged in"))
       } else if (credentials[email] == password) {
