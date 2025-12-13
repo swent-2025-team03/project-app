@@ -45,7 +45,6 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -71,7 +70,7 @@ class E2ETest : FirebaseEmulatorsTest() {
   @Before
   override fun setUp() {
     super.setUp()
-    runTest { authRepository.signUpWithEmailAndPassword(user1.email, "12345678", user1) }
+    runBlocking { authRepository.signUpWithEmailAndPassword(user1.email, "12345678", user1) }
     authRepository.signOut()
   }
 
@@ -174,7 +173,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     val office2 =
         Office(id = user1.linkedOffices.last(), name = "Some Other Office", ownerId = user1.uid)
 
-    runTest { fakeOfficeRepo.addOffice(office2) }
+    runBlocking { fakeOfficeRepo.addOffice(office2) }
 
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.waitForIdle()
@@ -279,7 +278,7 @@ class E2ETest : FirebaseEmulatorsTest() {
             vetConnectCodes = emptyList(),
             officeId = "off1")
     val userViewModel = UserViewModel(initialUser = vet)
-    runTest {
+    runBlocking {
       AuthRepositoryProvider.repository.signUpWithEmailAndPassword(vet.email, "123456", vet)
     }
     val codesViewModel =
@@ -315,7 +314,7 @@ class E2ETest : FirebaseEmulatorsTest() {
             vetConnectCodes = emptyList(),
             officeId = "off1")
     val userViewModel = UserViewModel(initialUser = vet)
-    runTest {
+    runBlocking {
       AuthRepositoryProvider.repository.signUpWithEmailAndPassword(vet.email, "123456", vet)
     }
     val codesViewModel =
@@ -626,7 +625,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(VerifyEmailScreenTestTags.WELCOME).isDisplayed()
     }
-    runTest { verifyUser(Firebase.auth.uid!!) }
+    runBlocking { verifyUser(Firebase.auth.uid!!) }
     composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(VerifyEmailScreenTestTags.WELCOME).isNotDisplayed()
     }
@@ -938,7 +937,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN)
         .assertIsDisplayed()
         .performClick()
-    runTest {
+    runBlocking {
       val officeName =
           OfficeRepositoryProvider.get().getOffice(officeId).fold({ off -> off.name }) {
             "Deleted office"

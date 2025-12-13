@@ -9,10 +9,9 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -40,12 +39,11 @@ class UserViewModelTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun initKeepsDefaultUserWhenNoUserLoggedIn() = runTest {
+  fun initKeepsDefaultUserWhenNoUserLoggedIn() = runBlocking {
     // Given no current user
     assertEquals(auth.currentUser, null)
 
     val viewModel = UserViewModel(repository, auth)
-    advanceUntilIdle()
 
     // Default role = FARMER
     val role = viewModel.user.first()
@@ -53,16 +51,14 @@ class UserViewModelTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun loadUserUpdatesStateFlow() = runTest {
+  fun loadUserUpdatesStateFlow() = runBlocking {
     // Given a user in the repository
     repository.addUser(user3)
 
     val viewModel = UserViewModel(repository, auth)
-    advanceUntilIdle()
 
     // When loading user role
     viewModel.loadUser(user3.uid)
-    advanceUntilIdle()
 
     // Then userRole StateFlow should be updated
     val role = viewModel.user.first()
@@ -70,15 +66,13 @@ class UserViewModelTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun loadUserHandlesNonExistingUser() = runTest {
+  fun loadUserHandlesNonExistingUser() = runBlocking {
     // Given no user in the repository
 
     val viewModel = UserViewModel(repository, auth)
-    advanceUntilIdle()
 
     // When loading user role for non-existing user
     viewModel.loadUser("nonExistingUid")
-    advanceUntilIdle()
 
     // Then userRole StateFlow should remain default
     val role = viewModel.user.first()

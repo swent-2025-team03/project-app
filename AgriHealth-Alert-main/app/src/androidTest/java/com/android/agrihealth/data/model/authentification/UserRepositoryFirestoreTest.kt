@@ -1,7 +1,7 @@
 package com.android.agrihealth.data.model.authentification
 
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -14,11 +14,11 @@ class UserRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   @Before
   override fun setUp() {
     super.setUp()
-    runTest { authRepository.signUpWithEmailAndPassword(user1.email, password1, user1) }
+    runBlocking { authRepository.signUpWithEmailAndPassword(user1.email, password1, user1) }
   }
 
   @Test
-  fun canGetCorrectUserData() = runTest {
+  fun canGetCorrectUserData() = runBlocking {
     userRepository.addUser(user1)
     val userData = userRepository.getUserFromId(user1.uid).getOrThrow()
     assertEquals(user1.uid, userData.uid)
@@ -29,7 +29,7 @@ class UserRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun canUpdateSingleField() = runTest {
+  fun canUpdateSingleField() = runBlocking {
     userRepository.addUser(user1)
     val newEmail = "newemail@thing.com"
     userRepository.updateUser(user1.copy(email = newEmail))
@@ -38,7 +38,7 @@ class UserRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun canUpdateMultipleFields() = runTest {
+  fun canUpdateMultipleFields() = runBlocking {
     userRepository.addUser(user1)
     val newEmail = "newemail@thing.com"
     val newName = "newName"
@@ -49,7 +49,7 @@ class UserRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun canDeleteAccountData() = runTest {
+  fun canDeleteAccountData() = runBlocking {
     userRepository.addUser(user1)
     val userData = userRepository.getUserFromId(user1.uid).getOrThrow()
     assertNotNull(userData)
@@ -61,7 +61,7 @@ class UserRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun failToUpdateNonExistingAccount() = runTest {
+  fun failToUpdateNonExistingAccount() = runBlocking {
     userRepository.deleteUser(user1.uid)
     try {
       userRepository.updateUser(user1)

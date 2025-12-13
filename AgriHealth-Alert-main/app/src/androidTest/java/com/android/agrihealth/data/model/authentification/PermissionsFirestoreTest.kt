@@ -5,7 +5,7 @@ import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestoreException
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -19,12 +19,12 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
     authRepository.signOut()
   }
 
-  private fun createAccount(user: User, password: String) = runTest {
+  private fun createAccount(user: User, password: String) = runBlocking {
     authRepository.signUpWithEmailAndPassword(user.email, password, user)
     assertNotNull(auth.currentUser)
   }
 
-  private fun checkFirestorePermissionDenied(result: Result<User>) = runTest {
+  private fun checkFirestorePermissionDenied(result: Result<User>) = runBlocking {
     assertTrue(result.isFailure)
     val exception = result.exceptionOrNull()
     assertNotNull(exception)
@@ -35,7 +35,7 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun canAccessOwnData() = runTest {
+  fun canAccessOwnData() = runBlocking {
     createAccount(user1, password1)
 
     val userData = userRepository.getUserFromId(user1.uid).getOrThrow()
@@ -47,7 +47,7 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun failToAccessDataWhileLoggedOut() = runTest {
+  fun failToAccessDataWhileLoggedOut() = runBlocking {
     createAccount(user1, password1)
     authRepository.signOut()
 
@@ -56,7 +56,7 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun failToAccessOtherUsersData() = runTest {
+  fun failToAccessOtherUsersData() = runBlocking {
     createAccount(user2, password2)
     authRepository.signOut()
     createAccount(user1, password1)
@@ -66,14 +66,14 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun canUpdateName() = runTest {
+  fun canUpdateName() = runBlocking {
     createAccount(user1, password1)
     userRepository.updateUser(
         user1.copy(firstname = "new", lastname = "name", email = "newemail@thing.com"))
   }
 
   @Test
-  fun failToUpdateOwnRole() = runTest {
+  fun failToUpdateOwnRole() = runBlocking {
     createAccount(user1, password1)
 
     try {
@@ -86,7 +86,7 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun failToUpdateOwnUid() = runTest {
+  fun failToUpdateOwnUid() = runBlocking {
     createAccount(user1, password1)
 
     try {
@@ -100,14 +100,14 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun canDeleteAccount() = runTest {
+  fun canDeleteAccount() = runBlocking {
     createAccount(user1, password1)
     val result = authRepository.deleteAccount()
     assertTrue(result.isSuccess)
   }
 
   @Test
-  fun failToDeleteWhileLoggedOut() = runTest {
+  fun failToDeleteWhileLoggedOut() = runBlocking {
     createAccount(user1, password1)
 
     authRepository.signOut()

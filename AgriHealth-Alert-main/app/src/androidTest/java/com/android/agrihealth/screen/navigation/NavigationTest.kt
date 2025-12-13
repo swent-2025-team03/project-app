@@ -25,6 +25,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import java.lang.Thread.sleep
 import junit.framework.TestCase
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -53,7 +54,7 @@ class NavigationTest : FirebaseEmulatorsTest() {
     // Set the content to the Overview screen before each test
     super.setUp()
     val repository = AuthRepositoryProvider.repository
-    runTest { repository.signUpWithEmailAndPassword("navigation@test.ff", "123456", user1) }
+    runBlocking { repository.signUpWithEmailAndPassword("navigation@test.ff", "123456", user1) }
     assert(Firebase.auth.currentUser != null)
     runTest { verifyUser(Firebase.auth.uid!!) }
     composeTestRule.setContent { AgriHealthApp() }
