@@ -16,6 +16,8 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.InMemoryReportRepository
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -37,9 +39,9 @@ import org.junit.Rule
 import org.junit.Test
 
 object PlannerTestReportsData {
-  val user =
+  val farmer =
       Farmer(
-          uid = "user",
+          uid = "farmer",
           firstname = "john",
           lastname = "Testing",
           email = "email",
@@ -48,6 +50,8 @@ object PlannerTestReportsData {
           defaultOffice = null,
           isGoogleAccount = false,
           description = "description")
+  val vet =
+      Vet(uid = "vet", firstname = "josh", lastname = "testes", email = "email", address = null)
   val report1 =
       Report(
           "rep_id1",
@@ -55,12 +59,13 @@ object PlannerTestReportsData {
           "Description 1",
           photoURL = null,
           questionForms = emptyList(),
-          farmerId = user.uid,
-          officeId = "officeId1",
+          farmerId = farmer.uid,
+          officeId = vet.uid,
           status = ReportStatus.PENDING,
           answer = null,
           location = Location(46.9481, 7.4474, "Place name 1"),
-          duration = LocalTime.of(0, 10))
+          duration = LocalTime.of(0, 10),
+          assignedVet = vet.uid)
   val report2 =
       report1.copy(id = "rep_id2", status = ReportStatus.RESOLVED, duration = LocalTime.of(1, 0))
   val report3 =
@@ -91,13 +96,14 @@ class PlannerScreenTest {
 
   private fun setPlannerScreen(
       reportId: String? = null,
+      user: User = PlannerTestReportsData.farmer,
       goBack: () -> Unit = {},
       tabClicked: (Screen) -> Unit = {},
       reportClicked: (String) -> Unit = {},
   ) {
     composeTestRule.setContent {
       PlannerScreen(
-          user = PlannerTestReportsData.user,
+          user = user,
           reportId = reportId,
           goBack = goBack,
           tabClicked = tabClicked,
@@ -152,7 +158,8 @@ class PlannerScreenTest {
 
     runBlocking { reportRepository.addReport(report1) }
 
-    setPlannerScreen(reportId = report1.id, goBack = { goBackCalled = true })
+    setPlannerScreen(
+        reportId = report1.id, user = PlannerTestReportsData.vet, goBack = { goBackCalled = true })
     composeTestRule
         .onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
         .assertIsDisplayed()
@@ -258,7 +265,7 @@ class PlannerScreenTest {
     // Add reports to repository
     runBlocking { reportRepository.addReport(report1) }
 
-    setPlannerScreen(reportId = report1.id)
+    setPlannerScreen(reportId = report1.id, user = PlannerTestReportsData.vet)
 
     composeTestRule.onNodeWithTag(PlannerScreenTestTags.SET_REPORT_DATE_BOX).assertIsDisplayed()
     assertReportNotInDailyScheduler(report1.id)
