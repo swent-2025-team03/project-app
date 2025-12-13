@@ -256,7 +256,7 @@ fun UploadRemoveOfficePhotoSection(
         photoAlreadyPicked = photoAlreadyPicked,
         onPhotoPicked = onPhotoPicked,
         onPhotoRemoved = {
-          onPhotoRemoved
+          onPhotoRemoved()
           initialLoad = false
         })
   }

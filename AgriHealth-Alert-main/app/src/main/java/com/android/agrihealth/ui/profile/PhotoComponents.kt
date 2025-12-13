@@ -69,13 +69,16 @@ fun RemotePhotoDisplay(
     showPlaceHolder: Boolean = false,
     placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
 ) {
+  if (photoURL == null) {
+    if (showPlaceHolder) {
+      placeholder(modifier)
+    }
+    return
+  }
+
   val imageUiState by imageViewModel.uiState.collectAsState()
 
-  LaunchedEffect(photoURL) {
-    if (photoURL != null) {
-      imageViewModel.download(photoURL)
-    }
-  }
+  LaunchedEffect(photoURL) { imageViewModel.download(photoURL) }
 
   when (val currentState = imageUiState) {
     is ImageUIState.DownloadSuccess -> {

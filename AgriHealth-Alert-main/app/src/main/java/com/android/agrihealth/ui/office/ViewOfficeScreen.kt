@@ -127,7 +127,8 @@ private fun ViewOfficeContent(
             photoURL = photoUrl,
             imageViewModel = imageViewModel,
             modifier = Modifier.size(120.dp).clip(CircleShape),
-            contentDescription = "Office photo")
+            contentDescription = "Office photo",
+            showPlaceHolder = true)
 
         OutlinedTextField(
             value = office.name,
