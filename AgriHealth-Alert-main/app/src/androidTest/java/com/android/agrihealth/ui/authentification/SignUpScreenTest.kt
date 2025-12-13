@@ -11,8 +11,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
-import com.android.agrihealth.testhelpers.TestConstants
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -100,7 +100,7 @@ class SignUpScreenTest {
   fun signUpWithEmptyFieldsFails() {
     composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).performClick()
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.EMPTY_FIELDS).isDisplayed()
     }
   }
@@ -135,7 +135,7 @@ class SignUpScreenTest {
 
     composeTestRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).performClick()
 
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.ROLE_NULL).isDisplayed()
     }
   }
@@ -144,7 +144,7 @@ class SignUpScreenTest {
   fun signUpWithMalformedEmailFails() {
     composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
     completeSignUp("bad", "credentials")
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.BAD_EMAIL_FORMAT).isDisplayed()
     }
   }
@@ -153,7 +153,7 @@ class SignUpScreenTest {
   fun signUpWithWeakPasswordFails() {
     composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
     completeSignUp("realvalid@email.gmail", "bad")
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.WEAK_PASSWORD).isDisplayed()
     }
   }
@@ -196,7 +196,7 @@ class SignUpScreenTest {
         .assertIsDisplayed()
         .performClick()
 
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.CNF_PASSWORD_DIFF).isDisplayed()
     }
   }
@@ -206,7 +206,7 @@ class SignUpScreenTest {
     composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
     completeSignUp(user.email, "password1")
 
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.ALREADY_USED_EMAIL).isDisplayed()
     }
   }
@@ -216,7 +216,7 @@ class SignUpScreenTest {
     authRepository.switchConnection(false)
     composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
     completeSignUp(user.email, "password2")
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignUpErrorMsg.TIMEOUT).isDisplayed()
     }
   }

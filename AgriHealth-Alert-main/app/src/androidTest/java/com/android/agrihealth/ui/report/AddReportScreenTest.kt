@@ -27,8 +27,8 @@ import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.testhelpers.fakes.FakeAddReportViewModel
 import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
-import com.android.agrihealth.testhelpers.TestConstants
 import com.android.agrihealth.data.model.user.UserViewModelContract
+import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.ui.common.ImagePickerTestTags
 import com.android.agrihealth.utils.TestAssetUtils.FAKE_PHOTO_FILE
 import com.android.agrihealth.utils.TestAssetUtils.cleanupTestAssets
@@ -99,7 +99,7 @@ class AddReportScreenTest {
 
   // Waits until the dialog is shown
   private fun assertDialogIsShown(testTag: String) {
-    composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeRule.waitUntil(LONG_TIMEOUT) {
       composeRule.onAllNodesWithTag(testTag).fetchSemanticsNodes().isNotEmpty()
     }
   }
@@ -265,7 +265,7 @@ class AddReportScreenTest {
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
         .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
     composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
-    composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeRule.waitUntil(LONG_TIMEOUT) {
       composeRule
           .onAllNodesWithText(AddReportFeedbackTexts.INCOMPLETE)
           .fetchSemanticsNodes()
@@ -334,7 +334,7 @@ class AddReportScreenTest {
     }
 
     fillReportWith("title", "description", true)
-    composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeRule.waitUntil(LONG_TIMEOUT) {
       composeRule.onAllNodesWithText(AddReportDialogTexts.OK).fetchSemanticsNodes().isNotEmpty()
     }
     composeRule.onNodeWithText(AddReportDialogTexts.OK).performClick()
@@ -437,7 +437,7 @@ class AddReportScreenTest {
     composeRule.waitForIdle()
     scrollToUploadSection()
 
-    composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeRule.waitUntil(LONG_TIMEOUT) {
       composeRule
           .onAllNodesWithTag(AddReportScreenTestTags.IMAGE_PREVIEW)
           .fetchSemanticsNodes()

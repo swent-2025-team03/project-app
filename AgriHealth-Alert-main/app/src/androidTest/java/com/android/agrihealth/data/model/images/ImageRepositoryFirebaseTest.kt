@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.util.Log
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
+import com.android.agrihealth.testhelpers.templates.FirebaseTest
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -26,8 +26,8 @@ import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class ImageRepositoryTest : FirebaseEmulatorsTest() {
-  val repository = ImageRepositoryProvider.repository
+class ImageRepositoryFirebaseTest : FirebaseTest() {
+  val repository = ImageRepositoryFirebase()
 
   // For image viewing debugging
   // @get:Rule val composeTestRule = createComposeRule()

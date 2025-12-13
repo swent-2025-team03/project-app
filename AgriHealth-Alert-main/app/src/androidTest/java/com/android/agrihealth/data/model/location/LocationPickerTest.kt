@@ -9,10 +9,11 @@ import androidx.compose.ui.test.performClick
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
-import com.android.agrihealth.testhelpers.TestConstants.DEFAULT_TIMEOUT
-import com.android.agrihealth.testhelpers.TestConstants.LONG_TIMEOUT
+import com.android.agrihealth.testhelpers.templates.BaseUITest
+import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.ui.common.LocationPicker
 import com.android.agrihealth.ui.common.LocationPickerTestTags
+import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.map.MapViewModel
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
@@ -21,8 +22,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class LocationPickerTest {
-  @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+class LocationPickerTest : BaseUITest() {
 
   private lateinit var locationRepository: LocationRepository
 
@@ -47,7 +47,7 @@ class LocationPickerTest {
 
     var confirmClicked = false
 
-    composeTestRule.setContent {
+    setContent {
       LocationPicker(
         mapViewModel = mapViewModel,
         onLatLng = { lat, lng ->
@@ -60,24 +60,14 @@ class LocationPickerTest {
         })
     }
 
-    composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(LocationPickerTestTags.MAP_SCREEN).isDisplayed()
-    }
+    assertNodeIsDisplayed(LocationPickerTestTags.MAP_SCREEN, LONG_TIMEOUT)
 
-    composeTestRule
-        .onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
+    clickOnNode(LocationPickerTestTags.SELECT_LOCATION_BUTTON)
 
-    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
-      composeTestRule.onNodeWithTag(LocationPickerTestTags.CONFIRMATION_PROMPT).isDisplayed()
-    }
-
-    composeTestRule.onNodeWithTag(LocationPickerTestTags.PROMPT_CANCEL_BUTTON).assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
+    assertNodeIsDisplayed(LocationPickerTestTags.CONFIRMATION_PROMPT)
+    assertNodeIsDisplayed(LocationPickerTestTags.PROMPT_CANCEL_BUTTON)
+    
+    clickOnNode(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON)
 
     assertTrue(confirmClicked)
   }

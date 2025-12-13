@@ -28,9 +28,9 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.alert.FakeAlertRepository
+import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeUserRepository
 import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
-import com.android.agrihealth.testhelpers.TestConstants
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
@@ -292,7 +292,7 @@ class MapScreenTest {
 
     val reports = reportRepository.getAllReports(userId)
 
-    composeTestRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(timeoutMillis = DEFAULT_TIMEOUT) {
       val count =
           reports.sumOf { r ->
             val tag = MapScreenTestTags.getTestTagForReportMarker(r.id)

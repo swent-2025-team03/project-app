@@ -13,9 +13,9 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.data.model.alert.FakeAlertRepository
+import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
 import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
-import com.android.agrihealth.testhelpers.TestConstants
 import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -146,12 +146,12 @@ class OverviewScreenTest {
   fun assigneeFilterDropdown_isDisplayedAndSelectable() {
     setVetScreen()
 
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTERS_TOGGLE).isDisplayed()
     }
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTERS_TOGGLE).performClick()
 
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).isDisplayed()
     }
 

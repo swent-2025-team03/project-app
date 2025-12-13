@@ -8,18 +8,17 @@ import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
+import com.android.agrihealth.data.model.authentification.AuthRepositoryFirebase
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
 import com.android.agrihealth.data.model.authentification.verifyUser
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.ui.common.LocationPickerTestTags
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
-import com.android.agrihealth.testhelpers.TestConstants
 import com.android.agrihealth.ui.alert.AlertViewScreenTestTags
 import com.android.agrihealth.ui.authentification.RoleSelectionScreenTestTags
 import com.android.agrihealth.ui.authentification.SignInErrorMsg
@@ -41,6 +40,13 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags
 import com.android.agrihealth.data.model.user.UserViewModel
+import com.android.agrihealth.testhelpers.TestTimeout
+import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
+import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
+import com.android.agrihealth.testhelpers.TestTimeout.SUPER_LONG_TIMEOUT
+import com.android.agrihealth.testhelpers.TestUser.farmer1
+import com.android.agrihealth.testhelpers.TestUser.farmer2
+import com.android.agrihealth.testhelpers.templates.FirebaseUITest
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.first
@@ -55,9 +61,9 @@ import org.junit.rules.TestRule
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class E2ETest : FirebaseEmulatorsTest() {
+class E2ETest : FirebaseUITest() {
 
-  private val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+  //private val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
   @get:Rule
   val ruleChain: TestRule =
@@ -67,18 +73,19 @@ class E2ETest : FirebaseEmulatorsTest() {
                   android.Manifest.permission.ACCESS_COARSE_LOCATION,
                   android.Manifest.permission.POST_NOTIFICATIONS))
           .around(composeTestRule)
+  
+  val authRepository = AuthRepositoryFirebase()
 
   @Before
-  override fun setUp() {
-    super.setUp()
-    runTest { authRepository.signUpWithEmailAndPassword(user1.email, "12345678", user1) }
+  fun setUp() {
+    runTest { authRepository.signUpWithEmailAndPassword(farmer1.email, "12345678", farmer1) }
     authRepository.signOut()
   }
 
   // Important: this function needs to be used each time the screen changes in order to avoid
   // failing the CI tests due to slow rendering
   private fun waitUntilTestTag(tag: String) {
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(tag).isDisplayed()
     }
   }
@@ -145,7 +152,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.waitForIdle()
 
     checkWrongSignIn()
-    completeSignIn(user1.email, "12345678")
+    completeSignIn(farmer1.email, "12345678")
     checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
@@ -155,7 +162,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     goBack()
     goBack()
     checkOverviewScreenIsDisplayed()
-    createReport("Report title", "Report description", user1.defaultOffice ?: "")
+    createReport("Report title", "Report description", farmer1.defaultOffice ?: "")
     clickFirstReportItem()
     reportViewClickViewOnMap()
     mapClickViewReport()
@@ -172,20 +179,20 @@ class E2ETest : FirebaseEmulatorsTest() {
     OfficeRepositoryProvider.set(fakeOfficeRepo)
 
     val office2 =
-        Office(id = user1.linkedOffices.last(), name = "Some Other Office", ownerId = user1.uid)
+        Office(id = farmer1.linkedOffices.last(), name = "Some Other Office", ownerId = farmer1.uid)
 
     runTest { fakeOfficeRepo.addOffice(office2) }
 
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.waitForIdle()
-    completeSignIn(user1.email, "12345678")
+    completeSignIn(farmer1.email, "12345678")
     checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
     goBack()
     checkOverviewScreenIsDisplayed()
     createReport("Report 1", "Description 1", "Deleted Office")
-    createReport("Report 2", "Description 2", user1.linkedOffices.last())
+    createReport("Report 2", "Description 2", farmer1.linkedOffices.last())
 
     waitUntilTestTag(OverviewScreenTestTags.FILTERS_TOGGLE)
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTERS_TOGGLE).performClick()
@@ -238,7 +245,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.waitForIdle()
 
-    completeSignIn(user1.email, "12345678")
+    completeSignIn(farmer1.email, "12345678")
     checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
@@ -424,12 +431,12 @@ class E2ETest : FirebaseEmulatorsTest() {
   private fun readGeneratedCodeFromUi(): String {
     val tag = CodeComposableComponentsTestTags.GENERATE_FIELD
 
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(tag).isDisplayed()
     }
     val nodes = composeTestRule.onAllNodesWithTag(tag)
 
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       nodes.fetchSemanticsNodes().any { semantics ->
         val t = semantics.config.getOrNull(SemanticsProperties.Text)
         t != null && t.isNotEmpty() && t.joinToString("").contains("Generated Code:")
@@ -480,7 +487,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .performTextInput(farmerCode)
     composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.ADD_CODE_BUTTON).performClick()
 
-    composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
+    composeTestRule.waitUntil(SUPER_LONG_TIMEOUT) {
       composeTestRule.onNodeWithText("Office successfully added!").isDisplayed()
     }
     goBack()
@@ -497,7 +504,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performTextInput(vetCode)
     composeTestRule.onNodeWithTag(CodeComposableComponentsTestTags.ADD_CODE_BUTTON).performClick()
-    composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
+    composeTestRule.waitUntil(SUPER_LONG_TIMEOUT) {
       composeTestRule.onNodeWithText("You successfully joined an office").isDisplayed()
     }
 
@@ -505,7 +512,7 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun claimReport(reportName: String) {
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onAllNodes(hasText(reportName)).fetchSemanticsNodes().isNotEmpty()
     }
     composeTestRule.onNodeWithText(reportName).performClick()
@@ -514,7 +521,7 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     val scroll = composeTestRule.onNodeWithTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
     // Ensure claim button exists (poll)
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule
           .onAllNodesWithTag(ReportViewScreenTestTags.CLAIM_BUTTON)
           .fetchSemanticsNodes()
@@ -530,10 +537,10 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun checkAssignedVetDisplayedOnOverview(vet: String) {
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithText(vet).isDisplayed()
     }
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithText(AssignedVetTagTexts.ASSIGNED_TO_CURRENT_VET).isDisplayed()
     }
 
@@ -542,7 +549,7 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     waitUntilTestTag(OverviewScreenTestTags.ASSIGNEE_FILTER)
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).performClick()
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithText(AssigneeFilterTexts.ASSIGNED_TO_ME).isDisplayed()
     }
     composeTestRule.onNodeWithText(AssigneeFilterTexts.ASSIGNED_TO_ME).performClick()
@@ -550,7 +557,7 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     waitUntilTestTag(OverviewScreenTestTags.ASSIGNEE_FILTER)
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).performClick()
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithText(AssigneeFilterTexts.ASSIGNED_TO_OTHERS).isDisplayed()
     }
     composeTestRule.onNodeWithText(AssigneeFilterTexts.ASSIGNED_TO_OTHERS).performClick()
@@ -560,7 +567,7 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     waitUntilTestTag(OverviewScreenTestTags.ASSIGNEE_FILTER)
     composeTestRule.onNodeWithTag(OverviewScreenTestTags.ASSIGNEE_FILTER).performClick()
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithText(AssigneeFilterTexts.UNASSIGNED).isDisplayed()
     }
     composeTestRule.onNodeWithText(AssigneeFilterTexts.UNASSIGNED).performClick()
@@ -617,11 +624,11 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun checkEmailVerification() {
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(VerifyEmailScreenTestTags.WELCOME).isDisplayed()
     }
     runTest { verifyUser(Firebase.auth.uid!!) }
-    composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
+    composeTestRule.waitUntil(SUPER_LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(VerifyEmailScreenTestTags.WELCOME).isNotDisplayed()
     }
   }
@@ -702,7 +709,7 @@ class E2ETest : FirebaseEmulatorsTest() {
   private fun checkLinkedVetIsNotEmpty() {
     waitUntilTestTag(ProfileScreenTestTags.EDIT_BUTTON)
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule
           .onAllNodesWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
           .fetchSemanticsNodes()
@@ -886,7 +893,7 @@ class E2ETest : FirebaseEmulatorsTest() {
     composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).performClick()
     waitUntilTestTag(LocationPickerTestTags.CONFIRMATION_PROMPT)
     composeTestRule.onNodeWithTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON).performClick()
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithText(officeName).isDisplayed()
     }
 
@@ -895,7 +902,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON)
         .assertIsDisplayed()
         .performClick()
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS).isDisplayed()
     }
     composeTestRule
@@ -915,18 +922,18 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.LOCATION_BUTTON))
     composeTestRule.onNodeWithTag(AddReportScreenTestTags.LOCATION_BUTTON).performClick()
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).isDisplayed()
     }
     composeTestRule.onNodeWithTag(LocationPickerTestTags.SELECT_LOCATION_BUTTON).performClick()
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithTag(LocationPickerTestTags.CONFIRMATION_PROMPT).isDisplayed()
     }
     composeTestRule
         .onNodeWithTag(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON)
         .assertIsDisplayed()
         .performClick()
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) { scrollContainer.isDisplayed() }
+    composeTestRule.waitUntil(DEFAULT_TIMEOUT) { scrollContainer.isDisplayed() }
     scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
     composeTestRule
         .onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN)
@@ -945,7 +952,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON)
         .assertIsDisplayed()
         .performClick()
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS).isDisplayed()
     }
     composeTestRule
@@ -955,7 +962,7 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun clickFirstReportItem() {
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)[0].isDisplayed()
     }
     composeTestRule.onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)[0].performClick()
@@ -1030,8 +1037,8 @@ class E2ETest : FirebaseEmulatorsTest() {
   }
 
   private fun checkWrongSignIn() {
-    completeSignIn(user2.email, "12345678")
-    composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
+    completeSignIn(farmer2.email, "12345678")
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithText(SignInErrorMsg.INVALID_CREDENTIALS).isDisplayed()
     }
     composeTestRule.onNodeWithTag(SignInScreenTestTags.EMAIL_FIELD).performTextClearance()
@@ -1040,7 +1047,7 @@ class E2ETest : FirebaseEmulatorsTest() {
 
   // To fix E2E test clicking on random report marker on map (without needing to know its ID)
   fun ComposeTestRule.clickFirstReportMarker() {
-    waitUntil(TestConstants.LONG_TIMEOUT) {
+    waitUntil(LONG_TIMEOUT) {
       onAllNodes(hasTestTagThatStartsWith("reportMarker_")).fetchSemanticsNodes().isNotEmpty()
     }
     val allMarkers = onAllNodes(hasTestTagThatStartsWith("reportMarker_"))

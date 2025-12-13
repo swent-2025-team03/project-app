@@ -1,10 +1,11 @@
 package com.android.agrihealth.ui.authentification
 
 import com.android.agrihealth.data.model.user.UserRepository
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.defaultUser
+import com.android.agrihealth.testhelpers.TestUser.vet1
+import com.android.agrihealth.testhelpers.templates.FirebaseTest
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,7 +21,7 @@ import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class UserViewModelTest : FirebaseEmulatorsTest() {
+class UserViewModelTest : FirebaseTest() {
 
   private val testDispatcher = StandardTestDispatcher()
   private lateinit var repository: FakeUserRepository
@@ -28,8 +29,7 @@ class UserViewModelTest : FirebaseEmulatorsTest() {
   val auth = FirebaseAuth.getInstance()
 
   @Before
-  override fun setUp() {
-    super.setUp()
+  fun setUp() {
     Dispatchers.setMain(testDispatcher)
     repository = FakeUserRepository()
   }
@@ -55,18 +55,18 @@ class UserViewModelTest : FirebaseEmulatorsTest() {
   @Test
   fun loadUserUpdatesStateFlow() = runTest {
     // Given a user in the repository
-    repository.addUser(user3)
+    repository.addUser(vet1)
 
     val viewModel = UserViewModel(repository, auth)
     advanceUntilIdle()
 
     // When loading user role
-    viewModel.loadUser(user3.uid)
+    viewModel.loadUser(vet1.uid)
     advanceUntilIdle()
 
     // Then userRole StateFlow should be updated
     val role = viewModel.user.first()
-    assertEquals(user3, role)
+    assertEquals(vet1, role)
   }
 
   @Test

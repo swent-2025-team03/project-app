@@ -9,8 +9,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
-import com.android.agrihealth.testhelpers.TestConstants
 import org.junit.Rule
 import org.junit.Test
 
@@ -54,7 +54,7 @@ class SignInScreenTest {
   fun signInWithEmptyFieldsFail() {
     composeTestRule.setContent { SignInScreen(signInViewModel = SignInViewModel(authRepository)) }
     composeTestRule.onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON).performClick()
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignInErrorMsg.EMPTY_EMAIL_OR_PASSWORD).isDisplayed()
     }
   }
@@ -63,7 +63,7 @@ class SignInScreenTest {
   fun signInWithUnregisteredAccountFails() {
     composeTestRule.setContent { SignInScreen(signInViewModel = SignInViewModel(authRepository)) }
     completeSignIn("bad", "credentials")
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignInErrorMsg.INVALID_CREDENTIALS).isDisplayed()
     }
   }
@@ -73,7 +73,7 @@ class SignInScreenTest {
     authRepository.switchConnection(false)
     composeTestRule.setContent { SignInScreen(signInViewModel = SignInViewModel(authRepository)) }
     completeSignIn("bad", "credentials")
-    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
       composeTestRule.onNodeWithText(SignInErrorMsg.TIMEOUT).isDisplayed()
     }
   }

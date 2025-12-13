@@ -1,21 +1,27 @@
 package com.android.agrihealth.data.model.authentification
 
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
 import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.data.model.user.UserRepositoryFirestore
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testhelpers.templates.FirebaseTest
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import com.android.agrihealth.testhelpers.TestUser.farmer1
+import com.android.agrihealth.testhelpers.TestUser.farmer2
+import com.android.agrihealth.testhelpers.TestPassword.password1
+import com.android.agrihealth.testhelpers.TestPassword.password2
 
-class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
+class PermissionsFirestoreTest : FirebaseTest() {
   val auth = FirebaseAuth.getInstance()
+  val userRepository = UserRepositoryFirestore()
+  val authRepository = AuthRepositoryFirebase()
 
   @Before
-  override fun setUp() {
-    super.setUp()
+  fun setUp() {
     authRepository.signOut()
   }
 
@@ -36,49 +42,49 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
 
   @Test
   fun canAccessOwnData() = runTest {
-    createAccount(user1, password1)
+    createAccount(farmer1, password1)
 
-    val userData = userRepository.getUserFromId(user1.uid).getOrThrow()
-    assertEquals(user1.uid, userData.uid)
-    assertEquals(user1.firstname, userData.firstname)
-    assertEquals(user1.lastname, userData.lastname)
-    assertEquals(user1.role, userData.role)
-    assertEquals(user1.email, userData.email)
+    val userData = userRepository.getUserFromId(farmer1.uid).getOrThrow()
+    assertEquals(farmer1.uid, userData.uid)
+    assertEquals(farmer1.firstname, userData.firstname)
+    assertEquals(farmer1.lastname, userData.lastname)
+    assertEquals(farmer1.role, userData.role)
+    assertEquals(farmer1.email, userData.email)
   }
 
   @Test
   fun failToAccessDataWhileLoggedOut() = runTest {
-    createAccount(user1, password1)
+    createAccount(farmer1, password1)
     authRepository.signOut()
 
-    val result = userRepository.getUserFromId(user1.uid)
+    val result = userRepository.getUserFromId(farmer1.uid)
     checkFirestorePermissionDenied(result)
   }
 
   @Test
   fun failToAccessOtherUsersData() = runTest {
-    createAccount(user2, password2)
+    createAccount(farmer2, password2)
     authRepository.signOut()
-    createAccount(user1, password1)
+    createAccount(farmer1, password1)
 
-    val result = userRepository.getUserFromId(user2.uid)
+    val result = userRepository.getUserFromId(farmer2.uid)
     checkFirestorePermissionDenied(result)
   }
 
   @Test
   fun canUpdateName() = runTest {
-    createAccount(user1, password1)
+    createAccount(farmer1, password1)
     userRepository.updateUser(
-        user1.copy(firstname = "new", lastname = "name", email = "newemail@thing.com"))
+        farmer1.copy(firstname = "new", lastname = "name", email = "newemail@thing.com"))
   }
 
   @Test
   fun failToUpdateOwnRole() = runTest {
-    createAccount(user1, password1)
+    createAccount(farmer1, password1)
 
     try {
       userRepository.updateUser(
-          Vet(user1.uid, user1.lastname, user1.firstname, user1.email, user1.address))
+          Vet(farmer1.uid, farmer1.lastname, farmer1.firstname, farmer1.email, farmer1.address))
       fail("User should not be able to change their role")
     } catch (e: IllegalArgumentException) {
       assertEquals(e.message, "Permission denied")
@@ -87,12 +93,12 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
 
   @Test
   fun failToUpdateOwnUid() = runTest {
-    createAccount(user1, password1)
+    createAccount(farmer1, password1)
 
     try {
       // A bit counter intuitive, this will return PERMISSION_DENIED because updateUser() tries to
       // getUserFromUid() first, and user is not allowed to get others
-      userRepository.updateUser(user1.copy(uid = "newUid"))
+      userRepository.updateUser(farmer1.copy(uid = "newUid"))
       fail("User should not be able to change their uid")
     } catch (e: FirebaseFirestoreException) {
       assertEquals(e.code, FirebaseFirestoreException.Code.PERMISSION_DENIED)
@@ -101,14 +107,14 @@ class PermissionsFirestoreTest : FirebaseEmulatorsTest() {
 
   @Test
   fun canDeleteAccount() = runTest {
-    createAccount(user1, password1)
+    createAccount(farmer1, password1)
     val result = authRepository.deleteAccount()
     assertTrue(result.isSuccess)
   }
 
   @Test
   fun failToDeleteWhileLoggedOut() = runTest {
-    createAccount(user1, password1)
+    createAccount(farmer1, password1)
 
     authRepository.signOut()
     assertNull(auth.currentUser)

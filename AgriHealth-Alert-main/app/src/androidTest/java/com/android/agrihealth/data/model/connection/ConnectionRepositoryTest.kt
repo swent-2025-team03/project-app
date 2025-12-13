@@ -3,9 +3,17 @@ package com.android.agrihealth.data.model.connection
 import com.android.agrihealth.core.constants.FirestoreSchema.Collections.CONNECT_CODES
 import com.android.agrihealth.core.constants.FirestoreSchema.Collections.FARMER_TO_OFFICE
 import com.android.agrihealth.core.constants.FirestoreSchema.Collections.VET_TO_OFFICE
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
+import com.android.agrihealth.data.model.authentification.AuthRepositoryFirebase
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testhelpers.TestPassword.password1
+import com.android.agrihealth.testhelpers.TestPassword.password2
+import com.android.agrihealth.testhelpers.TestPassword.password3
+import com.android.agrihealth.testhelpers.TestUser.farmer1
+import com.android.agrihealth.testhelpers.TestUser.farmer2
+import com.android.agrihealth.testhelpers.TestUser.office1
+import com.android.agrihealth.testhelpers.TestUser.vet1
+import com.android.agrihealth.testhelpers.templates.FirebaseTest
 import com.android.agrihealth.ui.profile.CodeType
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
@@ -23,30 +31,31 @@ import org.junit.Test
 // Test suite for ConnectionRepository.
 // Uses the Firestore emulator to run integration tests for code generation, claiming, expiration,
 // race conditions, and connection creation.
-class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
+class ConnectionRepositoryTest : FirebaseTest() {
 
   private lateinit var db: FirebaseFirestore
   private lateinit var repo: ConnectionRepository
+
+  val authRepository = AuthRepositoryFirebase()
 
   /**
    * Test setup for ConnectionRepository integration tests.
    * - Calls super.setUp() to initialize Firebase emulator and base test logic.
    * - Initializes Firestore and the repository instance.
-   * - Creates three test users (user1, user2, user3) in Firebase for use as vet and farmers in all
+   * - Creates three test users (farmer1, farmer2, vet1) in Firebase for use as vet and farmers in all
    *   tests. This ensures all tests run with a clean, known state and valid user accounts.
    */
   @Before
-  override fun setUp() = runBlocking {
+  fun setUp() = runBlocking {
     // Initialize Firestore and repository, and create test users for vet and farmers.
-    super.setUp()
     db = FirebaseFirestore.getInstance()
     repo = ConnectionRepository(db, connectionType = FARMER_TO_OFFICE)
     runTest {
-      authRepository.signUpWithEmailAndPassword(user1.email, password1, user1)
+      authRepository.signUpWithEmailAndPassword(farmer1.email, password1, farmer1)
       authRepository.signOut()
-      authRepository.signUpWithEmailAndPassword(user2.email, password2, user2)
+      authRepository.signUpWithEmailAndPassword(farmer2.email, password2, farmer2)
       authRepository.signOut()
-      authRepository.signUpWithEmailAndPassword(user3.email, password3, user3)
+      authRepository.signUpWithEmailAndPassword(vet1.email, password3, vet1)
       OfficeRepositoryProvider.get().addOffice(office1.copy(ownerId = Firebase.auth.uid!!))
     }
   }
@@ -55,7 +64,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   // Verifies that generateCode creates a 6-digit code and writes an OPEN document with expected
   // fields.
   fun generateCode_createsOpenDoc() = runTest {
-    val officeId = user3.officeId!!
+    val officeId = vet1.officeId!!
     val code = repo.generateCode().getOrThrow()
     assertTrue(code.matches(Regex("\\d{6}")))
 
@@ -69,7 +78,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   @Test
   fun generateCodeForOfficeWorks() = runTest {
     repo = ConnectionRepository(db, connectionType = VET_TO_OFFICE)
-    val officeId = user3.officeId!!
+    val officeId = vet1.officeId!!
     val code = repo.generateCode().getOrThrow()
     assertTrue(code.matches(Regex("\\d{6}")))
 
@@ -84,11 +93,11 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   // Verifies that a farmer can claim a code, the repository returns officeId and code is marked
   // USED.
   fun claimCodeAndMarksUsed() = runTest {
-    val officeId = user3.officeId!!
+    val officeId = vet1.officeId!!
     val code = repo.generateCode().getOrThrow()
 
     authRepository.signOut()
-    authRepository.signInWithEmailAndPassword(user1.email, password1)
+    authRepository.signInWithEmailAndPassword(farmer1.email, password1)
 
     val returnedVet = repo.claimCode(code).getOrThrow()
     assertEquals(officeId, returnedVet)
@@ -103,7 +112,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
     val code = repo.generateCode().getOrThrow()
 
     authRepository.signOut()
-    authRepository.signInWithEmailAndPassword(user1.email, password1)
+    authRepository.signInWithEmailAndPassword(farmer1.email, password1)
 
     repo.claimCode(code)
     val res = repo.claimCode(code)
@@ -132,12 +141,12 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
 
     val r1 = async {
       authRepository.signOut()
-      authRepository.signInWithEmailAndPassword(user1.email, password1)
+      authRepository.signInWithEmailAndPassword(farmer1.email, password1)
       repo.claimCode(code)
     }
     val r2 = async {
       authRepository.signOut()
-      authRepository.signInWithEmailAndPassword(user2.email, password2)
+      authRepository.signInWithEmailAndPassword(farmer2.email, password2)
       repo.claimCode(code)
     }
     val results = awaitAll(r1, r2)
@@ -168,7 +177,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
         .document(code)
         .set(
             mapOf(
-                "code" to code, "officeId" to user3.uid, "status" to "OPEN"
+                "code" to code, "officeId" to vet1.uid, "status" to "OPEN"
                 // createdAt ABSENT
                 ))
         .await()
@@ -230,7 +239,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
         .set(
             mapOf(
                 "code" to "111111",
-                "officeId" to user3.officeId!!,
+                "officeId" to vet1.officeId!!,
                 "status" to "OPEN",
                 "createdAt" to Timestamp.now()))
         .await()
@@ -240,7 +249,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
         .set(
             mapOf(
                 "code" to "222222",
-                "officeId" to user3.officeId!!,
+                "officeId" to vet1.officeId!!,
                 "status" to "USED",
                 "createdAt" to Timestamp.now()))
         .await()
@@ -250,7 +259,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
         .set(
             mapOf(
                 "code" to "333333",
-                "officeId" to user3.officeId!!,
+                "officeId" to vet1.officeId!!,
                 "status" to "OPEN",
                 "createdAt" to Timestamp.now()))
         .await()

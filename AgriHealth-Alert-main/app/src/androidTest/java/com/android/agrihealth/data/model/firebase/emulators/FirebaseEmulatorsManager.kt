@@ -5,6 +5,8 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import com.google.firebase.functions.functions
 import com.google.firebase.storage.storage
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -32,6 +34,16 @@ object FirebaseEmulatorsManager {
 
   lateinit var environment: FirebaseEnvironment
     private set
+
+  private val firestoreEndpoint by lazy {
+    "http://${environment.host}:${environment.firestorePort}/emulator/v1/projects/agrihealth-alert/databases/(default)/documents"
+  }
+
+  private val authEndpoint by lazy {
+    "http://${environment.host}:${environment.authPort}/emulator/v1/projects/agrihealth-alert/accounts"
+  }
+
+  val httpClient = OkHttpClient()
 
   /**
    * Initializes Firebase emulators, trying locally and scanning the network in case the Android
@@ -62,6 +74,19 @@ object FirebaseEmulatorsManager {
     }
 
     emulatorInitialized = true
+  }
+
+  private fun clearEmulator(endpoint: String) {
+    val client = httpClient
+    val request = Request.Builder().url(endpoint).delete().build()
+    val response = client.newCall(request).execute()
+
+    assert(response.isSuccessful) { "Failed to clear emulator at $endpoint" }
+  }
+
+  fun clearEmulators() {
+    clearEmulator(firestoreEndpoint)
+    clearEmulator(authEndpoint)
   }
 
   fun pingEmulator(host: String, port: Int, timeoutMs: Int = 1000): Boolean {

@@ -6,8 +6,8 @@ import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import com.android.agrihealth.data.model.office.Office
+import com.android.agrihealth.testhelpers.TestTimeout.SHORT_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
-import com.android.agrihealth.testhelpers.TestConstants
 import com.android.agrihealth.ui.common.resolver.OfficeName
 import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
 import com.android.agrihealth.ui.common.resolver.rememberOfficeName
@@ -41,7 +41,7 @@ class OfficeNameTest {
   fun showsNoneOfficeWhenUidIsNull() {
     setOfficeNameContent(null)
 
-    composeRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
+    composeRule.waitUntil(SHORT_TIMEOUT) {
       composeRule.onNodeWithText("Not assigned to an office").isDisplayed()
     }
   }
@@ -50,7 +50,7 @@ class OfficeNameTest {
   fun showsOfficeNameWhenOfficeExists() {
     setOfficeNameContent("office")
 
-    composeRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
+    composeRule.waitUntil(SHORT_TIMEOUT) {
       composeRule.onNodeWithText("name").isDisplayed()
     }
   }
@@ -59,7 +59,7 @@ class OfficeNameTest {
   fun showsDeletedOfficeWhenOfficeDoesNotExist() {
     setOfficeNameContent("off1ce")
 
-    composeRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
+    composeRule.waitUntil(SHORT_TIMEOUT) {
       composeRule.onNodeWithText("Deleted office").isDisplayed()
     }
   }
@@ -68,7 +68,7 @@ class OfficeNameTest {
   fun rememberOfficeName_showsNoneOfficeWhenIdIsNull() {
     setContentWithRemember(null)
 
-    composeRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
+    composeRule.waitUntil(SHORT_TIMEOUT) {
       composeRule.onNodeWithText("Not assigned to an office").isDisplayed()
     }
   }
@@ -77,7 +77,7 @@ class OfficeNameTest {
   fun rememberOfficeName_showsDeletedOfficeWhenOfficeMissing() {
     setContentWithRemember("missingOffice")
 
-    composeRule.waitUntil(TestConstants.SHORT_TIMEOUT) {
+    composeRule.waitUntil(SHORT_TIMEOUT) {
       composeRule.onNodeWithText("Deleted office").isDisplayed()
     }
   }

@@ -1,6 +1,9 @@
 package com.android.agrihealth.data.model.authentification
 
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
+import com.android.agrihealth.data.model.user.UserRepositoryFirestore
+import com.android.agrihealth.testhelpers.TestPassword.password1
+import com.android.agrihealth.testhelpers.TestUser.farmer1
+import com.android.agrihealth.testhelpers.templates.FirebaseTest
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -9,52 +12,54 @@ import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 
-class UserRepositoryFirestoreTest : FirebaseEmulatorsTest() {
+class UserRepositoryFirestoreTest : FirebaseTest() {
+
+  val authRepository = AuthRepositoryFirebase()
+  val userRepository = UserRepositoryFirestore()
 
   @Before
-  override fun setUp() {
-    super.setUp()
-    runTest { authRepository.signUpWithEmailAndPassword(user1.email, password1, user1) }
+  fun setUp() {
+    runTest { authRepository.signUpWithEmailAndPassword(farmer1.email, password1, farmer1) }
   }
 
   @Test
   fun canGetCorrectUserData() = runTest {
-    userRepository.addUser(user1)
-    val userData = userRepository.getUserFromId(user1.uid).getOrThrow()
-    assertEquals(user1.uid, userData.uid)
-    assertEquals(user1.firstname, userData.firstname)
-    assertEquals(user1.lastname, userData.lastname)
-    assertEquals(user1.role, userData.role)
-    assertEquals(user1.email, userData.email)
+    userRepository.addUser(farmer1)
+    val userData = userRepository.getUserFromId(farmer1.uid).getOrThrow()
+    assertEquals(farmer1.uid, userData.uid)
+    assertEquals(farmer1.firstname, userData.firstname)
+    assertEquals(farmer1.lastname, userData.lastname)
+    assertEquals(farmer1.role, userData.role)
+    assertEquals(farmer1.email, userData.email)
   }
 
   @Test
   fun canUpdateSingleField() = runTest {
-    userRepository.addUser(user1)
+    userRepository.addUser(farmer1)
     val newEmail = "newemail@thing.com"
-    userRepository.updateUser(user1.copy(email = newEmail))
-    val userData = userRepository.getUserFromId(user1.uid).getOrThrow()
+    userRepository.updateUser(farmer1.copy(email = newEmail))
+    val userData = userRepository.getUserFromId(farmer1.uid).getOrThrow()
     assertEquals(userData.email, newEmail)
   }
 
   @Test
   fun canUpdateMultipleFields() = runTest {
-    userRepository.addUser(user1)
+    userRepository.addUser(farmer1)
     val newEmail = "newemail@thing.com"
     val newName = "newName"
-    userRepository.updateUser(user1.copy(email = newEmail, firstname = newName))
-    val userData = userRepository.getUserFromId(user1.uid).getOrThrow()
+    userRepository.updateUser(farmer1.copy(email = newEmail, firstname = newName))
+    val userData = userRepository.getUserFromId(farmer1.uid).getOrThrow()
     assertEquals(userData.email, newEmail)
     assertEquals(userData.firstname, newName)
   }
 
   @Test
   fun canDeleteAccountData() = runTest {
-    userRepository.addUser(user1)
-    val userData = userRepository.getUserFromId(user1.uid).getOrThrow()
+    userRepository.addUser(farmer1)
+    val userData = userRepository.getUserFromId(farmer1.uid).getOrThrow()
     assertNotNull(userData)
-    userRepository.deleteUser(user1.uid)
-    val result = userRepository.getUserFromId(user1.uid).exceptionOrNull()
+    userRepository.deleteUser(farmer1.uid)
+    val result = userRepository.getUserFromId(farmer1.uid).exceptionOrNull()
     assertNotNull(result) // not a success
     assertTrue(result is NullPointerException)
     assertEquals(result?.message, "No such user found")
@@ -62,9 +67,9 @@ class UserRepositoryFirestoreTest : FirebaseEmulatorsTest() {
 
   @Test
   fun failToUpdateNonExistingAccount() = runTest {
-    userRepository.deleteUser(user1.uid)
+    userRepository.deleteUser(farmer1.uid)
     try {
-      userRepository.updateUser(user1)
+      userRepository.updateUser(farmer1)
       fail("Expected FirebaseFirestoreException, but code ran fine")
     } catch (e: NullPointerException) {
       assertEquals(e.message, "No such user found")
