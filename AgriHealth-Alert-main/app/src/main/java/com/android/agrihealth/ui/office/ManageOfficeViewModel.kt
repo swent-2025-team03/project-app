@@ -1,7 +1,6 @@
 package com.android.agrihealth.ui.office
 
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.images.ImageUIState
@@ -10,7 +9,6 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.user.UserViewModelContract
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -95,47 +93,43 @@ class ManageOfficeViewModel(
         }
       }
 
-  fun updateOffice(
+  suspend fun updateOffice(
       onSuccess: () -> Unit = {},
       onError: (Throwable) -> Unit = {},
       newAddress: Location? = null
-  ) =
-      viewModelScope.launch {
-        var uploadedPath = _uiState.value.uploadedImagePath
-        _uiState.value.photoUri?.let { uri ->
-          imageViewModel.upload(uri)
-          val resultState =
-              imageViewModel.uiState.first {
-                it is ImageUIState.UploadSuccess || it is ImageUIState.Error
-              }
-          when (resultState) {
-            is ImageUIState.UploadSuccess -> {
-              uploadedPath = resultState.path
-              Log.d("ManageOfficeViewModel", "uploadedPath = $uploadedPath")
-              _uiState.value = _uiState.value.copy(uploadedImagePath = resultState.path)
+  ) {
+    try {
+      val office = _uiState.value.office ?: return
+      var uploadedPath = _uiState.value.uploadedImagePath
 
-              val office = _uiState.value.office ?: return@launch
-              val updatedOffice =
-                  office.copy(
-                      name = _uiState.value.editableName,
-                      description = _uiState.value.editableDescription,
-                      address = newAddress,
-                      photoUrl = uploadedPath)
-              officeRepository.updateOffice(updatedOffice)
-              _uiState.value = _uiState.value.copy(office = updatedOffice)
-              onSuccess()
-            }
-            is ImageUIState.Error -> {
-              onError(resultState.e)
-              return@launch
-            }
-            else -> {
-              onError(IllegalStateException(AddReportFeedbackTexts.UNKNOWN))
-              return@launch
-            }
-          }
-        }
+      _uiState.value.photoUri?.let { uri ->
+        uploadedPath = imageViewModel.uploadAndWait(uri)
+        _uiState.value = _uiState.value.copy(uploadedImagePath = uploadedPath)
       }
+
+      val updatedOffice =
+          office.copy(
+              name = _uiState.value.editableName,
+              description = _uiState.value.editableDescription,
+              address = newAddress,
+              photoUrl = uploadedPath)
+      officeRepository.updateOffice(updatedOffice)
+      _uiState.value = _uiState.value.copy(office = updatedOffice)
+      onSuccess()
+    } catch (e: Throwable) {
+      onError(e)
+    }
+  }
+
+  suspend fun ImageViewModel.uploadAndWait(uri: Uri): String {
+    upload(uri) // start the upload
+    val result = uiState.first { it is ImageUIState.UploadSuccess || it is ImageUIState.Error }
+    return when (result) {
+      is ImageUIState.UploadSuccess -> result.path
+      is ImageUIState.Error -> throw result.e
+      else -> throw IllegalStateException("Unexpected state")
+    }
+  }
 
   fun setPhoto(uri: Uri?) {
     _uiState.value = _uiState.value.copy(photoUri = uri)

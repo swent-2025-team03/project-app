@@ -48,6 +48,7 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.profile.RemotePhotoDisplay
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.utils.ImagePickerDialog
+import kotlinx.coroutines.launch
 
 object ManageOfficeScreenTestTags {
   const val CREATE_OFFICE_BUTTON = "CreateOfficeButton"
@@ -182,8 +183,9 @@ fun ManageOfficeScreen(
 
                   Spacer(modifier = Modifier.height(8.dp))
 
+                  val scope = rememberCoroutineScope()
                   Button(
-                      onClick = { manageOfficeViewModel.updateOffice() },
+                      onClick = { scope.launch { manageOfficeViewModel.updateOffice() } },
                       modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),
                   ) {
                     Text("Save Changes")
