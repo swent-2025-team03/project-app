@@ -82,6 +82,7 @@ jobs:
 
       - name: Run tests
         run: ./gradlew check --parallel --build-cache
+        
       - name: Free up disk space
         run: |
           df -h
