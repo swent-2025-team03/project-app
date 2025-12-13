@@ -39,7 +39,6 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.rememberCameraPositionState
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun MapScreen(
@@ -71,11 +70,9 @@ fun MapScreen(
   // Initial camera state
   val snackbarHostState = remember { SnackbarHostState() }
 
-  LaunchedEffect(Unit) {
-    mapViewModel.events.collectLatest { event: MapEvent ->
-      when (event) {
-        MapEvent.LoadingLocation -> snackbarHostState.showSnackbar("Loading location...")
-      }
+  LaunchedEffect(uiState.isLoadingLocation) {
+    if (uiState.isLoadingLocation) {
+      snackbarHostState.showSnackbar("Loading location...")
     }
   }
 
@@ -83,7 +80,14 @@ fun MapScreen(
   val mapInitialZoom by mapViewModel.zoom.collectAsState()
   val cameraPositionState = rememberCameraPositionState {}
 
-  if (forceStartingPosition) mapViewModel.setStartingLocation(mapInitialLocation)
+  var forcedOnce by remember { mutableStateOf(false) }
+
+  LaunchedEffect(forceStartingPosition) {
+    if (forceStartingPosition && !forcedOnce) {
+      forcedOnce = true
+      mapViewModel.setStartingLocation(mapViewModel.startingLocation.value)
+    }
+  }
 
   LaunchedEffect(mapInitialLocation) {
     cameraPositionState.position =

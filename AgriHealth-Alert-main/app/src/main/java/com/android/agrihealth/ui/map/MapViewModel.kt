@@ -19,15 +19,12 @@ import com.android.agrihealth.data.model.location.toLatLng
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
+import com.android.agrihealth.ui.loading.withLoadingState
 import com.google.android.gms.maps.model.LatLng
 import java.util.Locale
 import kotlin.collections.firstOrNull
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
@@ -37,14 +34,11 @@ import kotlinx.coroutines.withTimeoutOrNull
 data class MapUIState(
     val reports: List<SpiderifiedReport> = emptyList(),
     val alerts: List<Alert> = emptyList(),
-    val geocodedAddress: String? = null
+    val geocodedAddress: String? = null,
+    val isLoadingLocation: Boolean = false,
 )
 
 data class SpiderifiedReport(val report: Report, val position: LatLng, val center: LatLng)
-
-sealed class MapEvent {
-  object LoadingLocation : MapEvent()
-}
 
 class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
@@ -70,11 +64,6 @@ class MapViewModel(
   private fun Report?.select() {
     _selectedReport.value = this
   }
-
-  private val _events =
-      MutableSharedFlow<MapEvent>(
-          replay = 0, extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-  val events: SharedFlow<MapEvent> = _events.asSharedFlow()
 
   private val _startingLocation =
       MutableStateFlow(startingPosition ?: Location(46.9481, 7.4474)) // Bern
@@ -157,21 +146,34 @@ class MapViewModel(
       viewModelScope.launch {
         _zoom.value = 12f
 
-        _events.emit(MapEvent.LoadingLocation)
+        // Prevent overlapping location fetches
+        if (_uiState.value.isLoadingLocation) return@launch
 
-        if (locationViewModel.hasLocationPermissions()) {
-          if (useCurrentLocation) {
-            locationViewModel.getCurrentLocation()
-          } else {
-            locationViewModel.getLastKnownLocation()
-          }
-          val gpsLocation =
-              withTimeoutOrNull(3_000) {
-                locationViewModel.locationState.firstOrNull { it != null }
-              }
-
-          _startingLocation.value = gpsLocation ?: getLocationFromUserAddress() ?: return@launch
+        // If no permissions, fallback to user address without toggling loading
+        if (!locationViewModel.hasLocationPermissions()) {
+          val fallback = getLocationFromUserAddress()
+          if (fallback != null) _startingLocation.value = fallback
+          return@launch
         }
+
+        // Permissions granted: toggle isLoadingLocation while fetching GPS
+        _uiState.withLoadingState(
+            applyLoading = { s: MapUIState, loading: Boolean ->
+              s.copy(isLoadingLocation = loading)
+            }) {
+              if (useCurrentLocation) {
+                locationViewModel.getCurrentLocation()
+              } else {
+                locationViewModel.getLastKnownLocation()
+              }
+              val gpsLocation =
+                  withTimeoutOrNull(3_000) {
+                    locationViewModel.locationState.firstOrNull { it != null }
+                  }
+
+              _startingLocation.value =
+                  gpsLocation ?: getLocationFromUserAddress() ?: return@withLoadingState
+            }
       }
     }
   }
