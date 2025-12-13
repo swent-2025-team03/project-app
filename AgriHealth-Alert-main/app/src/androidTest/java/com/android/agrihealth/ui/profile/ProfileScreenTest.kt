@@ -234,7 +234,7 @@ class ProfileScreenTest {
 
     composeTestRule.setContent {
       PlannerScreen(
-          user = PlannerTestReportsData.user,
+          user = PlannerTestReportsData.farmer,
           reportId = null,
           goBack = {},
           tabClicked = {},

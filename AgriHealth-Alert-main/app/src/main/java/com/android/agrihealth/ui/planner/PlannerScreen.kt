@@ -127,7 +127,7 @@ fun PlannerScreen(
   }
 
   BackHandler {
-    if (plannerVM.isReportDateSet()) {
+    if (plannerVM.isReportDateSet() || !uiState.isAllowedToSetDate) {
       goBack()
     } else {
       if (uiState.isUnsavedAlertShowing) {
@@ -138,7 +138,7 @@ fun PlannerScreen(
     }
   }
 
-  if (uiState.isUnsavedAlertShowing) {
+  if (uiState.isUnsavedAlertShowing && uiState.isAllowedToSetDate) {
     UnsavedChangesAlert(
         onGoBack = {
           plannerVM.setIsUnsavedAlertShowing(false)
@@ -221,7 +221,7 @@ fun PlannerScreen(
                     reportClicked(it)
                   }
             }
-            if (reportId != null) {
+            if (reportId != null && uiState.isAllowedToSetDate) {
 
               SetReportDateBox(
                   modifier = Modifier.align(Alignment.BottomEnd),

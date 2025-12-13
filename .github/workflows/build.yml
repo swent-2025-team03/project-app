@@ -82,7 +82,6 @@ jobs:
 
       - name: Run tests
         run: ./gradlew check --parallel --build-cache
-
       - name: Free up disk space
         run: |
           df -h
@@ -91,7 +90,7 @@ jobs:
           sudo rm -rf /usr/share/swift
           sudo apt-get clean
           df -h
-          
+
       - name: Run instrumentation tests
         timeout-minutes: 60
         uses: reactivecircus/android-emulator-runner@v2

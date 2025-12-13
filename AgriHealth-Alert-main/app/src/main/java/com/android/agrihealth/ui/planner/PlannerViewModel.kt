@@ -44,6 +44,7 @@ data class PlannerUIState(
     val setTime: LocalTime = LocalTime.now(),
     val setDuration: LocalTime = LocalTime.of(1, 0),
     val reportToSetTheDateFor: Report? = null,
+    val isAllowedToSetDate: Boolean = false,
 
     // Unsaved Changes
     val isUnsavedAlertShowing: Boolean = false,
@@ -59,12 +60,17 @@ class PlannerViewModel(
 
   suspend fun loadReports() {
     _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
-      val user = _uiState.value.user
-      val reports = reportRepository.getAllReports(user.uid).groupBy { it.startTime?.toLocalDate() }
-      _uiState.value =
-          _uiState.value.copy(
-              reports = reports,
-              selectedDateReports = reports[_uiState.value.selectedDate] ?: emptyList())
+      try {
+        val user = _uiState.value.user
+        val reports =
+            reportRepository.getAllReports(user.uid).groupBy { it.startTime?.toLocalDate() }
+        _uiState.value =
+            _uiState.value.copy(
+                reports = reports,
+                selectedDateReports = reports[_uiState.value.selectedDate] ?: emptyList())
+      } catch (_: Exception) {
+        _uiState.value = _uiState.value.copy(reports = emptyMap())
+      }
     }
   }
 
@@ -126,6 +132,8 @@ class PlannerViewModel(
       return null
     }
     val report = _uiState.value.reports.values.flatten().find { it.id == reportId }
+    if (report?.assignedVet == _uiState.value.user.uid)
+        _uiState.value = _uiState.value.copy(isAllowedToSetDate = true)
 
     _uiState.value = _uiState.value.copy(reportToSetTheDateFor = report)
     return report
