@@ -31,6 +31,10 @@ class CodesViewModel(
   val generatedCode: StateFlow<String?> = _generatedCode
   val claimMessage: StateFlow<String?> = _claimMessage
 
+  fun resetClaimMessage() {
+    _claimMessage.value = null
+  }
+
   fun generateCode() {
     val currentUser = userViewModel.user.value
     val vet = currentUser as? Vet ?: return
