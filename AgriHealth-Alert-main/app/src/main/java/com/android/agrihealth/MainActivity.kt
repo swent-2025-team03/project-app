@@ -44,7 +44,6 @@ import com.android.agrihealth.data.model.device.notifications.NotificationsPermi
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.ui.common.LocationPicker
 import com.android.agrihealth.data.model.user.copyCommon
-import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.alert.AlertViewModel
 import com.android.agrihealth.ui.alert.AlertViewScreen
 import com.android.agrihealth.ui.authentification.ResetPasswordScreen
@@ -90,7 +89,7 @@ class MainActivity : ComponentActivity() {
       AgriHealthAppTheme {
         // A surface container using the 'background' color from the theme
         Surface(
-            modifier = Modifier.fillMaxSize().semantics { testTag = C.Tag.main_screen_container },
+            modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background) {
               AgriHealthApp()
             }
