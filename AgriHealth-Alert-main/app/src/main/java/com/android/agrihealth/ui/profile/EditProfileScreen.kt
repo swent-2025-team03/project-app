@@ -1,5 +1,11 @@
 package com.android.agrihealth.ui.profile
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -19,7 +26,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
@@ -42,6 +52,17 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
+import com.android.agrihealth.ui.utils.ImagePickerDialog
+import com.mr0xf00.easycrop.CircleCropShape
+import com.mr0xf00.easycrop.CropError
+import com.mr0xf00.easycrop.CropResult
+import com.mr0xf00.easycrop.CropperStyle
+import com.mr0xf00.easycrop.ImageCropper
+import com.mr0xf00.easycrop.crop
+import com.mr0xf00.easycrop.images.ImageSrc
+import com.mr0xf00.easycrop.rememberImageCropper
+import com.mr0xf00.easycrop.ui.ImageCropperDialog
+import kotlinx.coroutines.launch
 
 enum class CodeType {
   FARMER,
@@ -66,6 +87,7 @@ object EditProfileScreenTestTags {
   const val SAVE_BUTTON = "SaveButton"
   const val PASSWORD_BUTTON = "PasswordButton"
   const val COPY_CODE_BUTTON = "CopyActiveCodeListElementButton"
+  const val EDIT_PROFILE_PICTURE_BUTTON = "EditProfilePictureButton"
 
   fun dropdownTag(type: String) = "ACTIVE_CODES_DROPDOWN_$type"
 
@@ -125,6 +147,13 @@ fun EditProfileScreen(
   var expandedVetDropdown by remember { mutableStateOf(false) }
   var collected by remember { mutableStateOf(user.collected) }
 
+  var showPhotoPickerDialog by remember { mutableStateOf(false) }
+  var showPhotoCropper by remember { mutableStateOf(false) }
+  var chosenUri : Uri? by remember {mutableStateOf(null)}
+  val imageCropper = rememberImageCropper()
+  val scope = rememberCoroutineScope()
+  val context = LocalContext.current
+
   Scaffold(
       topBar = {
         TopAppBar(
@@ -144,20 +173,46 @@ fun EditProfileScreen(
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
         Column(
             modifier =
-                Modifier.padding(innerPadding)
-                    .padding(16.dp)
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
+                Modifier
+                  .padding(innerPadding)
+                  .padding(16.dp)
+                  .fillMaxSize()
+                  .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
 
-              // Profile Image Placeholder
+          Box(
+            modifier = Modifier.size(120.dp),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(
+              imageVector = Icons.Default.AccountCircle,
+              contentDescription = "Profile Picture",
+              modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .testTag(PROFILE_IMAGE),
+              tint = MaterialTheme.colorScheme.primary
+            )
+
+            // Camera icon overlay
+            FloatingActionButton(
+              onClick = { showPhotoPickerDialog = true },
+              modifier = Modifier
+                .size(40.dp)
+                .align(Alignment.BottomEnd)
+                .testTag(EditProfileScreenTestTags.EDIT_PROFILE_PICTURE_BUTTON),
+              containerColor = MaterialTheme.colorScheme.primaryContainer,
+              contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ) {
               Icon(
-                  imageVector = Icons.Default.AccountCircle,
-                  contentDescription = "Profile Picture",
-                  modifier = Modifier.size(120.dp).clip(CircleShape).testTag(PROFILE_IMAGE),
-                  tint = MaterialTheme.colorScheme.primary)
+                imageVector = Icons.Default.CameraAlt,
+                contentDescription = "Edit profile picture",
+                modifier = Modifier.size(20.dp)
+              )
+            }
+          }
 
               Spacer(modifier = Modifier.height(24.dp))
 
@@ -167,7 +222,9 @@ fun EditProfileScreen(
                   onValueChange = { firstname = it },
                   label = { Text("First Name") },
                   modifier =
-                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.FIRSTNAME_FIELD))
+                      Modifier
+                        .fillMaxWidth()
+                        .testTag(EditProfileScreenTestTags.FIRSTNAME_FIELD))
 
               Spacer(modifier = Modifier.height(12.dp))
 
@@ -177,7 +234,9 @@ fun EditProfileScreen(
                   onValueChange = { lastname = it },
                   label = { Text("Last Name") },
                   modifier =
-                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LASTNAME_FIELD))
+                      Modifier
+                        .fillMaxWidth()
+                        .testTag(EditProfileScreenTestTags.LASTNAME_FIELD))
 
               Spacer(modifier = Modifier.height(12.dp))
 
@@ -187,7 +246,9 @@ fun EditProfileScreen(
                   onValueChange = { description = it },
                   label = { Text("Description") },
                   modifier =
-                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.DESCRIPTION_FIELD))
+                      Modifier
+                        .fillMaxWidth()
+                        .testTag(EditProfileScreenTestTags.DESCRIPTION_FIELD))
 
               if (!user.isGoogleAccount) {
                 Spacer(modifier = Modifier.height(12.dp))
@@ -200,7 +261,9 @@ fun EditProfileScreen(
                     enabled = true,
                     readOnly = true,
                     modifier =
-                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
+                        Modifier
+                          .fillMaxWidth()
+                          .testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     trailingIcon = {
                       IconButton(
@@ -232,12 +295,16 @@ fun EditProfileScreen(
                     }
                   },
                   modifier =
-                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
+                      Modifier
+                        .fillMaxWidth()
+                        .testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
               Button(
                   onClick = onChangeLocation,
                   enabled = user !is Vet || isOwner,
                   modifier =
-                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LOCATION_BUTTON)) {
+                      Modifier
+                        .fillMaxWidth()
+                        .testTag(EditProfileScreenTestTags.LOCATION_BUTTON)) {
                     Text("Change Location")
                   }
 
@@ -282,9 +349,10 @@ fun EditProfileScreen(
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVetDropdown)
                           },
                           modifier =
-                              Modifier.menuAnchor()
-                                  .fillMaxWidth()
-                                  .testTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN))
+                              Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                                .testTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN))
 
                       ExposedDropdownMenu(
                           expanded = expandedVetDropdown,
@@ -342,11 +410,46 @@ fun EditProfileScreen(
                     updatedUser?.let { onSave(it) }
                   },
                   modifier =
-                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.SAVE_BUTTON)) {
+                      Modifier
+                        .fillMaxWidth()
+                        .testTag(EditProfileScreenTestTags.SAVE_BUTTON)) {
                     Text("Save Changes")
                   }
             }
       }
+
+  if (showPhotoPickerDialog) {
+    ImagePickerDialog(
+      onDismiss = { showPhotoPickerDialog = false },
+      onImageSelected = { uri ->
+        chosenUri = uri
+        scope.launch {
+          val bitmap = uri.toBitmap(context).asImageBitmap()
+          val result = imageCropper.crop(bmp = bitmap)
+          when (result) {
+            is CropResult.Cancelled -> { TODO("When cancelled") }
+            is CropError -> { TODO("Handle error") }
+            is CropResult.Success -> { TODO("Upload photo") }
+          }
+        }
+      }
+    )
+  }
+
+  val cropState = imageCropper.cropState
+  if(cropState != null) {
+    ImageCropperDialog(state = cropState)
+  }
+
+
+
+}
+
+// Created with the help of an LLM
+@RequiresApi(Build.VERSION_CODES.P)
+fun Uri.toBitmap(context: Context): Bitmap {
+  val source = ImageDecoder.createSource(context.contentResolver, this)
+  return ImageDecoder.decodeBitmap(source)
 }
 
 /*
@@ -402,10 +505,11 @@ fun ActiveCodeList(type: CodeType, codes: List<String>, snackbarHostState: Snack
     // Title bar
     Row(
         modifier =
-            Modifier.fillMaxWidth()
-                .clickable { expanded = !expanded }
-                .padding(horizontal = 12.dp, vertical = 10.dp)
-                .testTag(EditProfileScreenTestTags.dropdownTag(type.name)),
+            Modifier
+              .fillMaxWidth()
+              .clickable { expanded = !expanded }
+              .padding(horizontal = 12.dp, vertical = 10.dp)
+              .testTag(EditProfileScreenTestTags.dropdownTag(type.name)),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically) {
           Text(text = type.displayName())
@@ -418,10 +522,14 @@ fun ActiveCodeList(type: CodeType, codes: List<String>, snackbarHostState: Snack
 
     // Codes
     if (expanded) {
-      Column(modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth()) {
+      Column(modifier = Modifier
+        .padding(vertical = 4.dp)
+        .fillMaxWidth()) {
         codes.forEach { code ->
           Row(
-              modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
               verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = code,
@@ -455,7 +563,9 @@ fun CopyToClipboardButton(toCopy: String, snackbarHostState: SnackbarHostState) 
         clipboardManager.setText(AnnotatedString(toCopy))
         copied = true
       },
-      modifier = Modifier.size(32.dp).testTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)) {
+      modifier = Modifier
+        .size(32.dp)
+        .testTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)) {
         Icon(
             imageVector = Icons.Default.ContentCopy,
             contentDescription = "Copy to clipboard",
