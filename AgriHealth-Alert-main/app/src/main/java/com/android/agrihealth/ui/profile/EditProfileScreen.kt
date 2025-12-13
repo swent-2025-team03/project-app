@@ -42,6 +42,7 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
+import kotlinx.coroutines.launch
 
 enum class CodeType {
   FARMER,
@@ -314,32 +315,37 @@ fun EditProfileScreen(
 
               Spacer(modifier = Modifier.weight(1f))
 
+              val scope = rememberCoroutineScope()
               // Save Changes Button
               Button(
                   onClick = {
                     val updatedDescription = description.ifBlank { null }
                     // Construct updated user object
-                    val updatedUser =
-                        when (userRole) {
-                          UserRole.FARMER ->
-                              (user as? Farmer)?.copy(
+                    scope.launch {
+                      if (userRole == UserRole.VET) {
+                        manageOfficeVm.updateOffice(newAddress = pickedLocation)
+                      }
+                      val updatedUser =
+                          when (userRole) {
+                            UserRole.FARMER ->
+                                (user as? Farmer)?.copy(
+                                    firstname = firstname,
+                                    lastname = lastname,
+                                    address = pickedLocation,
+                                    defaultOffice = selectedDefaultOffice,
+                                    description = updatedDescription,
+                                    collected = collected)
+                            UserRole.VET -> {
+                              (user as? Vet)?.copy(
                                   firstname = firstname,
                                   lastname = lastname,
                                   address = pickedLocation,
-                                  defaultOffice = selectedDefaultOffice,
                                   description = updatedDescription,
                                   collected = collected)
-                          UserRole.VET -> {
-                            manageOfficeVm.updateOffice(newAddress = pickedLocation)
-                            (user as? Vet)?.copy(
-                                firstname = firstname,
-                                lastname = lastname,
-                                address = pickedLocation,
-                                description = updatedDescription,
-                                collected = collected)
+                            }
                           }
-                        }
-                    updatedUser?.let { onSave(it) }
+                      updatedUser?.let { onSave(it) }
+                    }
                   },
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.SAVE_BUTTON)) {

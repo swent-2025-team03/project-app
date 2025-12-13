@@ -1,18 +1,22 @@
 package com.android.agrihealth.ui.office
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -20,7 +24,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
-import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
@@ -36,8 +40,12 @@ import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_VET_LI
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
 import com.android.agrihealth.ui.profile.CodesViewModel
 import com.android.agrihealth.ui.profile.GenerateCode
+import com.android.agrihealth.ui.profile.LocalPhotoDisplay
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
+import com.android.agrihealth.ui.profile.RemotePhotoDisplay
+import com.android.agrihealth.ui.profile.UploadRemovePhotoButton
 import com.android.agrihealth.ui.user.UserViewModel
+import kotlinx.coroutines.launch
 
 object ManageOfficeScreenTestTags {
   const val CREATE_OFFICE_BUTTON = "CreateOfficeButton"
@@ -57,19 +65,14 @@ object ManageOfficeScreenTestTags {
 fun ManageOfficeScreen(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel = viewModel(),
+    manageOfficeViewModel: ManageOfficeViewModel,
+    imageViewModel: ImageViewModel = ImageViewModel(),
     onGoBack: () -> Unit = {},
     onCreateOffice: () -> Unit = {},
     onJoinOffice: () -> Unit = {},
 ) {
   val snackbarHostState = remember { SnackbarHostState() }
-  val manageOfficeVm: ManageOfficeViewModel =
-      viewModel(
-          factory =
-              object : ViewModelProvider.Factory {
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                  return ManageOfficeViewModel(userViewModel, OfficeRepositoryFirestore()) as T
-                }
-              })
+  val uiState by manageOfficeViewModel.uiState.collectAsState()
   val connectionVm: CodesViewModel =
       viewModel(
           factory =
@@ -81,13 +84,11 @@ fun ManageOfficeScreen(
                 }
               })
 
-  val uiState by manageOfficeVm.uiState.collectAsState()
-
   var showLeaveDialog by remember { mutableStateOf(false) }
 
   val isOwner = uiState.office?.ownerId == userViewModel.user.value.uid
 
-  LaunchedEffect(userViewModel.user.value) { manageOfficeVm.loadOffice() }
+  LaunchedEffect(userViewModel.user.value) { manageOfficeViewModel.loadOffice() }
 
   Scaffold(
       topBar = {
@@ -121,9 +122,19 @@ fun ManageOfficeScreen(
                       Text("Join an Office")
                     }
               } else {
+                UploadRemoveOfficePhotoSection(
+                    isOwner = isOwner,
+                    photoAlreadyPicked = uiState.photoUri != null,
+                    onPhotoPicked = { manageOfficeViewModel.setPhoto(it) },
+                    onPhotoRemoved = { manageOfficeViewModel.removePhoto() },
+                    uiState = uiState,
+                    imageViewModel = imageViewModel)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 OutlinedTextField(
                     value = if (isOwner) uiState.editableName else uiState.office!!.name,
-                    onValueChange = { if (isOwner) manageOfficeVm.onNameChange(it) },
+                    onValueChange = { if (isOwner) manageOfficeViewModel.onNameChange(it) },
                     label = { Text("Office Name") },
                     enabled = isOwner,
                     modifier = Modifier.fillMaxWidth().testTag(OFFICE_NAME))
@@ -132,14 +143,14 @@ fun ManageOfficeScreen(
                     value =
                         if (isOwner) uiState.editableDescription
                         else (uiState.office!!.description ?: ""),
-                    onValueChange = { if (isOwner) manageOfficeVm.onDescriptionChange(it) },
+                    onValueChange = { if (isOwner) manageOfficeViewModel.onDescriptionChange(it) },
                     label = { Text("Description") },
                     enabled = isOwner,
                     modifier = Modifier.fillMaxWidth().testTag(OFFICE_DESCRIPTION))
 
                 OutlinedTextField(
                     value = uiState.office!!.address?.name ?: "",
-                    onValueChange = { if (isOwner) manageOfficeVm.onAddressChange(it) },
+                    onValueChange = { if (isOwner) manageOfficeViewModel.onAddressChange(it) },
                     singleLine = true,
                     readOnly = true,
                     label = { Text("Address") },
@@ -170,8 +181,9 @@ fun ManageOfficeScreen(
 
                   Spacer(modifier = Modifier.height(8.dp))
 
+                  val scope = rememberCoroutineScope()
                   Button(
-                      onClick = { manageOfficeVm.updateOffice() },
+                      onClick = { scope.launch { manageOfficeViewModel.updateOffice() } },
                       modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),
                   ) {
                     Text("Save Changes")
@@ -197,7 +209,7 @@ fun ManageOfficeScreen(
                         TextButton(
                             onClick = {
                               showLeaveDialog = false
-                              manageOfficeVm.leaveOffice(onSuccess = onGoBack)
+                              manageOfficeViewModel.leaveOffice(onSuccess = onGoBack)
                             },
                             modifier = Modifier.testTag(CONFIRM_LEAVE)) {
                               Text("Leave")
@@ -210,4 +222,42 @@ fun ManageOfficeScreen(
               }
             }
       }
+}
+
+@Composable
+fun UploadRemoveOfficePhotoSection(
+    isOwner: Boolean = false,
+    photoAlreadyPicked: Boolean,
+    onPhotoPicked: (Uri?) -> Unit,
+    onPhotoRemoved: () -> Unit,
+    uiState: ManageOfficeUiState,
+    imageViewModel: ImageViewModel = ImageViewModel()
+) {
+
+  var initialLoad by rememberSaveable { mutableStateOf(true) }
+  val showRemote = initialLoad && uiState.photoUri == null
+
+  if (showRemote) {
+    RemotePhotoDisplay(
+        photoURL = uiState.office?.photoUrl,
+        imageViewModel = imageViewModel,
+        modifier = Modifier.size(120.dp).clip(CircleShape),
+        contentDescription = "Office photo",
+        showPlaceHolder = true)
+  } else {
+    LocalPhotoDisplay(
+        photoURI = uiState.photoUri,
+        modifier = Modifier.size(120.dp).clip(CircleShape),
+        showPlaceHolder = true)
+  }
+
+  if (isOwner) {
+    UploadRemovePhotoButton(
+        photoAlreadyPicked = photoAlreadyPicked,
+        onPhotoPicked = onPhotoPicked,
+        onPhotoRemoved = {
+          onPhotoRemoved
+          initialLoad = false
+        })
+  }
 }
