@@ -9,7 +9,6 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testutil.FakeOfficeRepository
 import com.android.agrihealth.testutil.FakeUserRepository
 import com.android.agrihealth.testutil.TestConstants
@@ -304,9 +303,14 @@ class ViewUserScreenTest {
       }
     }
 
-    composeTestRule.assertOverlayDuringLoading(
-        isLoading = { vm.uiState.value is ViewUserUiState.Loading },
-        timeoutStart = TestConstants.DEFAULT_TIMEOUT,
-        timeoutEnd = TestConstants.DEFAULT_TIMEOUT)
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+      vm.uiState.value is ViewUserUiState.Loading
+    }
+    composeTestRule.onNodeWithTag(ViewUserScreenTestTags.LOADING_INDICATOR).assertIsDisplayed()
+
+    composeTestRule.waitUntil(TestConstants.DEFAULT_TIMEOUT) {
+      vm.uiState.value !is ViewUserUiState.Loading
+    }
+    composeTestRule.onNodeWithTag(ViewUserScreenTestTags.LOADING_INDICATOR).assertDoesNotExist()
   }
 }
