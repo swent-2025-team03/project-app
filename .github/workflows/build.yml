@@ -82,6 +82,15 @@ jobs:
 
       - name: Run tests
         run: ./gradlew check --parallel --build-cache
+      - name: Free up disk space
+        run: |
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo apt-get clean
+          df -h
 
       - name: Run instrumentation tests
         timeout-minutes: 60
