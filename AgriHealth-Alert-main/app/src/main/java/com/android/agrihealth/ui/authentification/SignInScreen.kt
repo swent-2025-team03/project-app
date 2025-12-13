@@ -80,7 +80,10 @@ fun SignInScreen(
       snackbarHost = {
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier.padding(bottom = 16.dp).testTag(SignInScreenTestTags.SNACKBAR))
+            modifier =
+                Modifier.padding(bottom = 16.dp)
+                    .testTag(SignInScreenTestTags.SNACKBAR)
+                    .imePadding())
       }) { padding ->
         Column(
             modifier =

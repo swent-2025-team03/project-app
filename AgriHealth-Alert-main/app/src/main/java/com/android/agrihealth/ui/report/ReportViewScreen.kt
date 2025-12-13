@@ -202,7 +202,9 @@ fun ReportViewScreen(
             },
         )
       },
-      snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { padding ->
+      snackbarHost = {
+        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.imePadding())
+      }) { padding ->
 
         // Main scrollable content
         Column(

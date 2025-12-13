@@ -100,7 +100,8 @@ fun ManageOfficeScreen(
             },
             modifier = Modifier.testTag(TOP_BAR))
       },
-      snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
+      snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.imePadding()) }) {
+          innerPadding ->
         Column(
             modifier =
                 Modifier.padding(innerPadding).padding(16.dp).verticalScroll(rememberScrollState()),

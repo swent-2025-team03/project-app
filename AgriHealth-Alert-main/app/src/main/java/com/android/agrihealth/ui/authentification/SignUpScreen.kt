@@ -74,7 +74,7 @@ fun SignUpScreen(
       snackbarHost = {
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier.testTag(SignUpScreenTestTags.SNACKBAR))
+            modifier = Modifier.testTag(SignUpScreenTestTags.SNACKBAR).imePadding())
       },
       topBar = {
         TopAppBar(

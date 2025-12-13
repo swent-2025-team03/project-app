@@ -29,6 +29,7 @@
             android:theme="@style/Theme.SampleApp" />
         <activity
             android:name=".MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true"
             android:theme="@style/Theme.SampleApp"
             tools:targetApi="33">
