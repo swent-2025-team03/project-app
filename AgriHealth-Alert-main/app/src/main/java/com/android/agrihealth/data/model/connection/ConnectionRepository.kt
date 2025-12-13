@@ -2,6 +2,7 @@ package com.android.agrihealth.data.model.connection
 
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.data.model.helpers.runWithTimeout
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.ui.profile.CodeType
 import com.google.firebase.Firebase
@@ -13,7 +14,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import kotlin.random.Random
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.tasks.await
 
 class ConnectionRepository(
     private val db: FirebaseFirestore = Firebase.firestore,
@@ -69,7 +69,8 @@ class ConnectionRepository(
     repeat(20) {
       val code = Random.nextInt(100_000, 1_000_000).toString()
       val maybeCode =
-          db.runTransaction { tx ->
+          runWithTimeout(
+              db.runTransaction { tx ->
                 val ref = db.collection(connectionType + CODES_COLLECTION).document(code)
                 val snap = tx.get(ref)
                 if (snap.exists()) {
@@ -85,8 +86,7 @@ class ConnectionRepository(
                           FirestoreSchema.ConnectCodes.CREATED_AT to createdAt))
                   code
                 }
-              }
-              .await()
+              })
 
       if (maybeCode != null) return@runCatching maybeCode
       delay(Random.nextLong(50, 200))
@@ -109,7 +109,8 @@ class ConnectionRepository(
   suspend fun claimCode(code: String): Result<String> = runCatching {
     val userId = getCurrentUserId()
     val docRef = db.collection(connectionType + CODES_COLLECTION).document(code)
-    db.runTransaction { tx ->
+    runWithTimeout(
+        db.runTransaction { tx ->
           val snap = tx.get(docRef)
           checkCodeValidity(snap)
 
@@ -124,8 +125,7 @@ class ConnectionRepository(
                   FirestoreSchema.ConnectCodes.CLAIMED_BY to userId))
 
           officeId
-        }
-        .await()
+        })
   }
 
   /**
@@ -147,11 +147,11 @@ class ConnectionRepository(
 
     return try {
       val snapshot =
-          db.collection(collectionName)
-              .whereIn(FieldPath.documentId(), targetList)
-              .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
-              .get()
-              .await()
+          runWithTimeout(
+              db.collection(collectionName)
+                  .whereIn(FieldPath.documentId(), targetList)
+                  .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
+                  .get())
 
       snapshot.documents.map { it.id }
     } catch (e: Exception) {
@@ -175,11 +175,11 @@ class ConnectionRepository(
 
     return try {
       val snapshot =
-          db.collection(collectionName)
-              .whereIn(FieldPath.documentId(), targetList)
-              .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
-              .get()
-              .await()
+          runWithTimeout(
+              db.collection(collectionName)
+                  .whereIn(FieldPath.documentId(), targetList)
+                  .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
+                  .get())
       snapshot.size()
     } catch (e: Exception) {
       0

@@ -8,7 +8,7 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import java.time.Instant
 import java.util.UUID
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
@@ -61,7 +61,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   @Before
   override fun setUp() {
     super.setUp()
-    runTest { authRepository.signUpWithEmailAndPassword(user1.email, password1, user1) }
+    runBlocking { authRepository.signUpWithEmailAndPassword(user1.email, password1, user1) }
     assertNotNull(Firebase.auth.currentUser)
     val uuid = UUID.randomUUID()
     report1 = baseReport1.copy(id = "${baseReport1.id} $uuid")
@@ -70,7 +70,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun canAddReportToRepository() = runTest {
+  fun canAddReportToRepository() = runBlocking {
     repository.addReport(report1.fixUID())
     val reports = repository.getAllReports(user1.uid)
     assertEquals(1, reports.size)
@@ -78,7 +78,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun canAddMultipleReportToRepository() = runTest {
+  fun canAddMultipleReportToRepository() = runBlocking {
     repository.addReport(report1.fixUID())
     repository.addReport(report3.fixUID())
 
@@ -91,14 +91,14 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun getNewUidReturnsUniqueIDs() = runTest {
+  fun getNewUidReturnsUniqueIDs() = runBlocking {
     val numberIDs = 100
     val uids = (0 until 100).toSet<Int>().map { repository.getNewReportId() }.toSet()
     assertEquals(uids.size, numberIDs)
   }
 
   @Test
-  fun canGetReportsByFarmer() = runTest {
+  fun canGetReportsByFarmer() = runBlocking {
     repository.addReport(report1.fixUID())
     repository.addReport(report2.fixUID())
     repository.addReport(report3.fixUID())
@@ -108,7 +108,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun canGetReportsByVet() = runTest {
+  fun canGetReportsByVet() = runBlocking {
     authRepository.signOut()
     authRepository.signUpWithEmailAndPassword(user3.email, password3, user3)
 
@@ -134,12 +134,10 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
         }
     val expectedReports = setOf(report1, report3)
     assertEquals(expectedReports, reports.toSet())
-
-    authRepository.signOut()
   }
 
   @Test
-  fun canGetReportById() = runTest {
+  fun canGetReportById() = runBlocking {
     repository.addReport(report1.fixUID())
     repository.addReport(report2.fixUID())
     repository.addReport(report3.fixUID())
@@ -151,7 +149,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun canEditReport() = runTest {
+  fun canEditReport() = runBlocking {
     val editedReport1 = report1.copy(description = "new description")
     repository.addReport(report1.fixUID())
     repository.editReport(report1.id, editedReport1.fixUID())
@@ -163,7 +161,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun canDeleteReport() = runTest {
+  fun canDeleteReport() = runBlocking {
     repository.addReport(report1.fixUID())
 
     repository.deleteReport(report1.id)
@@ -172,7 +170,7 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun deleteReportDeletesTheRightReport() = runTest {
+  fun deleteReportDeletesTheRightReport() = runBlocking {
     repository.addReport(report1.fixUID())
     repository.addReport(report2.fixUID())
     repository.addReport(report3.fixUID())

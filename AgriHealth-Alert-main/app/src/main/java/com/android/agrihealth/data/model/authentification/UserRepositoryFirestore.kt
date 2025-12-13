@@ -1,5 +1,6 @@
 package com.android.agrihealth.data.model.authentification
 
+import com.android.agrihealth.data.model.helpers.runWithTimeout
 import com.android.agrihealth.data.model.location.locationFromMap
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
@@ -9,7 +10,6 @@ import com.android.agrihealth.data.model.user.roleFromDisplayString
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.tasks.await
 
 const val USERS_COLLECTION_PATH = "users"
 
@@ -17,7 +17,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     UserRepository {
   override suspend fun addUser(user: User) {
     val map = mapFromUser(user)
-    db.collection(USERS_COLLECTION_PATH).document(user.uid).set(map).await()
+    runWithTimeout(db.collection(USERS_COLLECTION_PATH).document(user.uid).set(map))
   }
 
   override suspend fun updateUser(user: User) {
@@ -31,16 +31,16 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     if (map.keys.intersect(illegalKeys).isNotEmpty())
         throw IllegalArgumentException("Permission denied")
 
-    db.collection(USERS_COLLECTION_PATH).document(user.uid).update(map).await()
+    runWithTimeout(db.collection(USERS_COLLECTION_PATH).document(user.uid).update(map))
   }
 
   override suspend fun deleteUser(uid: String) {
-    db.collection(USERS_COLLECTION_PATH).document(uid).delete().await()
+    runWithTimeout(db.collection(USERS_COLLECTION_PATH).document(uid).delete())
   }
 
   override suspend fun getUserFromId(uid: String): Result<User> {
     return try {
-      val snapshot = db.collection(USERS_COLLECTION_PATH).document(uid).get().await()
+      val snapshot = runWithTimeout(db.collection(USERS_COLLECTION_PATH).document(uid).get())
 
       if (!snapshot.exists()) return Result.failure(NullPointerException("No such user found"))
 

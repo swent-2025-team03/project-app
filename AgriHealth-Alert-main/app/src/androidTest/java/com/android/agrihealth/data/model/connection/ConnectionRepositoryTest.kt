@@ -15,7 +15,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -41,20 +40,18 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
     super.setUp()
     db = FirebaseFirestore.getInstance()
     repo = ConnectionRepository(db, connectionType = FARMER_TO_OFFICE)
-    runTest {
-      authRepository.signUpWithEmailAndPassword(user1.email, password1, user1)
-      authRepository.signOut()
-      authRepository.signUpWithEmailAndPassword(user2.email, password2, user2)
-      authRepository.signOut()
-      authRepository.signUpWithEmailAndPassword(user3.email, password3, user3)
-      OfficeRepositoryProvider.get().addOffice(office1.copy(ownerId = Firebase.auth.uid!!))
-    }
+    authRepository.signUpWithEmailAndPassword(user1.email, password1, user1)
+    authRepository.signOut()
+    authRepository.signUpWithEmailAndPassword(user2.email, password2, user2)
+    authRepository.signOut()
+    authRepository.signUpWithEmailAndPassword(user3.email, password3, user3)
+    OfficeRepositoryProvider.get().addOffice(office1.copy(ownerId = Firebase.auth.uid!!))
   }
 
   @Test
   // Verifies that generateCode creates a 6-digit code and writes an OPEN document with expected
   // fields.
-  fun generateCode_createsOpenDoc() = runTest {
+  fun generateCode_createsOpenDoc() = runBlocking {
     val officeId = user3.officeId!!
     val code = repo.generateCode().getOrThrow()
     assertTrue(code.matches(Regex("\\d{6}")))
@@ -67,7 +64,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun generateCodeForOfficeWorks() = runTest {
+  fun generateCodeForOfficeWorks() = runBlocking {
     repo = ConnectionRepository(db, connectionType = VET_TO_OFFICE)
     val officeId = user3.officeId!!
     val code = repo.generateCode().getOrThrow()
@@ -83,7 +80,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
   @Test
   // Verifies that a farmer can claim a code, the repository returns officeId and code is marked
   // USED.
-  fun claimCodeAndMarksUsed() = runTest {
+  fun claimCodeAndMarksUsed() = runBlocking {
     val officeId = user3.officeId!!
     val code = repo.generateCode().getOrThrow()
 
@@ -99,7 +96,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
 
   @Test
   // Verifies that claimCode fails when the code has already been used.
-  fun claimCode_failsWhenUsed() = runTest {
+  fun claimCode_failsWhenUsed() = runBlocking {
     val code = repo.generateCode().getOrThrow()
 
     authRepository.signOut()
@@ -113,21 +110,21 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
 
   @Test
   // Verifies that claimCode fails when an unknown code is provided.
-  fun claimCode_failsWhenUnknown() = runTest {
+  fun claimCode_failsWhenUnknown() = runBlocking {
     val res = repo.claimCode("999999")
     assertTrue(res.isFailure)
   }
 
   @Test
   // Verifies that multiple generated codes are unique.
-  fun generateCode_many_areUnique() = runTest {
+  fun generateCode_many_areUnique() = runBlocking {
     val codes = (1..200).map { repo.generateCode().getOrThrow() }
     assertEquals(codes.size, codes.toSet().size)
   }
 
   @Test
   // Verifies that only one farmer can successfully claim a code in a race condition scenario.
-  fun claimCode_raceTwoFarmers_oneSucceeds() = runTest {
+  fun claimCode_raceTwoFarmers_oneSucceeds() = runBlocking {
     val code = repo.generateCode().getOrThrow()
 
     val r1 = async {
@@ -146,7 +143,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
 
   @Test
   // Verifies that generateCode retries if a collision occurs on the first generated code.
-  fun generateCode_collidesOnce_thenSucceeds() = runTest {
+  fun generateCode_collidesOnce_thenSucceeds() = runBlocking {
     val taken = "123456"
     db.collection(FARMER_TO_OFFICE + CONNECT_CODES).document(taken).set(mapOf("any" to "x")).await()
 
@@ -162,7 +159,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
 
   @Test
   // Verifies that claimCode fails when createdAt is missing in the code document.
-  fun claimCode_fails_whenMissingCreatedAt() = runTest {
+  fun claimCode_fails_whenMissingCreatedAt() = runBlocking {
     val code = "111222"
     db.collection(FARMER_TO_OFFICE + CONNECT_CODES)
         .document(code)
@@ -188,7 +185,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
 
   @Test
   // Verifies that claimCode fails when officeId is missing in the code document.
-  fun claimCode_fails_whenMissingOfficeId() = runTest {
+  fun claimCode_fails_whenMissingOfficeId() = runBlocking {
     val code = "333444"
     db.collection(FARMER_TO_OFFICE + CONNECT_CODES)
         .document(code)
@@ -206,7 +203,7 @@ class ConnectionRepositoryTest : FirebaseEmulatorsTest() {
 
   @Test
   // Verifies that getValidCodes returns only the user's unused (OPEN) active codes.
-  fun getValidCodes_returnsOnlyActiveCodes() = runTest {
+  fun getValidCodes_returnsOnlyActiveCodes() = runBlocking {
     val vet =
         Vet(
             uid = "ato",

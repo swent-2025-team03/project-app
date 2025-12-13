@@ -1,8 +1,8 @@
 package com.android.agrihealth.data.model.user
 
 import android.util.Log
+import com.android.agrihealth.data.model.helpers.runWithTimeout
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
 
 fun interface UserDirectoryDataSource {
   suspend fun getUserSummary(uid: String): UserDirectoryRepository.UserSummary?
@@ -37,7 +37,7 @@ class UserDirectoryRepository(
     }
 
     return try {
-      val snap = db.collection(usersCollection).document(uid).get().await()
+      val snap = runWithTimeout(db.collection(usersCollection).document(uid).get())
       if (!snap.exists()) {
         cache[uid] = null // negative cache
         return null

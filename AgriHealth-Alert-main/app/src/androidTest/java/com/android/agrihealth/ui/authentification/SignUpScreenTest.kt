@@ -13,7 +13,7 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.testutil.FakeAuthRepository
 import com.android.agrihealth.testutil.TestConstants
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -74,7 +74,7 @@ class SignUpScreenTest {
 
   @Before
   fun setUp() {
-    runTest {
+    runBlocking {
       authRepository.signUpWithEmailAndPassword("valid@email.com", "password1", user)
       authRepository.signOut()
     }

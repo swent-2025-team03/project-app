@@ -56,12 +56,16 @@ class PlannerViewModel(
   val uiState: StateFlow<PlannerUIState> = _uiState.asStateFlow()
 
   suspend fun loadReports() {
-    val user = _uiState.value.user
-    val reports = reportRepository.getAllReports(user.uid).groupBy { it.startTime?.toLocalDate() }
-    _uiState.value =
-        _uiState.value.copy(
-            reports = reports,
-            selectedDateReports = reports[_uiState.value.selectedDate] ?: emptyList())
+    try {
+      val user = _uiState.value.user
+      val reports = reportRepository.getAllReports(user.uid).groupBy { it.startTime?.toLocalDate() }
+      _uiState.value =
+          _uiState.value.copy(
+              reports = reports,
+              selectedDateReports = reports[_uiState.value.selectedDate] ?: emptyList())
+    } catch (_: Exception) {
+      _uiState.value = _uiState.value.copy(reports = emptyMap())
+    }
   }
 
   fun editReportWithNewTime() {
