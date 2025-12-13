@@ -26,14 +26,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.core.design.theme.successColor
-import com.android.agrihealth.testutil.FakeAuthRepository
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
+// Preview imports
+/*
+import androidx.compose.ui.tooling.preview.Preview
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+*/
 
 object ResetPasswordScreenTestTags {
   const val INSTRUCTION_TEXT = "resetPasswordInstructionTest"
@@ -148,9 +150,10 @@ fun SendingResetFormFeedbackText(
   }
 }
 
+/*
 @Preview
 @Composable
 fun ResetPasswordScreenPreview() {
   val vm = ResetPasswordViewModel(FakeAuthRepository())
   AgriHealthAppTheme { ResetPasswordScreen(vm = vm) }
-}
+}*/

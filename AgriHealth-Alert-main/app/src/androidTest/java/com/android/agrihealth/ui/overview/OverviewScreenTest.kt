@@ -12,7 +12,7 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.testhelpers.fakes.FakeAlertRepository
+import com.android.agrihealth.data.model.alert.FakeAlertRepository
 import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
 import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
 import com.android.agrihealth.testhelpers.TestConstants

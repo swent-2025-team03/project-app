@@ -4,6 +4,7 @@ import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.agrihealth.data.model.alert.FakeAlertRepository
 import com.android.agrihealth.data.model.alert.getDistanceInsideZone
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider

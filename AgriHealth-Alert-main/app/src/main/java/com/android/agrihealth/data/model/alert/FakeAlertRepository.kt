@@ -1,8 +1,5 @@
-package com.android.agrihealth.testhelpers.fakes
+package com.android.agrihealth.data.model.alert
 
-import com.android.agrihealth.data.model.alert.Alert
-import com.android.agrihealth.data.model.alert.AlertRepository
-import com.android.agrihealth.data.model.alert.AlertZone
 import com.android.agrihealth.data.model.location.Location
 import java.time.LocalDate
 

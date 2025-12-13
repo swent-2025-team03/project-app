@@ -27,7 +27,7 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.testhelpers.fakes.FakeAlertRepository
+import com.android.agrihealth.data.model.alert.FakeAlertRepository
 import com.android.agrihealth.testhelpers.fakes.FakeUserRepository
 import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
 import com.android.agrihealth.testhelpers.TestConstants
