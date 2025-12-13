@@ -9,12 +9,10 @@ import com.android.agrihealth.ui.overview.AlertUiState
 import org.junit.Test
 
 class AlertViewScreenTest : BaseUITest() {
-  private fun setAlertViewScreen(
-      startAlertId: String = "1",
-      viewModel: AlertViewModel =
-          AlertViewModel(
-              FakeAlertRepository().allAlerts.map { AlertUiState(alert = it) }, startAlertId)
-  ) {
+  private fun setAlertViewScreen() {
+    val startAlertId = "1"
+    val viewModel = AlertViewModel(FakeAlertRepository().allAlerts.map { AlertUiState(alert = it) }, startAlertId)
+
     setContent {
       val navController = rememberNavController()
       val navigationActions = NavigationActions(navController)
@@ -22,13 +20,8 @@ class AlertViewScreenTest : BaseUITest() {
     }
   }
 
-  private fun createTestAlertViewModel(startAlertId: String = "1"): AlertViewModel {
-    val sortedAlerts = FakeAlertRepository().allAlerts.map { AlertUiState(alert = it) }
-    return AlertViewModel(sortedAlerts, startAlertId)
-  }
-
   override fun displayAllComponents() {
-    setAlertViewScreen("1")
+    setAlertViewScreen()
 
     with(AlertViewScreenTestTags) {
       assertNodeIsDisplayed(ALERT_DESCRIPTION)
@@ -44,8 +37,7 @@ class AlertViewScreenTest : BaseUITest() {
 
   @Test
   fun chevronArrows_enabledState_reflectsRepository_loadsPreviousAndNextAlert() {
-    val viewModel = createTestAlertViewModel("1")
-    setAlertViewScreen("1", viewModel)
+    setAlertViewScreen()
 
     with(AlertViewScreenTestTags) {
       node(PREVIOUS_ALERT_ARROW).assertIsNotEnabled()
