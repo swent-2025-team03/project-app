@@ -557,7 +557,8 @@ class ReportViewScreenTest {
   @Test
   fun reportView_showsLoadingOverlayWhileFetchingReport() {
     val sampleReport = ReportViewUIState().report.copy(id = "RPT_SLOW")
-    val slowRepo: ReportRepository = InMemoryReportRepository(listOf(sampleReport), 500L)
+    val slowRepo: ReportRepository =
+        InMemoryReportRepository(listOf(sampleReport), TestConstants.SHORT_TIMEOUT)
     val vm = ReportViewViewModel(repository = slowRepo)
 
     composeTestRule.setContent {
@@ -573,8 +574,7 @@ class ReportViewScreenTest {
     composeTestRule.assertOverlayDuringLoading(
         isLoading = { vm.uiState.value.isLoading },
         timeoutStart = TestConstants.DEFAULT_TIMEOUT,
-        timeoutEnd = TestConstants.LONG_TIMEOUT,
-    )
+        timeoutEnd = TestConstants.LONG_TIMEOUT)
   }
 
   @Test

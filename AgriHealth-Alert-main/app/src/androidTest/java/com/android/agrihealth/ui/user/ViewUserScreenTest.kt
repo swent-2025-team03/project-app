@@ -286,7 +286,7 @@ class ViewUserScreenTest {
             isGoogleAccount = false)
 
     val userRepo = FakeUserRepository(targetUser = fakeUser, delayMs = 300L)
-    val officeRepo = FakeOfficeRepository()
+    val officeRepo = FakeOfficeRepository(delayMs = TestConstants.DEFAULT_TIMEOUT)
 
     val vm =
         object :
@@ -307,7 +307,6 @@ class ViewUserScreenTest {
     composeTestRule.assertOverlayDuringLoading(
         isLoading = { vm.uiState.value is ViewUserUiState.Loading },
         timeoutStart = TestConstants.DEFAULT_TIMEOUT,
-        timeoutEnd = TestConstants.DEFAULT_TIMEOUT,
-    )
+        timeoutEnd = TestConstants.DEFAULT_TIMEOUT)
   }
 }

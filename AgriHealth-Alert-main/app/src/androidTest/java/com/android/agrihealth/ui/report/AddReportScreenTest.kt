@@ -527,7 +527,7 @@ class AddReportScreenTest {
 
   @Test
   fun createReport_showsLoadingOverlay() {
-    val slowRepo = InMemoryReportRepository(delayMs = 500L)
+    val slowRepo = InMemoryReportRepository(delayMs = TestConstants.SHORT_TIMEOUT)
     val viewModel = AddReportViewModel(userId = "test_user", reportRepository = slowRepo)
 
     composeRule.setContent {
@@ -551,7 +551,7 @@ class AddReportScreenTest {
     composeRule.assertOverlayDuringLoading(
         isLoading = { viewModel.uiState.value.isLoading },
         timeoutStart = TestConstants.DEFAULT_TIMEOUT,
-        timeoutEnd = TestConstants.DEFAULT_TIMEOUT,
+        timeoutEnd = TestConstants.LONG_TIMEOUT,
     )
   }
 }

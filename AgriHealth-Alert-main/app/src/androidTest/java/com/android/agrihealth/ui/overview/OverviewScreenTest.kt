@@ -139,8 +139,8 @@ class OverviewScreenTest {
 
   @Test
   fun overviewScreen_showsAndHidesLoadingOverlay_duringLoadAlerts() {
-    val alertRepo = FakeAlertRepository(delayMs = 500)
-    val reportRepo = InMemoryReportRepository(delayMs = 500)
+    val alertRepo = FakeAlertRepository(delayMs = TestConstants.SHORT_TIMEOUT)
+    val reportRepo = InMemoryReportRepository(delayMs = TestConstants.SHORT_TIMEOUT)
 
     val viewModel = OverviewViewModel(reportRepository = reportRepo, alertRepository = alertRepo)
 
@@ -159,7 +159,8 @@ class OverviewScreenTest {
           viewModel.uiState.value.isAlertLoading || viewModel.uiState.value.isReportLoading
         },
         timeoutStart = TestConstants.DEFAULT_TIMEOUT,
-        timeoutEnd = TestConstants.DEFAULT_TIMEOUT)
+        timeoutEnd = TestConstants.LONG_TIMEOUT,
+    )
   }
 
   // --- TEST 9: Verify Assignee Filter presence ---

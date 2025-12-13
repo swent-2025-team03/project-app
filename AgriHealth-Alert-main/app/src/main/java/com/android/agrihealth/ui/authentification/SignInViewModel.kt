@@ -113,9 +113,7 @@ class SignInViewModel(
 
     viewModelScope.launch {
       _uiState.withLoadingState(
-          applyLoading = { state: SignInUIState, loading: Boolean ->
-            state.copy(isLoading = loading)
-          }) {
+          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
             val signInOptions = getSignInOptions(context)
             val signInRequest = signInRequest(signInOptions)
 
