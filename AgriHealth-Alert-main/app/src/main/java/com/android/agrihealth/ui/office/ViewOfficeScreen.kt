@@ -30,7 +30,6 @@ object ViewOfficeScreenTestTags {
   const val LOADING_INDICATOR = "ViewOfficeLoadingIndicator"
   const val ERROR_TEXT = "ViewOfficeErrorText"
   const val OFFICE_INFO_COLUMN = "ViewOfficeContentColumn"
-  const val OFFICE_ICON = "ViewOfficeIcon"
   const val NAME_FIELD = "ViewOfficeNameField"
   const val ADDRESS_FIELD = "ViewOfficeAddressField"
   const val DESCRIPTION_FIELD = "ViewOfficeDescriptionField"

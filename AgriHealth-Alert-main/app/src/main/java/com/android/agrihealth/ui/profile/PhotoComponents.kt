@@ -39,6 +39,7 @@ object PhotoComponentsTestTags {
   const val PHOTO_ILLEGAL_TEXT = "PhotoIllegalStateText"
   const val UPLOAD_IMAGE_BUTTON = "uploadImageButton"
   const val IMAGE_PREVIEW = "imageDisplay"
+  const val DEFAULT_ICON = "DefaultIconPicture"
 }
 
 object PhotoComponentsTexts {
@@ -96,7 +97,7 @@ fun RemotePhotoDisplay(
         Icon(
             imageVector = Icons.Default.AccountCircle,
             contentDescription = "Default icon",
-            modifier = modifier)
+            modifier = modifier.testTag(PhotoComponentsTestTags.DEFAULT_ICON))
       } else {
         Text(
             text = PhotoComponentsTexts.PHOTO_ERROR_TEXT,
@@ -109,7 +110,7 @@ fun RemotePhotoDisplay(
         Icon(
             imageVector = Icons.Default.AccountCircle,
             contentDescription = "Default icon",
-            modifier = modifier)
+            modifier = modifier.testTag(PhotoComponentsTestTags.DEFAULT_ICON))
       } else {
         Text(
             text = PhotoComponentsTexts.PHOTO_ILLEGAL_TEXT,
@@ -145,7 +146,8 @@ fun LocalPhotoDisplay(
     Icon(
         imageVector = Icons.Default.AccountCircle,
         contentDescription = "Default icon",
-        modifier = Modifier.size(120.dp).clip(CircleShape))
+        modifier =
+            Modifier.size(120.dp).clip(CircleShape).testTag(PhotoComponentsTestTags.DEFAULT_ICON))
   }
 }
 
