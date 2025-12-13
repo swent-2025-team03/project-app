@@ -51,13 +51,7 @@ object PlannerTestReportsData {
           isGoogleAccount = false,
           description = "description")
   val vet =
-    Vet(
-      uid = "vet",
-      firstname = "josh",
-      lastname = "testes",
-      email = "notemail",
-      address = null
-    )
+      Vet(uid = "vet", firstname = "josh", lastname = "testes", email = "email", address = null)
   val report1 =
       Report(
           "rep_id1",
@@ -66,7 +60,7 @@ object PlannerTestReportsData {
           photoURL = null,
           questionForms = emptyList(),
           farmerId = farmer.uid,
-          officeId = "officeId1",
+          officeId = vet.uid,
           status = ReportStatus.PENDING,
           answer = null,
           location = Location(46.9481, 7.4474, "Place name 1"),
@@ -101,11 +95,11 @@ class PlannerScreenTest {
   @Before fun setup() {}
 
   private fun setPlannerScreen(
-    reportId: String? = null,
-    user: User = PlannerTestReportsData.farmer,
-    goBack: () -> Unit = {},
-    tabClicked: (Screen) -> Unit = {},
-    reportClicked: (String) -> Unit = {},
+      reportId: String? = null,
+      user: User = PlannerTestReportsData.farmer,
+      goBack: () -> Unit = {},
+      tabClicked: (Screen) -> Unit = {},
+      reportClicked: (String) -> Unit = {},
   ) {
     composeTestRule.setContent {
       PlannerScreen(
@@ -164,7 +158,8 @@ class PlannerScreenTest {
 
     runBlocking { reportRepository.addReport(report1) }
 
-    setPlannerScreen(reportId = report1.id, goBack = { goBackCalled = true })
+    setPlannerScreen(
+        reportId = report1.id, user = PlannerTestReportsData.vet, goBack = { goBackCalled = true })
     composeTestRule
         .onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
         .assertIsDisplayed()
@@ -271,7 +266,6 @@ class PlannerScreenTest {
     runBlocking { reportRepository.addReport(report1) }
 
     setPlannerScreen(reportId = report1.id, user = PlannerTestReportsData.vet)
-    //composeTestRule.waitUntil(10000) { false }
 
     composeTestRule.onNodeWithTag(PlannerScreenTestTags.SET_REPORT_DATE_BOX).assertIsDisplayed()
     assertReportNotInDailyScheduler(report1.id)
