@@ -284,8 +284,8 @@ class ViewUserScreenTest {
             defaultOffice = null,
             isGoogleAccount = false)
 
-    val userRepo = FakeUserRepository(targetUser = fakeUser, delayMs = 300L)
-    val officeRepo = FakeOfficeRepository(delayMs = TestConstants.DEFAULT_TIMEOUT)
+    val userRepo = FakeUserRepository(targetUser = fakeUser, delayMs = TestConstants.SHORT_TIMEOUT)
+    val officeRepo = FakeOfficeRepository()
 
     val vm =
         object :
