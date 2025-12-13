@@ -15,13 +15,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.UserDirectoryDataSource
-import com.android.agrihealth.data.model.user.UserDirectoryRepository
+import com.android.agrihealth.data.model.user.UserDirectoryRepositoryProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class AuthorNameViewModel(private val repo: UserDirectoryDataSource = UserDirectoryRepository()) :
-    ViewModel() {
+class AuthorNameViewModel(
+    private val repo: UserDirectoryDataSource = UserDirectoryRepositoryProvider.repository
+) : ViewModel() {
 
   private val _label = MutableStateFlow("…")
   val label: StateFlow<String> = _label
@@ -32,7 +33,7 @@ class AuthorNameViewModel(private val repo: UserDirectoryDataSource = UserDirect
         _label.value = unassignedText
         return@launch
       }
-      val user = runCatching { repo.getUserSummary(uid) }.getOrNull()
+      val user = repo.getUserSummary(uid)
       _label.value =
           when {
             user == null -> deletedText
