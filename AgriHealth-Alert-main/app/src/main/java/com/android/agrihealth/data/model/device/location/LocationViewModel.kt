@@ -9,9 +9,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class LocationViewModel(
-  private val locationRepository: LocationRepository = LocationRepositoryProvider.repository
+    private val locationRepository: LocationRepository = LocationRepositoryProvider.repository
 ) : ViewModel() {
-  //private val locationRepository = LocationRepositoryProvider.repository
+  // private val locationRepository = LocationRepositoryProvider.repository
 
   private val _locationState = MutableStateFlow<Location?>(null)
   val locationState = _locationState.asStateFlow()

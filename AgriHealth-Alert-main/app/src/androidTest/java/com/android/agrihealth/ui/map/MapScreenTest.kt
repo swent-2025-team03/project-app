@@ -1,16 +1,11 @@
 package com.android.agrihealth.ui.map
 
-import android.util.Log
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
-import androidx.compose.ui.test.assertTextContains
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -24,7 +19,6 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.testhelpers.TestReport
-import com.android.agrihealth.testhelpers.TestTimeout
 import com.android.agrihealth.testhelpers.TestUser.farmer1
 import com.android.agrihealth.testhelpers.fakes.FakeUserRepository
 import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
@@ -43,17 +37,20 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class MapScreenTest : UITest(grantedPermissions = arrayOf(
-  android.Manifest.permission.ACCESS_FINE_LOCATION,
-  android.Manifest.permission.ACCESS_COARSE_LOCATION
-)) {
+class MapScreenTest :
+    UITest(
+        grantedPermissions =
+            arrayOf(
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION)) {
   val userId = farmer1.uid
-  val reportRepository = InMemoryReportRepository(listOf(
-    TestReport.report1.copy(farmerId = userId),
-    TestReport.report2.copy(farmerId = userId),
-    TestReport.report3.copy(farmerId = userId),
-    TestReport.report4.copy(farmerId = userId)
-  ))
+  val reportRepository =
+      InMemoryReportRepository(
+          listOf(
+              TestReport.report1.copy(farmerId = userId),
+              TestReport.report2.copy(farmerId = userId),
+              TestReport.report3.copy(farmerId = userId),
+              TestReport.report4.copy(farmerId = userId)))
   val alertRepository = FakeAlertRepository()
   val userRepository = FakeUserRepository(farmer1)
   val locationViewModel = LocationViewModel(fakeLocationRepository())
@@ -62,8 +59,7 @@ class MapScreenTest : UITest(grantedPermissions = arrayOf(
     val repo: LocationRepository = mockk(relaxed = true)
 
     coEvery { repo.getLastKnownLocation() } returns Location(46.9481, 7.4474, "Bern")
-    coEvery { repo.getCurrentLocation() } returns
-            Location(46.9500, 7.4400, "Current Position")
+    coEvery { repo.getCurrentLocation() } returns Location(46.9500, 7.4400, "Current Position")
 
     return repo
   }
@@ -90,11 +86,11 @@ class MapScreenTest : UITest(grantedPermissions = arrayOf(
   private fun assertMapScreenElementsVisibility(isViewedFromOverview: Boolean) {
     with(MapScreenTestTags) {
       nodesAreDisplayed(
-        GOOGLE_MAP_SCREEN,
-        REFRESH_BUTTON,
-        VISIBILITY_MENU,
-        REPORT_VISIBILITY_SWITCH,
-        ALERT_VISIBILITY_SWITCH)
+          GOOGLE_MAP_SCREEN,
+          REFRESH_BUTTON,
+          VISIBILITY_MENU,
+          REPORT_VISIBILITY_SWITCH,
+          ALERT_VISIBILITY_SWITCH)
 
       if (isViewedFromOverview) {
         nodesAreDisplayed(REPORT_FILTER_MENU, NavigationTestTags.BOTTOM_NAVIGATION_MENU)
@@ -117,10 +113,6 @@ class MapScreenTest : UITest(grantedPermissions = arrayOf(
     setContentToMapWithVM(isViewedFromOverview = false)
     assertMapScreenElementsVisibility(isViewedFromOverview = false)
   }
-
-
-
-
 
   @Test
   fun displayReportsFromUser_withFiltersAndSwitch_andShowsInfo() = runTest {
@@ -159,14 +151,14 @@ class MapScreenTest : UITest(grantedPermissions = arrayOf(
 
       // If show, filters work
       val filters: List<String?> =
-        listOf<String?>(null) + ReportStatus.entries.map { it.displayString() }
+          listOf<String?>(null) + ReportStatus.entries.map { it.displayString() }
 
       filters.forEach { filter ->
         clickOn(REPORT_FILTER_MENU)
         clickOn(getTestTagForFilter(filter))
 
         val (matches, nonMatches) =
-          reports.partition { it -> filter == null || it.status.displayString() == filter }
+            reports.partition { it -> filter == null || it.status.displayString() == filter }
 
         matches.assertAllDisplayed()
         nonMatches.assertNoneDisplayed()
@@ -174,12 +166,12 @@ class MapScreenTest : UITest(grantedPermissions = arrayOf(
         // Info box
         val reportId = matches.last().id
         clickOn(getTestTagForReportMarker(reportId))
-        nodesAreDisplayed(INFO_BOX, getTestTagForReportTitle(reportId), getTestTagForReportDesc(reportId))
+        nodesAreDisplayed(
+            INFO_BOX, getTestTagForReportTitle(reportId), getTestTagForReportDesc(reportId))
         clickOn(getTestTagForReportMarker(reportId))
         nodeNotDisplayed(INFO_BOX)
       }
     }
-
   }
 
   @Test
@@ -250,7 +242,9 @@ class MapScreenTest : UITest(grantedPermissions = arrayOf(
         }
         composable(Screen.ViewReport.route) {
           Text(reportId, modifier = Modifier.testTag(FAKE_VIEW_REPORT))
-          Button(onClick = { navigationActions.goBack() }, modifier = Modifier.testTag(GO_BACK)) { Text(":)") }
+          Button(onClick = { navigationActions.goBack() }, modifier = Modifier.testTag(GO_BACK)) {
+            Text(":)")
+          }
         }
         composable(Screen.ViewAlert.route) {
           Text(alertId, modifier = Modifier.testTag(FAKE_ALERT_VIEW))

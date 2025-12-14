@@ -25,7 +25,7 @@ import org.junit.rules.TestRule
 
 abstract class UITest(private val grantedPermissions: Array<String> = emptyArray()) {
   val composeTestRule: ComposeContentTestRule = createComposeRule()
-  //open fun permissions(): Array<String> = emptyArray()
+  // open fun permissions(): Array<String> = emptyArray()
 
   @get:Rule
   val ruleChain: TestRule
@@ -55,16 +55,18 @@ abstract class UITest(private val grantedPermissions: Array<String> = emptyArray
 
   /** Make an action on a node (assertion most of the time) with proper CI error description */
   private fun <T> withNode(tag: String, action: SemanticsNodeInteraction.() -> T): T =
-    try {
-      node(tag).action()
-    } catch (e: Throwable) {
-      if (e is AssertionError || e is ComposeTimeoutException) {
-        val method = Throwable().stackTrace[1].methodName
-        val line1 = Throwable().stackTrace[3].lineNumber
-        val line2 = Throwable().stackTrace[4].lineNumber
-        throw AssertionError("Component with tag \"$tag\" failed during action \"$method()\" (possibly @L$line1 or @L$line2)", e)
-      } else throw e
-    }
+      try {
+        node(tag).action()
+      } catch (e: Throwable) {
+        if (e is AssertionError || e is ComposeTimeoutException) {
+          val method = Throwable().stackTrace[1].methodName
+          val line1 = Throwable().stackTrace[3].lineNumber
+          val line2 = Throwable().stackTrace[4].lineNumber
+          throw AssertionError(
+              "Component with tag \"$tag\" failed during action \"$method()\" (possibly @L$line1 or @L$line2)",
+              e)
+        } else throw e
+      }
 
   /**
    * Asserts that the node with the given test tag is displayed, within a reasonable timeout. The
@@ -74,15 +76,11 @@ abstract class UITest(private val grantedPermissions: Array<String> = emptyArray
    * @param timeout Number of milliseconds to wait for the node to be displayed before failure
    */
   protected fun nodeIsDisplayed(tag: String, timeout: Long = TestTimeout.DEFAULT_TIMEOUT) {
-    withNode(tag) {
-      composeTestRule.waitUntil(timeout) { isDisplayed() }
-    }
+    withNode(tag) { composeTestRule.waitUntil(timeout) { isDisplayed() } }
   }
 
   protected fun nodeNotDisplayed(tag: String, timeout: Long = TestTimeout.DEFAULT_TIMEOUT) {
-    withNode(tag) {
-      composeTestRule.waitUntil(timeout) { isNotDisplayed() }
-    }
+    withNode(tag) { composeTestRule.waitUntil(timeout) { isNotDisplayed() } }
   }
 
   protected fun textIsDisplayed(text: String, timeout: Long = TestTimeout.DEFAULT_TIMEOUT) {
@@ -90,14 +88,23 @@ abstract class UITest(private val grantedPermissions: Array<String> = emptyArray
       composeTestRule.waitUntil(timeout) { composeTestRule.onNodeWithText(text).isDisplayed() }
     } catch (e: ComposeTimeoutException) {
       val caller = Throwable().stackTrace[1].methodName
-      throw AssertionError("Component with text \"$text\" is not displayed, called by \"$caller()\"", e)
+      throw AssertionError(
+          "Component with text \"$text\" is not displayed, called by \"$caller()\"", e)
     }
   }
 
-  protected fun textContains(tag: String, text: String, timeout: Long = TestTimeout.DEFAULT_TIMEOUT) {
+  protected fun textContains(
+      tag: String,
+      text: String,
+      timeout: Long = TestTimeout.DEFAULT_TIMEOUT
+  ) {
     withNode(tag) {
-      composeTestRule.waitUntil(timeout) { isDisplayed() && fetchSemanticsNode().config.getOrNull(
-        SemanticsProperties.Text)?.any { it.text.contains(text) } == true }
+      composeTestRule.waitUntil(timeout) {
+        isDisplayed() &&
+            fetchSemanticsNode().config.getOrNull(SemanticsProperties.Text)?.any {
+              it.text.contains(text)
+            } == true
+      }
     }
   }
 
@@ -111,9 +118,7 @@ abstract class UITest(private val grantedPermissions: Array<String> = emptyArray
 
   /** Clicks on the node corresponding to the provided tag */
   protected fun clickOn(tag: String) {
-    withNode(tag) {
-      assertIsDisplayed().performClick()
-    }
+    withNode(tag) { assertIsDisplayed().performClick() }
   }
 
   /** Performs a text input of the given text on the node corresponding to the given tag */

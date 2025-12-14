@@ -7,7 +7,6 @@ import androidx.compose.ui.test.isNotDisplayed
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.verifyUser
@@ -27,20 +26,19 @@ import com.google.firebase.auth.auth
 import java.lang.Thread.sleep
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.RuleChain
-import org.junit.rules.TestRule
 
 /**
  * First implementation of navigation tests. Doesn't cover all auth and assumes that the first
  * screen of AgrihealthApp is Overview.
  */
-class NavigationTest : FirebaseUITest(grantedPermissions = arrayOf(
-  android.Manifest.permission.ACCESS_FINE_LOCATION,
-  android.Manifest.permission.ACCESS_COARSE_LOCATION,
-  android.Manifest.permission.POST_NOTIFICATIONS
-)) {
+class NavigationTest :
+    FirebaseUITest(
+        grantedPermissions =
+            arrayOf(
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                android.Manifest.permission.POST_NOTIFICATIONS)) {
   @Before
   fun setUp() {
     // Set the content to the Overview screen before each test

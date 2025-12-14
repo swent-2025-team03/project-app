@@ -54,11 +54,13 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class E2ETest : FirebaseUITest(grantedPermissions = arrayOf(
-  android.Manifest.permission.ACCESS_FINE_LOCATION,
-  android.Manifest.permission.ACCESS_COARSE_LOCATION,
-  android.Manifest.permission.POST_NOTIFICATIONS)) {
-
+class E2ETest :
+    FirebaseUITest(
+        grantedPermissions =
+            arrayOf(
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                android.Manifest.permission.POST_NOTIFICATIONS)) {
 
   // private val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
