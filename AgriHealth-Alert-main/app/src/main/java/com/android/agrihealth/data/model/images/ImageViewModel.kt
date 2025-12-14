@@ -33,20 +33,37 @@ class ImageViewModel(private val repository: ImageRepository = ImageRepositoryPr
   val uiState: StateFlow<ImageUIState> = _uiState
 
   /**
+   * Uploads an image to the photos backend using a ByteArray directly. Updates UI state to
+   * UploadSuccess, containing the online path to the image
+   */
+  fun upload(byteArray: ByteArray) = uploadImplementation(byteArray)
+
+  /**
    * Uploads an image to the photos backend using a URI to the file content. Updates UI state to
    * UploadSuccess, containing the online path to the image
    */
-  fun upload(uri: Uri) =
-      viewModelScope.launch {
-        _uiState.value = ImageUIState.Loading
+  fun upload(uri: Uri) = uploadImplementation(uri)
 
-        val bytes = repository.reduceFileSize(repository.resolveUri(uri))
+  // Actual implementation of the upload function
+  private fun uploadImplementation(photo: Any) {
+    viewModelScope.launch {
+      _uiState.value = ImageUIState.Loading
 
-        repository
-            .uploadImage(bytes)
-            .onSuccess { path -> _uiState.value = ImageUIState.UploadSuccess(path) }
-            .onFailure { e -> _uiState.value = ImageUIState.Error(e) }
+      var bytes = when (photo) {
+        is ByteArray -> photo
+        is Uri -> repository.resolveUri(photo)
+        else -> {
+          throw IllegalArgumentException("'photo' must be either a Uri or a ByteArray")
+        }
       }
+      bytes = repository.reduceFileSize(bytes)
+
+      repository
+        .uploadImage(bytes)
+        .onSuccess { path -> _uiState.value = ImageUIState.UploadSuccess(path) }
+        .onFailure { e -> _uiState.value = ImageUIState.Error(e) }
+    }
+  }
 
   /**
    * Downloads an image from the photos backend using the online path. Updates UI state to
