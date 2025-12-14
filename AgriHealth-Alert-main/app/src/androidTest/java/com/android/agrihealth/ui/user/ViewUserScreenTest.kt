@@ -50,7 +50,8 @@ class ViewUserScreenTest {
     val userVm = UserViewModel(initialUser = currentUser)
 
     composeTestRule.setContent {
-      MaterialTheme { ViewUserScreen(viewModel = vm, userViewModel = userVm, onBack = {}) }
+      // MaterialTheme { ViewUserScreen(viewModel = vm, userViewModel = userVm, onBack = {}) }
+      ViewUserScreen(viewModel = vm, onBack = {})
     }
   }
 
