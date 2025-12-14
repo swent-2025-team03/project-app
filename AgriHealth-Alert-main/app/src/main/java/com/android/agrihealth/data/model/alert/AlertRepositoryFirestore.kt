@@ -1,11 +1,11 @@
 package com.android.agrihealth.data.model.alert
 
-import com.android.agrihealth.data.model.helpers.runWithTimeout
 import com.android.agrihealth.data.model.location.Location
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import java.time.LocalDate
+import kotlinx.coroutines.tasks.await
 
 private const val ALERTS_COLLECTION_PATH = "alerts"
 
@@ -15,7 +15,7 @@ class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fire
   private var cachedAlerts: List<Alert> = emptyList()
 
   override suspend fun getAlerts(): List<Alert> {
-    val snapshot = runWithTimeout(db.collection(ALERTS_COLLECTION_PATH).orderBy("createdAt").get())
+    val snapshot = db.collection(ALERTS_COLLECTION_PATH).orderBy("createdAt").get().await()
 
     val alerts =
         snapshot.documents.mapNotNull { doc ->
@@ -30,8 +30,7 @@ class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fire
   override suspend fun getAlertById(alertId: String): Alert? {
     return cachedAlerts.find { it.id == alertId }
         ?: run {
-          val snapshot =
-              runWithTimeout(db.collection(ALERTS_COLLECTION_PATH).document(alertId).get())
+          val snapshot = db.collection(ALERTS_COLLECTION_PATH).document(alertId).get().await()
 
           if (!snapshot.exists()) return null
           alertFromFirestore(snapshot.id, snapshot.data!!)
