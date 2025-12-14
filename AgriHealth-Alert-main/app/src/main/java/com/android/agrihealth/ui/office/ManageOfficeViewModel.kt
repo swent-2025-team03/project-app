@@ -29,7 +29,7 @@ data class ManageOfficeUiState(
 class ManageOfficeViewModel(
     private val userViewModel: UserViewModelContract,
     private val officeRepository: OfficeRepository,
-    private val imageViewModel: ImageViewModel = ImageViewModel()
+    private val imageViewModel: ImageViewModel
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(ManageOfficeUiState())
@@ -48,7 +48,7 @@ class ManageOfficeViewModel(
                   editableName = office.name,
                   editableDescription = office.description ?: "",
                   editableAddress = office.address?.toString() ?: "",
-                  photoUri = null)
+                  photoUri = _uiState.value.photoUri)
         }) { error ->
           _uiState.value =
               _uiState.value.copy(
@@ -105,7 +105,7 @@ class ManageOfficeViewModel(
 
       _uiState.value.photoUri?.let { uri ->
         uploadedPath = imageViewModel.uploadAndWait(uri)
-        _uiState.value = _uiState.value.copy(uploadedImagePath = uploadedPath)
+        _uiState.value = _uiState.value.copy(uploadedImagePath = uploadedPath, photoUri = null)
       }
 
       val updatedOffice =

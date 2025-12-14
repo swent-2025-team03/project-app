@@ -29,6 +29,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.connection.ConnectionRepository
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.*
@@ -100,11 +101,15 @@ fun EditProfileScreen(
   val farmerCodes by codesViewModel.farmerCodes.collectAsState()
   val vetCodes by codesViewModel.vetCodes.collectAsState()
 
+  val imageViewModel: ImageViewModel = viewModel()
+
   val createManageOfficeViewModel =
       object : androidx.lifecycle.ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
           return ManageOfficeViewModel(
-              userViewModel = userViewModel, officeRepository = OfficeRepositoryProvider.get())
+              userViewModel = userViewModel,
+              officeRepository = OfficeRepositoryProvider.get(),
+              imageViewModel = imageViewModel)
               as T
         }
       }

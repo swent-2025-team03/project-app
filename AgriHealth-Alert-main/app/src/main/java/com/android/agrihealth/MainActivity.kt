@@ -42,6 +42,7 @@ import com.android.agrihealth.data.model.device.location.LocationRepositoryProvi
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.device.notifications.NotificationHandlerProvider
 import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.location.LocationPicker
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
@@ -350,12 +351,14 @@ fun AgriHealthApp(
             onManageOffice = { navigationActions.navigateTo(Screen.ManageOffice) })
       }
       composable(Screen.ManageOffice.route) {
+        val imageViewModel: ImageViewModel = viewModel()
         val manageOfficeViewModel: ManageOfficeViewModel =
             viewModel(
                 factory =
                     object : ViewModelProvider.Factory {
                       override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return ManageOfficeViewModel(userViewModel, OfficeRepositoryFirestore())
+                        return ManageOfficeViewModel(
+                            userViewModel, OfficeRepositoryFirestore(), imageViewModel)
                             as T
                       }
                     })
