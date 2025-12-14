@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -22,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.view.WindowCompat.setDecorFitsSystemWindows
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -89,12 +91,16 @@ import com.google.firebase.auth.auth
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    setDecorFitsSystemWindows(window, true)
 
     setContent {
       AgriHealthAppTheme {
         // A surface container using the 'background' color from the theme
         Surface(
-            modifier = Modifier.fillMaxSize().semantics { testTag = C.Tag.main_screen_container },
+            modifier =
+                Modifier.fillMaxSize()
+                    .semantics { testTag = C.Tag.main_screen_container }
+                    .navigationBarsPadding(),
             color = MaterialTheme.colorScheme.background) {
               AgriHealthApp()
             }
@@ -121,7 +127,7 @@ fun AgriHealthApp(
   val locationViewModel: LocationViewModel = viewModel()
 
   var reloadReports by remember { mutableStateOf(false) }
-  val currentUser by userViewModel.user.collectAsState()
+  val currentUser = userViewModel.uiState.collectAsState().value.user
   val currentUserId = currentUser.uid
   val currentUserRole = currentUser.role
   val currentUserEmail = currentUser.email
@@ -368,7 +374,16 @@ fun AgriHealthApp(
             manageOfficeViewModel = manageOfficeViewModel,
             onGoBack = { navigationActions.goBack() },
             onCreateOffice = { navigationActions.navigateTo(Screen.CreateOffice) },
-            onJoinOffice = { navigationActions.navigateTo(Screen.ClaimCode(VET_TO_OFFICE)) })
+            onJoinOffice = { navigationActions.navigateTo(Screen.ClaimCode(VET_TO_OFFICE)) },
+            codesVmFactory = {
+              object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return CodesViewModel(
+                      userViewModel, ConnectionRepositoryProvider.vetToOfficeRepository)
+                      as T
+                }
+              }
+            })
       }
       composable(Screen.CreateOffice.route) {
         CreateOfficeScreen(

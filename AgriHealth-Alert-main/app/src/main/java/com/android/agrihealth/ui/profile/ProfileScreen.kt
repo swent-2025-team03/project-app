@@ -70,8 +70,8 @@ fun ProfileScreen(
     onCodeFarmer: () -> Unit = {},
     onManageOffice: () -> Unit = {},
 ) {
-
-  val user by userViewModel.user.collectAsState()
+  val uiState by userViewModel.uiState.collectAsState()
+  val user = uiState.user
   val userRole = user.role
 
   val factory = remember {
@@ -107,7 +107,8 @@ fun ProfileScreen(
             },
             modifier = Modifier.testTag(TOP_BAR))
       },
-      snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
+      snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.imePadding()) }) {
+          innerPadding ->
         Column(
             modifier =
                 Modifier.padding(innerPadding)

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -34,10 +35,10 @@ import com.android.agrihealth.data.model.report.QuestionForm
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.ui.common.OfficeNameViewModel
+import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.profile.LocalPhotoDisplay
-import com.android.agrihealth.ui.profile.UploadRemovePhotoButton
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
 import kotlin.collections.forEachIndexed
@@ -113,8 +114,9 @@ fun AddReportScreen(
     addReportViewModel: AddReportViewModelContract
 ) {
 
-  val uiState by addReportViewModel.uiState.collectAsState()
-  val user by userViewModel.user.collectAsState()
+  val reportUi by addReportViewModel.uiState.collectAsState()
+  val userUi by userViewModel.uiState.collectAsState()
+  val user = userUi.user
 
   val offices = remember { mutableStateMapOf<String, String>() }
 
@@ -132,7 +134,7 @@ fun AddReportScreen(
 
   LaunchedEffect(pickedLocation) { addReportViewModel.setAddress(pickedLocation) }
   LaunchedEffect(Unit) {
-    if (user.collected != uiState.collected) addReportViewModel.switchCollected()
+    if (user.collected != reportUi.collected) addReportViewModel.switchCollected()
   }
 
   // For the dropdown menu
@@ -168,9 +170,10 @@ fun AddReportScreen(
   }
 
   LaunchedEffect(Unit) { addReportViewModel.setOffice(selectedOption) }
-
   Scaffold(
-      snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+      snackbarHost = {
+        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.imePadding())
+      },
       topBar = {
         // Top bar with back arrow and title/status
         TopAppBar(
@@ -197,74 +200,72 @@ fun AddReportScreen(
       }) { padding ->
 
         // Main scrollable content
-        Column(
-            modifier =
-                Modifier.padding(padding)
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp)
-                    .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
-            verticalArrangement = Arrangement.Top) {
-              HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
-              TitleField(uiState.title, { addReportViewModel.setTitle(it) })
+        LoadingOverlay(isLoading = reportUi.isLoading) {
+          Column(
+              modifier =
+                  Modifier.padding(padding)
+                      .fillMaxSize()
+                      .verticalScroll(rememberScrollState())
+                      .padding(16.dp)
+                      .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
+              verticalArrangement = Arrangement.Top) {
+                HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
+                TitleField(reportUi.title, { addReportViewModel.setTitle(it) })
 
-              DescriptionField(uiState.description, { addReportViewModel.setDescription(it) })
+                DescriptionField(reportUi.description, { addReportViewModel.setDescription(it) })
 
-              QuestionList(
-                  questions = uiState.questionForms,
-                  onQuestionChange = { index, updated ->
-                    addReportViewModel.updateQuestion(index, updated)
-                  })
+                QuestionList(
+                    questions = reportUi.questionForms,
+                    onQuestionChange = { index, updated ->
+                      addReportViewModel.updateQuestion(index, updated)
+                    })
 
-              OutlinedTextField(
-                  value = uiState.address?.name ?: "Select a Location",
-                  placeholder = { Text("Select a Location") },
-                  onValueChange = {},
-                  readOnly = true,
-                  singleLine = true,
-                  label = { Text("Selected Location") },
-                  modifier = Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.ADDRESS_FIELD))
-              Button(
-                  onClick = onChangeLocation,
-                  modifier =
-                      Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.LOCATION_BUTTON)) {
-                    Text("Select Location")
-                  }
+                OutlinedTextField(
+                    value = reportUi.address?.name ?: "Select a Location",
+                    placeholder = { Text("Select a Location") },
+                    onValueChange = {},
+                    readOnly = true,
+                    singleLine = true,
+                    label = { Text("Selected Location") },
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.ADDRESS_FIELD))
+                Button(
+                    onClick = onChangeLocation,
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.LOCATION_BUTTON)) {
+                      Text("Select Location")
+                    }
 
-              OfficeDropdown(
-                  offices = offices,
-                  selectedOfficeId = selectedOption,
-                  onOfficeSelected = { officeId ->
-                    selectedOption = officeId
-                    addReportViewModel.setOffice(officeId)
-                  })
+                OfficeDropdown(
+                    offices = offices,
+                    selectedOfficeId = selectedOption,
+                    onOfficeSelected = { officeId ->
+                      selectedOption = officeId
+                      addReportViewModel.setOffice(officeId)
+                    })
 
-              LocalPhotoDisplay(
-                  photoURI = uiState.photoUri,
-                  modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 16.dp))
+                LocalPhotoDisplay(
+                    photoURI = reportUi.photoUri,
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 16.dp))
 
-              UploadRemovePhotoButton(
-                  photoAlreadyPicked = uiState.photoUri != null,
-                  onPhotoPicked = { addReportViewModel.setPhoto(it) },
-                  onPhotoRemoved = { addReportViewModel.removePhoto() })
+                CollectedSwitch(reportUi.collected, { addReportViewModel.switchCollected() }, true)
 
-              CollectedSwitch(uiState.collected, { addReportViewModel.switchCollected() }, true)
+                CreateReportButton(onClick = onCreateReportClick)
+              }
 
-              CreateReportButton(onClick = onCreateReportClick)
-            }
+          CreateReportSuccessDialog(
+              visible = showSuccessDialog,
+              onDismiss = {
+                showSuccessDialog = false
+                onBack()
+                onCreateReport()
+              })
 
-        CreateReportSuccessDialog(
-            visible = showSuccessDialog,
-            onDismiss = {
-              showSuccessDialog = false
-              onBack()
-              onCreateReport()
-            })
-
-        CreateReportErrorDialog(
-            visible = showErrorDialog,
-            errorMessage = errorDialogMessage,
-            onDismiss = { showErrorDialog = false })
+          CreateReportErrorDialog(
+              visible = showErrorDialog,
+              errorMessage = errorDialogMessage,
+              onDismiss = { showErrorDialog = false })
+        }
       }
 }
 
