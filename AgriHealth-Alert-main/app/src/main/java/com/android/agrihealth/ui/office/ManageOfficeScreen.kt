@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
@@ -61,6 +62,8 @@ fun ManageOfficeScreen(
     manageOfficeVmFactory: () -> ViewModelProvider.Factory,
     codesVmFactory: () -> ViewModelProvider.Factory,
 ) {
+  val focusManager = LocalFocusManager.current
+
   val snackbarHostState = remember { SnackbarHostState() }
   val manageOfficeVm: ManageOfficeViewModel = viewModel(factory = manageOfficeVmFactory())
 
@@ -152,7 +155,10 @@ fun ManageOfficeScreen(
                           items(uiState.office!!.vets) { vetId ->
                             AuthorName(
                                 vetId,
-                                onClick = { navigationActions.navigateTo(Screen.ViewUser(vetId)) })
+                                onClick = {
+                                  focusManager.clearFocus()
+                                  navigationActions.navigateTo(Screen.ViewUser(vetId))
+                                })
                           }
                         }
 
@@ -167,7 +173,10 @@ fun ManageOfficeScreen(
                       Spacer(modifier = Modifier.height(8.dp))
 
                       Button(
-                          onClick = { manageOfficeVm.updateOffice() },
+                          onClick = {
+                            focusManager.clearFocus()
+                            manageOfficeVm.updateOffice()
+                          },
                           modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),
                       ) {
                         Text("Save Changes")

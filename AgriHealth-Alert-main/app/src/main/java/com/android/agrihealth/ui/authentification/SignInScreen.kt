@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -61,6 +62,7 @@ fun SignInScreen(
   val snackbarHostState = remember { SnackbarHostState() }
   val errorMsg = signInUIState.errorMsg
 
+  val focusManager = LocalFocusManager.current
   LaunchedEffect(errorMsg) {
     if (errorMsg != null) {
       snackbarHostState.showSnackbar(errorMsg)
@@ -78,7 +80,7 @@ fun SignInScreen(
 
   LoadingOverlay(isLoading = signInUIState.isLoading) {
     Scaffold(
-        modifier = modifier.testTag(SignInScreenTestTags.SCREEN),
+        modifier = Modifier.testTag(SignInScreenTestTags.SCREEN),
         snackbarHost = {
           SnackbarHost(
               hostState = snackbarHostState,
@@ -149,9 +151,13 @@ fun SignInScreen(
                 Spacer(Modifier.height(24.dp))
 
                 Button(
-                    onClick = { signInViewModel.signInWithEmailAndPassword() },
+                    onClick = {
+                      focusManager.clearFocus()
+                      signInViewModel.signInWithEmailAndPassword()
+                    },
                     modifier =
-                        Modifier.fillMaxWidth()
+                        modifier
+                            .fillMaxWidth()
                             .height(56.dp)
                             .testTag(SignInScreenTestTags.LOGIN_BUTTON)) {
                       Text("Log In", color = MaterialTheme.colorScheme.onPrimary)
@@ -160,14 +166,18 @@ fun SignInScreen(
                 Spacer(Modifier.height(16.dp))
 
                 Button(
-                    onClick = goToSignUp,
+                    onClick = {
+                      focusManager.clearFocus()
+                      goToSignUp()
+                    },
                     shape = RoundedCornerShape(28.dp),
                     colors =
                         ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                             contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
                     modifier =
-                        Modifier.fillMaxWidth()
+                        modifier
+                            .fillMaxWidth()
                             .height(56.dp)
                             .testTag(SignInScreenTestTags.SIGN_UP_BUTTON)) {
                       Text("Create an account")
