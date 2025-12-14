@@ -16,7 +16,9 @@ class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fire
   private var cachedAlerts: List<Alert> = emptyList()
 
   override suspend fun getAlerts(): List<Alert> {
+    Log.d("AlertRepo", "getAlerts() START")
     val snapshot = db.collection(ALERTS_COLLECTION_PATH).orderBy("createdAt").get().await()
+    Log.d("AlertRepo", "Documents count = ${snapshot.size()}")
 
     val alerts =
         snapshot.documents.mapNotNull { doc ->

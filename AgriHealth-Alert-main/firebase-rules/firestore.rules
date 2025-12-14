@@ -93,5 +93,11 @@ service cloud.firestore {
       // No deletes for now
       allow delete: if false;
     }
+
+    // ---- Alerts ----
+    match /alerts/{alertId} {
+      allow read: if true;     // anyone (even unauthenticated) can read
+      allow write: if false;  // no client can modify
+    }
   }
 }
