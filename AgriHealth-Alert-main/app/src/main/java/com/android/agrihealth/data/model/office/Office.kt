@@ -18,5 +18,6 @@ data class Office(
     val address: Location? = null,
     val description: String? = null,
     val vets: List<String> = emptyList(),
-    val ownerId: String // uid of the vet who created it TODO: think how to share ownership
+    val ownerId: String, // uid of the vet who created it
+    val photoUrl: String? = null
 )

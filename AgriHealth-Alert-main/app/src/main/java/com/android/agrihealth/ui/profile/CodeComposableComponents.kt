@@ -57,7 +57,9 @@ fun ClaimCodeScreen(
             },
             modifier = Modifier.testTag(TOP_BAR))
       },
-      snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
+      snackbarHost = {
+        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.imePadding())
+      }) { innerPadding ->
         Column(
             modifier =
                 Modifier.padding(innerPadding)

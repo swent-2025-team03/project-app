@@ -124,7 +124,7 @@ fun AlertViewScreen(navigationActions: NavigationActions, viewModel: AlertViewMo
                       .align(Alignment.BottomCenter)
                       .padding(bottom = 16.dp)
                       .testTag(AlertViewScreenTestTags.VIEW_ON_MAP),
-              onClick = { /*TODO: implement View on Map using polygon when available */}) {
+              onClick = {}) {
                 Text("View on Map")
               }
           // --- Navigation arrows (previous / next) ---
