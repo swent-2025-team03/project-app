@@ -83,8 +83,8 @@ fun ManageOfficeScreen(
   val isOwner = uiState.office?.ownerId == currentUser.uid
 
   LaunchedEffect(currentUser) { manageOfficeViewModel.loadOffice() }
-  LaunchedEffect(uiState.error) {
-    uiState.error?.let { snackbarHostState.showSnackbar(uiState.error ?: "") }
+  LaunchedEffect(uiState.snackMessage) {
+    uiState.snackMessage?.let { snackbarHostState.showSnackbar(uiState.snackMessage ?: "") }
   }
 
   Scaffold(
@@ -109,7 +109,7 @@ fun ManageOfficeScreen(
               horizontalAlignment = Alignment.CenterHorizontally,
               verticalArrangement = Arrangement.Top) {
                 HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
-                if (uiState.error == null) {
+                if (uiState.snackMessage == null) {
                   if (uiState.office == null) {
                     Button(
                         onClick = onCreateOffice,

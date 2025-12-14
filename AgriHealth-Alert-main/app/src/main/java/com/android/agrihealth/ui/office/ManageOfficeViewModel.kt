@@ -22,7 +22,7 @@ data class ManageOfficeUiState(
     val editableDescription: String = "",
     val editableAddress: String = "",
     val isLoading: Boolean = false,
-    val error: String? = null,
+    val snackMessage: String? = null,
     val photoUri: Uri? = null,
     val uploadedImagePath: String? = null
 )
@@ -56,7 +56,7 @@ class ManageOfficeViewModel(
           }) { error ->
             _uiState.value =
                 _uiState.value.copy(
-                    error =
+                    snackMessage =
                         "Couldn't load your office, make sure you are connected to the internet")
           }
         }
@@ -120,6 +120,7 @@ class ManageOfficeViewModel(
               photoUrl = uploadedPath)
       officeRepository.updateOffice(updatedOffice)
       _uiState.value = _uiState.value.copy(office = updatedOffice)
+      _uiState.value = _uiState.value.copy(snackMessage = "Changes successfully saved")
       onSuccess()
     } catch (e: Throwable) {
       onError(e)
