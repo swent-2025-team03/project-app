@@ -11,26 +11,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.R
-import com.android.agrihealth.ui.loading.LoadingOverlay
-
-// Imports for preview
-/*
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.credentials.Credential
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.data.model.authentification.AuthRepository
-import com.android.agrihealth.data.model.authentification.UserRepository
-import com.android.agrihealth.data.model.user.User
-import com.google.firebase.auth.FirebaseUser
-*/
+import com.android.agrihealth.testutil.FakeAuthRepository
+import com.android.agrihealth.testutil.FakeUserRepository
+import com.android.agrihealth.ui.loading.LoadingOverlay
 
 object SignInScreenTestTags {
   const val SCREEN = "SignInScreen"
@@ -61,6 +55,7 @@ fun SignInScreen(
   val snackbarHostState = remember { SnackbarHostState() }
   val errorMsg = signInUIState.errorMsg
 
+  val focusManager = LocalFocusManager.current
   LaunchedEffect(errorMsg) {
     if (errorMsg != null) {
       snackbarHostState.showSnackbar(errorMsg)
@@ -78,7 +73,7 @@ fun SignInScreen(
 
   LoadingOverlay(isLoading = signInUIState.isLoading) {
     Scaffold(
-        modifier = modifier.testTag(SignInScreenTestTags.SCREEN),
+        modifier = Modifier.testTag(SignInScreenTestTags.SCREEN),
         snackbarHost = {
           SnackbarHost(
               hostState = snackbarHostState,
@@ -149,9 +144,13 @@ fun SignInScreen(
                 Spacer(Modifier.height(24.dp))
 
                 Button(
-                    onClick = { signInViewModel.signInWithEmailAndPassword() },
+                    onClick = {
+                      focusManager.clearFocus()
+                      signInViewModel.signInWithEmailAndPassword()
+                    },
                     modifier =
-                        Modifier.fillMaxWidth()
+                        modifier
+                            .fillMaxWidth()
                             .height(56.dp)
                             .testTag(SignInScreenTestTags.LOGIN_BUTTON)) {
                       Text("Log In", color = MaterialTheme.colorScheme.onPrimary)
@@ -160,14 +159,18 @@ fun SignInScreen(
                 Spacer(Modifier.height(16.dp))
 
                 Button(
-                    onClick = goToSignUp,
+                    onClick = {
+                      focusManager.clearFocus()
+                      goToSignUp()
+                    },
                     shape = RoundedCornerShape(28.dp),
                     colors =
                         ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                             contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
                     modifier =
-                        Modifier.fillMaxWidth()
+                        modifier
+                            .fillMaxWidth()
                             .height(56.dp)
                             .testTag(SignInScreenTestTags.SIGN_UP_BUTTON)) {
                       Text("Create an account")
@@ -214,49 +217,14 @@ fun GoogleSignInButton(onSignInClick: () -> Unit) {
       }
 }
 
-/*
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun SignInScreenPreview() {
-    val authRepo = object : AuthRepository {
-        override suspend fun signInWithEmailAndPassword(
-            email: String,
-            password: String
-        ): Result<FirebaseUser> {TODO()}
-
-        override suspend fun reAuthenticate(
-            email: String,
-            password: String
-        ): Result<Unit> {TODO()}
-
-        override suspend fun changePassword(password: String): Result<Unit> {TODO()}
-
-        override suspend fun signInWithGoogle(credential: Credential): Result<FirebaseUser> {TODO()}
-
-        override suspend fun signUpWithEmailAndPassword(
-            email: String,
-            password: String,
-            userData: User
-        ): Result<FirebaseUser> {TODO()}
-
-        override fun signOut(): Result<Unit> {TODO()}
-
-        override suspend fun deleteAccount(): Result<Unit> {TODO()}
-
-    }
-    val userRepo =object : UserRepository{
-        override suspend fun addUser(user: User) {TODO()}
-
-        override suspend fun updateUser(user: User) {TODO()}
-
-        override suspend fun deleteUser(uid: String) {TODO()}
-
-        override suspend fun getUserFromId(uid: String): Result<User> {TODO()}
-    }
-    val vm = object : SignInViewModel(authRepo, userRepo){
-    }
-    AgriHealthAppTheme { SignInScreen(
-          credentialManager = CredentialManager.create(LocalContext.current),
-        signInViewModel = vm) }
+  val authRepo = FakeAuthRepository()
+  val userRepo = FakeUserRepository()
+  val vm = SignInViewModel(authRepo, userRepo)
+  AgriHealthAppTheme {
+    SignInScreen(
+        credentialManager = CredentialManager.create(LocalContext.current), signInViewModel = vm)
+  }
 }
-*/

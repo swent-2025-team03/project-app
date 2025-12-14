@@ -105,6 +105,9 @@ open class SignUpViewModel(
   }
 
   fun signUp() {
+    setEmail(_uiState.value.email.trim())
+    setPassword(_uiState.value.password.trim())
+    setCnfPassword(_uiState.value.cnfPassword.trim())
     val state = _uiState.value
 
     if (state.isValid()) {

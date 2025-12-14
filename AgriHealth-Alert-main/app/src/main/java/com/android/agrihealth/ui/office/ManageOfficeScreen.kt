@@ -17,6 +17,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
@@ -71,6 +72,8 @@ fun ManageOfficeScreen(
     onJoinOffice: () -> Unit = {},
     codesVmFactory: () -> ViewModelProvider.Factory,
 ) {
+  val focusManager = LocalFocusManager.current
+
   val snackbarHostState = remember { SnackbarHostState() }
   val uiState by manageOfficeViewModel.uiState.collectAsState()
 
@@ -83,9 +86,12 @@ fun ManageOfficeScreen(
   val isOwner = uiState.office?.ownerId == currentUser.uid
 
   LaunchedEffect(currentUser) { manageOfficeViewModel.loadOffice() }
+
   LaunchedEffect(uiState.snackMessage) {
-    uiState.snackMessage?.let { snackbarHostState.showSnackbar(uiState.snackMessage ?: "") }
-    manageOfficeViewModel.clearMessage()
+    uiState.snackMessage?.let {
+      snackbarHostState.showSnackbar(uiState.snackMessage ?: "")
+      manageOfficeViewModel.clearMessage()
+    }
   }
 
   Scaffold(
@@ -170,7 +176,10 @@ fun ManageOfficeScreen(
                         items(uiState.office!!.vets) { vetId ->
                           AuthorName(
                               vetId,
-                              onClick = { navigationActions.navigateTo(Screen.ViewUser(vetId)) })
+                              onClick = {
+                                focusManager.clearFocus()
+                                navigationActions.navigateTo(Screen.ViewUser(vetId))
+                              })
                         }
                       }
 
@@ -186,7 +195,10 @@ fun ManageOfficeScreen(
 
                     val scope = rememberCoroutineScope()
                     Button(
-                        onClick = { scope.launch { manageOfficeViewModel.updateOffice() } },
+                        onClick = {
+                          focusManager.clearFocus()
+                          scope.launch { manageOfficeViewModel.updateOffice() }
+                        },
                         modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),
                     ) {
                       Text("Save Changes")
@@ -201,8 +213,6 @@ fun ManageOfficeScreen(
                       modifier = Modifier.fillMaxWidth().testTag(LEAVE_OFFICE_BUTTON)) {
                         Text("Leave My Office")
                       }
-                  // TODO: improve leave button permissions; currently only owners can trigger
-                  // dialog
 
                   if (showLeaveDialog) {
                     AlertDialog(
