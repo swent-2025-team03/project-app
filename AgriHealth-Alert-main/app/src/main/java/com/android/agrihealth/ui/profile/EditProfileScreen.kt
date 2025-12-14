@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
@@ -84,6 +85,7 @@ fun EditProfileScreen(
     onSave: (User) -> Unit = { userViewModel.updateUser(it) },
     onPasswordChange: () -> Unit = {}
 ) {
+  val focusManager = LocalFocusManager.current
 
   val connectionRepository = remember { ConnectionRepository(connectionType = "") }
   val codesViewModel = remember { CodesViewModel(userViewModel, connectionRepository) }
@@ -223,7 +225,10 @@ fun EditProfileScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     trailingIcon = {
                       IconButton(
-                          onClick = { onPasswordChange() },
+                          onClick = {
+                            focusManager.clearFocus()
+                            onPasswordChange()
+                          },
                           modifier = Modifier.testTag(PASSWORD_BUTTON)) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit Password")
                           }
@@ -253,7 +258,10 @@ fun EditProfileScreen(
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
               Button(
-                  onClick = onChangeLocation,
+                  onClick = {
+                    focusManager.clearFocus()
+                    onChangeLocation()
+                  },
                   enabled = user !is Vet || isOwner,
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LOCATION_BUTTON)) {
@@ -314,6 +322,7 @@ fun EditProfileScreen(
                               DropdownMenuItem(
                                   text = { Text(displayName) },
                                   onClick = {
+                                    focusManager.clearFocus()
                                     selectedDefaultOffice = officeId
                                     expandedVetDropdown = false
                                   })
@@ -337,6 +346,7 @@ fun EditProfileScreen(
               // Save Changes Button
               Button(
                   onClick = {
+                    focusManager.clearFocus()
                     scope.launch {
                       val updatedUser =
                           editProfileViewModel.saveProfileChanges(
