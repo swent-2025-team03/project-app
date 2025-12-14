@@ -96,8 +96,7 @@ data class LocationPickedUIState(
 )
 
 /**
- * ViewModel holding the state of a report being viewed. Currently uses mock data and local state
- * only.
+ * ViewModel holding the state of the Location showed by fields and provided by the locationPicker.
  */
 class LocationPickedViewModel(private val initLocation: Location?) : ViewModel() {
 
