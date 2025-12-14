@@ -96,8 +96,8 @@ service cloud.firestore {
 
     // ---- Alerts ----
     match /alerts/{alertId} {
-      allow read: if true;     // anyone (even unauthenticated) can read
-      allow write: if false;  // no client can modify
+      allow read: if true;
+      allow write: if true;
     }
   }
 }
