@@ -284,7 +284,9 @@ class PlannerScreenTest {
   @Test
   fun planner_loadReports_showsAndHidesLoadingOverlay() = runTest {
     val report = PlannerTestReportsData.report1.copy(startTime = today.atTime(9, 0))
-    val delayedRepo = InMemoryReportRepository(initialReports = listOf(report), delayMs = TestConstants.DEFAULT_TIMEOUT)
+    val delayedRepo =
+        InMemoryReportRepository(
+            initialReports = listOf(report), delayMs = TestConstants.DEFAULT_TIMEOUT)
 
     val viewModel = PlannerViewModel(reportRepository = delayedRepo)
 
