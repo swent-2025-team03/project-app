@@ -7,6 +7,7 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
+import com.android.agrihealth.ui.loading.withLoadingState
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -43,9 +44,11 @@ data class PlannerUIState(
     val setTime: LocalTime = LocalTime.now(),
     val setDuration: LocalTime = LocalTime.of(1, 0),
     val reportToSetTheDateFor: Report? = null,
+    val isAllowedToSetDate: Boolean = false,
 
     // Unsaved Changes
-    val isUnsavedAlertShowing: Boolean = false
+    val isUnsavedAlertShowing: Boolean = false,
+    val isLoading: Boolean = false
 )
 
 class PlannerViewModel(
@@ -56,24 +59,33 @@ class PlannerViewModel(
   val uiState: StateFlow<PlannerUIState> = _uiState.asStateFlow()
 
   suspend fun loadReports() {
-    val user = _uiState.value.user
-    val reports = reportRepository.getAllReports(user.uid).groupBy { it.startTime?.toLocalDate() }
-    _uiState.value =
-        _uiState.value.copy(
-            reports = reports,
-            selectedDateReports = reports[_uiState.value.selectedDate] ?: emptyList())
+    _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
+      try {
+        val user = _uiState.value.user
+        val reports =
+            reportRepository.getAllReports(user.uid).groupBy { it.startTime?.toLocalDate() }
+        _uiState.value =
+            _uiState.value.copy(
+                reports = reports,
+                selectedDateReports = reports[_uiState.value.selectedDate] ?: emptyList())
+      } catch (_: Exception) {
+        _uiState.value = _uiState.value.copy(reports = emptyMap())
+      }
+    }
   }
 
   fun editReportWithNewTime() {
     val selectedDate = _uiState.value.selectedDate
     val newDateTime = LocalDateTime.of(selectedDate, _uiState.value.setTime)
     viewModelScope.launch {
-      reportRepository.editReport(
-          _uiState.value.reportToSetTheDateFor!!.id,
-          _uiState.value.reportToSetTheDateFor!!.copy(
-              startTime = newDateTime, duration = _uiState.value.setDuration))
-      loadReports()
-      setReportToSetTheDateFor(_uiState.value.reportToSetTheDateFor!!.id)
+      _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
+        reportRepository.editReport(
+            _uiState.value.reportToSetTheDateFor!!.id,
+            _uiState.value.reportToSetTheDateFor!!.copy(
+                startTime = newDateTime, duration = _uiState.value.setDuration))
+        loadReports()
+        setReportToSetTheDateFor(_uiState.value.reportToSetTheDateFor!!.id)
+      }
     }
   }
 
@@ -120,6 +132,8 @@ class PlannerViewModel(
       return null
     }
     val report = _uiState.value.reports.values.flatten().find { it.id == reportId }
+    if (report?.assignedVet == _uiState.value.user.uid)
+        _uiState.value = _uiState.value.copy(isAllowedToSetDate = true)
 
     _uiState.value = _uiState.value.copy(reportToSetTheDateFor = report)
     return report

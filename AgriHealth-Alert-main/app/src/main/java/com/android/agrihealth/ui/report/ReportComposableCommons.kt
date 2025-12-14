@@ -97,29 +97,38 @@ fun MCQOItem(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
+  val otherText = "Other"
+  val isLastItemSelected = question.answerIndex == question.answers.size
+
   Column(modifier = Modifier.padding(vertical = 8.dp)) {
     Text(question.question, modifier = Modifier.padding(bottom = 4.dp))
-    question.answers.forEachIndexed { idx, answer ->
+    (question.answers + otherText).forEachIndexed { idx, answer ->
       Row(verticalAlignment = Alignment.CenterVertically) {
+        val isLastItem = answer == otherText
         RadioButton(
             selected = question.answerIndex == idx,
             onClick =
                 if (enabled) {
-                  { onAnswerChange(question.copy(answerIndex = idx)) }
+                  {
+                    val newAnswer = if (isLastItem) question.userAnswer else ""
+                    onAnswerChange(question.copy(answerIndex = idx, userAnswer = newAnswer))
+                  }
                 } else {
                   {}
                 },
             enabled = enabled,
             modifier = modifier)
-        Text(answer)
+
+        if (!isLastItem || (!enabled && !isLastItemSelected)) Text(answer)
+        else
+            OutlinedTextField(
+                value = question.userAnswer,
+                onValueChange = { onAnswerChange(question.copy(userAnswer = it)) },
+                label = { Text("Other") },
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                enabled = enabled && isLastItemSelected)
       }
     }
-    OutlinedTextField(
-        value = question.userAnswer,
-        onValueChange = { onAnswerChange(question.copy(userAnswer = it)) },
-        label = { Text("Other") },
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        enabled = enabled)
   }
 }
 

@@ -70,8 +70,8 @@ fun ProfileScreen(
     onCodeFarmer: () -> Unit = {},
     onManageOffice: () -> Unit = {},
 ) {
-
-  val user by userViewModel.user.collectAsState()
+  val uiState by userViewModel.uiState.collectAsState()
+  val user = uiState.user
   val userRole = user.role
 
   val factory = remember {

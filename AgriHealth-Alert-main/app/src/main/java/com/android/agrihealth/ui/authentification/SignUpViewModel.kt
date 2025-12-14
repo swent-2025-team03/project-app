@@ -9,6 +9,7 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.ui.loading.withLoadingState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -34,6 +35,7 @@ data class SignUpUIState(
     val role: UserRole? = null,
     val errorMsg: String? = null,
     val hasFailed: Boolean = false,
+    val isLoading: Boolean = false,
 ) {
 
   fun isValid(): Boolean {
@@ -116,18 +118,20 @@ open class SignUpViewModel(
 
       if (user != null) {
         viewModelScope.launch {
-          authRepository
-              .signUpWithEmailAndPassword(state.email, state.password, user)
-              .fold(
-                  { uid -> _uiState.update { it.copy(uid = uid) } },
-                  { failure ->
-                    setErrorMsg(
-                        when (failure) {
-                          is com.google.firebase.auth.FirebaseAuthException ->
-                              SignUpErrorMsg.ALREADY_USED_EMAIL
-                          else -> SignUpErrorMsg.TIMEOUT
-                        })
-                  })
+          _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
+            authRepository
+                .signUpWithEmailAndPassword(state.email, state.password, user)
+                .fold(
+                    { uid -> _uiState.update { it.copy(uid = uid) } },
+                    { failure ->
+                      setErrorMsg(
+                          when (failure) {
+                            is com.google.firebase.auth.FirebaseAuthException ->
+                                SignUpErrorMsg.ALREADY_USED_EMAIL
+                            else -> SignUpErrorMsg.TIMEOUT
+                          })
+                    })
+          }
         }
       }
     } else {
