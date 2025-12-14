@@ -36,7 +36,7 @@ object TestUser {
 object TestPassword {
   val password1 = "Password123"
   val password2 = "iamaweakpassword"
-  val password3 = "12345678"
+  val password3 = "123456789"
   val password4 = "weak"
 }
 
