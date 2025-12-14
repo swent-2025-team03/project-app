@@ -18,7 +18,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testutil.FakeAuthRepository
 import com.android.agrihealth.testutil.FakeUserViewModel
@@ -217,21 +216,8 @@ private fun Field(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun SignUpScreenPreview() {
-  val user =
-      Farmer(
-          uid = "",
-          firstname = "",
-          lastname = "",
-          email = "",
-          address = null,
-          linkedOffices = emptyList(),
-          defaultOffice = "",
-          isGoogleAccount = false,
-          description = "",
-          collected = false,
-          deviceTokensFCM = emptySet())
   val authRepo = FakeAuthRepository()
   val vm = object : SignUpViewModel(authRepo) {}
 
-  AgriHealthAppTheme { SignUpScreen(signUpViewModel = vm, userViewModel = FakeUserViewModel(user)) }
+  AgriHealthAppTheme { SignUpScreen(signUpViewModel = vm, userViewModel = FakeUserViewModel()) }
 }

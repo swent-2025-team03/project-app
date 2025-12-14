@@ -571,21 +571,6 @@ fun CreateReportButton(
 fun AddReportScreenPreview() {
   AgriHealthAppTheme {
     AddReportScreen(
-        userViewModel =
-            FakeUserViewModel(
-                initialUser =
-                    Farmer(
-                        uid = "",
-                        firstname = "",
-                        lastname = "",
-                        email = "",
-                        address = null,
-                        linkedOffices = emptyList(),
-                        defaultOffice = "",
-                        isGoogleAccount = false,
-                        description = "",
-                        collected = false,
-                        deviceTokensFCM = emptySet())),
-        addReportViewModel = FakeAddReportViewModel())
+        userViewModel = FakeUserViewModel(), addReportViewModel = FakeAddReportViewModel())
   }
 }
