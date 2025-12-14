@@ -182,7 +182,6 @@ fun ManageOfficeScreen(
                         modifier = Modifier.fillMaxWidth().testTag(LEAVE_OFFICE_BUTTON)) {
                           Text("Leave My Office")
                         }
-                    // TODO: improve leave button permissions; currently only owners can trigger
                     // dialog
 
                     if (showLeaveDialog) {
