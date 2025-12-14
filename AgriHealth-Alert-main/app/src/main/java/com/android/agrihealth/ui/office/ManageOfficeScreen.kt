@@ -75,7 +75,6 @@ fun ManageOfficeScreen(
   val isOwner = uiState.office?.ownerId == currentUser.uid
 
   LaunchedEffect(currentUser) { manageOfficeVm.loadOffice() }
-  LaunchedEffect(userViewModel.uiState.value) { manageOfficeVm.loadOffice() }
   LaunchedEffect(uiState.error) {
     uiState.error?.let { snackbarHostState.showSnackbar(uiState.error ?: "") }
   }
