@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Replay
-import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -69,8 +68,11 @@ import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.unit.IntSize
+import com.android.agrihealth.ui.report.AddReportDialogTexts
+import com.android.agrihealth.ui.report.AddReportFeedbackTexts
+import com.android.agrihealth.ui.report.AddReportScreenTestTags
 import com.android.agrihealth.ui.report.CreateReportErrorDialog
-import com.mr0xf00.easycrop.CropperLoading
+import com.mr0xf00.easycrop.ImageCropper
 
 
 enum class CodeType {
@@ -101,6 +103,11 @@ object EditProfileScreenTestTags {
   fun dropdownTag(type: String) = "ACTIVE_CODES_DROPDOWN_$type"
 
   fun dropdownElementTag(type: String) = "ACTIVE_CODE_ELEMENT_$type"
+}
+
+object EditProfileScreenTexts {
+  const val DIALOG_LOADING_ERROR = "The supplied image is invalid, not supported, or you don't have the required permissions to read it..."
+  const val DIALOG_SAVING_ERROR = "The result could not be saved. The selected area is likely to big, try selecting a smaller area..."
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -156,22 +163,38 @@ fun EditProfileScreen(
   var expandedVetDropdown by remember { mutableStateOf(false) }
   var collected by remember { mutableStateOf(user.collected) }
 
+  // Specific to dialogs
   var showPhotoPickerDialog by remember { mutableStateOf(false) }
-  var showPhotoCropper by remember { mutableStateOf(false) }
   var showErrorDialog by remember { mutableStateOf(false) }
-  var chosenPhoto : ByteArray? by remember {mutableStateOf(null)}
   var errorDialogMessage by remember { mutableStateOf<String?>(null) }
+
+  // Specific to the image cropper
   val imageCropper = rememberImageCropper()
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
-
-  val handleProfilePictureClick = {
-    if (chosenPhoto == null) {
-      showPhotoPickerDialog = true
-    } else {
-      chosenPhoto = null
+  val croppingIsOngoing = imageCropper.cropState != null
+  var chosenPhoto : ByteArray? by remember {mutableStateOf(null)}
+  val launchImageCropper: (Uri) -> Unit = remember {
+    { uri: Uri ->
+      scope.launch {
+        val bitmap = uri.toBitmap(context).asImageBitmap()
+        when (val result = imageCropper.crop(IntSize(4096, 4096), bmp = bitmap)) {
+          is CropResult.Cancelled -> showPhotoPickerDialog = true
+          is CropError -> {
+            showErrorDialog = true
+            errorDialogMessage = when (result) {
+              CropError.LoadingError -> EditProfileScreenTexts.DIALOG_LOADING_ERROR
+              CropError.SavingError -> EditProfileScreenTexts.DIALOG_SAVING_ERROR
+            }
+          }
+          is CropResult.Success -> {
+            chosenPhoto = result.bitmap.toByteArray()
+          }
+        }
+      }
     }
   }
+
 
   Scaffold(
       topBar = {
@@ -201,38 +224,17 @@ fun EditProfileScreen(
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
 
-          Box(
-            modifier = Modifier.size(120.dp),
-            contentAlignment = Alignment.Center,
-          ) {
-            Icon(
-              imageVector = Icons.Default.AccountCircle,
-              contentDescription = "Profile Picture",
-              modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .testTag(PROFILE_IMAGE)
-                .clickable { handleProfilePictureClick() },
-              tint = MaterialTheme.colorScheme.primary,
-            )
-
-            // Camera icon overlay
-            FloatingActionButton(
-              onClick = { handleProfilePictureClick() },
-              modifier = Modifier
-                .size(40.dp)
-                .align(Alignment.BottomEnd)
-                .testTag(EditProfileScreenTestTags.EDIT_PROFILE_PICTURE_BUTTON),
-              containerColor = MaterialTheme.colorScheme.primaryContainer,
-              contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ) {
-              Icon(
-                imageVector = if (chosenPhoto == null) Icons.Default.CameraAlt else Icons.Default.Clear,
-                contentDescription = "Edit profile picture",
-                modifier = Modifier.size(20.dp)
+              EditableProfilePicture(
+                profilePictureIsEmpty = chosenPhoto == null,
+                handleProfilePictureClick = {
+                  if (chosenPhoto == null) {
+                    showPhotoPickerDialog = true
+                  } else {
+                    chosenPhoto = null
+                  }
+                }
               )
-            }
-          }
+
 
               Spacer(modifier = Modifier.height(24.dp))
 
@@ -441,64 +443,119 @@ fun EditProfileScreen(
   if (showPhotoPickerDialog) {
     ImagePickerDialog(
       onDismiss = { showPhotoPickerDialog = false },
-      onImageSelected = { uri ->
-        scope.launch {
-          val bitmap = uri.toBitmap(context).asImageBitmap()
-          val result = imageCropper.crop(maxResultSize = IntSize(2048, 2048), bmp = bitmap)
-          when (result) {
-            is CropResult.Cancelled -> {showPhotoPickerDialog = true}
-            is CropError -> {
-              showErrorDialog = true
-              errorDialogMessage = when (result) {
-                CropError.LoadingError -> "The supplied image is invalid, not supported, or you don't have the required permissions to read it"
-                CropError.SavingError -> "The result could not be saved"
-              }
-            }
-            is CropResult.Success -> { chosenPhoto = result.bitmap.toByteArray() }
-          }
-        }
-      }
+      onImageSelected = { uri -> launchImageCropper(uri) }
     )
   }
 
   if (showErrorDialog) {
-    CreateReportErrorDialog(true, errorDialogMessage, onDismiss = { showErrorDialog = false })
+    ErrorDialog(errorDialogMessage, onDismiss = { showErrorDialog = false })
   }
 
-  val cropState = imageCropper.cropState
-  if(cropState != null) {
-    // Setting this once
-    LaunchedEffect(cropState) {
-      // Force the region to be a square instead of a rectangle
-      val region = cropState.region
-      val size = minOf(region.width, region.height)
-      val centerX = region.center.x
-      val centerY = region.center.y
-
-      cropState.region = Rect(
-        left = centerX - size / 2f,
-        top = centerY - size / 2f,
-        right = centerX + size / 2f,
-        bottom = centerY + size / 2f
-      )
-
-      cropState.aspectLock = true
-      cropState.shape = CircleCropShape
-    }
-
-    ImageCropperDialog(
-      state = cropState,
-      topBar = { ImageCropperCustomTopBar(cropState) },
-      cropControls = {},
-      style = CropperStyle(
-        autoZoom = true,
-        guidelines = null,
-        shapes = listOf(CircleCropShape),
-        aspects = listOf(AspectRatio(1, 1))
-    ))
+  if(croppingIsOngoing) {
+    ShowImageCropperDialog(imageCropper)
   }
 }
 
+
+// TODO: Place this in its own file, as it is a copy of the one in AddReportScreen.kt
+/**
+ * A dialog shown when an error happened and a report couldn't be created
+ *
+ * @param visible True if the dialog should be shown
+ * @param errorMessage The error message received when attempting to create a report
+ * @param onDismiss Executed when the user dismisses the dialog
+ */
+@Composable
+fun ErrorDialog(errorMessage: String?, onDismiss: () -> Unit) {
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    confirmButton = {
+      TextButton(
+        onClick = onDismiss,
+        modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_FAILURE_OK),
+        colors =
+          ButtonDefaults.textButtonColors(
+            contentColor = MaterialTheme.colorScheme.onSurface)) {
+        Text(AddReportDialogTexts.OK)
+      }
+    },
+    title = { Text(AddReportDialogTexts.TITLE_FAILURE) },
+    text = { Text(errorMessage ?: AddReportFeedbackTexts.UNKNOWN) },
+    modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_FAILURE))
+}
+
+
+@Composable
+fun ShowImageCropperDialog(imageCropper: ImageCropper) {
+  val cropState = imageCropper.cropState!!
+
+  // Setting this once
+  LaunchedEffect(cropState) {
+    // Force the region to be a square instead of a rectangle
+    val region = cropState.region
+    val size = minOf(region.width, region.height)
+    val centerX = region.center.x
+    val centerY = region.center.y
+
+    cropState.region = Rect(
+      left = centerX - size / 2f,
+      top = centerY - size / 2f,
+      right = centerX + size / 2f,
+      bottom = centerY + size / 2f
+    )
+
+    cropState.aspectLock = true
+    cropState.shape = CircleCropShape
+  }
+
+  ImageCropperDialog(
+    state = cropState,
+    topBar = { ImageCropperCustomTopBar(cropState) },
+    cropControls = {},
+    style = CropperStyle(
+      autoZoom = true,
+      guidelines = null,
+      shapes = listOf(CircleCropShape),
+      aspects = listOf(AspectRatio(1, 1))
+    ))
+}
+
+
+@Composable
+fun EditableProfilePicture(profilePictureIsEmpty: Boolean, handleProfilePictureClick: () -> Unit) {
+  Box(
+    modifier = Modifier.size(120.dp),
+    contentAlignment = Alignment.Center,
+  ) {
+    Icon(
+      imageVector = Icons.Default.AccountCircle,
+      contentDescription = "Profile Picture",
+      modifier = Modifier
+        .size(120.dp)
+        .clip(CircleShape)
+        .testTag(PROFILE_IMAGE)
+        .clickable { handleProfilePictureClick() },
+      tint = MaterialTheme.colorScheme.primary,
+    )
+
+    // Camera icon overlay
+    FloatingActionButton(
+      onClick = { handleProfilePictureClick() },
+      modifier = Modifier
+        .size(40.dp)
+        .align(Alignment.BottomEnd)
+        .testTag(EditProfileScreenTestTags.EDIT_PROFILE_PICTURE_BUTTON),
+      containerColor = MaterialTheme.colorScheme.primaryContainer,
+      contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+    ) {
+      Icon(
+        imageVector = if (profilePictureIsEmpty) Icons.Default.CameraAlt else Icons.Default.Clear,
+        contentDescription = "Edit profile picture",
+        modifier = Modifier.size(20.dp)
+      )
+    }
+  }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
