@@ -118,6 +118,30 @@ fun RemotePhotoDisplay(
   }
 }
 
+@Composable
+private fun ActualLocalPhotoDisplay(
+    photo: Any?,
+    modifier: Modifier = Modifier,
+    showPlaceHolder: Boolean = false,
+    placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
+) {
+  when (photo) {
+    null -> {
+      placeholder(modifier)
+    }
+    is ByteArray, is Uri -> {
+      AsyncImage(
+        model = photo,
+        contentDescription = "Uploaded image",
+        modifier = modifier.testTag(PhotoComponentsTestTags.IMAGE_PREVIEW),
+        contentScale = ContentScale.Fit)
+    }
+    else -> {
+      throw IllegalArgumentException("'photo' must be either a Uri or a ByteArray")
+    }
+  }
+}
+
 /**
  * Displays the photo picked by the user before it is uploaded
  * * (local image referenced by a URI).
@@ -131,21 +155,31 @@ fun RemotePhotoDisplay(
  */
 @Composable
 fun LocalPhotoDisplay(
-    photoURI: Uri?,
-    modifier: Modifier = Modifier,
-    showPlaceHolder: Boolean = false,
-    placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
-) {
-  if (photoURI != null) {
-    AsyncImage(
-        model = photoURI,
-        contentDescription = "Uploaded image",
-        modifier = modifier.testTag(PhotoComponentsTestTags.IMAGE_PREVIEW),
-        contentScale = ContentScale.Fit)
-  } else if (showPlaceHolder) {
-    placeholder(modifier)
-  }
-}
+  photoURI: Uri?,
+  modifier: Modifier = Modifier,
+  showPlaceHolder: Boolean = false,
+  placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
+) = ActualLocalPhotoDisplay(photoURI, modifier, showPlaceHolder, placeholder)
+
+
+/**
+ * Displays the photo picked by the user before it is uploaded
+ * * (local image referenced by a ByteArray).
+ *
+ * @param photo ByteArray of the local photo that has not yet been uploaded.
+ * @param modifier Modifier used to customize the layout (e.g. profile picture vs report image).
+ * @param showPlaceHolder If true and the photoURI is null, a default account icon is displayed
+ *   instead.
+ * @param placeholder Composable shown when `photoURI` is null and `showPlaceHolder` is true.
+ *   Defaults to a standard account icon.
+ */
+@Composable
+fun LocalPhotoDisplay(
+  photo: ByteArray?,
+  modifier: Modifier = Modifier,
+  showPlaceHolder: Boolean = false,
+  placeholder: @Composable (Modifier) -> Unit
+) = ActualLocalPhotoDisplay(photo, modifier, showPlaceHolder, placeholder)
 
 @Composable
 fun DefaultIconPlaceholder(modifier: Modifier = Modifier) {
