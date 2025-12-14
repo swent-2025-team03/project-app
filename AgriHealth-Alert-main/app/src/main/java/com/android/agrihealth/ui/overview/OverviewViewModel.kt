@@ -11,11 +11,11 @@ import com.android.agrihealth.data.model.alert.getDistanceInsideZone
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.ReportRepository
+import com.android.agrihealth.data.model.report.ReportRepositoryProvider
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.data.model.report.ReportRepository
-import com.android.agrihealth.data.model.report.ReportRepositoryProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -27,11 +27,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.user.*
+import com.android.agrihealth.data.model.user.UserViewModel
+import com.android.agrihealth.data.model.user.UserViewModelContract
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
-import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.common.layout.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.LOGOUT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_FARMER
@@ -43,8 +45,6 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
-import com.android.agrihealth.data.model.user.UserViewModel
-import com.android.agrihealth.data.model.user.UserViewModelContract
 
 object ProfileScreenTestTags {
 

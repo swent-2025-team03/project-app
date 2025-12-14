@@ -3,6 +3,10 @@ package com.android.agrihealth.data.model.authentification
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRepositoryFirestore
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testhelpers.TestPassword.password1
+import com.android.agrihealth.testhelpers.TestPassword.password2
+import com.android.agrihealth.testhelpers.TestUser.farmer1
+import com.android.agrihealth.testhelpers.TestUser.farmer2
 import com.android.agrihealth.testhelpers.templates.FirebaseTest
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -10,10 +14,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
-import com.android.agrihealth.testhelpers.TestUser.farmer1
-import com.android.agrihealth.testhelpers.TestUser.farmer2
-import com.android.agrihealth.testhelpers.TestPassword.password1
-import com.android.agrihealth.testhelpers.TestPassword.password2
 
 class PermissionsFirestoreTest : FirebaseTest() {
   val auth = FirebaseAuth.getInstance()

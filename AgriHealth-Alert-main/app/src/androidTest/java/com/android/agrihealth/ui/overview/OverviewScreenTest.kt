@@ -8,11 +8,11 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
+import com.android.agrihealth.data.model.alert.FakeAlertRepository
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.data.model.alert.FakeAlertRepository
 import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
 import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository

@@ -20,13 +20,14 @@ class ResetPasswordTest : UITest() {
   }
 
   fun assertFeedBackBox(status: EmailSendStatus) {
-    val tagMap = with(ResetPasswordScreenTestTags) {
-      mapOf(
-        EmailSendStatus.Success to SUCCESS_FEEDBACK,
-        EmailSendStatus.Fail to FAIL_FEEDBACK,
-        EmailSendStatus.Waiting to WAITING_FEEDBACK,
-      )
-    }
+    val tagMap =
+        with(ResetPasswordScreenTestTags) {
+          mapOf(
+              EmailSendStatus.Success to SUCCESS_FEEDBACK,
+              EmailSendStatus.Fail to FAIL_FEEDBACK,
+              EmailSendStatus.Waiting to WAITING_FEEDBACK,
+          )
+        }
 
     tagMap.forEach { (s, tag) ->
       val node = node(tag)

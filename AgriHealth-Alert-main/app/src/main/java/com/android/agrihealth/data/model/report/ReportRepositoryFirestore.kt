@@ -1,22 +1,22 @@
 package com.android.agrihealth.data.model.report
 
 import android.util.Log
-import com.android.agrihealth.data.model.user.UserRepositoryProvider
 import com.android.agrihealth.data.model.location.locationFromMap
 import com.android.agrihealth.data.model.report.form.MCQ
 import com.android.agrihealth.data.model.report.form.MCQO
 import com.android.agrihealth.data.model.report.form.OpenQuestion
 import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.user.UserRepositoryProvider
 import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
 import java.time.Instant
 import java.time.LocalDateTime
-import kotlinx.coroutines.tasks.await
 import java.time.LocalTime
 import kotlin.collections.get
+import kotlinx.coroutines.tasks.await
 
 const val REPORTS_COLLECTION_PATH = "reports"
 

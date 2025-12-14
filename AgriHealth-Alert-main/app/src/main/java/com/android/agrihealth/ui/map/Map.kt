@@ -28,10 +28,10 @@ import com.android.agrihealth.data.model.device.location.LocationPermissionsRequ
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.ui.common.layout.BottomNavigationMenu
-import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
-import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.common.layout.Tab
+import com.android.agrihealth.ui.navigation.NavigationActions
+import com.android.agrihealth.ui.navigation.Screen
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng

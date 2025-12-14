@@ -19,8 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
@@ -31,10 +29,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.core.constants.FirestoreSchema.Collections.FARMER_TO_OFFICE
 import com.android.agrihealth.core.constants.FirestoreSchema.Collections.VET_TO_OFFICE
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
+import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationPermissionsRequester
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
@@ -42,8 +40,9 @@ import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.device.notifications.NotificationHandlerProvider
 import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.ui.common.LocationPicker
+import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.copyCommon
+import com.android.agrihealth.data.model.user.defaultUser
 import com.android.agrihealth.ui.alert.AlertViewModel
 import com.android.agrihealth.ui.alert.AlertViewScreen
 import com.android.agrihealth.ui.authentification.ResetPasswordScreen
@@ -52,6 +51,7 @@ import com.android.agrihealth.ui.authentification.RoleSelectionScreen
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
 import com.android.agrihealth.ui.authentification.VerifyEmailScreen
+import com.android.agrihealth.ui.common.LocationPicker
 import com.android.agrihealth.ui.map.MapScreen
 import com.android.agrihealth.ui.map.MapViewModel
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -73,10 +73,8 @@ import com.android.agrihealth.ui.report.AddReportScreen
 import com.android.agrihealth.ui.report.AddReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.report.ReportViewViewModel
-import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.ui.user.ViewUserScreen
 import com.android.agrihealth.ui.user.ViewUserViewModel
-import com.android.agrihealth.data.model.user.defaultUser
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
@@ -88,11 +86,9 @@ class MainActivity : ComponentActivity() {
     setContent {
       AgriHealthAppTheme {
         // A surface container using the 'background' color from the theme
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background) {
-              AgriHealthApp()
-            }
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+          AgriHealthApp()
+        }
       }
     }
   }

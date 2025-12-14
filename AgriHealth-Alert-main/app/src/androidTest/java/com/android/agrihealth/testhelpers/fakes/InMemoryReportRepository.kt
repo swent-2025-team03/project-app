@@ -3,10 +3,7 @@ package com.android.agrihealth.testhelpers.fakes
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportRepository
 
-/**
- * Generic in-memory implementation of [ReportRepository] for
- * local dev and tests.
- */
+/** Generic in-memory implementation of [ReportRepository] for local dev and tests. */
 open class InMemoryReportRepository(initialReports: List<Report> = emptyList()) : ReportRepository {
 
   private val reports: MutableList<Report> = initialReports.toMutableList()

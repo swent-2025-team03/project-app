@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import com.android.agrihealth.data.model.user.*
+import com.android.agrihealth.data.model.user.UserViewModelContract
 import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
@@ -18,7 +19,6 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
-import com.android.agrihealth.data.model.user.UserViewModelContract
 import org.junit.Rule
 import org.junit.Test
 

@@ -1,11 +1,9 @@
 package com.android.agrihealth.screen.navigation
 
-import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.isNotDisplayed
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -20,14 +18,13 @@ import com.android.agrihealth.testhelpers.TestUser.farmer1
 import com.android.agrihealth.testhelpers.templates.FirebaseUITest
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.VerifyEmailScreenTestTags
-import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
+import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import java.lang.Thread.sleep
-import junit.framework.TestCase
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -140,7 +137,7 @@ class NavigationTest : FirebaseUITest() {
       composeTestRule.onNodeWithText(Screen.AddReport.name).isDisplayed()
     }
     // Simulate system back press
-    //pressBack(false)
+    // pressBack(false)
     // Assert that the Overview screen is displayed
     sleep(SHORT_TIMEOUT)
     composeTestRule
@@ -169,7 +166,7 @@ class NavigationTest : FirebaseUITest() {
       composeTestRule.onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE).isDisplayed()
     }
     // Simulate system back press
-    //pressBack(false)
+    // pressBack(false)
     // Assert that the Overview screen is displayed
     sleep(SHORT_TIMEOUT)
     composeTestRule

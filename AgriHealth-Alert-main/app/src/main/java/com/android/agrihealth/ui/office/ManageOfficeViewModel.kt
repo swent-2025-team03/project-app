@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepository
-import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.data.model.user.UserViewModelContract
+import com.android.agrihealth.data.model.user.Vet
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

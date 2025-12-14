@@ -18,7 +18,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.rule.GrantPermissionRule
-import com.android.agrihealth.data.model.user.UserRepositoryProvider
+import com.android.agrihealth.data.model.alert.FakeAlertRepository
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
@@ -27,12 +27,12 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.data.model.alert.FakeAlertRepository
+import com.android.agrihealth.data.model.user.UserRepositoryProvider
 import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeUserRepository
 import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
-import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
+import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.google.android.gms.maps.model.LatLng
 import io.mockk.coEvery

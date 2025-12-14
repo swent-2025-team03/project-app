@@ -36,12 +36,12 @@ import com.android.agrihealth.data.model.report.form.OpenQuestion
 import com.android.agrihealth.data.model.report.form.QuestionForm
 import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
-import com.android.agrihealth.ui.common.layout.NavigationTestTags
-import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.UserViewModelContract
 import com.android.agrihealth.ui.common.ImagePickerDialog
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
+import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
+import com.android.agrihealth.ui.navigation.Screen
 import kotlin.collections.forEachIndexed
 import kotlinx.coroutines.launch
 

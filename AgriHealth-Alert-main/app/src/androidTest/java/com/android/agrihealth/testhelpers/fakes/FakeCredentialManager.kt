@@ -16,7 +16,7 @@ import io.mockk.mockkObject
 import org.json.JSONObject
 
 class FakeCredentialManager private constructor(private val context: Context) :
-  CredentialManager by CredentialManager.create(context) {
+    CredentialManager by CredentialManager.create(context) {
   companion object {
     // Creates a mock CredentialManager that always returns a CustomCredential
     // containing the given fakeUserIdToken when getCredential() is called.
@@ -29,9 +29,9 @@ class FakeCredentialManager private constructor(private val context: Context) :
       val mockGetCredentialResponse = mockk<GetCredentialResponse>()
 
       val fakeCustomCredential =
-        CustomCredential(
-          type = TYPE_GOOGLE_ID_TOKEN_CREDENTIAL,
-          data = bundleOf("id_token" to fakeUserIdToken))
+          CustomCredential(
+              type = TYPE_GOOGLE_ID_TOKEN_CREDENTIAL,
+              data = bundleOf("id_token" to fakeUserIdToken))
 
       every { mockGetCredentialResponse.credential } returns fakeCustomCredential
       coEvery { fakeCredentialManager.clearCredentialState(any()) } returns Unit
@@ -56,12 +56,12 @@ object FakeJwtGenerator {
   fun createFakeGoogleIdToken(name: String, email: String): String {
     val header = JSONObject(mapOf("alg" to "none"))
     val payload =
-      JSONObject(
-        mapOf(
-          "sub" to counter.toString(),
-          "email" to email,
-          "name" to name,
-          "picture" to "http://example.com/avatar.png"))
+        JSONObject(
+            mapOf(
+                "sub" to counter.toString(),
+                "email" to email,
+                "name" to name,
+                "picture" to "http://example.com/avatar.png"))
 
     val headerEncoded = base64UrlEncode(header.toString().toByteArray())
     val payloadEncoded = base64UrlEncode(payload.toString().toByteArray())

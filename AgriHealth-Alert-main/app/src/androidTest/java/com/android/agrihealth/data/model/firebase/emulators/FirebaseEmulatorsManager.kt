@@ -5,8 +5,6 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import com.google.firebase.functions.functions
 import com.google.firebase.storage.storage
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -14,6 +12,8 @@ import java.net.NetworkInterface
 import java.net.Socket
 import java.nio.ByteBuffer
 import kotlin.collections.iterator
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 data class FirebaseEnvironment(
     val host: String,

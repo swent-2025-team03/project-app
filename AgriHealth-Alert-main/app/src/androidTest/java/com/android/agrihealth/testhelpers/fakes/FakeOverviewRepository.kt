@@ -2,8 +2,8 @@ package com.android.agrihealth.testhelpers.fakes
 
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
-import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.ReportRepository
+import com.android.agrihealth.data.model.report.ReportStatus
 
 class FakeOverviewRepository : ReportRepository {
 

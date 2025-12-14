@@ -1,7 +1,7 @@
 package com.android.agrihealth.testhelpers.fakes
 
-import com.android.agrihealth.data.model.user.UserRepository
 import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.data.model.user.UserRepository
 
 private const val USER_NOT_FOUND = "User not found"
 

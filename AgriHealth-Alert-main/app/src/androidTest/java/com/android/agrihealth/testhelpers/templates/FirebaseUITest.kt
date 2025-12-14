@@ -8,6 +8,5 @@ abstract class FirebaseUITest : UITest() {
     FirebaseEmulatorsManager.linkEmulators()
   }
 
-  @Before
-  fun clean() = FirebaseEmulatorsManager.clearEmulators()
+  @Before fun clean() = FirebaseEmulatorsManager.clearEmulators()
 }

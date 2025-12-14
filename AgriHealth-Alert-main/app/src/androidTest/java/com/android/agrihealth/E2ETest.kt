@@ -1,30 +1,37 @@
 package com.android.agrihealth
 
-import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.ComposeTestRule
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.data.model.authentification.AuthRepositoryFirebase
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.verifyUser
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
-import com.android.agrihealth.ui.common.LocationPickerTestTags
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
+import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
+import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
+import com.android.agrihealth.testhelpers.TestTimeout.SUPER_LONG_TIMEOUT
+import com.android.agrihealth.testhelpers.TestUser.farmer1
+import com.android.agrihealth.testhelpers.TestUser.farmer2
+import com.android.agrihealth.testhelpers.fakes.FakeCredentialManager
+import com.android.agrihealth.testhelpers.fakes.FakeJwtGenerator
 import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
+import com.android.agrihealth.testhelpers.templates.FirebaseUITest
 import com.android.agrihealth.ui.alert.AlertViewScreenTestTags
 import com.android.agrihealth.ui.authentification.RoleSelectionScreenTestTags
 import com.android.agrihealth.ui.authentification.SignInErrorMsg
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.SignUpScreenTestTags
 import com.android.agrihealth.ui.authentification.VerifyEmailScreenTestTags
-import com.android.agrihealth.ui.map.MapScreenTestTags
+import com.android.agrihealth.ui.common.LocationPickerTestTags
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
+import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags
 import com.android.agrihealth.ui.overview.AssignedVetTagTexts
@@ -37,16 +44,6 @@ import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags
-import com.android.agrihealth.data.model.user.UserViewModel
-import com.android.agrihealth.testhelpers.TestTimeout
-import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
-import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
-import com.android.agrihealth.testhelpers.TestTimeout.SUPER_LONG_TIMEOUT
-import com.android.agrihealth.testhelpers.TestUser.farmer1
-import com.android.agrihealth.testhelpers.TestUser.farmer2
-import com.android.agrihealth.testhelpers.fakes.FakeCredentialManager
-import com.android.agrihealth.testhelpers.fakes.FakeJwtGenerator
-import com.android.agrihealth.testhelpers.templates.FirebaseUITest
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.first
@@ -63,7 +60,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class E2ETest : FirebaseUITest() {
 
-  //private val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+  // private val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
   @get:Rule
   val ruleChain: TestRule =
@@ -73,7 +70,7 @@ class E2ETest : FirebaseUITest() {
                   android.Manifest.permission.ACCESS_COARSE_LOCATION,
                   android.Manifest.permission.POST_NOTIFICATIONS))
           .around(composeTestRule)
-  
+
   val authRepository = AuthRepositoryFirebase()
 
   @Before
@@ -85,9 +82,7 @@ class E2ETest : FirebaseUITest() {
   // Important: this function needs to be used each time the screen changes in order to avoid
   // failing the CI tests due to slow rendering
   private fun waitUntilTestTag(tag: String) {
-    composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(tag).isDisplayed()
-    }
+    composeTestRule.waitUntil(LONG_TIMEOUT) { composeTestRule.onNodeWithTag(tag).isDisplayed() }
   }
 
   override fun displayAllComponents() {}
@@ -433,9 +428,7 @@ class E2ETest : FirebaseUITest() {
   private fun readGeneratedCodeFromUi(): String {
     val tag = CodeComposableComponentsTestTags.GENERATE_FIELD
 
-    composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(tag).isDisplayed()
-    }
+    composeTestRule.waitUntil(LONG_TIMEOUT) { composeTestRule.onNodeWithTag(tag).isDisplayed() }
     val nodes = composeTestRule.onAllNodesWithTag(tag)
 
     composeTestRule.waitUntil(LONG_TIMEOUT) {
@@ -539,9 +532,7 @@ class E2ETest : FirebaseUITest() {
   }
 
   private fun checkAssignedVetDisplayedOnOverview(vet: String) {
-    composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule.onNodeWithText(vet).isDisplayed()
-    }
+    composeTestRule.waitUntil(LONG_TIMEOUT) { composeTestRule.onNodeWithText(vet).isDisplayed() }
     composeTestRule.waitUntil(LONG_TIMEOUT) {
       composeTestRule.onNodeWithText(AssignedVetTagTexts.ASSIGNED_TO_CURRENT_VET).isDisplayed()
     }

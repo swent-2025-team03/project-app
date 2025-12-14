@@ -19,8 +19,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.data.model.office.Office
-import com.android.agrihealth.ui.common.resolver.AuthorName
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
+import com.android.agrihealth.ui.common.resolver.AuthorName
 import com.android.agrihealth.ui.navigation.Screen
 
 object ViewOfficeScreenTestTags {

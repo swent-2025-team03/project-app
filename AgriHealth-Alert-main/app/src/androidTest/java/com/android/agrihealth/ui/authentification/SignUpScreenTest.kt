@@ -1,25 +1,12 @@
 package com.android.agrihealth.ui.authentification
 
-import androidx.activity.ComponentActivity
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotDisplayed
-import androidx.compose.ui.test.isDisplayed
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
-import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.testhelpers.TestPassword.password1
-import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import com.android.agrihealth.testhelpers.TestUser.farmer1
 import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
 import com.android.agrihealth.testhelpers.templates.UITest
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 
 class SignUpScreenTest : UITest() {
@@ -53,7 +40,17 @@ class SignUpScreenTest : UITest() {
     setContent()
 
     with(SignUpScreenTestTags) {
-      nodesAreDisplayed(BACK_BUTTON, TITLE, FIRSTNAME_FIELD, LASTNAME_FIELD, EMAIL_FIELD, PASSWORD_FIELD, CONFIRM_PASSWORD_FIELD, FARMER_PILL, VET_PILL, SAVE_BUTTON)
+      nodesAreDisplayed(
+          BACK_BUTTON,
+          TITLE,
+          FIRSTNAME_FIELD,
+          LASTNAME_FIELD,
+          EMAIL_FIELD,
+          PASSWORD_FIELD,
+          CONFIRM_PASSWORD_FIELD,
+          FARMER_PILL,
+          VET_PILL,
+          SAVE_BUTTON)
       nodeNotDisplayed(SNACKBAR)
     }
   }

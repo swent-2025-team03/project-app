@@ -1,8 +1,8 @@
 package com.android.agrihealth.testhelpers.fakes
 
 import com.android.agrihealth.data.model.user.User
-import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.data.model.user.UserViewModelContract
+import com.android.agrihealth.data.model.user.Vet
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.MutableStateFlow

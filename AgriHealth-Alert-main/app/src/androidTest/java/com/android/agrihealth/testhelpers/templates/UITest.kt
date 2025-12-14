@@ -18,19 +18,13 @@ import org.junit.Test
 
 abstract class UITest {
 
-  @get:Rule
-  val composeTestRule = createComposeRule()
+  @get:Rule val composeTestRule = createComposeRule()
 
-  @Test
-  abstract fun displayAllComponents()
+  @Test abstract fun displayAllComponents()
 
   /** Sets the content to be displayed in the Compose test, using the app's theme */
   protected fun setContent(content: @Composable () -> Unit) {
-    composeTestRule.setContent {
-      AgriHealthAppTheme {
-        content()
-      }
-    }
+    composeTestRule.setContent { AgriHealthAppTheme { content() } }
   }
 
   /** Returns the node with the provided tag. This is simply a shorter notation for readability */
@@ -38,15 +32,15 @@ abstract class UITest {
     return composeTestRule.onNodeWithTag(tag)
   }
 
-  /** Asserts that the node with the given test tag is displayed, within a reasonable timeout.
-   * The timeout is here by default to make the tests more robust in case of performance drops
+  /**
+   * Asserts that the node with the given test tag is displayed, within a reasonable timeout. The
+   * timeout is here by default to make the tests more robust in case of performance drops
+   *
    * @param tag Test tag for the node to check
    * @param timeout Number of milliseconds to wait for the node to be displayed before failure
    */
   protected fun nodeIsDisplayed(tag: String, timeout: Long = TestTimeout.DEFAULT_TIMEOUT) {
-    composeTestRule.waitUntil(timeout) {
-      node(tag).isDisplayed()
-    }
+    composeTestRule.waitUntil(timeout) { node(tag).isDisplayed() }
   }
 
   protected fun nodeNotDisplayed(tag: String) {
@@ -54,9 +48,7 @@ abstract class UITest {
   }
 
   protected fun textIsDisplayed(text: String, timeout: Long = TestTimeout.DEFAULT_TIMEOUT) {
-    composeTestRule.waitUntil(timeout) {
-      composeTestRule.onNodeWithText(text).isDisplayed()
-    }
+    composeTestRule.waitUntil(timeout) { composeTestRule.onNodeWithText(text).isDisplayed() }
   }
 
   protected fun nodesAreDisplayed(vararg tags: String) {

@@ -11,7 +11,9 @@ import org.junit.Test
 class AlertViewScreenTest : UITest() {
   private fun setAlertViewScreen() {
     val startAlertId = "1"
-    val viewModel = AlertViewModel(FakeAlertRepository().allAlerts.map { AlertUiState(alert = it) }, startAlertId)
+    val viewModel =
+        AlertViewModel(
+            FakeAlertRepository().allAlerts.map { AlertUiState(alert = it) }, startAlertId)
 
     setContent {
       val navController = rememberNavController()
@@ -24,7 +26,13 @@ class AlertViewScreenTest : UITest() {
     setAlertViewScreen()
 
     with(AlertViewScreenTestTags) {
-      nodesAreDisplayed(ALERT_DESCRIPTION, ALERT_DATE, ALERT_REGION, PREVIOUS_ALERT_ARROW, NEXT_ALERT_ARROW, VIEW_ON_MAP)
+      nodesAreDisplayed(
+          ALERT_DESCRIPTION,
+          ALERT_DATE,
+          ALERT_REGION,
+          PREVIOUS_ALERT_ARROW,
+          NEXT_ALERT_ARROW,
+          VIEW_ON_MAP)
     }
   }
 

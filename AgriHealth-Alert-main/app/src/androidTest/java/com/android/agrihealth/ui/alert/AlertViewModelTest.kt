@@ -2,14 +2,8 @@ package com.android.agrihealth.ui.alert
 
 import com.android.agrihealth.data.model.alert.FakeAlertRepository
 import com.android.agrihealth.ui.overview.AlertUiState
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.*
-import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)

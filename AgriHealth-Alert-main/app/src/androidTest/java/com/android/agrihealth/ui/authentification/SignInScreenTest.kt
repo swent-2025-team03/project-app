@@ -26,7 +26,14 @@ class SignInScreenTest : UITest() {
     setContent()
 
     with(SignInScreenTestTags) {
-      nodesAreDisplayed(SIGN_UP_BUTTON, EMAIL_FIELD, PASSWORD_FIELD, LOGIN_BUTTON, FORGOT_PASSWORD, LOGIN_DIVIDER, GOOGLE_LOGIN_BUTTON)
+      nodesAreDisplayed(
+          SIGN_UP_BUTTON,
+          EMAIL_FIELD,
+          PASSWORD_FIELD,
+          LOGIN_BUTTON,
+          FORGOT_PASSWORD,
+          LOGIN_DIVIDER,
+          GOOGLE_LOGIN_BUTTON)
       nodeNotDisplayed(SNACKBAR)
     }
   }
