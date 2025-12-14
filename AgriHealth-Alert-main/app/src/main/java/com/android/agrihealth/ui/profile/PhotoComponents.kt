@@ -166,7 +166,7 @@ fun LocalPhotoDisplay(
  * Displays the photo picked by the user before it is uploaded
  * * (local image referenced by a ByteArray).
  *
- * @param photo ByteArray of the local photo that has not yet been uploaded.
+ * @param photoByteArray ByteArray of the local photo that has not yet been uploaded.
  * @param modifier Modifier used to customize the layout (e.g. profile picture vs report image).
  * @param showPlaceHolder If true and the photoURI is null, a default account icon is displayed
  *   instead.
@@ -175,11 +175,11 @@ fun LocalPhotoDisplay(
  */
 @Composable
 fun LocalPhotoDisplay(
-  photo: ByteArray?,
+  photoByteArray: ByteArray?,
   modifier: Modifier = Modifier,
   showPlaceHolder: Boolean = false,
-  placeholder: @Composable (Modifier) -> Unit
-) = ActualLocalPhotoDisplay(photo, modifier, showPlaceHolder, placeholder)
+  placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
+) = ActualLocalPhotoDisplay(photoByteArray, modifier, showPlaceHolder, placeholder)
 
 @Composable
 fun DefaultIconPlaceholder(modifier: Modifier = Modifier) {

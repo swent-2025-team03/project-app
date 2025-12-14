@@ -71,12 +71,11 @@ import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.unit.IntSize
+import androidx.lifecycle.ViewModelProvider
 import com.android.agrihealth.ui.report.AddReportDialogTexts
 import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
-import com.android.agrihealth.ui.report.CreateReportErrorDialog
 import com.mr0xf00.easycrop.ImageCropper
-import kotlinx.coroutines.launch
 
 enum class CodeType {
   FARMER,
@@ -117,6 +116,7 @@ object EditProfileScreenTexts {
 @Composable
 fun EditProfileScreen(
     userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
+    imageViewModel: ImageViewModel = viewModel(),
     pickedLocation: Location? = null,
     onChangeLocation: () -> Unit = {},
     onGoBack: () -> Unit = {},
@@ -125,8 +125,8 @@ fun EditProfileScreen(
 ) {
   val focusManager = LocalFocusManager.current
 
-  val connectionRepository = remember { ConnectionRepository(connectionType = "") }
-  val codesViewModel = remember { CodesViewModel(userViewModel, connectionRepository) }
+  val connectionRepository = rememberSaveable { ConnectionRepository(connectionType = "") }
+  val codesViewModel = rememberSaveable { CodesViewModel(userViewModel, connectionRepository) }
 
   val uiState by userViewModel.uiState.collectAsState()
   val user = uiState.user
@@ -145,7 +145,7 @@ fun EditProfileScreen(
   val imageViewModel: ImageViewModel = viewModel()
 
   val createManageOfficeViewModel =
-      object : androidx.lifecycle.ViewModelProvider.Factory {
+      object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
           return ManageOfficeViewModel(
               userViewModel = userViewModel,
@@ -158,7 +158,7 @@ fun EditProfileScreen(
   val editProfileViewModel: EditProfileViewModel =
       viewModel(
           factory =
-              object : androidx.lifecycle.ViewModelProvider.Factory {
+              object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                   return EditProfileViewModel(officeRepository = OfficeRepositoryProvider.get())
                       as T
@@ -169,7 +169,7 @@ fun EditProfileScreen(
 
   val isOwner = manageOfficeVm.uiState.collectAsState().value.office?.ownerId == user.uid
 
-  val snackbarHostState = remember { SnackbarHostState() }
+  val snackbarHostState = rememberSaveable { SnackbarHostState() }
 
   // Local mutable states
   var firstname by rememberSaveable { mutableStateOf(user.firstname) }
@@ -183,17 +183,17 @@ fun EditProfileScreen(
   var collected by rememberSaveable { mutableStateOf(user.collected) }
 
   // Specific to dialogs
-  var showPhotoPickerDialog by remember { mutableStateOf(false) }
-  var showErrorDialog by remember { mutableStateOf(false) }
-  var errorDialogMessage by remember { mutableStateOf<String?>(null) }
+  var showPhotoPickerDialog by rememberSaveable { mutableStateOf(false) }
+  var showErrorDialog by rememberSaveable { mutableStateOf(false) }
+  var errorDialogMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
   // Specific to the image cropper
   val imageCropper = rememberImageCropper()
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val croppingIsOngoing = imageCropper.cropState != null
-  var chosenPhoto : ByteArray? by remember {mutableStateOf(null)}
-  val launchImageCropper: (Uri) -> Unit = remember {
+  var chosenPhoto : ByteArray? by rememberSaveable {mutableStateOf(null)}
+  val launchImageCropper: (Uri) -> Unit = rememberSaveable {
     { uri: Uri ->
       scope.launch {
         val bitmap = uri.toBitmap(context).asImageBitmap()
@@ -236,8 +236,7 @@ fun EditProfileScreen(
       }) { innerPadding ->
         Column(
             modifier =
-                Modifier
-                  .padding(innerPadding)
+                Modifier.padding(innerPadding)
                   .padding(16.dp)
                   .fillMaxSize()
                   .verticalScroll(rememberScrollState()),
@@ -245,8 +244,11 @@ fun EditProfileScreen(
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
 
-              EditableProfilePicture(
+            EditableProfilePicture(
+                imageViewModel = imageViewModel,
                 profilePictureIsEmpty = chosenPhoto == null,
+                localPhotoByteArray = chosenPhoto,
+                remotePhotoURL = null,   // TODO Change this
                 handleProfilePictureClick = {
                   if (chosenPhoto == null) {
                     showPhotoPickerDialog = true
@@ -254,7 +256,7 @@ fun EditProfileScreen(
                     chosenPhoto = null
                   }
                 }
-              )
+            )
 
 
               Spacer(modifier = Modifier.height(24.dp))
@@ -526,11 +528,35 @@ fun ShowImageCropperDialog(imageCropper: ImageCropper) {
 
 
 @Composable
-fun EditableProfilePicture(profilePictureIsEmpty: Boolean, handleProfilePictureClick: () -> Unit) {
+fun EditableProfilePicture(
+  imageViewModel: ImageViewModel,
+  profilePictureIsEmpty: Boolean,
+  localPhotoByteArray: ByteArray?,
+  remotePhotoURL: String?,
+  handleProfilePictureClick: () -> Unit
+) {
   Box(
     modifier = Modifier.size(120.dp),
     contentAlignment = Alignment.Center,
   ) {
+    var initialLoad by rememberSaveable { mutableStateOf(true) }
+    val showRemote = initialLoad && remotePhotoURL != null
+
+    if (showRemote) {
+      RemotePhotoDisplay(
+        photoURL = remotePhotoURL,
+        imageViewModel = imageViewModel,
+        modifier = Modifier.size(120.dp).clip(CircleShape),
+        contentDescription = "Office photo",
+        showPlaceHolder = true)
+    } else {
+      LocalPhotoDisplay(
+        photoByteArray = localPhotoByteArray,
+        modifier = Modifier.size(120.dp).clip(CircleShape),
+        showPlaceHolder = true,
+      )
+    }
+
     Icon(
       imageVector = Icons.Default.AccountCircle,
       contentDescription = "Profile Picture",
@@ -573,7 +599,7 @@ fun ImageCropperCustomTopBar(state: CropState) {
     actions = {
       IconButton(onClick = {
         state.reset()
-        // Force the region to be square by triggering an update
+        // Force the region to be square
         val currentRegion = state.region
         val size = minOf(currentRegion.width, currentRegion.height)
         val centerX = currentRegion.center.x
