@@ -1,5 +1,6 @@
 [versions]
 agp = "8.7.2"
+easycrop = "0.1.1"
 kotlin = "2.0.21"
 kotlin-compose = "2.0.21"   # Same version
 coreKtx = "1.12.0"
@@ -40,6 +41,7 @@ mockkAndroid = "1.13.7"
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 
+easycrop = { module = "io.github.mr0xf00:easycrop", version.ref = "easycrop" }
 firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuth" }
 firebase-database = { module = "com.google.firebase:firebase-database", version.ref = "firebaseDatabase" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore", version.ref = "firebaseFirestore" }
