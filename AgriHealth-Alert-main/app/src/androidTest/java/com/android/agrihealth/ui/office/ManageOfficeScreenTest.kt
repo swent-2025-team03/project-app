@@ -1,97 +1,66 @@
 package com.android.agrihealth.ui.office
 
-import androidx.activity.ComponentActivity
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.images.ImageViewModel
-import com.android.agrihealth.data.model.office.Office
-import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testhelpers.TestTimeout
+import com.android.agrihealth.testhelpers.TestUser.office1
+import com.android.agrihealth.testhelpers.TestUser.vet1
 import com.android.agrihealth.testhelpers.fakes.FakeImageRepository
 import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
 import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
+import com.android.agrihealth.testhelpers.templates.UITest
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.profile.CodesViewModel
-import org.junit.Rule
 import org.junit.Test
 
-class ManageOfficeScreenUiTest {
+class ManageOfficeScreenUiTest : UITest() {
 
-  @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+  override fun displayAllComponents() {}
 
   @Test
   fun manageOfficeScreen_showsAndHidesLoadingOverlay() {
-
-    val fakeVet =
-        Vet(
-            uid = "vet-1",
-            firstname = "John",
-            lastname = "Doe",
-            email = "vet@example.com",
-            address = null,
-            officeId = "office-123",
-        )
-
-    val fakeUserViewModel = FakeUserViewModel(fakeVet)
-
-    val fakeOffice =
-        Office(
-            id = "office-123",
-            name = "Fake Office",
-            description = "Fake description",
-            address = null,
-            ownerId = "vet-1",
-            vets = listOf("vet-1"))
-
-    val fakeOfficeRepository =
+    val officeRepository =
         FakeOfficeRepository(
-            initialOffices = listOf(fakeOffice), delayMs = TestTimeout.DEFAULT_TIMEOUT)
-
+            initialOffices = listOf(office1), delayMs = TestTimeout.DEFAULT_TIMEOUT)
     val connectionRepository = ConnectionRepositoryProvider.farmerToOfficeRepository
-
-    val imageViewModel: ImageViewModel = ImageViewModel(FakeImageRepository())
+    val imageViewModel = ImageViewModel(FakeImageRepository())
+    val userViewModel = FakeUserViewModel(vet1)
 
     val manageOfficeViewModel =
         ManageOfficeViewModel(
-            officeRepository = fakeOfficeRepository,
-            userViewModel = fakeUserViewModel,
+            officeRepository = officeRepository,
+            userViewModel = userViewModel,
             imageViewModel = imageViewModel)
 
-    composeTestRule.setContent {
+    setContent {
       val navController = rememberNavController()
       val navigationActions = NavigationActions(navController)
 
-      MaterialTheme {
-        ManageOfficeScreen(
-            navigationActions = navigationActions,
-            manageOfficeViewModel = manageOfficeViewModel,
-            onGoBack = {},
-            onCreateOffice = {},
-            onJoinOffice = {},
-            codesVmFactory = {
-              object : ViewModelProvider.Factory {
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                  @Suppress("UNCHECKED_CAST")
-                  return CodesViewModel(
-                      userViewModel = fakeUserViewModel,
-                      connectionRepository = connectionRepository,
-                  )
-                      as T
-                }
+      ManageOfficeScreen(
+          navigationActions = navigationActions,
+          manageOfficeViewModel = manageOfficeViewModel,
+          onGoBack = {},
+          onCreateOffice = {},
+          onJoinOffice = {},
+          codesVmFactory = {
+            object : ViewModelProvider.Factory {
+              override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return CodesViewModel(
+                    userViewModel = userViewModel,
+                    connectionRepository = connectionRepository,
+                )
+                    as T
               }
-            })
-      }
+            }
+          })
     }
 
     composeTestRule.assertOverlayDuringLoading(
-        isLoading = { manageOfficeViewModel.uiState.value.isLoading },
-        timeoutStart = TestTimeout.LONG_TIMEOUT,
-        timeoutEnd = TestTimeout.LONG_TIMEOUT,
-    )
+        isLoading = { manageOfficeViewModel.uiState.value.isLoading })
   }
 }

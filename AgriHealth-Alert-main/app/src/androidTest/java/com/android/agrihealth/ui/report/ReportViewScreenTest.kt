@@ -573,10 +573,7 @@ class ReportViewScreenTest {
           reportId = "RPT_SLOW")
     }
 
-    composeTestRule.assertOverlayDuringLoading(
-        isLoading = { vm.uiState.value.isLoading },
-        timeoutStart = LONG_TIMEOUT,
-        timeoutEnd = LONG_TIMEOUT)
+    composeTestRule.assertOverlayDuringLoading(isLoading = { vm.uiState.value.isLoading })
   }
 
   @Test

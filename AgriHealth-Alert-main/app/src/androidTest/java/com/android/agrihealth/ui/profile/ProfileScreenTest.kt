@@ -8,7 +8,6 @@ import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.data.model.user.UserViewModelContract
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
-import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
 import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
@@ -243,10 +242,6 @@ class ProfileScreenTest {
       )
     }
 
-    composeTestRule.assertOverlayDuringLoading(
-        isLoading = { viewModel.uiState.value.isLoading },
-        timeoutStart = LONG_TIMEOUT,
-        timeoutEnd = LONG_TIMEOUT,
-    )
+    composeTestRule.assertOverlayDuringLoading(isLoading = { viewModel.uiState.value.isLoading })
   }
 }

@@ -68,6 +68,20 @@ abstract class UITest(private val grantedPermissions: Array<String> = emptyArray
         } else throw e
       }
 
+  private fun <T> withText(text: String, action: SemanticsNodeInteraction.() -> T): T =
+      try {
+        composeTestRule.onNodeWithText(text).action()
+      } catch (e: Throwable) {
+        if (e is AssertionError || e is ComposeTimeoutException) {
+          val method = Throwable().stackTrace[1].methodName
+          val line1 = Throwable().stackTrace[3].lineNumber
+          val line2 = Throwable().stackTrace[4].lineNumber
+          throw AssertionError(
+              "Component with text \"$text\" failed during action \"$method()\" (possibly @L$line1 or @L$line2)",
+              e)
+        } else throw e
+      }
+
   /**
    * Asserts that the node with the given test tag is displayed, within a reasonable timeout. The
    * timeout is here by default to make the tests more robust in case of performance drops
@@ -84,26 +98,25 @@ abstract class UITest(private val grantedPermissions: Array<String> = emptyArray
   }
 
   protected fun textIsDisplayed(text: String, timeout: Long = TestTimeout.DEFAULT_TIMEOUT) {
-    try {
-      composeTestRule.waitUntil(timeout) { composeTestRule.onNodeWithText(text).isDisplayed() }
-    } catch (e: ComposeTimeoutException) {
-      val caller = Throwable().stackTrace[1].methodName
-      throw AssertionError(
-          "Component with text \"$text\" is not displayed, called by \"$caller()\"", e)
-    }
+    withText(text) { composeTestRule.waitUntil(timeout) { isDisplayed() } }
   }
+
+  private fun SemanticsNodeInteraction.hasTextContaining(text: String): Boolean =
+      fetchSemanticsNode().config.run {
+        val normalText = getOrNull(SemanticsProperties.Text)?.any { it.text.contains(text) } == true
+        val editableText = getOrNull(SemanticsProperties.EditableText)?.text?.contains(text) == true
+
+        normalText || editableText
+      }
 
   protected fun textContains(
       tag: String,
-      text: String,
+      text: String?,
       timeout: Long = TestTimeout.DEFAULT_TIMEOUT
   ) {
     withNode(tag) {
       composeTestRule.waitUntil(timeout) {
-        isDisplayed() &&
-            fetchSemanticsNode().config.getOrNull(SemanticsProperties.Text)?.any {
-              it.text.contains(text)
-            } == true
+        text != null && isDisplayed() && hasTextContaining(text)
       }
     }
   }
@@ -119,6 +132,10 @@ abstract class UITest(private val grantedPermissions: Array<String> = emptyArray
   /** Clicks on the node corresponding to the provided tag */
   protected fun clickOn(tag: String) {
     withNode(tag) { assertIsDisplayed().performClick() }
+  }
+
+  protected fun clickOnText(text: String) {
+    withText(text) { assertIsDisplayed().performClick() }
   }
 
   /** Performs a text input of the given text on the node corresponding to the given tag */

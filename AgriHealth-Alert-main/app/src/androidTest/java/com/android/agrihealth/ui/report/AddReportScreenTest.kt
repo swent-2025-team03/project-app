@@ -551,10 +551,6 @@ class AddReportScreenTest {
         viewModel = viewModel,
     )
 
-    composeRule.assertOverlayDuringLoading(
-        isLoading = { viewModel.uiState.value.isLoading },
-        timeoutStart = LONG_TIMEOUT,
-        timeoutEnd = LONG_TIMEOUT,
-    )
+    composeRule.assertOverlayDuringLoading(isLoading = { viewModel.uiState.value.isLoading })
   }
 }

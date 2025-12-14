@@ -79,7 +79,7 @@ class MapScreenTest :
       isViewedFromOverview: Boolean = true,
       selectedReportId: String? = null,
       locationVM: LocationViewModel = locationViewModel
-  ) {
+  ): MapViewModel {
     val mapViewModel =
         MapViewModel(
             reportRepository = reportRepository,
@@ -89,6 +89,8 @@ class MapScreenTest :
             userId = userId)
 
     setContent { MapScreen(mapViewModel, isViewedFromOverview = isViewedFromOverview) }
+
+    return mapViewModel
   }
 
   override fun displayAllComponents() {}
@@ -333,22 +335,5 @@ class MapScreenTest :
 
     assertEquals(11, positions1?.size)
     assertEquals(6, positions2?.size)
-  }
-
-  @Test
-  fun fetchingLocation_showsSnackbarMessage() = runTest {
-    val slowRepo = fakeLocationRepository(2_000)
-    val slowVm = LocationViewModel(slowRepo)
-    // Given a slow location repository
-
-    val mapViewModel = setContentToMapWithVM(isViewedFromOverview = true, locationVM = slowVm)
-
-    /*composeTestRule.runOnUiThread { mapViewModel.setStartingLocation(null) }
-
-    composeTestRule.waitUntil(timeoutMillis = TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onAllNodesWithText("Loading location...").fetchSemanticsNodes().isNotEmpty()
-    }
-    composeTestRule.onNodeWithText("Loading location...").assertIsDisplayed()
-    */
   }
 }

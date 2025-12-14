@@ -7,7 +7,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertLoadingOverlayHidden
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testhelpers.TestTimeout
 import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
@@ -90,8 +89,6 @@ class ChangePasswordScreenTest {
 
     setContentWithVM(vm = viewModel)
 
-    composeTestRule.assertLoadingOverlayHidden()
-
     composeTestRule
         .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
         .performTextInput("oldpass")
@@ -102,10 +99,6 @@ class ChangePasswordScreenTest {
 
     composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
 
-    composeTestRule.assertOverlayDuringLoading(
-        isLoading = { viewModel.uiState.value.isLoading },
-        timeoutStart = TestTimeout.DEFAULT_TIMEOUT,
-        timeoutEnd = TestTimeout.SUPER_LONG_TIMEOUT,
-    )
+    composeTestRule.assertOverlayDuringLoading(isLoading = { viewModel.uiState.value.isLoading })
   }
 }

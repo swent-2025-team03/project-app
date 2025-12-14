@@ -28,9 +28,18 @@ object TestUser {
   val farmer2 = Farmer("def456", "mike", "neko", "email2@aaaaa.balls", null, emptyList(), null)
   val farmer3 = Farmer("jklABC", "John", "Fake", "fakeUser.glorp", null, emptyList(), null)
 
-  val vet1 = Vet("ghi789", "Nazuna", "Amemiya", "email3@kms.josh", null, officeId = "off1")
+  val vet1 = Vet("ghi789", "Nazuna", "Amemiya", "email3@kms.josh", null, officeId = "off_1")
+  val vet2 = Vet("mock_vet_id", "john", "john", "john@john.john", null)
 
-  val office1 = Office("off1", "o", ownerId = vet1.uid)
+  val office1 =
+      Office(
+          id = vet1.officeId!!,
+          name = "Agri Vet Clinic",
+          address = Location(1.2, 3.4, "swag town"),
+          description = "Providing quality veterinary services for farm animals.",
+          vets = listOf(vet1.uid, "vet2"),
+          ownerId = vet1.uid,
+          photoUrl = "/path/to/img.jpg")
 }
 
 object TestPassword {
