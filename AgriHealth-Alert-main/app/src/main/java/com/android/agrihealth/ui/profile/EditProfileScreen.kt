@@ -14,7 +14,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
@@ -52,7 +51,6 @@ import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.office.ManageOfficeViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTTON
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
@@ -497,21 +495,7 @@ fun ShowImageCropperDialog(imageCropper: ImageCropper) {
 
   // Setting this once
   LaunchedEffect(cropState) {
-    // Force the region to be a square instead of a rectangle
-    val region = cropState.region
-    val size = minOf(region.width, region.height)
-    val centerX = region.center.x
-    val centerY = region.center.y
-
-    cropState.region = Rect(
-      left = centerX - size / 2f,
-      top = centerY - size / 2f,
-      right = centerX + size / 2f,
-      bottom = centerY + size / 2f
-    )
-
-    cropState.aspectLock = true
-    cropState.shape = CircleCropShape
+    setImageCropperShapeCircle(cropState)
   }
 
   ImageCropperDialog(
@@ -542,6 +526,7 @@ fun EditableProfilePicture(
     var initialLoad by rememberSaveable { mutableStateOf(true) }
     val showRemote = initialLoad && remotePhotoURL != null
 
+    // TODO Make the default profile icon and the actual profile picture the same size
     if (showRemote) {
       RemotePhotoDisplay(
         photoURL = remotePhotoURL,
@@ -556,17 +541,6 @@ fun EditableProfilePicture(
         showPlaceHolder = true,
       )
     }
-
-//    Icon(
-//      imageVector = Icons.Default.AccountCircle,
-//      contentDescription = "Profile Picture",
-//      modifier = Modifier
-//        .size(120.dp)
-//        .clip(CircleShape)
-//        .testTag(PROFILE_IMAGE)
-//        .clickable { handleProfilePictureClick() },
-//      tint = MaterialTheme.colorScheme.primary,
-//    )
 
     // Camera icon overlay
     FloatingActionButton(
@@ -587,9 +561,29 @@ fun EditableProfilePicture(
   }
 }
 
+private fun setImageCropperShapeCircle(state: CropState) {
+  state.reset()
+  // Force the region to be square
+  val currentRegion = state.region
+  val size = minOf(currentRegion.width, currentRegion.height)
+  val centerX = currentRegion.center.x
+  val centerY = currentRegion.center.y
+
+  state.region = Rect(
+    left = centerX - size / 2f,
+    top = centerY - size / 2f,
+    right = centerX + size / 2f,
+    bottom = centerY + size / 2f
+  )
+
+  state.aspectLock = true
+  state.shape = CircleCropShape
+}
+
+// Replacing the default topbar of the image cropper (specifically change the reset button)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ImageCropperCustomTopBar(state: CropState) {
+private fun ImageCropperCustomTopBar(state: CropState) {
   TopAppBar(title = {},
     navigationIcon = {
       IconButton(onClick = { state.done(accept = false) }) {
@@ -598,22 +592,7 @@ fun ImageCropperCustomTopBar(state: CropState) {
     },
     actions = {
       IconButton(onClick = {
-        state.reset()
-        // Force the region to be square
-        val currentRegion = state.region
-        val size = minOf(currentRegion.width, currentRegion.height)
-        val centerX = currentRegion.center.x
-        val centerY = currentRegion.center.y
-
-        state.region = Rect(
-          left = centerX - size / 2f,
-          top = centerY - size / 2f,
-          right = centerX + size / 2f,
-          bottom = centerY + size / 2f
-        )
-
-        state.aspectLock = true
-        state.shape = CircleCropShape
+        setImageCropperShapeCircle(state)
       }) {
         Icon(Icons.Default.Replay, contentDescription = "Restore")
       }
