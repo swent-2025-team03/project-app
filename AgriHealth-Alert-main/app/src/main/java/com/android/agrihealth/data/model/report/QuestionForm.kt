@@ -79,7 +79,8 @@ data class MCQO(
         userAnswer = userAnswer,
         questionType = QuestionType.MCQO) {
   override fun isValid(): Boolean {
-    return answerIndex >= 0 && answerIndex <= answers.size
+    return answerIndex >= 0 &&
+        (answerIndex < answers.size || (answerIndex == answers.size && userAnswer.isNotEmpty()))
   }
 }
 
