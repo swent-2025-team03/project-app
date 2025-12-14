@@ -63,24 +63,26 @@ class ReportViewViewModel(
 
   /** Loads a report by its ID and updates the state. */
   fun loadReport(reportID: String) {
-    viewModelScope.launch {
-      _uiState.withLoadingState(
-          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
-            try {
-              val fetchedReport = repository.getReportById(reportID)
-              if (fetchedReport != null) {
-                _uiState.value =
-                    ReportViewUIState(
-                        report = fetchedReport,
-                        answerText = fetchedReport.answer ?: "",
-                        status = fetchedReport.status)
-              } else {
-                Log.e("ReportViewModel", "Report with ID $reportID not found.")
+    if (_uiState.value.report.id == "RPT001") {
+      viewModelScope.launch {
+        _uiState.withLoadingState(
+            applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+              try {
+                val fetchedReport = repository.getReportById(reportID)
+                if (fetchedReport != null) {
+                  _uiState.value =
+                      ReportViewUIState(
+                          report = fetchedReport,
+                          answerText = fetchedReport.answer ?: "",
+                          status = fetchedReport.status)
+                } else {
+                  Log.e("ReportViewModel", "Report with ID $reportID not found.")
+                }
+              } catch (e: Exception) {
+                Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
               }
-            } catch (e: Exception) {
-              Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
             }
-          }
+      }
     }
   }
 
