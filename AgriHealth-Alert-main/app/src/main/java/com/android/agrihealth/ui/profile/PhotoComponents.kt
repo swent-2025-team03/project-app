@@ -185,8 +185,9 @@ fun LocalPhotoDisplay(
 fun DefaultIconPlaceholder(modifier: Modifier = Modifier) {
   Icon(
       imageVector = Icons.Default.AccountCircle,
-      contentDescription = "Default icon",
-      modifier = modifier.testTag(PhotoComponentsTestTags.DEFAULT_ICON))
+      contentDescription = "Default Profile Picture",
+      modifier = modifier.testTag(PhotoComponentsTestTags.DEFAULT_ICON),
+      tint = MaterialTheme.colorScheme.primary)
 }
 
 /**

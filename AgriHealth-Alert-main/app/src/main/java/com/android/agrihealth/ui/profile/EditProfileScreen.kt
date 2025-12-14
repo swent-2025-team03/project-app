@@ -557,16 +557,16 @@ fun EditableProfilePicture(
       )
     }
 
-    Icon(
-      imageVector = Icons.Default.AccountCircle,
-      contentDescription = "Profile Picture",
-      modifier = Modifier
-        .size(120.dp)
-        .clip(CircleShape)
-        .testTag(PROFILE_IMAGE)
-        .clickable { handleProfilePictureClick() },
-      tint = MaterialTheme.colorScheme.primary,
-    )
+//    Icon(
+//      imageVector = Icons.Default.AccountCircle,
+//      contentDescription = "Profile Picture",
+//      modifier = Modifier
+//        .size(120.dp)
+//        .clip(CircleShape)
+//        .testTag(PROFILE_IMAGE)
+//        .clickable { handleProfilePictureClick() },
+//      tint = MaterialTheme.colorScheme.primary,
+//    )
 
     // Camera icon overlay
     FloatingActionButton(
