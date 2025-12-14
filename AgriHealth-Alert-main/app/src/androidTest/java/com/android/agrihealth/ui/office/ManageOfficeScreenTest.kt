@@ -7,9 +7,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
+import com.android.agrihealth.testutil.FakeImageRepository
 import com.android.agrihealth.testutil.FakeOfficeRepository
 import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.testutil.TestConstants
@@ -52,7 +54,13 @@ class ManageOfficeScreenUiTest {
 
     val connectionRepository = ConnectionRepositoryProvider.farmerToOfficeRepository
 
-    lateinit var vm: ManageOfficeViewModel
+    val imageViewModel: ImageViewModel = ImageViewModel(FakeImageRepository())
+
+    val manageOfficeViewModel =
+        ManageOfficeViewModel(
+            officeRepository = fakeOfficeRepository,
+            userViewModel = fakeUserViewModel,
+            imageViewModel = imageViewModel)
 
     composeTestRule.setContent {
       val navController = rememberNavController()
@@ -61,22 +69,10 @@ class ManageOfficeScreenUiTest {
       MaterialTheme {
         ManageOfficeScreen(
             navigationActions = navigationActions,
+            manageOfficeViewModel = manageOfficeViewModel,
             onGoBack = {},
             onCreateOffice = {},
             onJoinOffice = {},
-            manageOfficeVmFactory = {
-              object : ViewModelProvider.Factory {
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                  val instance =
-                      ManageOfficeViewModel(
-                          userViewModel = fakeUserViewModel,
-                          officeRepository = fakeOfficeRepository,
-                      )
-                  vm = instance
-                  @Suppress("UNCHECKED_CAST") return instance as T
-                }
-              }
-            },
             codesVmFactory = {
               object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -93,7 +89,7 @@ class ManageOfficeScreenUiTest {
     }
 
     composeTestRule.assertOverlayDuringLoading(
-        isLoading = { vm.uiState.value.isLoading },
+        isLoading = { manageOfficeViewModel.uiState.value.isLoading },
         timeoutStart = TestConstants.LONG_TIMEOUT,
         timeoutEnd = TestConstants.LONG_TIMEOUT,
     )
