@@ -36,6 +36,7 @@ class SignUpScreenTest : UITest() {
     }
   }
 
+  @Test
   override fun displayAllComponents() {
     setContent()
 

@@ -1,38 +1,41 @@
 package com.android.agrihealth.ui.loading
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import com.android.agrihealth.testhelpers.templates.UITest
 import org.junit.Rule
 import org.junit.Test
 
-class LoadingScreenTest {
+class LoadingScreenTest : UITest() {
 
-  @get:Rule val compose = createComposeRule()
+  override fun displayAllComponents() {}
 
-  // -----------------
-  // TEST 1 — Not loading
-  // -----------------
-  @Test
-  fun overlay_notLoading_showsOnlyContent() {
-    compose.setContent { LoadingOverlay(isLoading = false) { Box(Modifier.testTag("content")) } }
+  private val testTag = "content"
 
-    compose.onNodeWithTag("content").assertExists()
-    compose.onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
-    compose.onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
+  private fun setLoadingContent(isLoading: Boolean) {
+    setContent { LoadingOverlay(isLoading) { Box(Modifier.testTag(testTag)) { Text(":)") } } }
   }
 
-  // -----------------
-  // TEST 2 — Loading state
-  // -----------------
+  @Test
+  fun overlay_notLoading_showsOnlyContent() {
+    setLoadingContent(false)
+
+    with(LoadingTestTags) {
+      nodeIsDisplayed(testTag)
+      nodesNotDisplayed(SCRIM, SPINNER)
+    }
+  }
+
   @Test
   fun overlay_loading_showsScrimAndSpinner() {
-    compose.setContent { LoadingOverlay(isLoading = true) { Box(Modifier.testTag("content")) } }
+    setLoadingContent(true)
 
-    compose.onNodeWithTag("content").assertExists()
-    compose.onNodeWithTag(LoadingTestTags.SCRIM).assertExists()
-    compose.onNodeWithTag(LoadingTestTags.SPINNER).assertExists()
+    with(LoadingTestTags) {
+      nodesAreDisplayed(testTag, SCRIM, SPINNER)
+    }
   }
 }

@@ -20,7 +20,8 @@ abstract class UITest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  @Test abstract fun displayAllComponents()
+  // Intentionally not a test, to make it optional to run as it can lose 1 second per test suite
+  abstract fun displayAllComponents()
 
   /** Sets the content to be displayed in the Compose test, using the app's theme */
   protected fun setContent(content: @Composable () -> Unit) {
@@ -53,6 +54,10 @@ abstract class UITest {
 
   protected fun nodesAreDisplayed(vararg tags: String) {
     for (tag in tags) nodeIsDisplayed(tag)
+  }
+
+  protected fun nodesNotDisplayed(vararg tags: String) {
+    for (tag in tags) nodeNotDisplayed(tag)
   }
 
   /** Clicks on the node corresponding to the provided tag */

@@ -22,6 +22,7 @@ class AlertViewScreenTest : UITest() {
     }
   }
 
+  @Test
   override fun displayAllComponents() {
     setAlertViewScreen()
 

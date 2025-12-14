@@ -22,6 +22,7 @@ class SignInScreenTest : UITest() {
     }
   }
 
+  @Test
   override fun displayAllComponents() {
     setContent()
 
