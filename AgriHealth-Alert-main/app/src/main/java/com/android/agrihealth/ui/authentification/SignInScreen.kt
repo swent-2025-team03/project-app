@@ -82,7 +82,10 @@ fun SignInScreen(
         snackbarHost = {
           SnackbarHost(
               hostState = snackbarHostState,
-              modifier = Modifier.padding(bottom = 16.dp).testTag(SignInScreenTestTags.SNACKBAR))
+              modifier =
+                  Modifier.padding(bottom = 16.dp)
+                      .testTag(SignInScreenTestTags.SNACKBAR)
+                      .imePadding())
         }) { padding ->
           Column(
               modifier =
@@ -91,7 +94,6 @@ fun SignInScreen(
                       .verticalScroll(rememberScrollState()),
               horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(Modifier.height(96.dp))
-
                 Text(
                     text = "AgriHealth",
                     style = MaterialTheme.typography.displaySmall,
