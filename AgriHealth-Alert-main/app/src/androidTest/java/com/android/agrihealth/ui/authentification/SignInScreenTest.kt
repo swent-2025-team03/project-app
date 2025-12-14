@@ -1,80 +1,52 @@
 package com.android.agrihealth.ui.authentification
 
-import androidx.activity.ComponentActivity
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotDisplayed
-import androidx.compose.ui.test.isDisplayed
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
-import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
-import org.junit.Rule
+import com.android.agrihealth.testhelpers.templates.UITest
 import org.junit.Test
 
-class SignInScreenTest {
+class SignInScreenTest : UITest() {
 
   private val authRepository = FakeAuthRepository()
 
-  @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
-
-  private fun completeSignIn(email: String, password: String) {
-    composeTestRule
-        .onNodeWithTag(SignInScreenTestTags.EMAIL_FIELD)
-        .assertIsDisplayed()
-        .performTextInput(email)
-
-    composeTestRule
-        .onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD)
-        .assertIsDisplayed()
-        .performTextInput(password)
-
-    composeTestRule
-        .onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
+  private fun setContent() {
+    setContent { SignInScreen(signInViewModel = SignInViewModel(authRepository)) }
   }
 
-  @Test
-  fun displayAllComponents() {
-    composeTestRule.setContent { SignInScreen(signInViewModel = SignInViewModel(authRepository)) }
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.SIGN_UP_BUTTON).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.EMAIL_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.PASSWORD_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.FORGOT_PASSWORD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.LOGIN_DIVIDER).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.SNACKBAR).assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.GOOGLE_LOGIN_BUTTON).assertIsDisplayed()
+  private fun completeBadSignIn() {
+    val email = "bad"
+    val password = "credentials"
+    with(SignInScreenTestTags) {
+      writeIn(EMAIL_FIELD, email)
+      writeIn(PASSWORD_FIELD, password)
+      clickOn(LOGIN_BUTTON)
+    }
   }
 
-  @Test
-  fun signInWithEmptyFieldsFail() {
-    composeTestRule.setContent { SignInScreen(signInViewModel = SignInViewModel(authRepository)) }
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.LOGIN_BUTTON).performClick()
-    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
-      composeTestRule.onNodeWithText(SignInErrorMsg.EMPTY_EMAIL_OR_PASSWORD).isDisplayed()
+  override fun displayAllComponents() {
+    setContent()
+
+    with(SignInScreenTestTags) {
+      nodesAreDisplayed(SIGN_UP_BUTTON, EMAIL_FIELD, PASSWORD_FIELD, LOGIN_BUTTON, FORGOT_PASSWORD, LOGIN_DIVIDER, GOOGLE_LOGIN_BUTTON)
+      nodeNotDisplayed(SNACKBAR)
     }
   }
 
   @Test
-  fun signInWithUnregisteredAccountFails() {
-    composeTestRule.setContent { SignInScreen(signInViewModel = SignInViewModel(authRepository)) }
-    completeSignIn("bad", "credentials")
-    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
-      composeTestRule.onNodeWithText(SignInErrorMsg.INVALID_CREDENTIALS).isDisplayed()
-    }
+  fun signIn_withUnregisteredAccount_orEmptyFields_Fails() {
+    setContent()
+
+    clickOn(SignInScreenTestTags.LOGIN_BUTTON)
+    textIsDisplayed(SignInErrorMsg.EMPTY_EMAIL_OR_PASSWORD)
+
+    completeBadSignIn()
+    textIsDisplayed(SignInErrorMsg.INVALID_CREDENTIALS)
   }
 
   @Test
   fun signInWithNoInternetFails() {
     authRepository.switchConnection(false)
-    composeTestRule.setContent { SignInScreen(signInViewModel = SignInViewModel(authRepository)) }
-    completeSignIn("bad", "credentials")
-    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
-      composeTestRule.onNodeWithText(SignInErrorMsg.TIMEOUT).isDisplayed()
-    }
+    setContent()
+    completeBadSignIn()
+    textIsDisplayed(SignInErrorMsg.TIMEOUT)
   }
 }

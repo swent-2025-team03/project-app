@@ -7,12 +7,12 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performTextInput
 import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
-import com.android.agrihealth.testhelpers.templates.BaseUITest
+import com.android.agrihealth.testhelpers.templates.UITest
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class ResetPasswordTest : BaseUITest() {
+class ResetPasswordTest : UITest() {
 
   fun setContent(onBack: () -> Unit = {}, status: EmailSendStatus = EmailSendStatus.Success) {
     val vm = ResetPasswordViewModel(FakeAuthRepository(resetPasswordResult = status))
@@ -58,7 +58,7 @@ class ResetPasswordTest : BaseUITest() {
     setContent()
 
     with(ResetPasswordScreenTestTags) {
-      assertNodesAreDisplayed(INSTRUCTION_TEXT, EMAIL, SEND_RESET_EMAIL_BUTTON)
+      nodesAreDisplayed(INSTRUCTION_TEXT, EMAIL, SEND_RESET_EMAIL_BUTTON)
     }
 
     assertFeedBackBox(EmailSendStatus.None)

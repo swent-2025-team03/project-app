@@ -1,43 +1,21 @@
-package com.android.agrihealth.ui.authentification
+package com.android.agrihealth.data.model.user
 
-import com.android.agrihealth.data.model.user.UserRepository
-import com.android.agrihealth.data.model.user.User
-import com.android.agrihealth.data.model.user.UserViewModel
-import com.android.agrihealth.data.model.user.defaultUser
 import com.android.agrihealth.testhelpers.TestUser.vet1
 import com.android.agrihealth.testhelpers.templates.FirebaseTest
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class UserViewModelTest : FirebaseTest() {
 
-  private val testDispatcher = StandardTestDispatcher()
-  private lateinit var repository: FakeUserRepository
+  val repository = FakeUserRepository()
 
   val auth = FirebaseAuth.getInstance()
-
-  @Before
-  fun setUp() {
-    Dispatchers.setMain(testDispatcher)
-    repository = FakeUserRepository()
-  }
-
-  @After
-  fun tearDown() {
-    Dispatchers.resetMain()
-  }
 
   @Test
   fun initKeepsDefaultUserWhenNoUserLoggedIn() = runTest {

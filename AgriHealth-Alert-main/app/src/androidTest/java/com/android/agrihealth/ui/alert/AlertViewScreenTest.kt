@@ -3,12 +3,12 @@ package com.android.agrihealth.ui.alert
 import androidx.compose.ui.test.*
 import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.data.model.alert.FakeAlertRepository
-import com.android.agrihealth.testhelpers.templates.BaseUITest
+import com.android.agrihealth.testhelpers.templates.UITest
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.overview.AlertUiState
 import org.junit.Test
 
-class AlertViewScreenTest : BaseUITest() {
+class AlertViewScreenTest : UITest() {
   private fun setAlertViewScreen() {
     val startAlertId = "1"
     val viewModel = AlertViewModel(FakeAlertRepository().allAlerts.map { AlertUiState(alert = it) }, startAlertId)
@@ -24,7 +24,7 @@ class AlertViewScreenTest : BaseUITest() {
     setAlertViewScreen()
 
     with(AlertViewScreenTestTags) {
-      assertNodesAreDisplayed(ALERT_DESCRIPTION, ALERT_DATE, ALERT_REGION, PREVIOUS_ALERT_ARROW, NEXT_ALERT_ARROW, VIEW_ON_MAP)
+      nodesAreDisplayed(ALERT_DESCRIPTION, ALERT_DATE, ALERT_REGION, PREVIOUS_ALERT_ARROW, NEXT_ALERT_ARROW, VIEW_ON_MAP)
     }
   }
 
@@ -37,10 +37,10 @@ class AlertViewScreenTest : BaseUITest() {
       node(NEXT_ALERT_ARROW).assertIsEnabled()
 
       clickOn(NEXT_ALERT_ARROW)
-      assertNodeIsDisplayed(containerTag(1))
+      nodeIsDisplayed(containerTag(1))
 
       clickOn(PREVIOUS_ALERT_ARROW)
-      assertNodeIsDisplayed(containerTag(0))
+      nodeIsDisplayed(containerTag(0))
     }
   }
 }

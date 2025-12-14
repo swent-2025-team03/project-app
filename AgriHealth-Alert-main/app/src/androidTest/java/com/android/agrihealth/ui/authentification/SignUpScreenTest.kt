@@ -11,213 +11,98 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.testhelpers.TestPassword.password1
 import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
+import com.android.agrihealth.testhelpers.TestUser.farmer1
 import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
+import com.android.agrihealth.testhelpers.templates.UITest
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class SignUpScreenTest {
+class SignUpScreenTest : UITest() {
 
   private val authRepository = FakeAuthRepository()
-  private val user =
-      Farmer(
-          uid = "test_user",
-          firstname = "Farmer",
-          lastname = "Joe",
-          email = "valid@email.com",
-          address = Location(0.0, 0.0, "123 Farm Lane"),
-          linkedOffices = emptyList(),
-          defaultOffice = null,
-      )
+  private val user = farmer1
 
-  @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+  private fun setContent() {
+    setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
+  }
 
-  private fun completeSignUp(email: String, password: String) {
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD)
-        .assertIsDisplayed()
-        .performTextInput("Test")
-
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.LASTNAME_FIELD)
-        .assertIsDisplayed()
-        .performTextInput("User")
-
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.EMAIL_FIELD)
-        .assertIsDisplayed()
-        .performTextInput(email)
-
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.PASSWORD_FIELD)
-        .assertIsDisplayed()
-        .performTextInput(password)
-
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD)
-        .assertIsDisplayed()
-        .performTextInput(password)
-
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.FARMER_PILL)
-        .assertIsDisplayed()
-        .performClick()
-
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
+  private fun fillTextForm() {
+    with(SignUpScreenTestTags) {
+      writeIn(FIRSTNAME_FIELD, user.firstname)
+      writeIn(LASTNAME_FIELD, user.lastname)
+      writeIn(EMAIL_FIELD, user.email)
+      writeIn(PASSWORD_FIELD, password1)
+      writeIn(CONFIRM_PASSWORD_FIELD, password1)
+    }
   }
 
   @Before
   fun setUp() {
     runTest {
-      authRepository.signUpWithEmailAndPassword("valid@email.com", "password1", user)
+      authRepository.signUpWithEmailAndPassword(user.email, password1, user)
       authRepository.signOut()
     }
   }
 
-  @Test
-  fun displayAllComponents() {
-    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
-    composeTestRule.onNodeWithTag(SignUpScreenTestTags.BACK_BUTTON).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignUpScreenTestTags.TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignUpScreenTestTags.LASTNAME_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignUpScreenTestTags.EMAIL_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignUpScreenTestTags.PASSWORD_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignUpScreenTestTags.FARMER_PILL).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignUpScreenTestTags.VET_PILL).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SignUpScreenTestTags.SNACKBAR).assertIsNotDisplayed()
-  }
+  override fun displayAllComponents() {
+    setContent()
 
-  @Test
-  fun signUpWithEmptyFieldsFails() {
-    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
-    composeTestRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).performClick()
-    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
-      composeTestRule.onNodeWithText(SignUpErrorMsg.EMPTY_FIELDS).isDisplayed()
+    with(SignUpScreenTestTags) {
+      nodesAreDisplayed(BACK_BUTTON, TITLE, FIRSTNAME_FIELD, LASTNAME_FIELD, EMAIL_FIELD, PASSWORD_FIELD, CONFIRM_PASSWORD_FIELD, FARMER_PILL, VET_PILL, SAVE_BUTTON)
+      nodeNotDisplayed(SNACKBAR)
     }
   }
 
-  @Test
-  fun signUpWithoutRoleFails() {
-    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD)
-        .assertIsDisplayed()
-        .performTextInput("Test")
-
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.LASTNAME_FIELD)
-        .assertIsDisplayed()
-        .performTextInput("User")
-
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.EMAIL_FIELD)
-        .assertIsDisplayed()
-        .performTextInput(user.email)
-
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.PASSWORD_FIELD)
-        .assertIsDisplayed()
-        .performTextInput("password1")
-
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD)
-        .assertIsDisplayed()
-        .performTextInput("password1")
-
-    composeTestRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).performClick()
-
-    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
-      composeTestRule.onNodeWithText(SignUpErrorMsg.ROLE_NULL).isDisplayed()
-    }
+  private fun failSignUpWithMsg(message: String) {
+    clickOn(SignUpScreenTestTags.SAVE_BUTTON)
+    textIsDisplayed(message)
   }
 
   @Test
-  fun signUpWithMalformedEmailFails() {
-    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
-    completeSignUp("bad", "credentials")
-    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
-      composeTestRule.onNodeWithText(SignUpErrorMsg.BAD_EMAIL_FORMAT).isDisplayed()
-    }
-  }
+  fun signUp_withoutFields_FailsForRightReasons() {
+    setContent()
 
-  @Test
-  fun signUpWithWeakPasswordFails() {
-    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
-    completeSignUp("realvalid@email.gmail", "bad")
-    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
-      composeTestRule.onNodeWithText(SignUpErrorMsg.WEAK_PASSWORD).isDisplayed()
-    }
-  }
+    val email = user.email
+    val badEmail = "bad"
+    val password = password1
+    val badPassword = "weak"
 
-  @Test
-  fun signUpWithMismatchedPasswordsFails() {
-    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD)
-        .assertIsDisplayed()
-        .performTextInput("Test")
+    with(SignUpScreenTestTags) {
+      // Empty form
+      failSignUpWithMsg(SignUpErrorMsg.EMPTY_FIELDS)
 
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.LASTNAME_FIELD)
-        .assertIsDisplayed()
-        .performTextInput("User")
+      // No role
+      fillTextForm()
+      failSignUpWithMsg(SignUpErrorMsg.ROLE_NULL)
 
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.EMAIL_FIELD)
-        .assertIsDisplayed()
-        .performTextInput("great@email.yeah")
+      // Bad email
+      clickOn(FARMER_PILL)
+      writeIn(EMAIL_FIELD, badEmail)
+      failSignUpWithMsg(SignUpErrorMsg.BAD_EMAIL_FORMAT)
 
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.PASSWORD_FIELD)
-        .assertIsDisplayed()
-        .performTextInput("password2")
+      // Weak password
+      writeIn(EMAIL_FIELD, email)
+      writeIn(PASSWORD_FIELD, badPassword)
+      writeIn(CONFIRM_PASSWORD_FIELD, badPassword)
+      failSignUpWithMsg(SignUpErrorMsg.WEAK_PASSWORD)
 
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD)
-        .assertIsDisplayed()
-        .performTextInput("password3")
+      // Mismatched password
+      writeIn(PASSWORD_FIELD, password)
+      writeIn(CONFIRM_PASSWORD_FIELD, password + "typo")
+      failSignUpWithMsg(SignUpErrorMsg.CNF_PASSWORD_DIFF)
 
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.FARMER_PILL)
-        .assertIsDisplayed()
-        .performClick()
+      // Already used email
+      writeIn(CONFIRM_PASSWORD_FIELD, password)
+      failSignUpWithMsg(SignUpErrorMsg.ALREADY_USED_EMAIL)
 
-    composeTestRule
-        .onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-
-    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
-      composeTestRule.onNodeWithText(SignUpErrorMsg.CNF_PASSWORD_DIFF).isDisplayed()
-    }
-  }
-
-  @Test
-  fun signUpWithAlreadyUsedEmailFails() {
-    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
-    completeSignUp(user.email, "password1")
-
-    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
-      composeTestRule.onNodeWithText(SignUpErrorMsg.ALREADY_USED_EMAIL).isDisplayed()
-    }
-  }
-
-  @Test
-  fun signUpWithoutInternetFails() {
-    authRepository.switchConnection(false)
-    composeTestRule.setContent { SignUpScreen(signUpViewModel = SignUpViewModel(authRepository)) }
-    completeSignUp(user.email, "password2")
-    composeTestRule.waitUntil(DEFAULT_TIMEOUT) {
-      composeTestRule.onNodeWithText(SignUpErrorMsg.TIMEOUT).isDisplayed()
+      // No internet
+      authRepository.switchConnection(false)
+      failSignUpWithMsg(SignUpErrorMsg.TIMEOUT)
     }
   }
 

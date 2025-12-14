@@ -1,28 +1,20 @@
 package com.android.agrihealth.data.model.location
 
-import androidx.activity.ComponentActivity
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.isDisplayed
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
-import com.android.agrihealth.testhelpers.templates.BaseUITest
+import com.android.agrihealth.testhelpers.templates.UITest
 import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.ui.common.LocationPicker
 import com.android.agrihealth.ui.common.LocationPickerTestTags
-import com.android.agrihealth.ui.map.MapScreenTestTags
 import com.android.agrihealth.ui.map.MapViewModel
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 
-class LocationPickerTest : BaseUITest() {
+class LocationPickerTest : UITest() {
 
   private lateinit var locationRepository: LocationRepository
 
@@ -64,12 +56,12 @@ class LocationPickerTest : BaseUITest() {
         })
     }
 
-    assertNodeIsDisplayed(LocationPickerTestTags.MAP_SCREEN, LONG_TIMEOUT)
+    nodeIsDisplayed(LocationPickerTestTags.MAP_SCREEN, LONG_TIMEOUT)
 
     clickOn(LocationPickerTestTags.SELECT_LOCATION_BUTTON)
 
-    assertNodeIsDisplayed(LocationPickerTestTags.CONFIRMATION_PROMPT)
-    assertNodeIsDisplayed(LocationPickerTestTags.PROMPT_CANCEL_BUTTON)
+    nodeIsDisplayed(LocationPickerTestTags.CONFIRMATION_PROMPT)
+    nodeIsDisplayed(LocationPickerTestTags.PROMPT_CANCEL_BUTTON)
     
     clickOn(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON)
 
