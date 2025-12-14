@@ -29,6 +29,10 @@ class ManageOfficeViewModel(
   private val _uiState = MutableStateFlow(ManageOfficeUiState())
   val uiState: StateFlow<ManageOfficeUiState> = _uiState
 
+  init {
+    loadOffice()
+  }
+
   fun loadOffice() {
     viewModelScope.launch {
       _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
