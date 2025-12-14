@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.overview
 
-import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
@@ -207,7 +206,6 @@ class OverviewViewModel(
    * location.
    */
   override fun loadAlerts(user: User) {
-    Log.d("OverviewVM", "loadAlerts() CALLED")
     viewModelScope.launch {
       _uiState.withLoadingState({ state, isLoading -> state.copy(isAlertLoading = isLoading) }) {
         try {

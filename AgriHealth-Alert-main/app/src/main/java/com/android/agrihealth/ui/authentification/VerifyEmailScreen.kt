@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.authentification
 
-// imports for debug button
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,11 +29,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.data.model.authentification.verifyUser
 import com.android.agrihealth.ui.navigation.NavigationTestTags
+
+// imports for debug button
+/*
+import androidx.compose.material.icons.filled.Preview
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.runBlocking
+import com.android.agrihealth.data.model.authentification.verifyUser
+ */
 
 // imports for preview
 /*
@@ -138,10 +142,11 @@ fun VerifyEmailScreen(
                 Text(VerifyEmailScreenTexts.textForCountdown(uiState.value.countdown))
 
                 // Debug button to enable any account
-
+                /*
                 Button(onClick = { runBlocking { verifyUser(Firebase.auth.uid ?: "") } }) {
                   Text("Haxchi")
                 }
+                 */
               }
             }
       }
