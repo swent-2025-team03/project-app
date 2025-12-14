@@ -61,6 +61,7 @@ import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.User
+import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.common.layout.BottomNavigationMenu
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.common.layout.Tab
@@ -126,7 +127,7 @@ fun PlannerScreen(
   }
 
   BackHandler {
-    if (plannerVM.isReportDateSet()) {
+    if (plannerVM.isReportDateSet() || !uiState.isAllowedToSetDate) {
       goBack()
     } else {
       if (uiState.isUnsavedAlertShowing) {
@@ -137,7 +138,7 @@ fun PlannerScreen(
     }
   }
 
-  if (uiState.isUnsavedAlertShowing) {
+  if (uiState.isUnsavedAlertShowing && uiState.isAllowedToSetDate) {
     UnsavedChangesAlert(
         onGoBack = {
           plannerVM.setIsUnsavedAlertShowing(false)
@@ -180,56 +181,58 @@ fun PlannerScreen(
         }
       },
       content = { pd ->
-        Box(modifier = Modifier.padding(pd).testTag(PlannerScreenTestTags.SCREEN)) {
-          Column(modifier = Modifier.padding(horizontal = 8.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-              Text(
-                  "Week ${uiState.selectedWeekNumber}",
-                  style = MaterialTheme.typography.titleMedium,
-                  modifier = Modifier.testTag(PlannerScreenTestTags.WEEK_NUMBER))
-              WeekHeader(uiState.selectedWeek[0], uiState.selectedWeek[6])
-            }
-            Row(modifier = Modifier.fillMaxWidth()) {
-              listOf("M", "T", "W", "T", "F", "S", "S").forEach { dayLetter ->
-                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                  Text(dayLetter)
+        LoadingOverlay(isLoading = uiState.isLoading) {
+          Box(modifier = Modifier.padding(pd).testTag(PlannerScreenTestTags.SCREEN)) {
+            Column(modifier = Modifier.padding(horizontal = 8.dp)) {
+              Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+              ) {
+                Text(
+                    "Week ${uiState.selectedWeekNumber}",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.testTag(PlannerScreenTestTags.WEEK_NUMBER))
+                WeekHeader(uiState.selectedWeek[0], uiState.selectedWeek[6])
+              }
+              Row(modifier = Modifier.fillMaxWidth()) {
+                listOf("M", "T", "W", "T", "F", "S", "S").forEach { dayLetter ->
+                  Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    Text(dayLetter)
+                  }
                 }
               }
+              WeeklyPager(
+                  onDateSelected = { date -> plannerVM.setSelectedDate(date) },
+                  startingDate = uiState.originalDate,
+                  dayReportMap = uiState.reports)
+              Row(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    if (uiState.selectedDate.year != LocalDate.now().year) {
+                      uiState.selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
+                    } else {
+                      uiState.selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM"))
+                    },
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.testTag(PlannerScreenTestTags.SELECTED_DATE))
+              }
+              DailyScheduler(
+                  uiState.selectedDateReports, reportId, uiState.selectedDate == LocalDate.now()) {
+                      it ->
+                    reportClicked(it)
+                  }
             }
-            WeeklyPager(
-                onDateSelected = { date -> plannerVM.setSelectedDate(date) },
-                startingDate = uiState.originalDate,
-                dayReportMap = uiState.reports)
-            Row(modifier = Modifier.fillMaxWidth()) {
-              Text(
-                  if (uiState.selectedDate.year != LocalDate.now().year) {
-                    uiState.selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
-                  } else {
-                    uiState.selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM"))
-                  },
-                  style = MaterialTheme.typography.titleLarge,
-                  modifier = Modifier.testTag(PlannerScreenTestTags.SELECTED_DATE))
-            }
-            DailyScheduler(
-                uiState.selectedDateReports, reportId, uiState.selectedDate == LocalDate.now()) { it
-                  ->
-                  reportClicked(it)
-                }
-          }
-          if (reportId != null) {
+            if (reportId != null && uiState.isAllowedToSetDate) {
 
-            SetReportDateBox(
-                modifier = Modifier.align(Alignment.BottomEnd),
-                report = uiState.reportToSetTheDateFor,
-                selectedDate = uiState.selectedDate,
-                initialTime = uiState.setTime,
-                initialDuration = uiState.setDuration,
-                onSetReportDateClick = { plannerVM.editReportWithNewTime() },
-                onTimeSelected = plannerVM::setReportTime,
-                onDurationSelected = plannerVM::setReportDuration)
+              SetReportDateBox(
+                  modifier = Modifier.align(Alignment.BottomEnd),
+                  report = uiState.reportToSetTheDateFor,
+                  selectedDate = uiState.selectedDate,
+                  initialTime = uiState.setTime,
+                  initialDuration = uiState.setDuration,
+                  onSetReportDateClick = { plannerVM.editReportWithNewTime() },
+                  onTimeSelected = plannerVM::setReportTime,
+                  onDurationSelected = plannerVM::setReportDuration)
+            }
           }
         }
       })

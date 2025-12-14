@@ -19,6 +19,7 @@ import com.android.agrihealth.data.model.report.ReportRepository
 import com.android.agrihealth.data.model.report.ReportRepositoryProvider
 import com.android.agrihealth.data.model.user.UserRepository
 import com.android.agrihealth.data.model.user.UserRepositoryProvider
+import com.android.agrihealth.ui.loading.withLoadingState
 import com.google.android.gms.maps.model.LatLng
 import java.util.Locale
 import kotlin.collections.firstOrNull
@@ -33,7 +34,8 @@ import kotlinx.coroutines.withTimeoutOrNull
 data class MapUIState(
     val reports: List<SpiderifiedReport> = emptyList(),
     val alerts: List<Alert> = emptyList(),
-    val geocodedAddress: String? = null
+    val geocodedAddress: String? = null,
+    val isLoadingLocation: Boolean = false,
 )
 
 data class SpiderifiedReport(val report: Report, val position: LatLng, val center: LatLng)
@@ -143,19 +145,35 @@ class MapViewModel(
     else {
       viewModelScope.launch {
         _zoom.value = 12f
-        if (locationViewModel.hasLocationPermissions()) {
-          if (useCurrentLocation) {
-            locationViewModel.getCurrentLocation()
-          } else {
-            locationViewModel.getLastKnownLocation()
-          }
-          val gpsLocation =
-              withTimeoutOrNull(3_000) {
-                locationViewModel.locationState.firstOrNull { it != null }
-              }
 
-          _startingLocation.value = gpsLocation ?: getLocationFromUserAddress() ?: return@launch
+        // Prevent overlapping location fetches
+        if (_uiState.value.isLoadingLocation) return@launch
+
+        // If no permissions, fallback to user address without toggling loading
+        if (!locationViewModel.hasLocationPermissions()) {
+          val fallback = getLocationFromUserAddress()
+          if (fallback != null) _startingLocation.value = fallback
+          return@launch
         }
+
+        // Permissions granted: toggle isLoadingLocation while fetching GPS
+        _uiState.withLoadingState(
+            applyLoading = { s: MapUIState, loading: Boolean ->
+              s.copy(isLoadingLocation = loading)
+            }) {
+              if (useCurrentLocation) {
+                locationViewModel.getCurrentLocation()
+              } else {
+                locationViewModel.getLastKnownLocation()
+              }
+              val gpsLocation =
+                  withTimeoutOrNull(3_000) {
+                    locationViewModel.locationState.firstOrNull { it != null }
+                  }
+
+              _startingLocation.value =
+                  gpsLocation ?: getLocationFromUserAddress() ?: return@withLoadingState
+            }
       }
     }
   }

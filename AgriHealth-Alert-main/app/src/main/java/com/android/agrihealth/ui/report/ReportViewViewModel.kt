@@ -10,6 +10,7 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportRepository
 import com.android.agrihealth.data.model.report.ReportRepositoryProvider
 import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.ui.loading.withLoadingState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,7 +39,8 @@ data class ReportViewUIState(
             location = Location(46.5191, 6.5668, "Lausanne Farm"),
             assignedVet = "valid_vet_id"),
     val answerText: String = "",
-    val status: ReportStatus = ReportStatus.PENDING
+    val status: ReportStatus = ReportStatus.PENDING,
+    val isLoading: Boolean = false,
 )
 
 /**
@@ -62,20 +64,23 @@ class ReportViewViewModel(
   /** Loads a report by its ID and updates the state. */
   fun loadReport(reportID: String) {
     viewModelScope.launch {
-      try {
-        val fetchedReport = repository.getReportById(reportID)
-        if (fetchedReport != null) {
-          _uiState.value =
-              ReportViewUIState(
-                  report = fetchedReport,
-                  answerText = fetchedReport.answer ?: "",
-                  status = fetchedReport.status)
-        } else {
-          Log.e("ReportViewModel", "Report with ID $reportID not found.")
-        }
-      } catch (e: Exception) {
-        Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
-      }
+      _uiState.withLoadingState(
+          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+            try {
+              val fetchedReport = repository.getReportById(reportID)
+              if (fetchedReport != null) {
+                _uiState.value =
+                    ReportViewUIState(
+                        report = fetchedReport,
+                        answerText = fetchedReport.answer ?: "",
+                        status = fetchedReport.status)
+              } else {
+                Log.e("ReportViewModel", "Report with ID $reportID not found.")
+              }
+            } catch (e: Exception) {
+              Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
+            }
+          }
     }
   }
 
@@ -109,27 +114,30 @@ class ReportViewViewModel(
   /** Saves the modified report, then triggers the saveCompleted flag on success. */
   fun onSave() {
     viewModelScope.launch {
-      try {
-        val currentReport = _uiState.value.report
-        val newAnswer = _uiState.value.answerText
-        val newStatus = _uiState.value.status
+      _uiState.withLoadingState(
+          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+            try {
+              val currentReport = _uiState.value.report
+              val newAnswer = _uiState.value.answerText
+              val newStatus = _uiState.value.status
 
-        if (currentReport.answer != newAnswer || currentReport.status != newStatus) {
-          val updatedReport = currentReport.copy(answer = newAnswer, status = newStatus)
-          repository.editReport(updatedReport.id, updatedReport)
+              if (currentReport.answer != newAnswer || currentReport.status != newStatus) {
+                val updatedReport = currentReport.copy(answer = newAnswer, status = newStatus)
+                repository.editReport(updatedReport.id, updatedReport)
 
-          // Send a notification
-          val farmerId = updatedReport.farmerId
-          val description = "Your report '${updatedReport.title}' has new changes!"
-          val notification =
-              Notification.VetAnswer(destinationUid = farmerId, description = description)
-          val messagingService = NotificationHandlerFirebase()
-          messagingService.uploadNotification(notification)
-        }
-        _saveCompleted.value = true
-      } catch (e: Exception) {
-        Log.e("ReportViewModel", "Error saving report", e)
-      }
+                // Send a notification
+                val farmerId = updatedReport.farmerId
+                val description = "Your report '${updatedReport.title}' has new changes!"
+                val notification =
+                    Notification.VetAnswer(destinationUid = farmerId, description = description)
+                val messagingService = NotificationHandlerFirebase()
+                messagingService.uploadNotification(notification)
+              }
+              _saveCompleted.value = true
+            } catch (e: Exception) {
+              Log.e("ReportViewModel", "Error saving report", e)
+            }
+          }
     }
   }
 

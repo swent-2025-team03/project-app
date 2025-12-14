@@ -1,15 +1,25 @@
 package com.android.agrihealth.ui.office
 
+import android.net.Uri
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.test.platform.app.InstrumentationRegistry
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.office.Office
+import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
+import com.android.agrihealth.testhelpers.fakes.FakeImageRepository
 import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
+import com.android.agrihealth.ui.profile.PhotoComponentsTestTags
+import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
 import org.junit.Rule
 import org.junit.Test
+
+private const val PLACEHOLDER_OFFICE_PHOTO = "report_image_cat.jpg"
+private const val FAKE_PHOTO_PATH = "some/fake/path/to/photo"
 
 class FakeViewOfficeViewModel(initial: ViewOfficeUiState) :
     ViewOfficeViewModel(targetOfficeId = "fake", officeRepository = FakeOfficeRepository()) {
@@ -26,11 +36,18 @@ class ViewOfficeScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  private fun setScreen(vm: FakeViewOfficeViewModel) {
-    composeTestRule.setContent { MaterialTheme { ViewOfficeScreen(viewModel = vm, onBack = {}) } }
+  private fun setScreen(
+      fakeOfficeVm: FakeViewOfficeViewModel,
+      imageViewModel: ImageViewModel = ImageViewModel(FakeImageRepository())
+  ) {
+    composeTestRule.setContent {
+      MaterialTheme {
+        ViewOfficeScreen(viewModel = fakeOfficeVm, onBack = {}, imageViewModel = imageViewModel)
+      }
+    }
   }
 
-  private fun setBasicTestScreen() {
+  private fun setBasicTestScreen(withPhoto: Boolean = true): TestDependencies {
     val office =
         Office(
             id = "o1",
@@ -38,16 +55,41 @@ class ViewOfficeScreenTest {
             address = null,
             description = "Providing quality veterinary services for farm animals.",
             vets = listOf("vet1", "vet2"),
-            ownerId = "owner1")
+            ownerId = "owner1",
+            photoUrl = if (withPhoto) FAKE_PHOTO_PATH else null)
 
-    val vm = FakeViewOfficeViewModel(ViewOfficeUiState.Success(office))
-    setScreen(vm)
+    val fakeOfficeVm = FakeViewOfficeViewModel(ViewOfficeUiState.Success(office))
+
+    val fakeImageRepository = FakeImageRepository()
+    val imageViewModel = ImageViewModel(fakeImageRepository)
+    setScreen(fakeOfficeVm, imageViewModel)
+
+    return TestDependencies(fakeOfficeVm, imageViewModel, fakeImageRepository)
   }
+
+  private fun getImageBytesFromUri(uri: Uri): ByteArray {
+    val context = InstrumentationRegistry.getInstrumentation().context
+    return context.contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: ByteArray(0)
+  }
+
+  private fun addPlaceholderPhoto(imageRepo: FakeImageRepository) {
+    val uri = getUriFrom(PLACEHOLDER_OFFICE_PHOTO)
+    val bytes = getImageBytesFromUri(uri)
+    imageRepo.forceUploadImage(bytes)
+  }
+
+  private data class TestDependencies(
+      val viewModel: FakeViewOfficeViewModel,
+      val imageViewModel: ImageViewModel,
+      val imageRepository: FakeImageRepository
+  )
 
   @Test
   fun topBar_displaysCorrectly() {
     val vm = FakeViewOfficeViewModel(ViewOfficeUiState.Loading)
-    setScreen(vm)
+    setScreen(
+        vm,
+    )
 
     composeTestRule.onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE).assertExists()
     composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertExists()
@@ -86,16 +128,6 @@ class ViewOfficeScreenTest {
   }
 
   @Test
-  fun officeIcon_isVisible() {
-    setBasicTestScreen()
-
-    composeTestRule
-        .onNodeWithTag(ViewOfficeScreenTestTags.OFFICE_ICON)
-        .assertExists()
-        .assertIsDisplayed()
-  }
-
-  @Test
   fun nameField_displaysCorrectValue() {
     setBasicTestScreen()
 
@@ -125,12 +157,85 @@ class ViewOfficeScreenTest {
   }
 
   @Test
-  fun allKeyElements_haveTags() {
-    setBasicTestScreen()
+  fun officePhoto_showsLoadingIndicator_whenImageIsLoading() {
+    val dependencies = setBasicTestScreen()
+    dependencies.imageRepository.freezeRepoConnection()
 
-    composeTestRule.onNodeWithTag(NavigationTestTags.TOP_BAR_TITLE).assertExists()
-    composeTestRule.onNodeWithTag(ViewOfficeScreenTestTags.OFFICE_ICON).assertExists()
-    composeTestRule.onNodeWithTag(ViewOfficeScreenTestTags.NAME_FIELD).assertExists()
-    composeTestRule.onNodeWithTag(ViewOfficeScreenTestTags.OFFICE_INFO_COLUMN).assertExists()
+    composeTestRule
+        .onNodeWithTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION)
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun officePhoto_showsImage_whenDownloadSucceeds() {
+    val dependencies = setBasicTestScreen()
+    dependencies.imageRepository.freezeRepoConnection()
+
+    addPlaceholderPhoto(dependencies.imageRepository)
+    dependencies.imageRepository.unfreezeRepoConnection()
+
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).isDisplayed()
+    }
+
+    composeTestRule
+        .onNodeWithTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION)
+        .assertIsNotDisplayed()
+  }
+
+  @Test
+  fun officePhoto_showsDefaultIcon_whenDownloadFails() {
+    val dependencies = setBasicTestScreen()
+    dependencies.imageRepository.makeRepoThrowError()
+    dependencies.imageRepository.unfreezeRepoConnection()
+
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
+      composeTestRule
+          .onAllNodesWithTag(PhotoComponentsTestTags.PHOTO_RENDER)
+          .fetchSemanticsNodes()
+          .isEmpty()
+    }
+
+    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).assertDoesNotExist()
+
+    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_ERROR_TEXT).assertDoesNotExist()
+
+    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.DEFAULT_ICON).isDisplayed()
+  }
+
+  @Test
+  fun officePhoto_showsDefaultIcon_whenNoPhotoUrl() {
+    setBasicTestScreen(withPhoto = false)
+
+    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).assertIsNotDisplayed()
+
+    composeTestRule
+        .onNodeWithTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION)
+        .assertIsNotDisplayed()
+
+    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_ERROR_TEXT).assertIsNotDisplayed()
+
+    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.DEFAULT_ICON).isDisplayed()
+  }
+
+  @Test
+  fun officePhoto_transitionsFromLoadingToSuccess() {
+    val dependencies = setBasicTestScreen()
+    dependencies.imageRepository.freezeRepoConnection()
+    addPlaceholderPhoto(dependencies.imageRepository)
+
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION).isDisplayed()
+    }
+
+    dependencies.imageRepository.unfreezeRepoConnection()
+
+    composeTestRule.waitUntil(LONG_TIMEOUT) {
+      composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).isDisplayed()
+    }
+
+    composeTestRule
+        .onNodeWithTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION)
+        .assertIsNotDisplayed()
   }
 }

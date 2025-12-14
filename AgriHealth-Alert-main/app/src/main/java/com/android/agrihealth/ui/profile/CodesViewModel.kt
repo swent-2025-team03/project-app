@@ -31,8 +31,12 @@ class CodesViewModel(
   val generatedCode: StateFlow<String?> = _generatedCode
   val claimMessage: StateFlow<String?> = _claimMessage
 
+  fun resetClaimMessage() {
+    _claimMessage.value = null
+  }
+
   fun generateCode() {
-    val currentUser = userViewModel.user.value
+    val currentUser = userViewModel.uiState.value.user
     val vet = currentUser as? Vet ?: return
 
     viewModelScope.launch {
@@ -48,12 +52,15 @@ class CodesViewModel(
                 }
             userViewModel.updateUser(updatedVet)
           },
-          onFailure = { e -> _generatedCode.value = "Error: ${e.message}" })
+          onFailure = { _ ->
+            _generatedCode.value =
+                "Something went wrong, please make sure you are connected to the internet."
+          })
     }
   }
 
   fun claimCode(code: String) {
-    val user = userViewModel.user.value
+    val user = userViewModel.uiState.value.user
     val userName =
         listOfNotNull(user.firstname, user.lastname)
             .filter { it.isNotBlank() }

@@ -5,13 +5,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import com.android.agrihealth.data.model.user.*
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.data.model.user.UserViewModelContract
+import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
+import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
+import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
 import com.android.agrihealth.ui.common.layout.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.common.layout.NavigationTestTags.TOP_BAR_TITLE
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.LOGOUT_BUTTON
+import com.android.agrihealth.ui.planner.PlannerScreen
+import com.android.agrihealth.ui.planner.PlannerTestReportsData
+import com.android.agrihealth.ui.planner.PlannerViewModel
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_FARMER
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_OFFICE_FIELD
@@ -19,6 +26,8 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
+import java.time.LocalDate
+import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 
@@ -213,5 +222,33 @@ class ProfileScreenTest {
     composeTestRule.setContent { ProfileScreen(userViewModel = vm, onManageOffice = {}) }
 
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON).assertExists()
+  }
+
+  @Test
+  fun planner_loadReports_showsAndHidesLoadingOverlay() = runTest {
+    val report = PlannerTestReportsData.report1.copy(startTime = LocalDate.now().atTime(9, 0))
+    val delayedRepo =
+      InMemoryReportRepository(
+        initialReports = listOf(report), delayMs = DEFAULT_TIMEOUT
+      )
+
+    val viewModel = PlannerViewModel(reportRepository = delayedRepo)
+
+    composeTestRule.setContent {
+      PlannerScreen(
+          user = PlannerTestReportsData.farmer,
+          reportId = null,
+          goBack = {},
+          tabClicked = {},
+          reportClicked = {},
+          plannerVM = viewModel,
+      )
+    }
+
+    composeTestRule.assertOverlayDuringLoading(
+        isLoading = { viewModel.uiState.value.isLoading },
+        timeoutStart = LONG_TIMEOUT,
+        timeoutEnd = LONG_TIMEOUT,
+    )
   }
 }

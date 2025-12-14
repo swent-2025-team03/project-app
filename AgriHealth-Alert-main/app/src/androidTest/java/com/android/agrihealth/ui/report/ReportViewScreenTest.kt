@@ -10,20 +10,26 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.ReportRepository
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
+import com.android.agrihealth.testhelpers.TestTimeout
 import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeImageRepository
 import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
+import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
 import com.android.agrihealth.testhelpers.fakes.TestReportRepository
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
+import com.android.agrihealth.ui.profile.PhotoComponentsTestTags
+import com.android.agrihealth.ui.profile.PhotoComponentsTexts
 import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -551,12 +557,35 @@ class ReportViewScreenTest {
   }
 
   @Test
+  fun reportView_showsLoadingOverlayWhileFetchingReport() {
+    val sampleReport = ReportViewUIState().report.copy(id = "RPT_SLOW")
+    val slowRepo: ReportRepository =
+      InMemoryReportRepository(listOf(sampleReport), TestTimeout.DEFAULT_TIMEOUT)
+    val vm = ReportViewViewModel(repository = slowRepo)
+
+    composeTestRule.setContent {
+      val nav = rememberNavController()
+      val navigation = NavigationActions(nav)
+      ReportViewScreen(
+          navigationActions = navigation,
+          userRole = UserRole.VET,
+          viewModel = vm,
+          reportId = "RPT_SLOW")
+    }
+
+    composeTestRule.assertOverlayDuringLoading(
+        isLoading = { vm.uiState.value.isLoading },
+        timeoutStart = LONG_TIMEOUT,
+        timeoutEnd = LONG_TIMEOUT)
+  }
+
+  @Test
   fun photoDisplay_showsLoadingIndicator_whenImageIsLoading() {
     val dependencies = setUpScreenAndRepositories()
     dependencies.imageRepository.freezeRepoConnection()
 
     composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
+        .onNodeWithTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION)
         .assertIsDisplayed()
   }
 
@@ -573,11 +602,11 @@ class ReportViewScreenTest {
     composeTestRule.waitForIdle()
 
     composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER).isDisplayed()
+      composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).isDisplayed()
     }
 
     composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
+        .onNodeWithTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION)
         .assertIsNotDisplayed()
   }
 
@@ -590,15 +619,15 @@ class ReportViewScreenTest {
     composeTestRule.waitForIdle()
 
     composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT).isDisplayed()
+      composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_ERROR_TEXT).isDisplayed()
     }
 
     composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT)
+        .onNodeWithTag(PhotoComponentsTestTags.PHOTO_ERROR_TEXT)
         .assertIsDisplayed()
-        .assertTextEquals(ReportViewScreenTexts.PHOTO_ERROR_TEXT)
+        .assertTextEquals(PhotoComponentsTexts.PHOTO_ERROR_TEXT)
 
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).assertIsNotDisplayed()
   }
 
   @Test
@@ -607,13 +636,13 @@ class ReportViewScreenTest {
 
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).assertIsNotDisplayed()
 
     composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
+        .onNodeWithTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION)
         .assertIsNotDisplayed()
 
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_ERROR_TEXT).assertIsNotDisplayed()
   }
 
   @Test
@@ -625,20 +654,20 @@ class ReportViewScreenTest {
     composeTestRule.waitForIdle()
 
     composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION).isDisplayed()
+      composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION).isDisplayed()
     }
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER).assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_ERROR_TEXT).assertIsNotDisplayed()
 
     dependencies.imageRepository.unfreezeRepoConnection()
 
     composeTestRule.waitForIdle()
     composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_RENDER).isDisplayed()
+      composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).isDisplayed()
     }
     composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION)
+        .onNodeWithTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION)
         .assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_ERROR_TEXT).assertIsNotDisplayed()
   }
 }

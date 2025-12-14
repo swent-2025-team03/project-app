@@ -1,12 +1,7 @@
 package com.android.agrihealth.ui.overview
 
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertTextEquals
-import androidx.compose.ui.test.isDisplayed
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
 import com.android.agrihealth.data.model.alert.FakeAlertRepository
 import com.android.agrihealth.data.model.location.Location
@@ -16,6 +11,8 @@ import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
 import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
+import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -139,6 +136,32 @@ class OverviewScreenTest {
         inZoneFlag = false
       }
     }
+  }
+
+  @Test
+  fun overviewScreen_showsAndHidesLoadingOverlay_duringLoadAlerts() {
+    val alertRepo = FakeAlertRepository(delayMs = DEFAULT_TIMEOUT)
+    val reportRepo = InMemoryReportRepository(delayMs = DEFAULT_TIMEOUT)
+
+    val viewModel = OverviewViewModel(reportRepository = reportRepo, alertRepository = alertRepo)
+
+    composeTestRule.setContent {
+      OverviewScreen(
+          userRole = UserRole.FARMER,
+          user = farmer,
+          overviewViewModel = viewModel,
+          onAddReport = {},
+          onReportClick = {},
+          onAlertClick = {})
+    }
+
+    composeTestRule.assertOverlayDuringLoading(
+        isLoading = {
+          viewModel.uiState.value.isAlertLoading || viewModel.uiState.value.isReportLoading
+        },
+        timeoutStart = LONG_TIMEOUT,
+        timeoutEnd = LONG_TIMEOUT,
+    )
   }
 
   // --- TEST 9: Verify Assignee Filter presence ---

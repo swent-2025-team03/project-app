@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -20,8 +21,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.view.WindowCompat.setDecorFitsSystemWindows
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -39,8 +42,10 @@ import com.android.agrihealth.data.model.device.location.LocationRepositoryProvi
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.device.notifications.NotificationHandlerProvider
 import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.UserViewModel
+import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.data.model.user.copyCommon
 import com.android.agrihealth.data.model.user.defaultUser
 import com.android.agrihealth.ui.alert.AlertViewModel
@@ -58,6 +63,7 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.office.CreateOfficeScreen
 import com.android.agrihealth.ui.office.ManageOfficeScreen
+import com.android.agrihealth.ui.office.ManageOfficeViewModel
 import com.android.agrihealth.ui.office.ViewOfficeScreen
 import com.android.agrihealth.ui.office.ViewOfficeViewModel
 import com.android.agrihealth.ui.overview.OverviewScreen
@@ -82,6 +88,7 @@ import com.google.firebase.auth.auth
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    setDecorFitsSystemWindows(window, true)
 
     setContent {
       AgriHealthAppTheme {
@@ -107,13 +114,12 @@ fun AgriHealthApp(
   val userViewModel: UserViewModel = viewModel()
 
   val overviewViewModel: OverviewViewModel = viewModel()
-
   // Location services: Use the ViewModel and not the repository
   LocationRepositoryProvider.repository = LocationRepository(context)
   val locationViewModel: LocationViewModel = viewModel()
 
   var reloadReports by remember { mutableStateOf(false) }
-  val currentUser by userViewModel.user.collectAsState()
+  val currentUser = userViewModel.uiState.collectAsState().value.user
   val currentUserId = currentUser.uid
   val currentUserRole = currentUser.role
   val currentUserEmail = currentUser.email
@@ -343,12 +349,33 @@ fun AgriHealthApp(
             onManageOffice = { navigationActions.navigateTo(Screen.ManageOffice) })
       }
       composable(Screen.ManageOffice.route) {
+        val imageViewModel: ImageViewModel = viewModel()
+        val manageOfficeViewModel: ManageOfficeViewModel =
+            viewModel(
+                factory =
+                    object : ViewModelProvider.Factory {
+                      override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return ManageOfficeViewModel(
+                            userViewModel, OfficeRepositoryFirestore(), imageViewModel)
+                            as T
+                      }
+                    })
         ManageOfficeScreen(
             navigationActions = navigationActions,
             userViewModel = userViewModel,
+            manageOfficeViewModel = manageOfficeViewModel,
             onGoBack = { navigationActions.goBack() },
             onCreateOffice = { navigationActions.navigateTo(Screen.CreateOffice) },
-            onJoinOffice = { navigationActions.navigateTo(Screen.ClaimCode(VET_TO_OFFICE)) })
+            onJoinOffice = { navigationActions.navigateTo(Screen.ClaimCode(VET_TO_OFFICE)) },
+            codesVmFactory = {
+              object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return CodesViewModel(
+                      userViewModel, ConnectionRepositoryProvider.vetToOfficeRepository)
+                      as T
+                }
+              }
+            })
       }
       composable(Screen.CreateOffice.route) {
         CreateOfficeScreen(

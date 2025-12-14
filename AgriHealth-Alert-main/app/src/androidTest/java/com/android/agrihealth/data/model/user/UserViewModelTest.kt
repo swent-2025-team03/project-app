@@ -4,7 +4,6 @@ import com.android.agrihealth.testhelpers.TestUser.vet1
 import com.android.agrihealth.testhelpers.templates.FirebaseTest
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -26,7 +25,7 @@ class UserViewModelTest : FirebaseTest() {
     advanceUntilIdle()
 
     // Default role = FARMER
-    val role = viewModel.user.first()
+    val role = viewModel.uiState.value.user
     assertEquals(defaultUser, role)
   }
 
@@ -42,8 +41,8 @@ class UserViewModelTest : FirebaseTest() {
     viewModel.loadUser(vet1.uid)
     advanceUntilIdle()
 
-    // Then userRole StateFlow should be updated
-    val role = viewModel.user.first()
+    // Then user State should be updated
+    val role = viewModel.uiState.value.user
     assertEquals(vet1, role)
   }
 
@@ -58,8 +57,8 @@ class UserViewModelTest : FirebaseTest() {
     viewModel.loadUser("nonExistingUid")
     advanceUntilIdle()
 
-    // Then userRole StateFlow should remain default
-    val role = viewModel.user.first()
+    // Then user State should remain default
+    val role = viewModel.uiState.value.user
     assertEquals(defaultUser, role)
   }
 }

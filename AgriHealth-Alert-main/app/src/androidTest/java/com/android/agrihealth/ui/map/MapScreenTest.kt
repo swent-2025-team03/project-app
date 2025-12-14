@@ -6,6 +6,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,6 +32,7 @@ import com.google.android.gms.maps.model.LatLng
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -323,5 +326,25 @@ class MapScreenTest :
 
     assertEquals(11, positions1?.size)
     assertEquals(6, positions2?.size)
+  }
+
+  @Test
+  fun fetchingLocation_showsSnackbarMessage() = runTest {
+    // Given a slow location repository
+
+    coEvery { locationRepository.getLastKnownLocation() } coAnswers
+        {
+          delay(2000) // simulate slow fetch
+          Location(46.95, 7.44)
+        }
+
+    val mapViewModel = setContentToMapWithVM(isViewedFromOverview = true)
+
+    composeTestRule.runOnUiThread { mapViewModel.setStartingLocation(null) }
+
+    composeTestRule.waitUntil(timeoutMillis = TestConstants.LONG_TIMEOUT) {
+      composeTestRule.onAllNodesWithText("Loading location...").fetchSemanticsNodes().isNotEmpty()
+    }
+    composeTestRule.onNodeWithText("Loading location...").assertIsDisplayed()
   }
 }

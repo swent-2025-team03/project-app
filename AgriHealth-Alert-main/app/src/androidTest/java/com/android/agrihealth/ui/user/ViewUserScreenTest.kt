@@ -10,6 +10,8 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
+import com.android.agrihealth.testhelpers.TestTimeout.SUPER_LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
 import com.android.agrihealth.testhelpers.fakes.FakeUserRepository
 import org.junit.Rule
@@ -269,5 +271,49 @@ class ViewUserScreenTest {
     composeTestRule.onNodeWithTag(ViewUserScreenTestTags.NAME_FIELD).assertExists()
     composeTestRule.onNodeWithTag(ViewUserScreenTestTags.ROLE_FIELD).assertExists()
     composeTestRule.onNodeWithTag(ViewUserScreenTestTags.CONTENT_COLUMN).assertExists()
+  }
+
+  @Test
+  fun viewUserScreen_showsAndHidesLoadingOverlay() {
+    val fakeUser =
+        Farmer(
+            uid = "user1",
+            firstname = "John",
+            lastname = "Doe",
+            email = "email",
+            address = null,
+            linkedOffices = emptyList(),
+            defaultOffice = null,
+            isGoogleAccount = false)
+
+    val userRepo =
+        FakeUserRepository(targetUser = fakeUser, delayMs = DEFAULT_TIMEOUT)
+    val officeRepo = FakeOfficeRepository()
+
+    val vm =
+        object :
+            ViewUserViewModel(
+                targetUserId = fakeUser.uid,
+                userRepository = userRepo,
+                officeRepository = officeRepo) {}
+
+    composeTestRule.setContent {
+      MaterialTheme {
+        ViewUserScreen(
+            viewModel = vm,
+            onBack = {},
+        )
+      }
+    }
+
+    composeTestRule.waitUntil(SUPER_LONG_TIMEOUT) {
+      vm.uiState.value is ViewUserUiState.Loading
+    }
+    composeTestRule.onNodeWithTag(ViewUserScreenTestTags.LOADING_INDICATOR).assertIsDisplayed()
+
+    composeTestRule.waitUntil(SUPER_LONG_TIMEOUT) {
+      vm.uiState.value !is ViewUserUiState.Loading
+    }
+    composeTestRule.onNodeWithTag(ViewUserScreenTestTags.LOADING_INDICATOR).assertDoesNotExist()
   }
 }

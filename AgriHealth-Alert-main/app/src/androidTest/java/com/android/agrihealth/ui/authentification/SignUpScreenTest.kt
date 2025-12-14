@@ -1,6 +1,14 @@
 package com.android.agrihealth.ui.authentification
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
+import com.android.agrihealth.data.model.user.UserViewModel
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testhelpers.TestPassword.password1
+import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
+import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.TestUser.farmer1
 import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
 import com.android.agrihealth.testhelpers.templates.UITest
@@ -102,6 +110,47 @@ class SignUpScreenTest : UITest() {
       authRepository.switchConnection(false)
       failSignUpWithMsg(SignUpErrorMsg.TIMEOUT)
     }
+  }
+
+  @Test
+  fun signUpScreen_showsAndHidesLoadingOverlay() {
+    val authRepo = FakeAuthRepository(delayMs = DEFAULT_TIMEOUT)
+    val vm = SignUpViewModel(authRepo)
+
+    composeTestRule.setContent {
+      MaterialTheme {
+        SignUpScreen(
+            signUpViewModel = vm,
+            userViewModel = UserViewModel(),
+        )
+      }
+    }
+
+    composeTestRule.onNodeWithTag(SignUpScreenTestTags.FIRSTNAME_FIELD).performTextInput("John")
+
+    composeTestRule.onNodeWithTag(SignUpScreenTestTags.LASTNAME_FIELD).performTextInput("Doe")
+
+    composeTestRule
+        .onNodeWithTag(SignUpScreenTestTags.EMAIL_FIELD)
+        .performTextInput("john@example.com")
+
+    composeTestRule
+        .onNodeWithTag(SignUpScreenTestTags.PASSWORD_FIELD)
+        .performTextInput("StrongPass123")
+
+    composeTestRule
+        .onNodeWithTag(SignUpScreenTestTags.CONFIRM_PASSWORD_FIELD)
+        .performTextInput("StrongPass123")
+
+    composeTestRule.onNodeWithTag(SignUpScreenTestTags.FARMER_PILL).performClick()
+
+    composeTestRule.onNodeWithTag(SignUpScreenTestTags.SAVE_BUTTON).performClick()
+
+    composeTestRule.assertOverlayDuringLoading(
+        isLoading = { vm.uiState.value.isLoading },
+        timeoutStart = LONG_TIMEOUT,
+        timeoutEnd = LONG_TIMEOUT,
+    )
   }
 
   @After

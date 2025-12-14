@@ -1,11 +1,11 @@
 package com.android.agrihealth.ui.report
 
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -24,11 +24,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.form.MCQ
 import com.android.agrihealth.data.model.report.form.MCQO
@@ -38,10 +36,12 @@ import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.UserViewModelContract
-import com.android.agrihealth.ui.common.ImagePickerDialog
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
+import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.profile.LocalPhotoDisplay
+import com.android.agrihealth.ui.profile.UploadRemovePhotoButton
 import kotlin.collections.forEachIndexed
 import kotlinx.coroutines.launch
 
@@ -60,8 +60,6 @@ object AddReportScreenTestTags {
   const val ADDRESS_FIELD = "addressField"
   const val LOCATION_BUTTON = "locationButton"
   const val CREATE_BUTTON = "createButton"
-  const val UPLOAD_IMAGE_BUTTON = "uploadImageButton"
-  const val IMAGE_PREVIEW = "imageDisplay"
   const val SCROLL_CONTAINER = "scrollContainer"
   const val DIALOG_SUCCESS = "dialogSuccess"
   const val DIALOG_FAILURE = "dialogFailure"
@@ -77,12 +75,6 @@ object AddReportFeedbackTexts {
   const val FAILURE = "Couldn't upload report... Please verify your connection and try again..."
   const val INCOMPLETE = "Please fill in all required fields..."
   const val UNKNOWN = "Unknown error..."
-}
-
-/** Texts on the button used to upload/remove a photo */
-object AddReportUploadButtonTexts {
-  const val UPLOAD_IMAGE = "Upload Image"
-  const val REMOVE_IMAGE = "Remove Image"
 }
 
 /** Texts of the dialog shown when clicking on uploading photo button */
@@ -123,8 +115,9 @@ fun AddReportScreen(
     addReportViewModel: AddReportViewModelContract
 ) {
 
-  val uiState by addReportViewModel.uiState.collectAsState()
-  val user by userViewModel.user.collectAsState()
+  val reportUi by addReportViewModel.uiState.collectAsState()
+  val userUi by userViewModel.uiState.collectAsState()
+  val user = userUi.user
 
   val offices = remember { mutableStateMapOf<String, String>() }
 
@@ -142,7 +135,7 @@ fun AddReportScreen(
 
   LaunchedEffect(pickedLocation) { addReportViewModel.setAddress(pickedLocation) }
   LaunchedEffect(Unit) {
-    if (user.collected != uiState.collected) addReportViewModel.switchCollected()
+    if (user.collected != reportUi.collected) addReportViewModel.switchCollected()
   }
 
   // For the dropdown menu
@@ -178,9 +171,10 @@ fun AddReportScreen(
   }
 
   LaunchedEffect(Unit) { addReportViewModel.setOffice(selectedOption) }
-
   Scaffold(
-      snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+      snackbarHost = {
+        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.imePadding())
+      },
       topBar = {
         // Top bar with back arrow and title/status
         TopAppBar(
@@ -207,73 +201,77 @@ fun AddReportScreen(
       }) { padding ->
 
         // Main scrollable content
-        Column(
-            modifier =
-                Modifier.padding(padding)
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp)
-                    .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
-            verticalArrangement = Arrangement.Top) {
-              HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
-              TitleField(uiState.title, { addReportViewModel.setTitle(it) })
+        LoadingOverlay(isLoading = reportUi.isLoading) {
+          Column(
+              modifier =
+                  Modifier.padding(padding)
+                      .fillMaxSize()
+                      .verticalScroll(rememberScrollState())
+                      .padding(16.dp)
+                      .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
+              verticalArrangement = Arrangement.Top) {
+                HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
+                TitleField(reportUi.title, { addReportViewModel.setTitle(it) })
 
-              DescriptionField(uiState.description, { addReportViewModel.setDescription(it) })
+                DescriptionField(reportUi.description, { addReportViewModel.setDescription(it) })
 
-              QuestionList(
-                  questions = uiState.questionForms,
-                  onQuestionChange = { index, updated ->
-                    addReportViewModel.updateQuestion(index, updated)
-                  })
+                QuestionList(
+                    questions = reportUi.questionForms,
+                    onQuestionChange = { index, updated ->
+                      addReportViewModel.updateQuestion(index, updated)
+                    })
 
-              OutlinedTextField(
-                  value = uiState.address?.name ?: "Select a Location",
-                  placeholder = { Text("Select a Location") },
-                  onValueChange = {},
-                  readOnly = true,
-                  singleLine = true,
-                  label = { Text("Selected Location") },
-                  modifier = Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.ADDRESS_FIELD))
-              Button(
-                  onClick = onChangeLocation,
-                  modifier =
-                      Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.LOCATION_BUTTON)) {
-                    Text("Select Location")
-                  }
+                OutlinedTextField(
+                    value = reportUi.address?.name ?: "Select a Location",
+                    placeholder = { Text("Select a Location") },
+                    onValueChange = {},
+                    readOnly = true,
+                    singleLine = true,
+                    label = { Text("Selected Location") },
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.ADDRESS_FIELD))
+                Button(
+                    onClick = onChangeLocation,
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.LOCATION_BUTTON)) {
+                      Text("Select Location")
+                    }
 
-              OfficeDropdown(
-                  offices = offices,
-                  selectedOfficeId = selectedOption,
-                  onOfficeSelected = { officeId ->
-                    selectedOption = officeId
-                    addReportViewModel.setOffice(officeId)
-                  })
+                OfficeDropdown(
+                    offices = offices,
+                    selectedOfficeId = selectedOption,
+                    onOfficeSelected = { officeId ->
+                      selectedOption = officeId
+                      addReportViewModel.setOffice(officeId)
+                    })
 
-              UploadedImagePreview(photoUri = uiState.photoUri)
+                LocalPhotoDisplay(
+                    photoURI = reportUi.photoUri,
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 16.dp))
 
-              UploadRemovePhotoSection(
-                  photoAlreadyPicked = uiState.photoUri != null,
-                  onPhotoPicked = { addReportViewModel.setPhoto(it) },
-                  onPhotoRemoved = { addReportViewModel.removePhoto() },
-              )
+                UploadRemovePhotoButton(
+                    photoAlreadyPicked = reportUi.photoUri != null,
+                    onPhotoPicked = { addReportViewModel.setPhoto(it) },
+                    onPhotoRemoved = { addReportViewModel.removePhoto() })
 
-              CollectedSwitch(uiState.collected, { addReportViewModel.switchCollected() }, true)
+                CollectedSwitch(reportUi.collected, { addReportViewModel.switchCollected() }, true)
 
-              CreateReportButton(onClick = onCreateReportClick)
-            }
+                CreateReportButton(onClick = onCreateReportClick)
+              }
 
-        CreateReportSuccessDialog(
-            visible = showSuccessDialog,
-            onDismiss = {
-              showSuccessDialog = false
-              onBack()
-              onCreateReport()
-            })
+          CreateReportSuccessDialog(
+              visible = showSuccessDialog,
+              onDismiss = {
+                showSuccessDialog = false
+                onBack()
+                onCreateReport()
+              })
 
-        CreateReportErrorDialog(
-            visible = showErrorDialog,
-            errorMessage = errorDialogMessage,
-            onDismiss = { showErrorDialog = false })
+          CreateReportErrorDialog(
+              visible = showErrorDialog,
+              errorMessage = errorDialogMessage,
+              onDismiss = { showErrorDialog = false })
+        }
       }
 }
 
@@ -468,82 +466,6 @@ private fun DescriptionField(
               .padding(vertical = 8.dp)
               .testTag(AddReportScreenTestTags.DESCRIPTION_FIELD),
   )
-}
-
-/**
- * The section of the UI that handles adding or removing a photo from the report
- *
- * @param photoAlreadyPicked true if a photo has already ben added to the report, false otherwise
- * @param onPhotoPicked Called when a photo has been picked for the report
- * @param onPhotoRemoved Called when the selected photo has been removed from the report
- */
-@Composable
-fun UploadRemovePhotoSection(
-    photoAlreadyPicked: Boolean,
-    onPhotoPicked: (Uri?) -> Unit,
-    onPhotoRemoved: () -> Unit,
-) {
-  var showImagePicker by remember { mutableStateOf(false) }
-
-  UploadRemovePhotoButton(
-      photoAlreadyPicked = photoAlreadyPicked,
-      onClickUpload = { showImagePicker = true },
-      onClickRemove = onPhotoRemoved,
-  )
-
-  if (showImagePicker) {
-    ImagePickerDialog(
-        onDismiss = { showImagePicker = false }, onImageSelected = { uri -> onPhotoPicked(uri) })
-  }
-}
-
-/**
- * The button that allows user to either add a photo to the report or remove a photo from the report
- *
- * @param photoAlreadyPicked True if a photo has already been picked by the user, False otherwise
- * @param onClickUpload Called when the user clicks to add a photo to the report
- * @param onClickRemove Called when the user clicks to remove a photo from the report
- */
-@Composable
-fun UploadRemovePhotoButton(
-    photoAlreadyPicked: Boolean,
-    onClickUpload: () -> Unit,
-    onClickRemove: () -> Unit,
-) {
-  Button(
-      onClick = { if (photoAlreadyPicked) onClickRemove() else onClickUpload() },
-      modifier =
-          Modifier.fillMaxWidth()
-              .padding(vertical = 16.dp)
-              .testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
-      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-  ) {
-    Text(
-        text =
-            if (photoAlreadyPicked) AddReportUploadButtonTexts.REMOVE_IMAGE
-            else AddReportUploadButtonTexts.UPLOAD_IMAGE)
-  }
-}
-
-/**
- * Displays the photo that was picked by the user before being uploaded and possible compressed by
- * the image repository
- *
- * TODO: Display the photo stored on the image repository to avoid discrepancy
- */
-@Composable
-fun UploadedImagePreview(photoUri: Uri?, modifier: Modifier = Modifier) {
-  if (photoUri != null) {
-    AsyncImage(
-        model = photoUri,
-        contentDescription = "Uploaded image",
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp, bottom = 16.dp)
-                .testTag(AddReportScreenTestTags.IMAGE_PREVIEW),
-        contentScale = ContentScale.Fit)
-  }
 }
 
 /**

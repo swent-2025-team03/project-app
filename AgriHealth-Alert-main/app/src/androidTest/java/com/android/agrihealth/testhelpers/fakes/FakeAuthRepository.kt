@@ -9,7 +9,8 @@ import kotlinx.coroutines.delay
 
 class FakeAuthRepository(
     private var isOnline: Boolean = true,
-    private var resetPasswordResult: EmailSendStatus = EmailSendStatus.Success
+    private var resetPasswordResult: EmailSendStatus = EmailSendStatus.Success,
+    private val delayMs: Long = 0L
 ) : AuthRepository {
 
   private val credentials = mutableMapOf<String, String>()
@@ -21,6 +22,7 @@ class FakeAuthRepository(
   }
 
   override suspend fun changePassword(password: String): Result<Unit> {
+    delay(delayMs)
     if (isOnline) {
       if (currentUser == null) {
         return Result.failure(IllegalStateException("no user logged in"))
@@ -31,6 +33,7 @@ class FakeAuthRepository(
   }
 
   override suspend fun sendResetPasswordEmail(email: String): Result<Unit> {
+    delay(delayMs)
     return when (resetPasswordResult) {
       is EmailSendStatus.Success -> Result.success(Unit)
       is EmailSendStatus.Fail -> Result.failure(IllegalArgumentException())
@@ -43,6 +46,7 @@ class FakeAuthRepository(
   }
 
   override suspend fun deleteAccount(): Result<Unit> {
+    delay(delayMs)
     if (isOnline) {
       if (currentUser == null) {
         return Result.failure(IllegalStateException("no user logged in"))
@@ -53,6 +57,7 @@ class FakeAuthRepository(
   }
 
   override suspend fun reAuthenticate(email: String, password: String): Result<Unit> {
+    delay(delayMs)
     if (isOnline) {
       // not important
       return Result.success(Unit)
@@ -64,6 +69,7 @@ class FakeAuthRepository(
       email: String,
       password: String
   ): Result<Boolean> {
+    delay(delayMs)
     if (isOnline) {
       if (currentUser != null) {
         return Result.failure(IllegalStateException("user $currentUser already logged in"))
@@ -78,6 +84,7 @@ class FakeAuthRepository(
   }
 
   override suspend fun signInWithGoogle(credential: Credential): Result<String> {
+    delay(delayMs)
     if (isOnline) {
       // no-op because no
       return Result.success("success!!")
@@ -95,6 +102,7 @@ class FakeAuthRepository(
       password: String,
       userData: User
   ): Result<String> {
+    delay(delayMs)
     if (isOnline) {
       if (credentials[email] != null) {
         return Result.failure(
@@ -108,10 +116,12 @@ class FakeAuthRepository(
   }
 
   override suspend fun checkIsVerified(): Boolean {
+    delay(delayMs)
     return true
   }
 
   override suspend fun sendVerificationEmail(): Result<Unit> {
+    delay(delayMs)
     return Result.success(Unit)
   }
 }
