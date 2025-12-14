@@ -4,6 +4,7 @@ import android.util.Log
 import com.android.agrihealth.data.model.location.Location
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import java.time.LocalDate
 import kotlinx.coroutines.tasks.await
@@ -24,7 +25,11 @@ class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fire
   private var cachedAlerts: List<Alert> = emptyList()
 
   override suspend fun getAlerts(): List<Alert> {
-    val snapshot = db.collection(ALERTS_COLLECTION_PATH).orderBy("createdAt").get().await()
+    val snapshot =
+        db.collection(ALERTS_COLLECTION_PATH)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .get()
+            .await()
 
     val alerts =
         snapshot.documents.mapNotNull { doc ->
