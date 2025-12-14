@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.report
 
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,11 +24,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
@@ -41,9 +38,10 @@ import com.android.agrihealth.ui.common.OfficeNameViewModel
 import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.profile.LocalPhotoDisplay
+import com.android.agrihealth.ui.profile.UploadRemovePhotoButton
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
-import com.android.agrihealth.ui.utils.ImagePickerDialog
 import kotlin.collections.forEachIndexed
 import kotlinx.coroutines.launch
 
@@ -62,8 +60,6 @@ object AddReportScreenTestTags {
   const val ADDRESS_FIELD = "addressField"
   const val LOCATION_BUTTON = "locationButton"
   const val CREATE_BUTTON = "createButton"
-  const val UPLOAD_IMAGE_BUTTON = "uploadImageButton"
-  const val IMAGE_PREVIEW = "imageDisplay"
   const val SCROLL_CONTAINER = "scrollContainer"
   const val DIALOG_SUCCESS = "dialogSuccess"
   const val DIALOG_FAILURE = "dialogFailure"
@@ -79,12 +75,6 @@ object AddReportFeedbackTexts {
   const val FAILURE = "Couldn't upload report... Please verify your connection and try again..."
   const val INCOMPLETE = "Please fill in all required fields..."
   const val UNKNOWN = "Unknown error..."
-}
-
-/** Texts on the button used to upload/remove a photo */
-object AddReportUploadButtonTexts {
-  const val UPLOAD_IMAGE = "Upload Image"
-  const val REMOVE_IMAGE = "Remove Image"
 }
 
 /** Texts of the dialog shown when clicking on uploading photo button */
@@ -255,13 +245,14 @@ fun AddReportScreen(
                       addReportViewModel.setOffice(officeId)
                     })
 
-                UploadedImagePreview(photoUri = reportUi.photoUri)
+                LocalPhotoDisplay(
+                    photoURI = reportUi.photoUri,
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 16.dp))
 
-                UploadRemovePhotoSection(
+                UploadRemovePhotoButton(
                     photoAlreadyPicked = reportUi.photoUri != null,
                     onPhotoPicked = { addReportViewModel.setPhoto(it) },
-                    onPhotoRemoved = { addReportViewModel.removePhoto() },
-                )
+                    onPhotoRemoved = { addReportViewModel.removePhoto() })
 
                 CollectedSwitch(reportUi.collected, { addReportViewModel.switchCollected() }, true)
 
@@ -475,82 +466,6 @@ private fun DescriptionField(
               .padding(vertical = 8.dp)
               .testTag(AddReportScreenTestTags.DESCRIPTION_FIELD),
   )
-}
-
-/**
- * The section of the UI that handles adding or removing a photo from the report
- *
- * @param photoAlreadyPicked true if a photo has already ben added to the report, false otherwise
- * @param onPhotoPicked Called when a photo has been picked for the report
- * @param onPhotoRemoved Called when the selected photo has been removed from the report
- */
-@Composable
-fun UploadRemovePhotoSection(
-    photoAlreadyPicked: Boolean,
-    onPhotoPicked: (Uri?) -> Unit,
-    onPhotoRemoved: () -> Unit,
-) {
-  var showImagePicker by remember { mutableStateOf(false) }
-
-  UploadRemovePhotoButton(
-      photoAlreadyPicked = photoAlreadyPicked,
-      onClickUpload = { showImagePicker = true },
-      onClickRemove = onPhotoRemoved,
-  )
-
-  if (showImagePicker) {
-    ImagePickerDialog(
-        onDismiss = { showImagePicker = false }, onImageSelected = { uri -> onPhotoPicked(uri) })
-  }
-}
-
-/**
- * The button that allows user to either add a photo to the report or remove a photo from the report
- *
- * @param photoAlreadyPicked True if a photo has already been picked by the user, False otherwise
- * @param onClickUpload Called when the user clicks to add a photo to the report
- * @param onClickRemove Called when the user clicks to remove a photo from the report
- */
-@Composable
-fun UploadRemovePhotoButton(
-    photoAlreadyPicked: Boolean,
-    onClickUpload: () -> Unit,
-    onClickRemove: () -> Unit,
-) {
-  Button(
-      onClick = { if (photoAlreadyPicked) onClickRemove() else onClickUpload() },
-      modifier =
-          Modifier.fillMaxWidth()
-              .padding(vertical = 16.dp)
-              .testTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON),
-      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-  ) {
-    Text(
-        text =
-            if (photoAlreadyPicked) AddReportUploadButtonTexts.REMOVE_IMAGE
-            else AddReportUploadButtonTexts.UPLOAD_IMAGE)
-  }
-}
-
-/**
- * Displays the photo that was picked by the user before being uploaded and possible compressed by
- * the image repository
- *
- * TODO: Display the photo stored on the image repository to avoid discrepancy
- */
-@Composable
-fun UploadedImagePreview(photoUri: Uri?, modifier: Modifier = Modifier) {
-  if (photoUri != null) {
-    AsyncImage(
-        model = photoUri,
-        contentDescription = "Uploaded image",
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp, bottom = 16.dp)
-                .testTag(AddReportScreenTestTags.IMAGE_PREVIEW),
-        contentScale = ContentScale.Fit)
-  }
 }
 
 /**

@@ -29,6 +29,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.connection.ConnectionRepository
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.*
@@ -42,6 +43,7 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
+import kotlinx.coroutines.launch
 
 enum class CodeType {
   FARMER,
@@ -100,14 +102,28 @@ fun EditProfileScreen(
   val farmerCodes by codesViewModel.farmerCodes.collectAsState()
   val vetCodes by codesViewModel.vetCodes.collectAsState()
 
+  val imageViewModel: ImageViewModel = viewModel()
+
   val createManageOfficeViewModel =
       object : androidx.lifecycle.ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
           return ManageOfficeViewModel(
-              userViewModel = userViewModel, officeRepository = OfficeRepositoryProvider.get())
+              userViewModel = userViewModel,
+              officeRepository = OfficeRepositoryProvider.get(),
+              imageViewModel = imageViewModel)
               as T
         }
       }
+
+  val editProfileViewModel: EditProfileViewModel =
+      viewModel(
+          factory =
+              object : androidx.lifecycle.ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return EditProfileViewModel(officeRepository = OfficeRepositoryProvider.get())
+                      as T
+                }
+              })
 
   val manageOfficeVm: ManageOfficeViewModel = viewModel(factory = createManageOfficeViewModel)
 
@@ -317,32 +333,22 @@ fun EditProfileScreen(
 
               Spacer(modifier = Modifier.weight(1f))
 
+              val scope = rememberCoroutineScope()
               // Save Changes Button
               Button(
                   onClick = {
-                    val updatedDescription = description.ifBlank { null }
-                    // Construct updated user object
-                    val updatedUser =
-                        when (userRole) {
-                          UserRole.FARMER ->
-                              (user as? Farmer)?.copy(
-                                  firstname = firstname,
-                                  lastname = lastname,
-                                  address = pickedLocation,
-                                  defaultOffice = selectedDefaultOffice,
-                                  description = updatedDescription,
-                                  collected = collected)
-                          UserRole.VET -> {
-                            manageOfficeVm.updateOffice(newAddress = pickedLocation)
-                            (user as? Vet)?.copy(
-                                firstname = firstname,
-                                lastname = lastname,
-                                address = pickedLocation,
-                                description = updatedDescription,
-                                collected = collected)
-                          }
-                        }
-                    updatedUser?.let { onSave(it) }
+                    scope.launch {
+                      val updatedUser =
+                          editProfileViewModel.saveProfileChanges(
+                              user = user,
+                              firstname = firstname,
+                              lastname = lastname,
+                              pickedLocation = pickedLocation,
+                              selectedDefaultOffice = selectedDefaultOffice,
+                              description = description,
+                              collected = collected)
+                      updatedUser?.let { onSave(it) }
+                    }
                   },
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.SAVE_BUTTON)) {
