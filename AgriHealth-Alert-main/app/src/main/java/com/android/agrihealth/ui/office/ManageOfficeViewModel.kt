@@ -40,6 +40,10 @@ class ManageOfficeViewModel(
     loadOffice()
   }
 
+  fun clearMessage() {
+    _uiState.value = _uiState.value.copy(snackMessage = null)
+  }
+
   fun loadOffice() {
     viewModelScope.launch {
       _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {

@@ -85,6 +85,7 @@ fun ManageOfficeScreen(
   LaunchedEffect(currentUser) { manageOfficeViewModel.loadOffice() }
   LaunchedEffect(uiState.snackMessage) {
     uiState.snackMessage?.let { snackbarHostState.showSnackbar(uiState.snackMessage ?: "") }
+    manageOfficeViewModel.clearMessage()
   }
 
   Scaffold(
