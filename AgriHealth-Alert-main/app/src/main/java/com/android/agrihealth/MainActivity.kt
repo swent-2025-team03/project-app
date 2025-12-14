@@ -344,7 +344,13 @@ fun AgriHealthApp(
 
             val overviewUiState by overviewViewModel.uiState.collectAsState()
             val sortedAlerts = overviewUiState.sortedAlerts
-            val alertViewModel = AlertViewModel(sortedAlerts, alertId)
+            val alertFactory =
+                object : ViewModelProvider.Factory {
+                  override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return AlertViewModel(sortedAlerts, alertId) as T
+                  }
+                }
+            val alertViewModel = viewModel<AlertViewModel>(factory = alertFactory)
 
             AlertViewScreen(navigationActions = navigationActions, viewModel = alertViewModel)
           }
