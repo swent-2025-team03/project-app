@@ -30,6 +30,8 @@ import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.testutil.InMemoryReportRepository
 import com.android.agrihealth.testutil.TestConstants
+import com.android.agrihealth.ui.profile.PhotoComponentsTestTags
+import com.android.agrihealth.ui.profile.PhotoComponentsTexts
 import com.android.agrihealth.ui.user.UserViewModelContract
 import com.android.agrihealth.ui.utils.ImagePickerTestTags
 import com.android.agrihealth.utils.TestAssetUtils.FAKE_PHOTO_FILE
@@ -362,10 +364,10 @@ class AddReportScreenTest {
     }
     scrollToUploadSection()
     composeRule.waitForIdle()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertDoesNotExist()
+    composeRule.onNodeWithTag(PhotoComponentsTestTags.IMAGE_PREVIEW).assertDoesNotExist()
     composeRule
-        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-        .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
+        .onNodeWithTag(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(PhotoComponentsTexts.UPLOAD_IMAGE)
   }
 
   @Test
@@ -377,18 +379,18 @@ class AddReportScreenTest {
       MaterialTheme { AddReportScreen(onCreateReport = {}, addReportViewModel = fakeViewModel) }
     }
     scrollToUploadSection()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
+    composeRule.onNodeWithTag(PhotoComponentsTestTags.IMAGE_PREVIEW).assertIsDisplayed()
     composeRule
-        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .onNodeWithTag(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON)
         .assertIsDisplayed()
-        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+        .assertTextEquals(PhotoComponentsTexts.REMOVE_IMAGE)
         .performClick()
     composeRule.waitForIdle()
     composeRule
-        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .onNodeWithTag(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON)
         .assertIsDisplayed()
-        .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
-    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertDoesNotExist()
+        .assertTextEquals(PhotoComponentsTexts.UPLOAD_IMAGE)
+    composeRule.onNodeWithTag(PhotoComponentsTestTags.IMAGE_PREVIEW).assertDoesNotExist()
   }
 
   @Test
@@ -402,10 +404,10 @@ class AddReportScreenTest {
     }
     scrollToUploadSection()
     composeRule.waitForIdle()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsDisplayed()
+    composeRule.onNodeWithTag(PhotoComponentsTestTags.IMAGE_PREVIEW).assertIsDisplayed()
     composeRule
-        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+        .onNodeWithTag(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(PhotoComponentsTexts.REMOVE_IMAGE)
   }
 
   @Test
@@ -417,14 +419,14 @@ class AddReportScreenTest {
     }
 
     scrollToUploadSection()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON).performClick()
+    composeRule.onNodeWithTag(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON).performClick()
     composeRule.onNodeWithTag(ImagePickerTestTags.DIALOG).assertIsDisplayed()
     composeRule.onNodeWithTag(ImagePickerTestTags.CANCEL_BUTTON).performClick()
     composeRule.onNodeWithTag(ImagePickerTestTags.DIALOG).assertIsNotDisplayed()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.IMAGE_PREVIEW).assertIsNotDisplayed()
+    composeRule.onNodeWithTag(PhotoComponentsTestTags.IMAGE_PREVIEW).assertIsNotDisplayed()
     composeRule
-        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
-        .assertTextEquals(AddReportUploadButtonTexts.UPLOAD_IMAGE)
+        .onNodeWithTag(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON)
+        .assertTextEquals(PhotoComponentsTexts.UPLOAD_IMAGE)
   }
 
   @Test
@@ -450,7 +452,7 @@ class AddReportScreenTest {
 
     composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeRule
-          .onAllNodesWithTag(AddReportScreenTestTags.IMAGE_PREVIEW)
+          .onAllNodesWithTag(PhotoComponentsTestTags.IMAGE_PREVIEW)
           .fetchSemanticsNodes()
           .isNotEmpty()
     }
@@ -459,9 +461,9 @@ class AddReportScreenTest {
 
     composeRule.waitForIdle()
     composeRule
-        .onNodeWithTag(AddReportScreenTestTags.UPLOAD_IMAGE_BUTTON)
+        .onNodeWithTag(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON)
         .assertIsDisplayed()
-        .assertTextEquals(AddReportUploadButtonTexts.REMOVE_IMAGE)
+        .assertTextEquals(PhotoComponentsTexts.REMOVE_IMAGE)
   }
 
   @Test

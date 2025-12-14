@@ -47,6 +47,7 @@ import com.android.agrihealth.data.model.device.location.LocationRepositoryProvi
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.device.notifications.NotificationHandlerProvider
 import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.location.LocationPicker
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
@@ -128,7 +129,6 @@ fun AgriHealthApp(
   val userViewModel: UserViewModel = viewModel()
 
   val overviewViewModel: OverviewViewModel = viewModel()
-
   // Location services: Use the ViewModel and not the repository
   LocationRepositoryProvider.repository = LocationRepository(context)
   val locationViewModel: LocationViewModel = viewModel()
@@ -364,19 +364,24 @@ fun AgriHealthApp(
             onManageOffice = { navigationActions.navigateTo(Screen.ManageOffice) })
       }
       composable(Screen.ManageOffice.route) {
+        val imageViewModel: ImageViewModel = viewModel()
+        val manageOfficeViewModel: ManageOfficeViewModel =
+            viewModel(
+                factory =
+                    object : ViewModelProvider.Factory {
+                      override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return ManageOfficeViewModel(
+                            userViewModel, OfficeRepositoryFirestore(), imageViewModel)
+                            as T
+                      }
+                    })
         ManageOfficeScreen(
             navigationActions = navigationActions,
             userViewModel = userViewModel,
+            manageOfficeViewModel = manageOfficeViewModel,
             onGoBack = { navigationActions.goBack() },
             onCreateOffice = { navigationActions.navigateTo(Screen.CreateOffice) },
             onJoinOffice = { navigationActions.navigateTo(Screen.ClaimCode(VET_TO_OFFICE)) },
-            manageOfficeVmFactory = {
-              object : ViewModelProvider.Factory {
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                  return ManageOfficeViewModel(userViewModel, OfficeRepositoryFirestore()) as T
-                }
-              }
-            },
             codesVmFactory = {
               object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {

@@ -15,15 +15,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.core.design.theme.statusColor
-import com.android.agrihealth.data.model.images.ImageUIState
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
@@ -39,6 +37,7 @@ import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
+import com.android.agrihealth.ui.profile.RemotePhotoDisplay
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags.CLAIM_BUTTON
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags.UNASSIGN_BUTTON
 import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
@@ -64,18 +63,8 @@ object ReportViewScreenTestTags {
   const val UNSAVED_ALERT_BOX_DISCARD = "UnsavedChangesAlertDiscardButton"
   const val UNSAVED_ALERT_BOX_CANCEL = "UnsavedChangesAlertCancelButton"
   const val DELETE_REPORT_ALERT_BOX = "DeleteReportAlertBox"
-  const val PHOTO_RENDER = "PhotoRender"
-  const val PHOTO_LOADING_ANIMATION = "PhotoLoadingAnimation"
-  const val PHOTO_ERROR_TEXT = "PhotoErrorText"
-  const val PHOTO_ILLEGAL_TEXT = "PhotoIllegalStateText"
 
   fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
-}
-
-object ReportViewScreenTexts {
-  const val PHOTO_DESCRIPTION = "Photo associated to the report"
-  const val PHOTO_ERROR_TEXT = "Failed to load image"
-  const val PHOTO_ILLEGAL_TEXT = "An unexpected error happened. Please contact the developers!"
 }
 
 @Composable
@@ -102,7 +91,7 @@ fun ReportViewScreen(
     navigationActions: NavigationActions,
     userRole: UserRole,
     viewModel: ReportViewViewModel,
-    imageViewModel: ImageViewModel = ImageViewModel(),
+    imageViewModel: ImageViewModel = viewModel(),
     reportId: String = "",
     user: User? = null
 ) {
@@ -268,9 +257,13 @@ fun ReportViewScreen(
                 uiState.report.questionForms.forEach { QuestionItem(it) }
 
                 // Display photo if available
-                if (report.photoURL != null) {
-                  PhotoDisplay(photoURL = report.photoURL, imageViewModel = imageViewModel)
-                }
+
+                RemotePhotoDisplay(
+                    photoURL = report.photoURL,
+                    imageViewModel = imageViewModel,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                    contentDescription = "Report photo",
+                    showPlaceHolder = false)
 
                 // ---- Collected switch ----
                 CollectedSwitch(report.collected)
@@ -579,55 +572,6 @@ fun UnsavedChangesAlert(onDiscard: () -> Unit, onStay: () -> Unit) {
               Text("Cancel")
             }
       })
-}
-
-@Composable
-fun PhotoDisplay(photoURL: String?, imageViewModel: ImageViewModel, modifier: Modifier = Modifier) {
-  val imageUiState by imageViewModel.uiState.collectAsState()
-
-  // Download the photo asynchronously so the screen is not blocked by download
-  LaunchedEffect(photoURL) {
-    if (photoURL != null) {
-      imageViewModel.download(photoURL)
-    }
-  }
-
-  when (val currentState = imageUiState) {
-    is ImageUIState.DownloadSuccess -> {
-      AsyncImage(
-          model = currentState.imageData,
-          contentDescription = ReportViewScreenTexts.PHOTO_DESCRIPTION,
-          modifier =
-              modifier
-                  .fillMaxWidth()
-                  .padding(vertical = 16.dp)
-                  .testTag(ReportViewScreenTestTags.PHOTO_RENDER),
-          contentScale = ContentScale.Fit)
-    }
-    is ImageUIState.Loading -> {
-      Box(
-          modifier = modifier.fillMaxWidth().height(200.dp).padding(vertical = 16.dp),
-          contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(
-                modifier = Modifier.testTag(ReportViewScreenTestTags.PHOTO_LOADING_ANIMATION))
-          }
-    }
-    is ImageUIState.Error -> {
-      Text(
-          text = ReportViewScreenTexts.PHOTO_ERROR_TEXT,
-          color = MaterialTheme.colorScheme.error,
-          modifier = modifier.padding(16.dp).testTag(ReportViewScreenTestTags.PHOTO_ERROR_TEXT))
-    }
-    is ImageUIState.Idle -> {
-      // Nothing happening yet
-    }
-    else -> {
-      Text(
-          text = ReportViewScreenTexts.PHOTO_ILLEGAL_TEXT,
-          color = MaterialTheme.colorScheme.error,
-          modifier = modifier.padding(16.dp).testTag(ReportViewScreenTestTags.PHOTO_ILLEGAL_TEXT))
-    }
-  }
 }
 
 /*  If you want to use the preview, just de-comment this block.
