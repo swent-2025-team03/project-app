@@ -196,12 +196,11 @@ fun ProfileScreen(
 
               // Default Vet (Farmers only)
               if (user is Farmer) {
-                val officeNameVm: OfficeNameViewModel =
-                    viewModel(key = (user as Farmer).defaultOffice)
+                val officeNameVm: OfficeNameViewModel = viewModel(key = (user).defaultOffice)
                 val officeName by officeNameVm.uiState.collectAsState()
                 LaunchedEffect(user) {
                   officeNameVm.loadOffice(
-                      uid = (user as Farmer).defaultOffice,
+                      uid = (user).defaultOffice,
                       deletedOffice = "Deleted office",
                       noneOffice = "Unassigned")
                 }
