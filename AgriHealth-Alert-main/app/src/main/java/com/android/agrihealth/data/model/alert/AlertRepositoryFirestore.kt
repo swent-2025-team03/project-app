@@ -16,9 +16,7 @@ class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fire
   private var cachedAlerts: List<Alert> = emptyList()
 
   override suspend fun getAlerts(): List<Alert> {
-    Log.d("AlertRepo", "getAlerts() START")
     val snapshot = db.collection(ALERTS_COLLECTION_PATH).orderBy("createdAt").get().await()
-    Log.d("AlertRepo", "Documents count = ${snapshot.size()}")
 
     val alerts =
         snapshot.documents.mapNotNull { doc ->
@@ -55,7 +53,6 @@ class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fire
     return if (index >= 0 && index < cachedAlerts.size - 1) cachedAlerts[index + 1] else null
   }
 
-  @Suppress("UNCHECKED_CAST")
   fun alertFromFirestore(id: String, data: Map<String, Any>): Alert {
     val title = data["title"] as? String ?: throw Exception("Missing title")
     val description = data["description"] as? String ?: throw Exception("Missing description")
