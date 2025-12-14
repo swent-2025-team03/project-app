@@ -2,6 +2,8 @@ package com.android.agrihealth.testhelpers
 
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.Office
+import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.Vet
 
@@ -36,4 +38,55 @@ object TestPassword {
   val password2 = "iamaweakpassword"
   val password3 = "12345678"
   val password4 = "weak"
+}
+
+object TestReport {
+  val report1 =
+      Report(
+          "rep_id1",
+          "Report title 1",
+          "Description 1",
+          emptyList(),
+          null,
+          "farmerId1",
+          "officeId1",
+          ReportStatus.PENDING,
+          null,
+          Location(46.9481, 7.4474, "Place name 1"))
+  val report2 =
+      Report(
+          "rep_id2",
+          "Report title 2",
+          "Description aaaa 2",
+          emptyList(),
+          null,
+          "farmerId2",
+          "officeId2",
+          ReportStatus.IN_PROGRESS,
+          "Vet answer",
+          Location(46.9481, 7.4484))
+  val report3 =
+      Report(
+          "rep_id3",
+          "Report title 3",
+          "Description 3",
+          emptyList(),
+          null,
+          "farmerId3",
+          "officeId1",
+          ReportStatus.RESOLVED,
+          null,
+          Location(46.9481, 7.4464, "Place name 3"))
+  val report4 =
+      Report(
+          "rep_id4",
+          "Report title 4",
+          "Description aaaa 4",
+          emptyList(),
+          null,
+          "farmerId4",
+          "officeId4",
+          ReportStatus.SPAM,
+          "Vet answer 4",
+          Location(46.9491, 7.4474))
 }

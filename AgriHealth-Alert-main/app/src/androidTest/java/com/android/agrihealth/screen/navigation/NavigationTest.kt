@@ -36,17 +36,11 @@ import org.junit.rules.TestRule
  * First implementation of navigation tests. Doesn't cover all auth and assumes that the first
  * screen of AgrihealthApp is Overview.
  */
-class NavigationTest : FirebaseUITest() {
-
-  @get:Rule
-  val ruleChain: TestRule =
-      RuleChain.outerRule(
-              GrantPermissionRule.grant(
-                  android.Manifest.permission.ACCESS_FINE_LOCATION,
-                  android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                  android.Manifest.permission.POST_NOTIFICATIONS))
-          .around(composeTestRule)
-
+class NavigationTest : FirebaseUITest(grantedPermissions = arrayOf(
+  android.Manifest.permission.ACCESS_FINE_LOCATION,
+  android.Manifest.permission.ACCESS_COARSE_LOCATION,
+  android.Manifest.permission.POST_NOTIFICATIONS
+)) {
   @Before
   fun setUp() {
     // Set the content to the Overview screen before each test

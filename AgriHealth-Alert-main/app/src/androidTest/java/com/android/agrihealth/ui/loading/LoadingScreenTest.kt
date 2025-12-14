@@ -4,10 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
 import com.android.agrihealth.testhelpers.templates.UITest
-import org.junit.Rule
 import org.junit.Test
 
 class LoadingScreenTest : UITest() {
@@ -34,8 +31,6 @@ class LoadingScreenTest : UITest() {
   fun overlay_loading_showsScrimAndSpinner() {
     setLoadingContent(true)
 
-    with(LoadingTestTags) {
-      nodesAreDisplayed(testTag, SCRIM, SPINNER)
-    }
+    with(LoadingTestTags) { nodesAreDisplayed(testTag, SCRIM, SPINNER) }
   }
 }

@@ -5,7 +5,6 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.rule.GrantPermissionRule
 import com.android.agrihealth.data.model.authentification.AuthRepositoryFirebase
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.verifyUser
@@ -51,25 +50,17 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.RuleChain
-import org.junit.rules.TestRule
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class E2ETest : FirebaseUITest() {
+class E2ETest : FirebaseUITest(grantedPermissions = arrayOf(
+  android.Manifest.permission.ACCESS_FINE_LOCATION,
+  android.Manifest.permission.ACCESS_COARSE_LOCATION,
+  android.Manifest.permission.POST_NOTIFICATIONS)) {
+
 
   // private val composeTestRule = createAndroidComposeRule<ComponentActivity>()
-
-  @get:Rule
-  val ruleChain: TestRule =
-      RuleChain.outerRule(
-              GrantPermissionRule.grant(
-                  android.Manifest.permission.ACCESS_FINE_LOCATION,
-                  android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                  android.Manifest.permission.POST_NOTIFICATIONS))
-          .around(composeTestRule)
 
   val authRepository = AuthRepositoryFirebase()
 
