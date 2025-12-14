@@ -18,11 +18,7 @@ class TestReportRepository(initialReports: List<Report> = emptyList()) :
     super.editReport(reportId, newReport)
   }
 
-  override suspend fun assignReportToVet(reportId: String, vetId: String) {
-    TODO("Not yet implemented")
-  }
+  override suspend fun assignReportToVet(reportId: String, vetId: String) {}
 
-  override suspend fun unassignReport(reportId: String) {
-    TODO("Not yet implemented")
-  }
+  override suspend fun unassignReport(reportId: String) {}
 }

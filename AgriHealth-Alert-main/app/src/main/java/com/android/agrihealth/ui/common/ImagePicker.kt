@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import com.android.agrihealth.core.utils.FileProviderUtils
 import java.io.File
 
 /** Test tags for the image picker */
@@ -133,8 +134,8 @@ fun ImagePickerDialog(
                 val imageFile = File.createTempFile("temp_image_", ".jpg", context.cacheDir)
                 tempPhotoUri =
                     FileProvider.getUriForFile(
-                        context, getFileProviderAuthority(context), imageFile)
-                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                        context, FileProviderUtils.authority(context), imageFile)
+                cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
               },
               colors =
                   ButtonDefaults.textButtonColors(
@@ -156,14 +157,6 @@ fun ImagePickerDialog(
         }
       },
   )
-}
-
-// Helper function to get the FileProvider authority
-// Note: This must be the *exact* same as seen in AndroidManifest.xml, in the <provider> tag, under
-// "android:authorities"
-// TODO: Maybe move this into its own object
-private fun getFileProviderAuthority(context: Context): String {
-  return context.packageName + ".fileprovider"
 }
 
 // Helper function to open app permission settings

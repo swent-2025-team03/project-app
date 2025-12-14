@@ -20,7 +20,7 @@ class LocationPickerTest : UITest() {
 
   @Before
   fun setUp() {
-    locationRepository = mockk(relaxed = true) // TODO: Consider replacing with a fake repository
+    locationRepository = mockk(relaxed = true)
     LocationRepositoryProvider.repository = locationRepository
   }
 

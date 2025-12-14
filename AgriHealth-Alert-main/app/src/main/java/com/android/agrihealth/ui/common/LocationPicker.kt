@@ -22,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,15 +77,13 @@ fun LocationPicker(
             Modifier.padding(pd),
             mapViewModel,
             onLocationPicked = { lat, lng ->
-              // TODO: maybe loading goes here
               onLatLng(lat, lng)
               showConfirmation = true
               mapViewModel.getAddressFromLatLng(context, lat, lng)
             })
 
         if (showConfirmation)
-        // TODO: maybe loading here instead, if address is null
-        AddressConfirmationPrompt(
+            AddressConfirmationPrompt(
                 address,
                 onConfirm = {
                   onAddress(address)
@@ -105,10 +104,15 @@ private fun LocationPickerScreen(
   val mapInitialZoom by mapViewModel.zoom.collectAsState()
   val cameraPositionState = rememberCameraPositionState {}
 
+  var cameraInitialized by rememberSaveable { mutableStateOf(false) }
+
   LaunchedEffect(mapInitialLocation) {
-    cameraPositionState.position =
-        CameraPosition.fromLatLngZoom(
-            LatLng(mapInitialLocation.latitude, mapInitialLocation.longitude), mapInitialZoom)
+    if (!cameraInitialized) {
+      cameraInitialized = true
+      cameraPositionState.position =
+          CameraPosition.fromLatLngZoom(
+              LatLng(mapInitialLocation.latitude, mapInitialLocation.longitude), mapInitialZoom)
+    }
   }
 
   // UI settings and theme

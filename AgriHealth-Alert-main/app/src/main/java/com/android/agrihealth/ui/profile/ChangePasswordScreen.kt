@@ -17,6 +17,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,6 +48,8 @@ fun ChangePasswordScreen(
     onUpdatePassword: () -> Unit = {},
     changePasswordViewModel: ChangePasswordViewModelContract = FakeChangePasswordViewModel()
 ) {
+
+  val focusManager = LocalFocusManager.current
 
   val uiState by changePasswordViewModel.uiState.collectAsState()
   LaunchedEffect(Unit) { changePasswordViewModel.setEmail(userEmail) }
@@ -108,7 +111,10 @@ fun ChangePasswordScreen(
 
                 // Save button
                 Button(
-                    onClick = { changePasswordViewModel.changePassword() },
+                    onClick = {
+                      focusManager.clearFocus()
+                      changePasswordViewModel.changePassword()
+                    },
                     enabled = !uiState.isLoading,
                     modifier =
                         Modifier.fillMaxWidth().testTag(ChangePasswordScreenTestTags.SAVE_BUTTON)) {

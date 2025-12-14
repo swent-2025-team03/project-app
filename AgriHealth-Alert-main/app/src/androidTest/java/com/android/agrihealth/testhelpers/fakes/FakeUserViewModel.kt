@@ -1,5 +1,6 @@
 package com.android.agrihealth.testhelpers.fakes
 
+import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserUiState
 import com.android.agrihealth.data.model.user.UserViewModelContract
@@ -9,7 +10,21 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class FakeUserViewModel(initialUser: User) : UserViewModelContract {
+val defaultUser =
+    Farmer(
+        uid = "",
+        firstname = "",
+        lastname = "",
+        email = "",
+        address = null,
+        linkedOffices = emptyList(),
+        defaultOffice = "",
+        isGoogleAccount = false,
+        description = "",
+        collected = false,
+        deviceTokensFCM = emptySet())
+
+class FakeUserViewModel(initialUser: User = defaultUser) : UserViewModelContract {
   private val _uiState = MutableStateFlow(UserUiState(user = initialUser, isLoading = false))
   override val uiState: StateFlow<UserUiState> = _uiState
 

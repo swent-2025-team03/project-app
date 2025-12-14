@@ -24,9 +24,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.form.MCQ
 import com.android.agrihealth.data.model.report.form.MCQO
@@ -120,6 +124,8 @@ fun AddReportScreen(
   val user = userUi.user
 
   val offices = remember { mutableStateMapOf<String, String>() }
+
+  val focusManager = LocalFocusManager.current
 
   // For each linked office, load their name
   (user as Farmer).linkedOffices.forEach { officeId ->
@@ -217,6 +223,7 @@ fun AddReportScreen(
 
                 QuestionList(
                     questions = reportUi.questionForms,
+                    focusManager = focusManager,
                     onQuestionChange = { index, updated ->
                       addReportViewModel.updateQuestion(index, updated)
                     })
@@ -231,7 +238,10 @@ fun AddReportScreen(
                     modifier =
                         Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.ADDRESS_FIELD))
                 Button(
-                    onClick = onChangeLocation,
+                    onClick = {
+                      focusManager.clearFocus()
+                      onChangeLocation()
+                    },
                     modifier =
                         Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.LOCATION_BUTTON)) {
                       Text("Select Location")
@@ -240,6 +250,7 @@ fun AddReportScreen(
                 OfficeDropdown(
                     offices = offices,
                     selectedOfficeId = selectedOption,
+                    focusManager = focusManager,
                     onOfficeSelected = { officeId ->
                       selectedOption = officeId
                       addReportViewModel.setOffice(officeId)
@@ -256,7 +267,11 @@ fun AddReportScreen(
 
                 CollectedSwitch(reportUi.collected, { addReportViewModel.switchCollected() }, true)
 
-                CreateReportButton(onClick = onCreateReportClick)
+                CreateReportButton(
+                    onClick = {
+                      focusManager.clearFocus()
+                      onCreateReportClick()
+                    })
               }
 
           CreateReportSuccessDialog(
@@ -343,7 +358,8 @@ fun CreateReportErrorDialog(visible: Boolean, errorMessage: String?, onDismiss: 
 fun OfficeDropdown(
     offices: Map<String, String>,
     selectedOfficeId: String,
-    onOfficeSelected: (String) -> Unit
+    onOfficeSelected: (String) -> Unit,
+    focusManager: FocusManager
 ) {
   var expanded by remember { mutableStateOf(false) }
   var selectedOfficeName = offices[selectedOfficeId] ?: selectedOfficeId
@@ -363,6 +379,7 @@ fun OfficeDropdown(
         DropdownMenuItem(
             text = { Text(displayName) },
             onClick = {
+              focusManager.clearFocus()
               selectedOfficeName = displayName
               onOfficeSelected(option)
               expanded = false
@@ -382,35 +399,48 @@ fun OfficeDropdown(
 @Composable
 fun QuestionList(
     questions: List<QuestionForm>,
-    onQuestionChange: (index: Int, updated: QuestionForm) -> Unit
+    onQuestionChange: (index: Int, updated: QuestionForm) -> Unit,
+    focusManager: FocusManager
 ) {
   questions.forEachIndexed { index, question ->
     when (question) {
       is OpenQuestion -> {
         OpenQuestionItem(
             question = question,
-            onAnswerChange = { updated -> onQuestionChange(index, updated) },
+            onAnswerChange = { updated ->
+              focusManager.clearFocus()
+              onQuestionChange(index, updated)
+            },
             enabled = true,
             modifier = Modifier.testTag("QUESTION_${index}_OPEN"))
       }
       is YesOrNoQuestion -> {
         YesOrNoQuestionItem(
             question = question,
-            onAnswerChange = { updated -> onQuestionChange(index, updated) },
+            onAnswerChange = { updated ->
+              focusManager.clearFocus()
+              onQuestionChange(index, updated)
+            },
             enabled = true,
             modifier = Modifier.testTag("QUESTION_${index}_YESORNO"))
       }
       is MCQ -> {
         MCQItem(
             question = question,
-            onAnswerChange = { updated -> onQuestionChange(index, updated) },
+            onAnswerChange = { updated ->
+              focusManager.clearFocus()
+              onQuestionChange(index, updated)
+            },
             enabled = true,
             modifier = Modifier.testTag("QUESTION_${index}_MCQ"))
       }
       is MCQO -> {
         MCQOItem(
             question = question,
-            onAnswerChange = { updated -> onQuestionChange(index, updated) },
+            onAnswerChange = { updated ->
+              focusManager.clearFocus()
+              onQuestionChange(index, updated)
+            },
             enabled = true,
             modifier = Modifier.testTag("QUESTION_${index}_MCQO"))
       }
@@ -484,19 +514,13 @@ fun CreateReportButton(
       }
 }
 
-// TODO: (OPTIONAL) Make this work again
-/// **
-// * Preview of the ReportViewScreen for both farmer and vet roles. Allows testing of layout and
-// * colors directly in Android Studio.
-// */
-// @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-// @Composable
-// fun AddReportScreenPreview() {
-//  AgriHealthAppTheme {
-//    AddReportScreen(
-//        userRole = UserRole.FARMER,
-//        userId = "FARMER_001",
-//        onCreateReport = {},
-//        addReportViewModel = FakeAddReportViewModel())
-//  }
-// }
+/*
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+@Composable
+fun AddReportScreenPreview() {
+  AgriHealthAppTheme {
+    AddReportScreen(
+        userViewModel = FakeUserViewModel(), addReportViewModel = FakeAddReportViewModel())
+  }
+}
+*/

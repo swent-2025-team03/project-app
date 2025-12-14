@@ -54,12 +54,10 @@ open class InMemoryReportRepository(
 
   override suspend fun assignReportToVet(reportId: String, vetId: String) {
     delay(delayMs)
-    TODO("Not yet implemented")
   }
 
   override suspend fun unassignReport(reportId: String) {
     delay(delayMs)
-    TODO("Not yet implemented")
   }
 
   fun reset(newReports: List<Report> = emptyList()) {

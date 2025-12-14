@@ -31,7 +31,6 @@ enum class NotificationType {
   VET_ANSWER,
   JOIN_OFFICE,
   CONNECT_OFFICE;
-  // TODO: Implement NEW_ALERT notification type
 
   /** Converts a NotificationType into its string representation. To use when sending to Firebase */
   fun toName(): String = name.lowercase()
