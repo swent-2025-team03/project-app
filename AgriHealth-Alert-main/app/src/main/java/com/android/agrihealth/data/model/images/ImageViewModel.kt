@@ -24,6 +24,17 @@ sealed class ImageUIState {
 }
 
 /**
+ *  A union type so that a photo can either be stored in a ByteArray or in a Uri.
+ *
+ *  This is meant as an internal type, it should not appear in any public interface. It is meant
+ *  to be used internally when overloading a function
+ */
+sealed interface PhotoType {
+  data class ByteArray(val value: kotlin.ByteArray) : PhotoType
+  data class Uri(val value: android.net.Uri) : PhotoType
+}
+
+/**
  * View-model to handle image upload/download with the photo storage backend. Designed to use
  * upload() or download() and then use a "when ()" on the UI state to handle response.
  */
@@ -36,25 +47,22 @@ class ImageViewModel(private val repository: ImageRepository = ImageRepositoryPr
    * Uploads an image to the photos backend using a ByteArray directly. Updates UI state to
    * UploadSuccess, containing the online path to the image
    */
-  fun upload(byteArray: ByteArray) = uploadImplementation(byteArray)
+  fun upload(byteArray: ByteArray) = uploadImplementation(PhotoType.ByteArray(byteArray))
 
   /**
    * Uploads an image to the photos backend using a URI to the file content. Updates UI state to
    * UploadSuccess, containing the online path to the image
    */
-  fun upload(uri: Uri) = uploadImplementation(uri)
+  fun upload(uri: Uri) = uploadImplementation(PhotoType.Uri(uri))
 
   // Actual implementation of the upload function
-  private fun uploadImplementation(photo: Any) {
+  private fun uploadImplementation(photo: PhotoType) {
     viewModelScope.launch {
       _uiState.value = ImageUIState.Loading
 
       var bytes = when (photo) {
-        is ByteArray -> photo
-        is Uri -> repository.resolveUri(photo)
-        else -> {
-          throw IllegalArgumentException("'photo' must be either a Uri or a ByteArray")
-        }
+        is PhotoType.ByteArray -> photo.value
+        is PhotoType.Uri -> repository.resolveUri(photo.value)
       }
       bytes = repository.reduceFileSize(bytes)
 

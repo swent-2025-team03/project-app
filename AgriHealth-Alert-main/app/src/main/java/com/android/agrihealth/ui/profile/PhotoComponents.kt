@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.android.agrihealth.data.model.images.ImageUIState
 import com.android.agrihealth.data.model.images.ImageViewModel
+import com.android.agrihealth.data.model.images.PhotoType
 import com.android.agrihealth.ui.utils.ImagePickerDialog
 
 object PhotoComponentsTestTags {
@@ -120,7 +121,7 @@ fun RemotePhotoDisplay(
 
 @Composable
 private fun ActualLocalPhotoDisplay(
-    photo: Any?,
+    photo: PhotoType?,
     modifier: Modifier = Modifier,
     showPlaceHolder: Boolean = false,
     placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
@@ -129,15 +130,12 @@ private fun ActualLocalPhotoDisplay(
     null -> {
       if (showPlaceHolder) { placeholder(modifier) }
     }
-    is ByteArray, is Uri -> {
+    is PhotoType.ByteArray, is PhotoType.Uri -> {
       AsyncImage(
         model = photo,
         contentDescription = "Uploaded image",
         modifier = modifier.testTag(PhotoComponentsTestTags.IMAGE_PREVIEW),
         contentScale = ContentScale.Fit)
-    }
-    else -> {
-      throw IllegalArgumentException("'photo' must be either a Uri or a ByteArray")
     }
   }
 }
@@ -159,7 +157,7 @@ fun LocalPhotoDisplay(
   modifier: Modifier = Modifier,
   showPlaceHolder: Boolean = false,
   placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
-) = ActualLocalPhotoDisplay(photoURI, modifier, showPlaceHolder, placeholder)
+) = ActualLocalPhotoDisplay(photoURI?.let { PhotoType.Uri(it) }, modifier, showPlaceHolder, placeholder)
 
 
 /**
@@ -179,7 +177,7 @@ fun LocalPhotoDisplay(
   modifier: Modifier = Modifier,
   showPlaceHolder: Boolean = false,
   placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
-) = ActualLocalPhotoDisplay(photoByteArray, modifier, showPlaceHolder, placeholder)
+) = ActualLocalPhotoDisplay(photoByteArray?.let { PhotoType.ByteArray(it) }, modifier, showPlaceHolder, placeholder)
 
 @Composable
 fun DefaultIconPlaceholder(modifier: Modifier = Modifier) {
