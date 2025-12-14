@@ -1,14 +1,10 @@
 package com.android.agrihealth.ui.profile
 
 import android.content.Context
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
@@ -19,30 +15,25 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Restore
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -77,7 +68,9 @@ import com.mr0xf00.easycrop.ui.ImageCropperDialog
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.unit.IntSize
 import com.android.agrihealth.ui.report.CreateReportErrorDialog
+import com.mr0xf00.easycrop.CropperLoading
 
 
 enum class CodeType {
@@ -165,10 +158,20 @@ fun EditProfileScreen(
 
   var showPhotoPickerDialog by remember { mutableStateOf(false) }
   var showPhotoCropper by remember { mutableStateOf(false) }
+  var showErrorDialog by remember { mutableStateOf(false) }
   var chosenPhoto : ByteArray? by remember {mutableStateOf(null)}
+  var errorDialogMessage by remember { mutableStateOf<String?>(null) }
   val imageCropper = rememberImageCropper()
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
+
+  val handleProfilePictureClick = {
+    if (chosenPhoto == null) {
+      showPhotoPickerDialog = true
+    } else {
+      chosenPhoto = null
+    }
+  }
 
   Scaffold(
       topBar = {
@@ -200,7 +203,7 @@ fun EditProfileScreen(
 
           Box(
             modifier = Modifier.size(120.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
           ) {
             Icon(
               imageVector = Icons.Default.AccountCircle,
@@ -208,19 +211,14 @@ fun EditProfileScreen(
               modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape)
-                .testTag(PROFILE_IMAGE),
-              tint = MaterialTheme.colorScheme.primary
+                .testTag(PROFILE_IMAGE)
+                .clickable { handleProfilePictureClick() },
+              tint = MaterialTheme.colorScheme.primary,
             )
 
             // Camera icon overlay
             FloatingActionButton(
-              onClick = {
-                if (chosenPhoto == null) {
-                  showPhotoPickerDialog = true
-                } else {
-                  chosenPhoto == null
-                }
-              },
+              onClick = { handleProfilePictureClick() },
               modifier = Modifier
                 .size(40.dp)
                 .align(Alignment.BottomEnd)
@@ -446,10 +444,16 @@ fun EditProfileScreen(
       onImageSelected = { uri ->
         scope.launch {
           val bitmap = uri.toBitmap(context).asImageBitmap()
-          val result = imageCropper.crop(bmp = bitmap)
+          val result = imageCropper.crop(maxResultSize = IntSize(2048, 2048), bmp = bitmap)
           when (result) {
             is CropResult.Cancelled -> {showPhotoPickerDialog = true}
-            is CropError -> { TODO("Handle error") }
+            is CropError -> {
+              showErrorDialog = true
+              errorDialogMessage = when (result) {
+                CropError.LoadingError -> "The supplied image is invalid, not supported, or you don't have the required permissions to read it"
+                CropError.SavingError -> "The result could not be saved"
+              }
+            }
             is CropResult.Success -> { chosenPhoto = result.bitmap.toByteArray() }
           }
         }
@@ -457,15 +461,19 @@ fun EditProfileScreen(
     )
   }
 
+  if (showErrorDialog) {
+    CreateReportErrorDialog(true, errorDialogMessage, onDismiss = { showErrorDialog = false })
+  }
+
   val cropState = imageCropper.cropState
   if(cropState != null) {
     // Setting this once
     LaunchedEffect(cropState) {
-      // Force the region to be square by triggering an update
-      val currentRegion = cropState.region
-      val size = minOf(currentRegion.width, currentRegion.height)
-      val centerX = currentRegion.center.x
-      val centerY = currentRegion.center.y
+      // Force the region to be a square instead of a rectangle
+      val region = cropState.region
+      val size = minOf(region.width, region.height)
+      val centerX = region.center.x
+      val centerY = region.center.y
 
       cropState.region = Rect(
         left = centerX - size / 2f,
@@ -476,13 +484,11 @@ fun EditProfileScreen(
 
       cropState.aspectLock = true
       cropState.shape = CircleCropShape
-
-
     }
 
     ImageCropperDialog(
       state = cropState,
-      topBar = { ImageCropperDialogControls(cropState) },
+      topBar = { ImageCropperCustomTopBar(cropState) },
       cropControls = {},
       style = CropperStyle(
         autoZoom = true,
@@ -491,15 +497,12 @@ fun EditProfileScreen(
         aspects = listOf(AspectRatio(1, 1))
     ))
   }
-
-
-
 }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ImageCropperDialogControls(state: CropState) {
+fun ImageCropperCustomTopBar(state: CropState) {
   TopAppBar(title = {},
     navigationIcon = {
       IconButton(onClick = { state.done(accept = false) }) {
@@ -525,7 +528,7 @@ fun ImageCropperDialogControls(state: CropState) {
         state.aspectLock = true
         state.shape = CircleCropShape
       }) {
-        Icon(Icons.Default.Restore, contentDescription = "Restore")
+        Icon(Icons.Default.Replay, contentDescription = "Restore")
       }
       IconButton(onClick = { state.done(accept = true) }, enabled = !state.accepted) {
         Icon(Icons.Default.Done, contentDescription = "Submit")
@@ -545,7 +548,12 @@ private fun ImageBitmap.toByteArray(format: Bitmap.CompressFormat = Bitmap.Compr
 // Created with the help of an LLM
 private fun Uri.toBitmap(context: Context): Bitmap {
   val source = ImageDecoder.createSource(context.contentResolver, this)
-  return ImageDecoder.decodeBitmap(source)
+
+  // Forcing to use software allocator (instead of hardware) and forcing bitmap to be mutable to prevent issues when cropping the photo
+  return ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+    decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+    decoder.isMutableRequired = true
+  }
 }
 
 /*
