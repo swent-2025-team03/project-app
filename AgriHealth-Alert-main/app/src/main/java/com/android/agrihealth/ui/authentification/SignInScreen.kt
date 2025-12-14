@@ -16,18 +16,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.R
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.ui.loading.LoadingOverlay
-import com.android.agrihealth.data.model.authentification.AuthRepository
-import com.android.agrihealth.data.model.user.UserRepository
-import com.android.agrihealth.data.model.user.User
-import com.google.firebase.auth.FirebaseUser
-
 
 object SignInScreenTestTags {
   const val SCREEN = "SignInScreen"

@@ -8,11 +8,11 @@ import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
+import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
 import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
-import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
-import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Rule

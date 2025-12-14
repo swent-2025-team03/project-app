@@ -560,7 +560,7 @@ class ReportViewScreenTest {
   fun reportView_showsLoadingOverlayWhileFetchingReport() {
     val sampleReport = ReportViewUIState().report.copy(id = "RPT_SLOW")
     val slowRepo: ReportRepository =
-      InMemoryReportRepository(listOf(sampleReport), TestTimeout.DEFAULT_TIMEOUT)
+        InMemoryReportRepository(listOf(sampleReport), TestTimeout.DEFAULT_TIMEOUT)
     val vm = ReportViewViewModel(repository = slowRepo)
 
     composeTestRule.setContent {

@@ -26,13 +26,13 @@ import com.android.agrihealth.data.model.report.form.QuestionForm
 import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserViewModelContract
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
+import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeAddReportViewModel
 import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
-import com.android.agrihealth.ui.common.ImagePickerTestTags
-import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
-import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
+import com.android.agrihealth.ui.common.ImagePickerTestTags
 import com.android.agrihealth.ui.profile.PhotoComponentsTestTags
 import com.android.agrihealth.ui.profile.PhotoComponentsTexts
 import com.android.agrihealth.utils.TestAssetUtils.FAKE_PHOTO_FILE

@@ -286,8 +286,7 @@ class ViewUserScreenTest {
             defaultOffice = null,
             isGoogleAccount = false)
 
-    val userRepo =
-        FakeUserRepository(targetUser = fakeUser, delayMs = DEFAULT_TIMEOUT)
+    val userRepo = FakeUserRepository(targetUser = fakeUser, delayMs = DEFAULT_TIMEOUT)
     val officeRepo = FakeOfficeRepository()
 
     val vm =
@@ -306,14 +305,10 @@ class ViewUserScreenTest {
       }
     }
 
-    composeTestRule.waitUntil(SUPER_LONG_TIMEOUT) {
-      vm.uiState.value is ViewUserUiState.Loading
-    }
+    composeTestRule.waitUntil(SUPER_LONG_TIMEOUT) { vm.uiState.value is ViewUserUiState.Loading }
     composeTestRule.onNodeWithTag(ViewUserScreenTestTags.LOADING_INDICATOR).assertIsDisplayed()
 
-    composeTestRule.waitUntil(SUPER_LONG_TIMEOUT) {
-      vm.uiState.value !is ViewUserUiState.Loading
-    }
+    composeTestRule.waitUntil(SUPER_LONG_TIMEOUT) { vm.uiState.value !is ViewUserUiState.Loading }
     composeTestRule.onNodeWithTag(ViewUserScreenTestTags.LOADING_INDICATOR).assertDoesNotExist()
   }
 }

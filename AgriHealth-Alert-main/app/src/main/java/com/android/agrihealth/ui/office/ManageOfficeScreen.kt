@@ -24,10 +24,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.data.model.images.ImageViewModel
-import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.ui.common.layout.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.common.resolver.AuthorName
+import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.CONFIRM_LEAVE

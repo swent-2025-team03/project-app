@@ -5,8 +5,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import com.android.agrihealth.data.model.user.*
-import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.data.model.user.UserViewModelContract
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
@@ -228,9 +228,7 @@ class ProfileScreenTest {
   fun planner_loadReports_showsAndHidesLoadingOverlay() = runTest {
     val report = PlannerTestReportsData.report1.copy(startTime = LocalDate.now().atTime(9, 0))
     val delayedRepo =
-      InMemoryReportRepository(
-        initialReports = listOf(report), delayMs = DEFAULT_TIMEOUT
-      )
+        InMemoryReportRepository(initialReports = listOf(report), delayMs = DEFAULT_TIMEOUT)
 
     val viewModel = PlannerViewModel(reportRepository = delayedRepo)
 

@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.android.agrihealth.data.model.images.ImageUIState
 import com.android.agrihealth.data.model.images.ImageViewModel
-import com.android.agrihealth.ui.utils.ImagePickerDialog
+import com.android.agrihealth.ui.common.ImagePickerDialog
 
 object PhotoComponentsTestTags {
   const val PHOTO_RENDER = "PhotoRender"

@@ -31,10 +31,10 @@ import com.android.agrihealth.data.model.report.form.QuestionForm
 import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.common.resolver.AuthorName
 import com.android.agrihealth.ui.common.resolver.OfficeName
+import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.profile.RemotePhotoDisplay

@@ -9,7 +9,6 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -22,8 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.view.WindowCompat.setDecorFitsSystemWindows
 import androidx.credentials.CredentialManager
@@ -48,8 +45,8 @@ import com.android.agrihealth.data.model.device.notifications.NotificationHandle
 import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
+import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.copyCommon
 import com.android.agrihealth.data.model.user.defaultUser
 import com.android.agrihealth.ui.alert.AlertViewModel
@@ -136,9 +133,11 @@ class MainActivity : ComponentActivity() {
         val clearFocusModifier =
             Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) }
         // A surface container using the 'background' color from the theme
-        Surface(modifier = clearFocusModifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-          AgriHealthApp()
-        }
+        Surface(
+            modifier = clearFocusModifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background) {
+              AgriHealthApp()
+            }
       }
     }
   }
