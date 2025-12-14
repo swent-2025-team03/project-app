@@ -125,8 +125,8 @@ fun EditProfileScreen(
 ) {
   val focusManager = LocalFocusManager.current
 
-  val connectionRepository = rememberSaveable { ConnectionRepository(connectionType = "") }
-  val codesViewModel = rememberSaveable { CodesViewModel(userViewModel, connectionRepository) }
+  val connectionRepository = remember { ConnectionRepository(connectionType = "") }
+  val codesViewModel = remember { CodesViewModel(userViewModel, connectionRepository) }
 
   val uiState by userViewModel.uiState.collectAsState()
   val user = uiState.user
@@ -169,7 +169,7 @@ fun EditProfileScreen(
 
   val isOwner = manageOfficeVm.uiState.collectAsState().value.office?.ownerId == user.uid
 
-  val snackbarHostState = rememberSaveable { SnackbarHostState() }
+  val snackbarHostState = remember { SnackbarHostState() }
 
   // Local mutable states
   var firstname by rememberSaveable { mutableStateOf(user.firstname) }
@@ -193,7 +193,7 @@ fun EditProfileScreen(
   val context = LocalContext.current
   val croppingIsOngoing = imageCropper.cropState != null
   var chosenPhoto : ByteArray? by rememberSaveable {mutableStateOf(null)}
-  val launchImageCropper: (Uri) -> Unit = rememberSaveable {
+  val launchImageCropper: (Uri) -> Unit = remember {
     { uri: Uri ->
       scope.launch {
         val bitmap = uri.toBitmap(context).asImageBitmap()

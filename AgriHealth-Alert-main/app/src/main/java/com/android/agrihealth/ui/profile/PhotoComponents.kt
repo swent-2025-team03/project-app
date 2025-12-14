@@ -127,7 +127,7 @@ private fun ActualLocalPhotoDisplay(
 ) {
   when (photo) {
     null -> {
-      placeholder(modifier)
+      if (showPlaceHolder) { placeholder(modifier) }
     }
     is ByteArray, is Uri -> {
       AsyncImage(
