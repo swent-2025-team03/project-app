@@ -39,6 +39,7 @@ import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.profile.LocalPhotoDisplay
+import com.android.agrihealth.ui.profile.UploadRemovePhotoButton
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
 import kotlin.collections.forEachIndexed
@@ -247,6 +248,11 @@ fun AddReportScreen(
                 LocalPhotoDisplay(
                     photoURI = reportUi.photoUri,
                     modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 16.dp))
+
+                UploadRemovePhotoButton(
+                    photoAlreadyPicked = reportUi.photoUri != null,
+                    onPhotoPicked = { addReportViewModel.setPhoto(it) },
+                    onPhotoRemoved = { addReportViewModel.removePhoto() })
 
                 CollectedSwitch(reportUi.collected, { addReportViewModel.switchCollected() }, true)
 
