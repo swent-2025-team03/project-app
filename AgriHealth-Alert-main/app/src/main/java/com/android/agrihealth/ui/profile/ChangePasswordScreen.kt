@@ -17,11 +17,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.testutil.FakeChangePasswordViewModel
+import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 
@@ -47,6 +49,8 @@ fun ChangePasswordScreen(
     onUpdatePassword: () -> Unit = {},
     changePasswordViewModel: ChangePasswordViewModelContract = FakeChangePasswordViewModel()
 ) {
+
+  val focusManager = LocalFocusManager.current
 
   val uiState by changePasswordViewModel.uiState.collectAsState()
   LaunchedEffect(Unit) { changePasswordViewModel.setEmail(userEmail) }
@@ -78,42 +82,47 @@ fun ChangePasswordScreen(
                   }
             })
       }) { padding ->
+        LoadingOverlay(isLoading = uiState.isLoading) {
+          // Main scrollable content
+          Column(
+              modifier =
+                  Modifier.padding(padding)
+                      .fillMaxSize()
+                      .verticalScroll(rememberScrollState())
+                      .padding(16.dp),
+              verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
-        // Main scrollable content
-        Column(
-            modifier =
-                Modifier.padding(padding)
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                // Old password field
+                Field(
+                    value = uiState.oldPassword,
+                    onValueChange = { changePasswordViewModel.setOldPassword(it) },
+                    testTag = ChangePasswordScreenTestTags.OLD_PASSWORD,
+                    errorText = ChangePasswordFeedbackTexts.OLD_WRONG,
+                    label = "Current Password",
+                    error = uiState.oldWrong)
 
-              // Old password field
-              Field(
-                  value = uiState.oldPassword,
-                  onValueChange = { changePasswordViewModel.setOldPassword(it) },
-                  testTag = ChangePasswordScreenTestTags.OLD_PASSWORD,
-                  errorText = ChangePasswordFeedbackTexts.OLD_WRONG,
-                  label = "Current Password",
-                  error = uiState.oldWrong)
+                // New password field
+                Field(
+                    value = uiState.newPassword,
+                    onValueChange = { changePasswordViewModel.setNewPassword(it) },
+                    testTag = ChangePasswordScreenTestTags.NEW_PASSWORD,
+                    errorText = ChangePasswordFeedbackTexts.NEW_WEAK,
+                    label = "New Password",
+                    error = uiState.newWeak)
 
-              // New password field
-              Field(
-                  value = uiState.newPassword,
-                  onValueChange = { changePasswordViewModel.setNewPassword(it) },
-                  testTag = ChangePasswordScreenTestTags.NEW_PASSWORD,
-                  errorText = ChangePasswordFeedbackTexts.NEW_WEAK,
-                  label = "New Password",
-                  error = uiState.newWeak)
-
-              // Save button
-              Button(
-                  onClick = { changePasswordViewModel.changePassword() },
-                  modifier =
-                      Modifier.fillMaxWidth().testTag(ChangePasswordScreenTestTags.SAVE_BUTTON)) {
-                    Text("Save Changes")
-                  }
-            }
+                // Save button
+                Button(
+                    onClick = {
+                      focusManager.clearFocus()
+                      changePasswordViewModel.changePassword()
+                    },
+                    enabled = !uiState.isLoading,
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(ChangePasswordScreenTestTags.SAVE_BUTTON)) {
+                      Text("Save Changes")
+                    }
+              }
+        }
       }
 }
 

@@ -20,6 +20,4 @@ class HealthQuestionFactoryTest {
 
     assertEquals(expected, result.size)
   }
-
-  // TODO:tests for UI
 }

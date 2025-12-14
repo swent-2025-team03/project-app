@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
@@ -41,6 +43,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.connection.ConnectionRepository
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.*
@@ -73,7 +76,7 @@ import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
 import com.android.agrihealth.ui.report.CreateReportErrorDialog
 import com.mr0xf00.easycrop.ImageCropper
-
+import kotlinx.coroutines.launch
 
 enum class CodeType {
   FARMER,
@@ -120,11 +123,13 @@ fun EditProfileScreen(
     onSave: (User) -> Unit = { userViewModel.updateUser(it) },
     onPasswordChange: () -> Unit = {}
 ) {
+  val focusManager = LocalFocusManager.current
 
   val connectionRepository = remember { ConnectionRepository(connectionType = "") }
   val codesViewModel = remember { CodesViewModel(userViewModel, connectionRepository) }
 
-  val user by userViewModel.user.collectAsState()
+  val uiState by userViewModel.uiState.collectAsState()
+  val user = uiState.user
   val userRole = user.role
   val currentUser = user
 
@@ -137,14 +142,28 @@ fun EditProfileScreen(
   val farmerCodes by codesViewModel.farmerCodes.collectAsState()
   val vetCodes by codesViewModel.vetCodes.collectAsState()
 
+  val imageViewModel: ImageViewModel = viewModel()
+
   val createManageOfficeViewModel =
       object : androidx.lifecycle.ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
           return ManageOfficeViewModel(
-              userViewModel = userViewModel, officeRepository = OfficeRepositoryProvider.get())
+              userViewModel = userViewModel,
+              officeRepository = OfficeRepositoryProvider.get(),
+              imageViewModel = imageViewModel)
               as T
         }
       }
+
+  val editProfileViewModel: EditProfileViewModel =
+      viewModel(
+          factory =
+              object : androidx.lifecycle.ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return EditProfileViewModel(officeRepository = OfficeRepositoryProvider.get())
+                      as T
+                }
+              })
 
   val manageOfficeVm: ManageOfficeViewModel = viewModel(factory = createManageOfficeViewModel)
 
@@ -153,15 +172,15 @@ fun EditProfileScreen(
   val snackbarHostState = remember { SnackbarHostState() }
 
   // Local mutable states
-  var firstname by remember { mutableStateOf(user.firstname) }
-  var lastname by remember { mutableStateOf(user.lastname) }
-  var description by remember { mutableStateOf(user.description ?: "") }
-  var address by remember { mutableStateOf(pickedLocation?.name ?: "") }
+  var firstname by rememberSaveable { mutableStateOf(user.firstname) }
+  var lastname by rememberSaveable { mutableStateOf(user.lastname) }
+  var description by rememberSaveable { mutableStateOf(user.description ?: "") }
+  var address by rememberSaveable { mutableStateOf(pickedLocation?.name ?: "") }
 
   // Farmer-specific states
-  var selectedDefaultOffice by remember { mutableStateOf((user as? Farmer)?.defaultOffice) }
-  var expandedVetDropdown by remember { mutableStateOf(false) }
-  var collected by remember { mutableStateOf(user.collected) }
+  var selectedDefaultOffice by rememberSaveable { mutableStateOf((user as? Farmer)?.defaultOffice) }
+  var expandedVetDropdown by rememberSaveable { mutableStateOf(false) }
+  var collected by rememberSaveable { mutableStateOf(user.collected) }
 
   // Specific to dialogs
   var showPhotoPickerDialog by remember { mutableStateOf(false) }
@@ -212,7 +231,9 @@ fun EditProfileScreen(
             },
             modifier = Modifier.testTag(TOP_BAR))
       },
-      snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
+      snackbarHost = {
+        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.imePadding())
+      }) { innerPadding ->
         Column(
             modifier =
                 Modifier
@@ -244,9 +265,7 @@ fun EditProfileScreen(
                   onValueChange = { firstname = it },
                   label = { Text("First Name") },
                   modifier =
-                      Modifier
-                        .fillMaxWidth()
-                        .testTag(EditProfileScreenTestTags.FIRSTNAME_FIELD))
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.FIRSTNAME_FIELD))
 
               Spacer(modifier = Modifier.height(12.dp))
 
@@ -256,9 +275,7 @@ fun EditProfileScreen(
                   onValueChange = { lastname = it },
                   label = { Text("Last Name") },
                   modifier =
-                      Modifier
-                        .fillMaxWidth()
-                        .testTag(EditProfileScreenTestTags.LASTNAME_FIELD))
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LASTNAME_FIELD))
 
               Spacer(modifier = Modifier.height(12.dp))
 
@@ -268,9 +285,7 @@ fun EditProfileScreen(
                   onValueChange = { description = it },
                   label = { Text("Description") },
                   modifier =
-                      Modifier
-                        .fillMaxWidth()
-                        .testTag(EditProfileScreenTestTags.DESCRIPTION_FIELD))
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.DESCRIPTION_FIELD))
 
               if (!user.isGoogleAccount) {
                 Spacer(modifier = Modifier.height(12.dp))
@@ -283,13 +298,14 @@ fun EditProfileScreen(
                     enabled = true,
                     readOnly = true,
                     modifier =
-                        Modifier
-                          .fillMaxWidth()
-                          .testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
+                        Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.PASSWORD_FIELD),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     trailingIcon = {
                       IconButton(
-                          onClick = { onPasswordChange() },
+                          onClick = {
+                            focusManager.clearFocus()
+                            onPasswordChange()
+                          },
                           modifier = Modifier.testTag(PASSWORD_BUTTON)) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit Password")
                           }
@@ -317,16 +333,15 @@ fun EditProfileScreen(
                     }
                   },
                   modifier =
-                      Modifier
-                        .fillMaxWidth()
-                        .testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
               Button(
-                  onClick = onChangeLocation,
+                  onClick = {
+                    focusManager.clearFocus()
+                    onChangeLocation()
+                  },
                   enabled = user !is Vet || isOwner,
                   modifier =
-                      Modifier
-                        .fillMaxWidth()
-                        .testTag(EditProfileScreenTestTags.LOCATION_BUTTON)) {
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LOCATION_BUTTON)) {
                     Text("Change Location")
                   }
 
@@ -371,10 +386,9 @@ fun EditProfileScreen(
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVetDropdown)
                           },
                           modifier =
-                              Modifier
-                                .menuAnchor()
-                                .fillMaxWidth()
-                                .testTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN))
+                              Modifier.menuAnchor()
+                                  .fillMaxWidth()
+                                  .testTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN))
 
                       ExposedDropdownMenu(
                           expanded = expandedVetDropdown,
@@ -385,6 +399,7 @@ fun EditProfileScreen(
                               DropdownMenuItem(
                                   text = { Text(displayName) },
                                   onClick = {
+                                    focusManager.clearFocus()
                                     selectedDefaultOffice = officeId
                                     expandedVetDropdown = false
                                   })
@@ -404,37 +419,26 @@ fun EditProfileScreen(
 
               Spacer(modifier = Modifier.weight(1f))
 
+              val scope = rememberCoroutineScope()
               // Save Changes Button
               Button(
                   onClick = {
-                    val updatedDescription = description.ifBlank { null }
-                    // Construct updated user object
-                    val updatedUser =
-                        when (userRole) {
-                          UserRole.FARMER ->
-                              (user as? Farmer)?.copy(
-                                  firstname = firstname,
-                                  lastname = lastname,
-                                  address = pickedLocation,
-                                  defaultOffice = selectedDefaultOffice,
-                                  description = updatedDescription,
-                                  collected = collected)
-                          UserRole.VET -> {
-                            manageOfficeVm.updateOffice(newAddress = pickedLocation)
-                            (user as? Vet)?.copy(
-                                firstname = firstname,
-                                lastname = lastname,
-                                address = pickedLocation,
-                                description = updatedDescription,
-                                collected = collected)
-                          }
-                        }
-                    updatedUser?.let { onSave(it) }
+                    focusManager.clearFocus()
+                    scope.launch {
+                      val updatedUser =
+                          editProfileViewModel.saveProfileChanges(
+                              user = user,
+                              firstname = firstname,
+                              lastname = lastname,
+                              pickedLocation = pickedLocation,
+                              selectedDefaultOffice = selectedDefaultOffice,
+                              description = description,
+                              collected = collected)
+                      updatedUser?.let { onSave(it) }
+                    }
                   },
                   modifier =
-                      Modifier
-                        .fillMaxWidth()
-                        .testTag(EditProfileScreenTestTags.SAVE_BUTTON)) {
+                      Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.SAVE_BUTTON)) {
                     Text("Save Changes")
                   }
             }
@@ -666,11 +670,10 @@ fun ActiveCodeList(type: CodeType, codes: List<String>, snackbarHostState: Snack
     // Title bar
     Row(
         modifier =
-            Modifier
-              .fillMaxWidth()
-              .clickable { expanded = !expanded }
-              .padding(horizontal = 12.dp, vertical = 10.dp)
-              .testTag(EditProfileScreenTestTags.dropdownTag(type.name)),
+            Modifier.fillMaxWidth()
+                .clickable { expanded = !expanded }
+                .padding(horizontal = 12.dp, vertical = 10.dp)
+                .testTag(EditProfileScreenTestTags.dropdownTag(type.name)),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically) {
           Text(text = type.displayName())
@@ -683,14 +686,10 @@ fun ActiveCodeList(type: CodeType, codes: List<String>, snackbarHostState: Snack
 
     // Codes
     if (expanded) {
-      Column(modifier = Modifier
-        .padding(vertical = 4.dp)
-        .fillMaxWidth()) {
+      Column(modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth()) {
         codes.forEach { code ->
           Row(
-              modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+              modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
               verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = code,
@@ -724,9 +723,7 @@ fun CopyToClipboardButton(toCopy: String, snackbarHostState: SnackbarHostState) 
         clipboardManager.setText(AnnotatedString(toCopy))
         copied = true
       },
-      modifier = Modifier
-        .size(32.dp)
-        .testTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)) {
+      modifier = Modifier.size(32.dp).testTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)) {
         Icon(
             imageVector = Icons.Default.ContentCopy,
             contentDescription = "Copy to clipboard",

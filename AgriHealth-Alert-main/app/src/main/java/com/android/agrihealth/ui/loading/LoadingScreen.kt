@@ -5,10 +5,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,12 +29,12 @@ fun LoadingOverlay(isLoading: Boolean, content: @Composable () -> Unit) {
       Box(
           modifier =
               Modifier.fillMaxSize()
-                  .background(Color.Black.copy(alpha = 0.5f))
+                  .background(MaterialTheme.colorScheme.background.copy(alpha = 0.6f))
                   .testTag(LoadingTestTags.SCRIM)
                   .zIndex(100f),
           contentAlignment = Alignment.Center) {
             CircularProgressIndicator(
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 strokeWidth = 6.dp,
                 modifier = Modifier.size(64.dp).testTag(LoadingTestTags.SPINNER))
           }

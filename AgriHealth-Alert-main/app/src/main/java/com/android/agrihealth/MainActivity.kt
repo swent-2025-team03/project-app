@@ -7,23 +7,28 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.view.WindowCompat.setDecorFitsSystemWindows
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -41,8 +46,10 @@ import com.android.agrihealth.data.model.device.location.LocationRepositoryProvi
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.device.notifications.NotificationHandlerProvider
 import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.location.LocationPicker
+import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.data.model.user.copyCommon
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.alert.AlertViewModel
@@ -59,6 +66,7 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.office.CreateOfficeScreen
 import com.android.agrihealth.ui.office.ManageOfficeScreen
+import com.android.agrihealth.ui.office.ManageOfficeViewModel
 import com.android.agrihealth.ui.office.ViewOfficeScreen
 import com.android.agrihealth.ui.office.ViewOfficeViewModel
 import com.android.agrihealth.ui.overview.OverviewScreen
@@ -80,17 +88,61 @@ import com.android.agrihealth.ui.user.ViewUserViewModel
 import com.android.agrihealth.ui.user.defaultUser
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+data class LocationPickedUIState(
+    val lat: Double = 0.0,
+    val lng: Double = 0.0,
+    val location: Location? = null
+)
+
+/**
+ * ViewModel holding the state of the Location showed by fields and provided by the locationPicker.
+ */
+class LocationPickedViewModel(private val initLocation: Location?) : ViewModel() {
+
+  private val _uiState = MutableStateFlow(LocationPickedUIState())
+  val uiState: StateFlow<LocationPickedUIState> = _uiState.asStateFlow()
+
+  init {
+    setLocation(initLocation)
+  }
+
+  fun setLatLng(lat: Double, lng: Double) {
+    _uiState.value = _uiState.value.copy(lat = lat, lng = lng)
+  }
+
+  fun onAddress(address: String) {
+    val lat = _uiState.value.lat
+    val lng = _uiState.value.lng
+    _uiState.value = _uiState.value.copy(location = Location(lat, lng, address))
+  }
+
+  fun setLocation(loc: Location?) {
+    _uiState.value = _uiState.value.copy(location = loc)
+  }
+}
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    setDecorFitsSystemWindows(window, true)
 
     setContent {
       AgriHealthAppTheme {
+        val focusManager = LocalFocusManager.current
+        val clearFocusModifier =
+            Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) }
         // A surface container using the 'background' color from the theme
         Surface(
-            modifier = Modifier.fillMaxSize().semantics { testTag = C.Tag.main_screen_container },
+            modifier =
+                clearFocusModifier
+                    .fillMaxSize()
+                    .semantics { testTag = C.Tag.main_screen_container }
+                    .navigationBarsPadding(),
             color = MaterialTheme.colorScheme.background) {
               AgriHealthApp()
             }
@@ -112,16 +164,24 @@ fun AgriHealthApp(
   val userViewModel: UserViewModel = viewModel()
 
   val overviewViewModel: OverviewViewModel = viewModel()
-
   // Location services: Use the ViewModel and not the repository
   LocationRepositoryProvider.repository = LocationRepository(context)
   val locationViewModel: LocationViewModel = viewModel()
 
   var reloadReports by remember { mutableStateOf(false) }
-  val currentUser by userViewModel.user.collectAsState()
+  val currentUser = userViewModel.uiState.collectAsState().value.user
   val currentUserId = currentUser.uid
   val currentUserRole = currentUser.role
   val currentUserEmail = currentUser.email
+
+  val locationPickedFactory =
+      object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+          return LocationPickedViewModel(initLocation = currentUser.address) as T
+        }
+      }
+  val locationPickedViewModel: LocationPickedViewModel = viewModel(factory = locationPickedFactory)
+  val locationState = locationPickedViewModel.uiState.collectAsState()
 
   // Notification handling, setup device
   val notificationHandler = NotificationHandlerProvider.handler
@@ -139,13 +199,6 @@ fun AgriHealthApp(
           }
         }
       })
-
-  var pickedLat = remember { 0.0 }
-  var pickedLng = remember { 0.0 }
-
-  val pickedLocation = remember { mutableStateOf(currentUser.address) }
-
-  LaunchedEffect(currentUser.address) { pickedLocation.value = currentUser.address }
 
   val startDestination = remember {
     when {
@@ -227,22 +280,23 @@ fun AgriHealthApp(
         )
       }
       composable(Screen.AddReport.route) {
+        val imageVM = viewModel<ImageViewModel>()
         val createReportViewModel =
             object : androidx.lifecycle.ViewModelProvider.Factory {
               override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return AddReportViewModel(userId = currentUserId) as T
+                return AddReportViewModel(userId = currentUserId, imageViewModel = imageVM) as T
               }
             }
         val addReportViewModel: AddReportViewModel = viewModel(factory = createReportViewModel)
 
         AddReportScreen(
             onBack = {
-              pickedLocation.value = currentUser.address
+              locationPickedViewModel.setLocation(currentUser.address)
               navigationActions.goBack()
             },
             userViewModel = userViewModel,
             onCreateReport = { reloadReports = !reloadReports },
-            pickedLocation = pickedLocation.value,
+            pickedLocation = locationState.value.location,
             onChangeLocation = { navigationActions.navigateTo(Screen.LocationPicker) },
             addReportViewModel = addReportViewModel,
         )
@@ -256,21 +310,18 @@ fun AgriHealthApp(
               }
             }
         val mapViewModel: MapViewModel =
-            viewModel(factory = createMapViewModel, key = pickedLocation.value.toString())
+            viewModel(factory = createMapViewModel, key = locationState.value.location.toString())
 
         LocationPermissionsRequester(
-            onComplete = { mapViewModel.setStartingLocation(pickedLocation.value) })
+            onComplete = { mapViewModel.setStartingLocation(locationState.value.location) })
 
         LocationPicker(
             navigationActions = navigationActions,
             mapViewModel = mapViewModel,
-            onLatLng = { lat, lng ->
-              pickedLat = lat
-              pickedLng = lng
-            },
+            onLatLng = { lat, lng -> locationPickedViewModel.setLatLng(lat, lng) },
             onAddress = { address ->
               if (address != null) {
-                pickedLocation.value = Location(pickedLat, pickedLng, address)
+                locationPickedViewModel.onAddress(address)
                 navigationActions.goBack()
               }
             })
@@ -299,7 +350,13 @@ fun AgriHealthApp(
 
             val overviewUiState by overviewViewModel.uiState.collectAsState()
             val sortedAlerts = overviewUiState.sortedAlerts
-            val alertViewModel = AlertViewModel(sortedAlerts, alertId)
+            val alertFactory =
+                object : ViewModelProvider.Factory {
+                  override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return AlertViewModel(sortedAlerts, alertId) as T
+                  }
+                }
+            val alertViewModel = viewModel<AlertViewModel>(factory = alertFactory)
 
             AlertViewScreen(navigationActions = navigationActions, viewModel = alertViewModel)
           }
@@ -348,12 +405,33 @@ fun AgriHealthApp(
             onManageOffice = { navigationActions.navigateTo(Screen.ManageOffice) })
       }
       composable(Screen.ManageOffice.route) {
+        val imageViewModel: ImageViewModel = viewModel()
+        val manageOfficeViewModel: ManageOfficeViewModel =
+            viewModel(
+                factory =
+                    object : ViewModelProvider.Factory {
+                      override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return ManageOfficeViewModel(
+                            userViewModel, OfficeRepositoryFirestore(), imageViewModel)
+                            as T
+                      }
+                    })
         ManageOfficeScreen(
             navigationActions = navigationActions,
             userViewModel = userViewModel,
+            manageOfficeViewModel = manageOfficeViewModel,
             onGoBack = { navigationActions.goBack() },
             onCreateOffice = { navigationActions.navigateTo(Screen.CreateOffice) },
-            onJoinOffice = { navigationActions.navigateTo(Screen.ClaimCode(VET_TO_OFFICE)) })
+            onJoinOffice = { navigationActions.navigateTo(Screen.ClaimCode(VET_TO_OFFICE)) },
+            codesVmFactory = {
+              object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return CodesViewModel(
+                      userViewModel, ConnectionRepositoryProvider.vetToOfficeRepository)
+                      as T
+                }
+              }
+            })
       }
       composable(Screen.CreateOffice.route) {
         CreateOfficeScreen(
@@ -369,14 +447,14 @@ fun AgriHealthApp(
         EditProfileScreen(
             userViewModel = userViewModel,
             onGoBack = {
-              pickedLocation.value = currentUser.address
+              locationPickedViewModel.setLocation(currentUser.address)
               navigationActions.navigateTo(Screen.Profile)
             },
             onSave = { updatedUser ->
               userViewModel.updateUser(updatedUser)
               navigationActions.navigateTo(Screen.Profile)
             },
-            pickedLocation = pickedLocation.value,
+            pickedLocation = locationState.value.location,
             onChangeLocation = { navigationActions.navigateTo(Screen.LocationPicker) },
             onPasswordChange = { navigationActions.navigateTo(Screen.ChangePassword) })
       }
@@ -416,18 +494,20 @@ fun AgriHealthApp(
           val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull()
           val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull()
           val sourceReport = backStackEntry.arguments?.getString("reportId")
+          val sourceAlert = backStackEntry.arguments?.getString("alertId")
 
           val location = if (lat != null && lng != null) Location(lat, lng) else null
           val mapViewModel =
               MapViewModel(
                   locationViewModel = locationViewModel,
                   selectedReportId = sourceReport,
+                  selectedAlertId = sourceAlert,
                   startingPosition = location,
                   userId = currentUserId)
           MapScreen(
               mapViewModel = mapViewModel,
               navigationActions = navigationActions,
-              isViewedFromOverview = (sourceReport == null),
+              isViewedFromOverview = (sourceReport == null && sourceAlert == null),
               forceStartingPosition = (location != null))
         }
 

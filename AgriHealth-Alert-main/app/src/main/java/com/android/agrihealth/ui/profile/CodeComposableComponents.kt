@@ -39,7 +39,10 @@ fun ClaimCodeScreen(
   val snackbarHostState = remember { SnackbarHostState() }
 
   val claimMessage by codesViewModel.claimMessage.collectAsState()
-  LaunchedEffect(claimMessage) { claimMessage?.let { snackbarHostState.showSnackbar(it) } }
+  LaunchedEffect(claimMessage) {
+    claimMessage?.let { snackbarHostState.showSnackbar(it) }
+    codesViewModel.resetClaimMessage()
+  }
 
   var code by remember { mutableStateOf("") }
 
@@ -54,7 +57,9 @@ fun ClaimCodeScreen(
             },
             modifier = Modifier.testTag(TOP_BAR))
       },
-      snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
+      snackbarHost = {
+        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.imePadding())
+      }) { innerPadding ->
         Column(
             modifier =
                 Modifier.padding(innerPadding)
@@ -124,7 +129,7 @@ fun GenerateCode(
         horizontalArrangement = Arrangement.Center) {
           if (!isError) {
             Text(
-                "Generated Code: $code",
+                if (code?.length == 6) "Generated Code: $code" else code!!,
                 style = MaterialTheme.typography.bodyLarge,
                 modifier =
                     modifier

@@ -2,31 +2,39 @@ package com.android.agrihealth.testutil
 
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.repository.ReportRepository
+import kotlinx.coroutines.delay
 
-/**
- * Generic in-memory implementation of [com.android.agrihealth.data.repository.ReportRepository] for
- * local dev and tests.
- */
-open class InMemoryReportRepository(initialReports: List<Report> = emptyList()) : ReportRepository {
+open class InMemoryReportRepository(
+    initialReports: List<Report> = emptyList(),
+    private val delayMs: Long = 0L
+) : ReportRepository {
 
   private val reports: MutableList<Report> = initialReports.toMutableList()
   private var nextId = 0
 
-  override fun getNewReportId(): String = (nextId++).toString()
+  override fun getNewReportId(): String {
+    return (nextId++).toString()
+  }
 
-  override suspend fun getAllReports(userId: String): List<Report> =
-      reports.filter { it.farmerId == userId || it.officeId == userId }
+  override suspend fun getAllReports(userId: String): List<Report> {
+    delay(delayMs)
+    return reports.filter { it.farmerId == userId || it.officeId == userId }
+  }
 
-  override suspend fun getReportById(reportId: String): Report? =
-      reports.find { it.id == reportId }
-          ?: throw NoSuchElementException("InMemoryReportRepository: Report not found")
+  override suspend fun getReportById(reportId: String): Report? {
+    delay(delayMs)
+    return reports.find { it.id == reportId }
+        ?: throw NoSuchElementException("InMemoryReportRepository: Report not found")
+  }
 
   override suspend fun addReport(report: Report) {
+    delay(delayMs)
     reports.removeAll { it.id == report.id }
     reports.add(report)
   }
 
   override suspend fun editReport(reportId: String, newReport: Report) {
+    delay(delayMs)
     val index = reports.indexOfFirst { it.id == reportId }
     if (index != -1) {
       reports[index] = newReport
@@ -36,6 +44,7 @@ open class InMemoryReportRepository(initialReports: List<Report> = emptyList()) 
   }
 
   override suspend fun deleteReport(reportId: String) {
+    delay(delayMs)
     val removed = reports.removeIf { it.id == reportId }
     if (!removed) {
       throw NoSuchElementException("InMemoryReportRepository: Report not found")
@@ -43,11 +52,11 @@ open class InMemoryReportRepository(initialReports: List<Report> = emptyList()) 
   }
 
   override suspend fun assignReportToVet(reportId: String, vetId: String) {
-    TODO("Not yet implemented")
+    delay(delayMs)
   }
 
   override suspend fun unassignReport(reportId: String) {
-    TODO("Not yet implemented")
+    delay(delayMs)
   }
 
   fun reset(newReports: List<Report> = emptyList()) {
