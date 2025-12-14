@@ -15,13 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.StatusColors
-import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
-import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.ui.common.AuthorName
+import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.navigation.Screen
@@ -60,34 +58,23 @@ fun ManageOfficeScreen(
     onGoBack: () -> Unit = {},
     onCreateOffice: () -> Unit = {},
     onJoinOffice: () -> Unit = {},
+    manageOfficeVmFactory: () -> ViewModelProvider.Factory,
+    codesVmFactory: () -> ViewModelProvider.Factory,
 ) {
   val snackbarHostState = remember { SnackbarHostState() }
-  val manageOfficeVm: ManageOfficeViewModel =
-      viewModel(
-          factory =
-              object : ViewModelProvider.Factory {
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                  return ManageOfficeViewModel(userViewModel, OfficeRepositoryFirestore()) as T
-                }
-              })
-  val connectionVm: CodesViewModel =
-      viewModel(
-          factory =
-              object : ViewModelProvider.Factory {
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                  return CodesViewModel(
-                      userViewModel, ConnectionRepositoryProvider.vetToOfficeRepository)
-                      as T
-                }
-              })
+  val manageOfficeVm: ManageOfficeViewModel = viewModel(factory = manageOfficeVmFactory())
+
+  val connectionVm: CodesViewModel = viewModel(factory = codesVmFactory())
 
   val uiState by manageOfficeVm.uiState.collectAsState()
 
+  val currentUser = userViewModel.uiState.collectAsState().value.user
+
   var showLeaveDialog by remember { mutableStateOf(false) }
 
-  val isOwner = uiState.office?.ownerId == userViewModel.user.value.uid
+  val isOwner = uiState.office?.ownerId == currentUser.uid
 
-  LaunchedEffect(userViewModel.user.value) { manageOfficeVm.loadOffice() }
+  LaunchedEffect(currentUser) { manageOfficeVm.loadOffice() }
   LaunchedEffect(uiState.error) {
     uiState.error?.let { snackbarHostState.showSnackbar(uiState.error ?: "") }
   }
@@ -104,115 +91,121 @@ fun ManageOfficeScreen(
             modifier = Modifier.testTag(TOP_BAR))
       },
       snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
-        Column(
-            modifier =
-                Modifier.padding(innerPadding).padding(16.dp).verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top) {
-              HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
-              if (uiState.error == null) {
-                if (uiState.office == null) {
-                  Button(
-                      onClick = onCreateOffice,
-                      modifier = Modifier.fillMaxWidth().testTag(CREATE_OFFICE_BUTTON)) {
-                        Text("Create My Office")
-                      }
-
-                  Button(
-                      onClick = onJoinOffice,
-                      modifier = Modifier.fillMaxWidth().testTag(JOIN_OFFICE_BUTTON)) {
-                        Text("Join an Office")
-                      }
-                } else {
-                  OutlinedTextField(
-                      value = if (isOwner) uiState.editableName else uiState.office!!.name,
-                      onValueChange = { if (isOwner) manageOfficeVm.onNameChange(it) },
-                      label = { Text("Office Name") },
-                      enabled = isOwner,
-                      modifier = Modifier.fillMaxWidth().testTag(OFFICE_NAME))
-
-                  OutlinedTextField(
-                      value =
-                          if (isOwner) uiState.editableDescription
-                          else (uiState.office!!.description ?: ""),
-                      onValueChange = { if (isOwner) manageOfficeVm.onDescriptionChange(it) },
-                      label = { Text("Description") },
-                      enabled = isOwner,
-                      modifier = Modifier.fillMaxWidth().testTag(OFFICE_DESCRIPTION))
-
-                  OutlinedTextField(
-                      value = uiState.office!!.address?.name ?: "",
-                      onValueChange = { if (isOwner) manageOfficeVm.onAddressChange(it) },
-                      singleLine = true,
-                      readOnly = true,
-                      label = { Text("Address") },
-                      enabled = isOwner,
-                      modifier = Modifier.fillMaxWidth().testTag(OFFICE_ADDRESS))
-
-                  Spacer(modifier = Modifier.height(16.dp))
-
-                  Text("Vets in this office:", style = MaterialTheme.typography.titleMedium)
-
-                  LazyColumn(
-                      modifier =
-                          Modifier.fillMaxWidth().heightIn(max = 300.dp).testTag(OFFICE_VET_LIST)) {
-                        items(uiState.office!!.vets) { vetId ->
-                          AuthorName(
-                              vetId,
-                              onClick = { navigationActions.navigateTo(Screen.ViewUser(vetId)) })
+        LoadingOverlay(isLoading = uiState.isLoading) {
+          Column(
+              modifier =
+                  Modifier.padding(innerPadding)
+                      .padding(16.dp)
+                      .verticalScroll(rememberScrollState()),
+              horizontalAlignment = Alignment.CenterHorizontally,
+              verticalArrangement = Arrangement.Top) {
+                HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
+                if (uiState.error == null) {
+                  if (uiState.office == null) {
+                    Button(
+                        onClick = onCreateOffice,
+                        modifier = Modifier.fillMaxWidth().testTag(CREATE_OFFICE_BUTTON)) {
+                          Text("Create My Office")
                         }
-                      }
-
-                  Spacer(modifier = Modifier.height(16.dp))
-
-                  if (isOwner) {
-                    GenerateCode(
-                        codesViewModel = connectionVm,
-                        snackbarHostState = snackbarHostState,
-                        Modifier.align(Alignment.CenterHorizontally))
-
-                    Spacer(modifier = Modifier.height(8.dp))
 
                     Button(
-                        onClick = { manageOfficeVm.updateOffice() },
-                        modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),
-                    ) {
-                      Text("Save Changes")
-                    }
-                  }
+                        onClick = onJoinOffice,
+                        modifier = Modifier.fillMaxWidth().testTag(JOIN_OFFICE_BUTTON)) {
+                          Text("Join an Office")
+                        }
+                  } else {
+                    OutlinedTextField(
+                        value = if (isOwner) uiState.editableName else uiState.office!!.name,
+                        onValueChange = { if (isOwner) manageOfficeVm.onNameChange(it) },
+                        label = { Text("Office Name") },
+                        enabled = isOwner,
+                        modifier = Modifier.fillMaxWidth().testTag(OFFICE_NAME))
 
-                  OutlinedButton(
-                      onClick = { showLeaveDialog = true },
-                      colors =
-                          ButtonDefaults.outlinedButtonColors(contentColor = StatusColors().spam),
-                      border = BorderStroke(1.dp, StatusColors().spam),
-                      modifier = Modifier.fillMaxWidth().testTag(LEAVE_OFFICE_BUTTON)) {
-                        Text("Leave My Office")
+                    OutlinedTextField(
+                        value =
+                            if (isOwner) uiState.editableDescription
+                            else (uiState.office!!.description ?: ""),
+                        onValueChange = { if (isOwner) manageOfficeVm.onDescriptionChange(it) },
+                        label = { Text("Description") },
+                        enabled = isOwner,
+                        modifier = Modifier.fillMaxWidth().testTag(OFFICE_DESCRIPTION))
+
+                    OutlinedTextField(
+                        value = uiState.office!!.address?.name ?: "",
+                        onValueChange = { if (isOwner) manageOfficeVm.onAddressChange(it) },
+                        singleLine = true,
+                        readOnly = true,
+                        label = { Text("Address") },
+                        enabled = isOwner,
+                        modifier = Modifier.fillMaxWidth().testTag(OFFICE_ADDRESS))
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text("Vets in this office:", style = MaterialTheme.typography.titleMedium)
+
+                    LazyColumn(
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .heightIn(max = 300.dp)
+                                .testTag(OFFICE_VET_LIST)) {
+                          items(uiState.office!!.vets) { vetId ->
+                            AuthorName(
+                                vetId,
+                                onClick = { navigationActions.navigateTo(Screen.ViewUser(vetId)) })
+                          }
+                        }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    if (isOwner) {
+                      GenerateCode(
+                          codesViewModel = connectionVm,
+                          snackbarHostState = snackbarHostState,
+                          Modifier.align(Alignment.CenterHorizontally))
+
+                      Spacer(modifier = Modifier.height(8.dp))
+
+                      Button(
+                          onClick = { manageOfficeVm.updateOffice() },
+                          modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),
+                      ) {
+                        Text("Save Changes")
                       }
-                  // TODO: improve leave button permissions; currently only owners can trigger
-                  // dialog
+                    }
 
-                  if (showLeaveDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showLeaveDialog = false },
-                        title = { Text("Leave Office?") },
-                        text = { Text("Are you sure you want to leave this office?") },
-                        confirmButton = {
-                          TextButton(
-                              onClick = {
-                                showLeaveDialog = false
-                                manageOfficeVm.leaveOffice(onSuccess = onGoBack)
-                              },
-                              modifier = Modifier.testTag(CONFIRM_LEAVE)) {
-                                Text("Leave")
-                              }
-                        },
-                        dismissButton = {
-                          TextButton(onClick = { showLeaveDialog = false }) { Text("Cancel") }
-                        })
+                    OutlinedButton(
+                        onClick = { showLeaveDialog = true },
+                        colors =
+                            ButtonDefaults.outlinedButtonColors(contentColor = StatusColors().spam),
+                        border = BorderStroke(1.dp, StatusColors().spam),
+                        modifier = Modifier.fillMaxWidth().testTag(LEAVE_OFFICE_BUTTON)) {
+                          Text("Leave My Office")
+                        }
+                    // TODO: improve leave button permissions; currently only owners can trigger
+                    // dialog
+
+                    if (showLeaveDialog) {
+                      AlertDialog(
+                          onDismissRequest = { showLeaveDialog = false },
+                          title = { Text("Leave Office?") },
+                          text = { Text("Are you sure you want to leave this office?") },
+                          confirmButton = {
+                            TextButton(
+                                onClick = {
+                                  showLeaveDialog = false
+                                  manageOfficeVm.leaveOffice(onSuccess = onGoBack)
+                                },
+                                modifier = Modifier.testTag(CONFIRM_LEAVE)) {
+                                  Text("Leave")
+                                }
+                          },
+                          dismissButton = {
+                            TextButton(onClick = { showLeaveDialog = false }) { Text("Cancel") }
+                          })
+                    }
                   }
                 }
               }
-            }
+        }
       }
 }

@@ -16,6 +16,7 @@ import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.repository.ReportRepository
 import com.android.agrihealth.data.repository.ReportRepositoryProvider
+import com.android.agrihealth.ui.loading.withLoadingState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,7 +34,9 @@ data class OverviewUIState(
     val farmerOptions: List<String> = emptyList(),
     val filteredReports: List<Report> = emptyList(),
     val sortedAlerts: List<AlertUiState> = emptyList(),
-    val selectedAssignmentFilter: AssignmentFilter? = null
+    val selectedAssignmentFilter: AssignmentFilter? = null,
+    val isAlertLoading: Boolean = false,
+    val isReportLoading: Boolean = false,
 )
 
 enum class AssignmentFilter {
@@ -72,28 +75,30 @@ class OverviewViewModel(
    */
   override fun loadReports(user: User) {
     viewModelScope.launch {
-      try {
-        val reports = reportRepository.getAllReports(user.uid).sortedByDescending { it.createdAt }
-        val officeOptions = reports.map { it.officeId }.distinct()
-        val farmerOptions = reports.map { it.farmerId }.distinct()
-        val filtered =
-            applyFiltersForReports(
-                reports,
-                _uiState.value.selectedStatus,
-                _uiState.value.selectedOffice,
-                _uiState.value.selectedFarmer,
-                _uiState.value.selectedAssignmentFilter,
-                currentUserId = user.uid)
+      _uiState.withLoadingState({ state, isLoading -> state.copy(isReportLoading = isLoading) }) {
+        try {
+          val reports = reportRepository.getAllReports(user.uid).sortedByDescending { it.createdAt }
+          val officeOptions = reports.map { it.officeId }.distinct()
+          val farmerOptions = reports.map { it.farmerId }.distinct()
+          val filtered =
+              applyFiltersForReports(
+                  reports,
+                  _uiState.value.selectedStatus,
+                  _uiState.value.selectedOffice,
+                  _uiState.value.selectedFarmer,
+                  _uiState.value.selectedAssignmentFilter,
+                  currentUserId = user.uid)
 
-        _uiState.value =
-            _uiState.value.copy(
-                reports = reports,
-                officeOptions = officeOptions,
-                farmerOptions = farmerOptions,
-                filteredReports = filtered)
+          _uiState.value =
+              _uiState.value.copy(
+                  reports = reports,
+                  officeOptions = officeOptions,
+                  farmerOptions = farmerOptions,
+                  filteredReports = filtered)
 
-        currentUserId = user.uid
-      } catch (_: Exception) {}
+          currentUserId = user.uid
+        } catch (_: Exception) {}
+      }
     }
   }
 
@@ -202,12 +207,14 @@ class OverviewViewModel(
    */
   override fun loadAlerts(user: User) {
     viewModelScope.launch {
-      try {
-        val alerts = alertRepository.getAlerts()
-        _uiState.value = _uiState.value.copy(alerts = alerts)
-        updateSortedAlerts(user)
-      } catch (e: Exception) {
-        _uiState.value = _uiState.value.copy(alerts = emptyList(), sortedAlerts = emptyList())
+      _uiState.withLoadingState({ state, isLoading -> state.copy(isAlertLoading = isLoading) }) {
+        try {
+          val alerts = alertRepository.getAlerts()
+          _uiState.value = _uiState.value.copy(alerts = alerts)
+          updateSortedAlerts(user)
+        } catch (_: Exception) {
+          _uiState.value = _uiState.value.copy(alerts = emptyList(), sortedAlerts = emptyList())
+        }
       }
     }
   }

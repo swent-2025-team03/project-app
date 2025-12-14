@@ -18,6 +18,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testutil.InMemoryReportRepository
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -278,6 +279,33 @@ class PlannerScreenTest {
     composeTestRule
         .onNodeWithTag(PlannerScreenTestTags.reportCardTag(report1.id))
         .assertIsDisplayed()
+  }
+
+  @Test
+  fun planner_loadReports_showsAndHidesLoadingOverlay() = runTest {
+    val report = PlannerTestReportsData.report1.copy(startTime = today.atTime(9, 0))
+    val delayedRepo =
+        InMemoryReportRepository(
+            initialReports = listOf(report), delayMs = TestConstants.DEFAULT_TIMEOUT)
+
+    val viewModel = PlannerViewModel(reportRepository = delayedRepo)
+
+    composeTestRule.setContent {
+      PlannerScreen(
+          user = PlannerTestReportsData.farmer,
+          reportId = null,
+          goBack = {},
+          tabClicked = {},
+          reportClicked = {},
+          plannerVM = viewModel,
+      )
+    }
+
+    composeTestRule.assertOverlayDuringLoading(
+        isLoading = { viewModel.uiState.value.isLoading },
+        timeoutStart = TestConstants.LONG_TIMEOUT,
+        timeoutEnd = TestConstants.LONG_TIMEOUT,
+    )
   }
 
   @Test

@@ -11,6 +11,7 @@ import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.FakeOfficeRepository
 import com.android.agrihealth.testutil.FakeUserRepository
+import com.android.agrihealth.testutil.TestConstants
 import org.junit.Rule
 import org.junit.Test
 
@@ -268,5 +269,49 @@ class ViewUserScreenTest {
     composeTestRule.onNodeWithTag(ViewUserScreenTestTags.NAME_FIELD).assertExists()
     composeTestRule.onNodeWithTag(ViewUserScreenTestTags.ROLE_FIELD).assertExists()
     composeTestRule.onNodeWithTag(ViewUserScreenTestTags.CONTENT_COLUMN).assertExists()
+  }
+
+  @Test
+  fun viewUserScreen_showsAndHidesLoadingOverlay() {
+    val fakeUser =
+        Farmer(
+            uid = "user1",
+            firstname = "John",
+            lastname = "Doe",
+            email = "email",
+            address = null,
+            linkedOffices = emptyList(),
+            defaultOffice = null,
+            isGoogleAccount = false)
+
+    val userRepo =
+        FakeUserRepository(targetUser = fakeUser, delayMs = TestConstants.DEFAULT_TIMEOUT)
+    val officeRepo = FakeOfficeRepository()
+
+    val vm =
+        object :
+            ViewUserViewModel(
+                targetUserId = fakeUser.uid,
+                userRepository = userRepo,
+                officeRepository = officeRepo) {}
+
+    composeTestRule.setContent {
+      MaterialTheme {
+        ViewUserScreen(
+            viewModel = vm,
+            onBack = {},
+        )
+      }
+    }
+
+    composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
+      vm.uiState.value is ViewUserUiState.Loading
+    }
+    composeTestRule.onNodeWithTag(ViewUserScreenTestTags.LOADING_INDICATOR).assertIsDisplayed()
+
+    composeTestRule.waitUntil(TestConstants.SUPER_LONG_TIMEOUT) {
+      vm.uiState.value !is ViewUserUiState.Loading
+    }
+    composeTestRule.onNodeWithTag(ViewUserScreenTestTags.LOADING_INDICATOR).assertDoesNotExist()
   }
 }

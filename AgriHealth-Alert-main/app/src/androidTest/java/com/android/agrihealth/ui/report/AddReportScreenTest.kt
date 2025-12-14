@@ -25,8 +25,10 @@ import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.QuestionForm
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testutil.FakeAddReportViewModel
 import com.android.agrihealth.testutil.FakeUserViewModel
+import com.android.agrihealth.testutil.InMemoryReportRepository
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.user.UserViewModelContract
 import com.android.agrihealth.ui.utils.ImagePickerTestTags
@@ -56,8 +58,8 @@ private fun fakeFarmerViewModel(): UserViewModelContract =
             defaultOffice = linkedOffices.keys.toList().first(),
         ))
 
-// Helper addReportViewModel used to simulate a specific result of creating a report (i.e success,
-// validation error, ...)
+// Helper AddReportViewModel used to simulate a specific result of creating a report
+// (i.e success, validation error, ...)
 private class ResultFakeAddReportViewModel(
     private val resultToReturn: CreateReportResult,
 ) : AddReportViewModelContract {
@@ -68,6 +70,7 @@ private class ResultFakeAddReportViewModel(
               description = "description",
               questionForms = emptyList(),
           ))
+
   override val uiState = _uiState
 
   override fun switchCollected() {}
@@ -125,69 +128,77 @@ class AddReportScreenTest {
   }
 
   // Manually fills a report
-  private fun fillReportWith(title: String, description: String, doSubmitReport: Boolean) {
+  private fun fillReportWith(
+      title: String,
+      description: String,
+      doSubmitReport: Boolean,
+      officeId: String? = null,
+      address: Location? = null,
+      viewModel: AddReportViewModel? = null,
+  ) {
     composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput(title)
     composeRule
         .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
         .performTextInput(description)
+
     val scrollContainer = composeRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
     var index = 0
     while (true) {
       composeRule.waitForIdle()
-      val openNode =
-          composeRule
-              .onAllNodesWithTag("QUESTION_${index}_OPEN")
-              .fetchSemanticsNodes()
-              .firstOrNull()
-      if (openNode != null) {
-        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_OPEN"))
-        composeRule.onNodeWithTag("QUESTION_${index}_OPEN").performTextInput("answer $index")
-        index++
-        continue
+
+      val openTag = "QUESTION_${index}_OPEN"
+      val yesNoTag = "QUESTION_${index}_YESORNO"
+      val mcqTag = "QUESTION_${index}_MCQ"
+      val mcqOTag = "QUESTION_${index}_MCQO"
+
+      when {
+        composeRule.onAllNodesWithTag(openTag).fetchSemanticsNodes().firstOrNull() != null -> {
+          scrollContainer.performScrollToNode(hasTestTag(openTag))
+          composeRule.onNodeWithTag(openTag).performTextInput("answer $index")
+        }
+        composeRule.onAllNodesWithTag(yesNoTag).fetchSemanticsNodes().firstOrNull() != null -> {
+          scrollContainer.performScrollToNode(hasTestTag(yesNoTag))
+          composeRule.onAllNodesWithTag(yesNoTag)[0].performClick()
+        }
+        composeRule.onAllNodesWithTag(mcqTag).fetchSemanticsNodes().firstOrNull() != null -> {
+          scrollContainer.performScrollToNode(hasTestTag(mcqTag))
+          composeRule.onAllNodesWithTag(mcqTag)[0].performClick()
+        }
+        composeRule.onAllNodesWithTag(mcqOTag).fetchSemanticsNodes().firstOrNull() != null -> {
+          scrollContainer.performScrollToNode(hasTestTag(mcqOTag))
+          composeRule.onAllNodesWithTag(mcqOTag)[0].performClick()
+        }
+        else -> break
       }
-      val yesNode =
-          composeRule
-              .onAllNodesWithTag("QUESTION_${index}_YESORNO")
-              .fetchSemanticsNodes()
-              .firstOrNull()
-      if (yesNode != null) {
-        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_YESORNO"))
-        val options = composeRule.onAllNodesWithTag("QUESTION_${index}_YESORNO")
-        options[0].performClick()
-        index++
-        continue
-      }
-      val mcqNode =
-          composeRule.onAllNodesWithTag("QUESTION_${index}_MCQ").fetchSemanticsNodes().firstOrNull()
-      if (mcqNode != null) {
-        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQ"))
-        val options = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQ")
-        options[0].performClick()
-        index++
-        continue
-      }
-      val mcqONode =
-          composeRule
-              .onAllNodesWithTag("QUESTION_${index}_MCQO")
-              .fetchSemanticsNodes()
-              .firstOrNull()
-      if (mcqONode != null) {
-        scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQO"))
-        val options = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQO")
-        options[0].performClick()
-        index++
-        continue
-      }
-      break
+
+      index++
+    }
+
+    if (officeId != null) {
+      scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
+      composeRule.onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN).performClick()
+
+      composeRule
+          .onNodeWithTag(
+              AddReportScreenTestTags.getTestTagForOffice(officeId),
+              useUnmergedTree = true,
+          )
+          .performClick()
+
+      viewModel?.setOffice(officeId)
+    }
+
+    if (address != null && viewModel != null) {
+      viewModel.setAddress(address)
     }
 
     if (doSubmitReport) {
-      composeRule
-          .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-          .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
+      scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
       composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
     }
   }
+
+  // --- Tests ---
 
   @Test
   fun displayAllFieldsAndButtons() {
@@ -260,7 +271,6 @@ class AddReportScreenTest {
         AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
       }
     }
-    // Click with fields empty
     composeRule
         .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
         .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
@@ -334,6 +344,7 @@ class AddReportScreenTest {
     }
 
     fillReportWith("title", "description", true)
+
     composeRule.waitUntil(TestConstants.LONG_TIMEOUT) {
       composeRule.onAllNodesWithText(AddReportDialogTexts.OK).fetchSemanticsNodes().isNotEmpty()
     }
@@ -512,5 +523,35 @@ class AddReportScreenTest {
         .performClick()
 
     composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_FAILURE).assertDoesNotExist()
+  }
+
+  @Test
+  fun createReport_showsLoadingOverlay() {
+    val slowRepo = InMemoryReportRepository(delayMs = TestConstants.DEFAULT_TIMEOUT)
+    val viewModel = AddReportViewModel(userId = "test_user", reportRepository = slowRepo)
+
+    composeRule.setContent {
+      MaterialTheme {
+        AddReportScreen(
+            userViewModel = fakeFarmerViewModel(),
+            onCreateReport = {},
+            addReportViewModel = viewModel)
+      }
+    }
+
+    fillReportWith(
+        title = "Slow Test",
+        description = "Desc",
+        doSubmitReport = true,
+        officeId = "Best Office Ever!",
+        address = Location(0.0, 0.0, "Test address"),
+        viewModel = viewModel,
+    )
+
+    composeRule.assertOverlayDuringLoading(
+        isLoading = { viewModel.uiState.value.isLoading },
+        timeoutStart = TestConstants.LONG_TIMEOUT,
+        timeoutEnd = TestConstants.LONG_TIMEOUT,
+    )
   }
 }

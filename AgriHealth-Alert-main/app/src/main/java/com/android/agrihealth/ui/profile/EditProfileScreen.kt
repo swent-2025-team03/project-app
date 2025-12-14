@@ -86,7 +86,8 @@ fun EditProfileScreen(
   val connectionRepository = remember { ConnectionRepository(connectionType = "") }
   val codesViewModel = remember { CodesViewModel(userViewModel, connectionRepository) }
 
-  val user by userViewModel.user.collectAsState()
+  val uiState by userViewModel.uiState.collectAsState()
+  val user = uiState.user
   val userRole = user.role
   val currentUser = user
 
