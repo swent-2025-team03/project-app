@@ -89,7 +89,8 @@ fun ManageOfficeScreen(
             },
             modifier = Modifier.testTag(TOP_BAR))
       },
-      snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
+      snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.imePadding()) }) {
+          innerPadding ->
         LoadingOverlay(isLoading = uiState.isLoading) {
           Column(
               modifier =

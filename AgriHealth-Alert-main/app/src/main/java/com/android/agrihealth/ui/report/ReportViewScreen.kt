@@ -204,7 +204,9 @@ fun ReportViewScreen(
             },
         )
       },
-      snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { padding ->
+      snackbarHost = {
+        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.imePadding())
+      }) { padding ->
         LoadingOverlay(isLoading = uiState.isLoading) {
 
           // Main scrollable content
