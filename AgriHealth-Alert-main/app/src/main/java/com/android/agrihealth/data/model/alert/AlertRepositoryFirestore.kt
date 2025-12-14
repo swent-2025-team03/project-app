@@ -10,6 +10,14 @@ import kotlinx.coroutines.tasks.await
 
 private const val ALERTS_COLLECTION_PATH = "alerts"
 
+/**
+ * Firestore-backed AlertRepository.
+ *
+ * Note:
+ * - `getAlerts()` should be called to load the ordered alert list.
+ * - `getPreviousAlert()` and `getNextAlert()` rely on the cached order.
+ * - `getAlertById()` will update the cache if needed, but does not guarantee ordering.
+ */
 class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.firestore) :
     AlertRepository {
 
@@ -34,13 +42,21 @@ class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fire
   }
 
   override suspend fun getAlertById(alertId: String): Alert? {
-    return cachedAlerts.find { it.id == alertId }
-        ?: run {
-          val snapshot = db.collection(ALERTS_COLLECTION_PATH).document(alertId).get().await()
-
-          if (!snapshot.exists()) return null
-          alertFromFirestore(snapshot.id, snapshot.data!!)
+    cachedAlerts
+        .find { it.id == alertId }
+        ?.let {
+          return it
         }
+
+    val snapshot = db.collection(ALERTS_COLLECTION_PATH).document(alertId).get().await()
+
+    if (!snapshot.exists()) return null
+
+    val alert = alertFromFirestore(snapshot.id, snapshot.data!!)
+
+    cachedAlerts = (cachedAlerts + alert).distinctBy { it.id }
+
+    return alert
   }
 
   override fun getPreviousAlert(currentId: String): Alert? {
