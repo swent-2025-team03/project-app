@@ -15,7 +15,6 @@ import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.profile.PhotoComponentsTestTags
-import com.android.agrihealth.ui.profile.PhotoComponentsTexts
 import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
 import org.junit.Rule
 import org.junit.Test
@@ -186,20 +185,23 @@ class ViewOfficeScreenTest {
   }
 
   @Test
-  fun officePhoto_showsErrorText_whenDownloadFails() {
+  fun officePhoto_showsDefaultIcon_whenDownloadFails() {
     val dependencies = setBasicTestScreen()
     dependencies.imageRepository.makeRepoThrowError()
     dependencies.imageRepository.unfreezeRepoConnection()
 
     composeTestRule.waitUntil(TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_ERROR_TEXT).isDisplayed()
+      composeTestRule
+          .onAllNodesWithTag(PhotoComponentsTestTags.PHOTO_RENDER)
+          .fetchSemanticsNodes()
+          .isEmpty()
     }
 
-    composeTestRule
-        .onNodeWithTag(PhotoComponentsTestTags.PHOTO_ERROR_TEXT)
-        .assertTextEquals(PhotoComponentsTexts.PHOTO_ERROR_TEXT)
+    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).assertDoesNotExist()
 
-    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_ERROR_TEXT).assertDoesNotExist()
+
+    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.DEFAULT_ICON).isDisplayed()
   }
 
   @Test
