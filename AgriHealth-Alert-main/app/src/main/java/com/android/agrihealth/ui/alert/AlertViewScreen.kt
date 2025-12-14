@@ -21,8 +21,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.android.agrihealth.data.model.alert.AlertZone
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
 
 object AlertViewScreenTestTags {
@@ -118,13 +120,20 @@ fun AlertViewScreen(navigationActions: NavigationActions, viewModel: AlertViewMo
                 Spacer(modifier = Modifier.height(32.dp))
               }
           // --- View on Map Button ---
+          val zone: AlertZone? = alert.zones?.first()
           OutlinedButton(
               modifier =
                   Modifier.fillMaxWidth()
                       .align(Alignment.BottomCenter)
                       .padding(bottom = 16.dp)
                       .testTag(AlertViewScreenTestTags.VIEW_ON_MAP),
-              onClick = { /*TODO: implement View on Map using polygon when available */}) {
+              onClick = {
+                zone?.let {
+                  navigationActions.navigateTo(
+                      Screen.Map(zone.center.latitude, zone.center.longitude, null, alert.id))
+                }
+              },
+              enabled = zone != null) {
                 Text("View on Map")
               }
           // --- Navigation arrows (previous / next) ---
