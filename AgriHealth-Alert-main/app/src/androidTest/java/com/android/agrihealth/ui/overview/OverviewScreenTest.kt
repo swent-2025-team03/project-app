@@ -24,7 +24,7 @@ class OverviewScreenTest {
 
   @Before
   fun setup() {
-    AlertRepositoryProvider.repository = FakeAlertRepository()
+    AlertRepositoryProvider.set(FakeAlertRepository())
   }
 
   private val farmer =
