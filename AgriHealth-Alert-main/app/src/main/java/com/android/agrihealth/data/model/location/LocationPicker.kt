@@ -77,15 +77,13 @@ fun LocationPicker(
             Modifier.padding(pd),
             mapViewModel,
             onLocationPicked = { lat, lng ->
-              // TODO: maybe loading goes here
               onLatLng(lat, lng)
               showConfirmation = true
               mapViewModel.getAddressFromLatLng(context, lat, lng)
             })
 
         if (showConfirmation)
-        // TODO: maybe loading here instead, if address is null
-        AddressConfirmationPrompt(
+            AddressConfirmationPrompt(
                 address,
                 onConfirm = {
                   onAddress(address)

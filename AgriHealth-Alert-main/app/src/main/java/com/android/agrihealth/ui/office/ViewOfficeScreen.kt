@@ -139,7 +139,6 @@ private fun ViewOfficeContent(
             enabled = false,
             modifier = Modifier.fillMaxWidth().testTag(ViewOfficeScreenTestTags.NAME_FIELD))
 
-        // TODO: add once location is implemented in users and offices
         office.address?.let {
           OutlinedTextField(
               value = "Not implemented yet",

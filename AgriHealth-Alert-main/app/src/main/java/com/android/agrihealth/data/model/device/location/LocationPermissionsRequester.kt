@@ -22,29 +22,3 @@ fun LocationPermissionsRequester(
 
   PermissionsRequester(permissions, onGranted, onDenied, onComplete)
 }
-
-// TODO: Remove this block once location services are implemented somewhere else in the app
-/*
-@Composable
-@Preview
-fun LocationTestScreen() {
-  Box {
-    LocationRepositoryProvider.repository = LocationRepository(LocalContext.current)
-    val viewModel = LocationViewModel()
-
-    val location by viewModel.locationState.collectAsState()
-
-    LocationPermissionsRequester(onGranted = { viewModel.getCurrentLocation() }, onDenied = { })
-
-    Column(Modifier.padding(16.dp).background(color = White)) {
-      Text("Device Location")
-      if (location != null) {
-        Text("Lat: ${location!!.latitude}, Lng: ${location!!.longitude}")
-      } else {
-          if (viewModel.hasLocationPermissions()) Text("Fetching location...")
-          else Text("Permission denied")
-      }
-    }
-  }
-}
-*/

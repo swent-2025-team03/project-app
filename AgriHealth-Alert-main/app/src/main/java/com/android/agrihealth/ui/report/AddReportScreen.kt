@@ -27,8 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.MCQ
 import com.android.agrihealth.data.model.report.MCQO
@@ -36,6 +38,8 @@ import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.QuestionForm
 import com.android.agrihealth.data.model.report.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.testutil.FakeAddReportViewModel
+import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.ui.common.OfficeNameViewModel
 import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationTestTags
@@ -46,13 +50,6 @@ import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
 import kotlin.collections.forEachIndexed
 import kotlinx.coroutines.launch
-
-// -- imports for preview --
-/*
-import androidx.compose.ui.tooling.preview.Preview
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.testutil.FakeAddReportViewModel
- */
 
 /** Tags for the various components. For testing purposes */
 object AddReportScreenTestTags {
@@ -512,19 +509,11 @@ fun CreateReportButton(
       }
 }
 
-// TODO: (OPTIONAL) Make this work again
-/// **
-// * Preview of the ReportViewScreen for both farmer and vet roles. Allows testing of layout and
-// * colors directly in Android Studio.
-// */
-// @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-// @Composable
-// fun AddReportScreenPreview() {
-//  AgriHealthAppTheme {
-//    AddReportScreen(
-//        userRole = UserRole.FARMER,
-//        userId = "FARMER_001",
-//        onCreateReport = {},
-//        addReportViewModel = FakeAddReportViewModel())
-//  }
-// }
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+@Composable
+fun AddReportScreenPreview() {
+  AgriHealthAppTheme {
+    AddReportScreen(
+        userViewModel = FakeUserViewModel(), addReportViewModel = FakeAddReportViewModel())
+  }
+}
