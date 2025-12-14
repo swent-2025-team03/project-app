@@ -50,7 +50,8 @@ class OfficeRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fir
         "address" to office.address,
         "description" to office.description,
         "vets" to office.vets,
-        "ownerId" to office.ownerId)
+        "ownerId" to office.ownerId,
+        "photoUrl" to office.photoUrl)
   }
 
   private fun officeFromData(data: Map<String, Any>): Office {
@@ -62,7 +63,8 @@ class OfficeRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fir
         address = address,
         description = data["description"] as? String,
         vets = data["vets"] as? List<String> ?: emptyList(),
-        ownerId = data["ownerId"] as String)
+        ownerId = data["ownerId"] as String,
+        photoUrl = data["photoUrl"] as? String)
   }
 
   override suspend fun getVetsInOffice(officeId: String): List<String> {

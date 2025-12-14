@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,6 +48,8 @@ fun SignUpScreen(
     signUpViewModel: SignUpViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel()
 ) {
+  val focusManager = LocalFocusManager.current
+
   val signUpUIState by signUpViewModel.uiState.collectAsState()
   val snackbarHostState = remember { SnackbarHostState() }
   val errorMsg = signUpUIState.errorMsg
@@ -138,11 +141,18 @@ fun SignUpScreen(
                 Spacer(Modifier.height(12.dp))
 
                 RoleSelector(
-                    selected = signUpUIState.role, onSelected = { signUpViewModel.onSelected(it) })
+                    selected = signUpUIState.role,
+                    onSelected = {
+                      focusManager.clearFocus()
+                      signUpViewModel.onSelected(it)
+                    })
 
                 Spacer(Modifier.height(28.dp))
                 Button(
-                    onClick = { signUpViewModel.signUp() },
+                    onClick = {
+                      focusManager.clearFocus()
+                      signUpViewModel.signUp()
+                    },
                     modifier =
                         Modifier.fillMaxWidth()
                             .height(56.dp)

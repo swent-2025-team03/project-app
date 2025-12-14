@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
@@ -30,6 +31,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.connection.ConnectionRepository
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.*
@@ -43,6 +45,7 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
+import kotlinx.coroutines.launch
 
 enum class CodeType {
   FARMER,
@@ -83,6 +86,7 @@ fun EditProfileScreen(
     onSave: (User) -> Unit = { userViewModel.updateUser(it) },
     onPasswordChange: () -> Unit = {}
 ) {
+  val focusManager = LocalFocusManager.current
 
   val connectionRepository = remember { ConnectionRepository(connectionType = "") }
   val codesViewModel = remember { CodesViewModel(userViewModel, connectionRepository) }
@@ -101,14 +105,28 @@ fun EditProfileScreen(
   val farmerCodes by codesViewModel.farmerCodes.collectAsState()
   val vetCodes by codesViewModel.vetCodes.collectAsState()
 
+  val imageViewModel: ImageViewModel = viewModel()
+
   val createManageOfficeViewModel =
       object : androidx.lifecycle.ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
           return ManageOfficeViewModel(
-              userViewModel = userViewModel, officeRepository = OfficeRepositoryProvider.get())
+              userViewModel = userViewModel,
+              officeRepository = OfficeRepositoryProvider.get(),
+              imageViewModel = imageViewModel)
               as T
         }
       }
+
+  val editProfileViewModel: EditProfileViewModel =
+      viewModel(
+          factory =
+              object : androidx.lifecycle.ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return EditProfileViewModel(officeRepository = OfficeRepositoryProvider.get())
+                      as T
+                }
+              })
 
   val manageOfficeVm: ManageOfficeViewModel = viewModel(factory = createManageOfficeViewModel)
 
@@ -208,7 +226,10 @@ fun EditProfileScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     trailingIcon = {
                       IconButton(
-                          onClick = { onPasswordChange() },
+                          onClick = {
+                            focusManager.clearFocus()
+                            onPasswordChange()
+                          },
                           modifier = Modifier.testTag(PASSWORD_BUTTON)) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit Password")
                           }
@@ -238,7 +259,10 @@ fun EditProfileScreen(
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.ADDRESS_FIELD))
               Button(
-                  onClick = onChangeLocation,
+                  onClick = {
+                    focusManager.clearFocus()
+                    onChangeLocation()
+                  },
                   enabled = user !is Vet || isOwner,
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.LOCATION_BUTTON)) {
@@ -299,6 +323,7 @@ fun EditProfileScreen(
                               DropdownMenuItem(
                                   text = { Text(displayName) },
                                   onClick = {
+                                    focusManager.clearFocus()
                                     selectedDefaultOffice = officeId
                                     expandedVetDropdown = false
                                   })
@@ -318,32 +343,23 @@ fun EditProfileScreen(
 
               Spacer(modifier = Modifier.weight(1f))
 
+              val scope = rememberCoroutineScope()
               // Save Changes Button
               Button(
                   onClick = {
-                    val updatedDescription = description.ifBlank { null }
-                    // Construct updated user object
-                    val updatedUser =
-                        when (userRole) {
-                          UserRole.FARMER ->
-                              (user as? Farmer)?.copy(
-                                  firstname = firstname,
-                                  lastname = lastname,
-                                  address = pickedLocation,
-                                  defaultOffice = selectedDefaultOffice,
-                                  description = updatedDescription,
-                                  collected = collected)
-                          UserRole.VET -> {
-                            manageOfficeVm.updateOffice(newAddress = pickedLocation)
-                            (user as? Vet)?.copy(
-                                firstname = firstname,
-                                lastname = lastname,
-                                address = pickedLocation,
-                                description = updatedDescription,
-                                collected = collected)
-                          }
-                        }
-                    updatedUser?.let { onSave(it) }
+                    focusManager.clearFocus()
+                    scope.launch {
+                      val updatedUser =
+                          editProfileViewModel.saveProfileChanges(
+                              user = user,
+                              firstname = firstname,
+                              lastname = lastname,
+                              pickedLocation = pickedLocation,
+                              selectedDefaultOffice = selectedDefaultOffice,
+                              description = description,
+                              collected = collected)
+                      updatedUser?.let { onSave(it) }
+                    }
                   },
                   modifier =
                       Modifier.fillMaxWidth().testTag(EditProfileScreenTestTags.SAVE_BUTTON)) {

@@ -8,6 +8,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -32,6 +33,7 @@ fun CreateOfficeScreen(
     onGoBack: () -> Unit,
     onCreated: () -> Unit,
 ) {
+  val focusManager = LocalFocusManager.current
   val vm: CreateOfficeViewModel =
       viewModel(
           factory =
@@ -78,7 +80,10 @@ fun CreateOfficeScreen(
               }
 
               Button(
-                  onClick = { vm.createOffice(onCreated) },
+                  onClick = {
+                    focusManager.clearFocus()
+                    vm.createOffice(onCreated)
+                  },
                   enabled = !uiState.loading,
                   modifier = Modifier.fillMaxWidth().testTag(CREATE_BUTTON)) {
                     if (uiState.loading) {
