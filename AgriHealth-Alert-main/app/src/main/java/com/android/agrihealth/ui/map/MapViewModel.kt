@@ -71,6 +71,9 @@ class MapViewModel(
   private val _zoom = MutableStateFlow(10f)
   val zoom = _zoom.asStateFlow()
 
+  private val _currentUserLocation = MutableStateFlow<Location?>(null)
+  val currentUserLocation: StateFlow<Location?> = _currentUserLocation.asStateFlow()
+
   init {
     if (selectedReportId != null) {
       viewModelScope.launch { reportRepository.getReportById(selectedReportId).select() }
@@ -171,6 +174,7 @@ class MapViewModel(
                     locationViewModel.locationState.firstOrNull { it != null }
                   }
 
+              _currentUserLocation.value = gpsLocation
               _startingLocation.value =
                   gpsLocation ?: getLocationFromUserAddress() ?: return@withLoadingState
             }

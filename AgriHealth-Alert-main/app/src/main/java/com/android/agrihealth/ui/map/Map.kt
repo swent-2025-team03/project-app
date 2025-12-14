@@ -122,6 +122,8 @@ fun MapScreen(
 
           val alertsToDisplay = alerts.filter { showAlerts }
 
+          val currentUserLocation by mapViewModel.currentUserLocation.collectAsState()
+
           GoogleMap(
               cameraPositionState = cameraPositionState,
               properties = googleMapMapProperties,
@@ -141,6 +143,12 @@ fun MapScreen(
                     onClick = { it.toggleSelect() })
 
                 AlertAreas(alerts = alertsToDisplay)
+
+                currentUserLocation?.let { location -> UserLocationMarker(location = location) }
+                    ?: run {
+                      // fallback to startingLocation if currentUserLocation is null
+                      UserLocationMarker(location = mapViewModel.startingLocation.value)
+                    }
               }
 
           MapTestReportMarkers(reportsToDisplay) { it.toggleSelect() }
