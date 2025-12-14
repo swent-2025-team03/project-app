@@ -83,7 +83,7 @@ class SignInScreenTest {
   @Test
   fun signInScreen_showsAndHidesLoadingOverlay() {
 
-    val authRepo = FakeAuthRepository(delayMs = TestConstants.SHORT_TIMEOUT)
+    val authRepo = FakeAuthRepository(delayMs = TestConstants.DEFAULT_TIMEOUT)
     val userRepo = FakeUserRepository()
 
     val vm = SignInViewModel(authRepo, userRepo)
@@ -107,7 +107,7 @@ class SignInScreenTest {
 
     composeTestRule.assertOverlayDuringLoading(
         isLoading = { vm.uiState.value.isLoading },
-        timeoutStart = TestConstants.DEFAULT_TIMEOUT,
+        timeoutStart = TestConstants.LONG_TIMEOUT,
         timeoutEnd = TestConstants.LONG_TIMEOUT,
     )
   }

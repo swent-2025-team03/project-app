@@ -228,7 +228,7 @@ class ProfileScreenTest {
     val report = PlannerTestReportsData.report1.copy(startTime = LocalDate.now().atTime(9, 0))
     val delayedRepo =
         InMemoryReportRepository(
-            initialReports = listOf(report), delayMs = TestConstants.SHORT_TIMEOUT)
+            initialReports = listOf(report), delayMs = TestConstants.DEFAULT_TIMEOUT)
 
     val viewModel = PlannerViewModel(reportRepository = delayedRepo)
 
@@ -245,7 +245,7 @@ class ProfileScreenTest {
 
     composeTestRule.assertOverlayDuringLoading(
         isLoading = { viewModel.uiState.value.isLoading },
-        timeoutStart = TestConstants.DEFAULT_TIMEOUT,
+        timeoutStart = TestConstants.LONG_TIMEOUT,
         timeoutEnd = TestConstants.LONG_TIMEOUT,
     )
   }

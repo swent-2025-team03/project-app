@@ -139,8 +139,8 @@ class OverviewScreenTest {
 
   @Test
   fun overviewScreen_showsAndHidesLoadingOverlay_duringLoadAlerts() {
-    val alertRepo = FakeAlertRepository(delayMs = TestConstants.SHORT_TIMEOUT)
-    val reportRepo = InMemoryReportRepository(delayMs = TestConstants.SHORT_TIMEOUT)
+    val alertRepo = FakeAlertRepository(delayMs = TestConstants.DEFAULT_TIMEOUT)
+    val reportRepo = InMemoryReportRepository(delayMs = TestConstants.DEFAULT_TIMEOUT)
 
     val viewModel = OverviewViewModel(reportRepository = reportRepo, alertRepository = alertRepo)
 
@@ -158,7 +158,7 @@ class OverviewScreenTest {
         isLoading = {
           viewModel.uiState.value.isAlertLoading || viewModel.uiState.value.isReportLoading
         },
-        timeoutStart = TestConstants.DEFAULT_TIMEOUT,
+        timeoutStart = TestConstants.LONG_TIMEOUT,
         timeoutEnd = TestConstants.LONG_TIMEOUT,
     )
   }

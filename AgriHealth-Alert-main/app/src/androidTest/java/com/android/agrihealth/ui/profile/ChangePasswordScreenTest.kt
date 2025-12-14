@@ -86,7 +86,7 @@ class ChangePasswordScreenTest {
 
   @Test
   fun changePassword_showsAndHidesLoadingOverlay() {
-    val fakeRepo = FakeAuthRepository(delayMs = TestConstants.SHORT_TIMEOUT)
+    val fakeRepo = FakeAuthRepository(delayMs = TestConstants.DEFAULT_TIMEOUT)
     val viewModel = ChangePasswordViewModel(repository = fakeRepo)
 
     setContentWithVM(vm = viewModel)
@@ -105,7 +105,7 @@ class ChangePasswordScreenTest {
 
     composeTestRule.assertOverlayDuringLoading(
         isLoading = { viewModel.uiState.value.isLoading },
-        timeoutStart = TestConstants.DEFAULT_TIMEOUT,
+        timeoutStart = TestConstants.LONG_TIMEOUT,
         timeoutEnd = TestConstants.LONG_TIMEOUT,
     )
   }

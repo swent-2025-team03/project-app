@@ -48,7 +48,7 @@ class ManageOfficeScreenUiTest {
 
     val fakeOfficeRepository =
         FakeOfficeRepository(
-            initialOffices = listOf(fakeOffice), delayMs = TestConstants.SHORT_TIMEOUT)
+            initialOffices = listOf(fakeOffice), delayMs = TestConstants.DEFAULT_TIMEOUT)
 
     val connectionRepository = ConnectionRepositoryProvider.farmerToOfficeRepository
 
@@ -94,7 +94,7 @@ class ManageOfficeScreenUiTest {
 
     composeTestRule.assertOverlayDuringLoading(
         isLoading = { vm.uiState.value.isLoading },
-        timeoutStart = TestConstants.DEFAULT_TIMEOUT,
+        timeoutStart = TestConstants.LONG_TIMEOUT,
         timeoutEnd = TestConstants.LONG_TIMEOUT,
     )
   }

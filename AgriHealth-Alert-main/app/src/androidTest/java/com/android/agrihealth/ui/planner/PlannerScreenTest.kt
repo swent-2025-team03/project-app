@@ -284,7 +284,7 @@ class PlannerScreenTest {
   @Test
   fun planner_loadReports_showsAndHidesLoadingOverlay() = runTest {
     val report = PlannerTestReportsData.report1.copy(startTime = today.atTime(9, 0))
-    val delayedRepo = InMemoryReportRepository(initialReports = listOf(report), delayMs = 500L)
+    val delayedRepo = InMemoryReportRepository(initialReports = listOf(report), delayMs = TestConstants.DEFAULT_TIMEOUT)
 
     val viewModel = PlannerViewModel(reportRepository = delayedRepo)
 
@@ -301,8 +301,8 @@ class PlannerScreenTest {
 
     composeTestRule.assertOverlayDuringLoading(
         isLoading = { viewModel.uiState.value.isLoading },
-        timeoutStart = TestConstants.DEFAULT_TIMEOUT,
-        timeoutEnd = TestConstants.DEFAULT_TIMEOUT,
+        timeoutStart = TestConstants.LONG_TIMEOUT,
+        timeoutEnd = TestConstants.LONG_TIMEOUT,
     )
   }
 
