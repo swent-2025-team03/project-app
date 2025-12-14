@@ -1,5 +1,6 @@
 package com.android.agrihealth.data.model.alert
 
+import android.util.Log
 import com.android.agrihealth.data.model.location.Location
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
@@ -19,8 +20,13 @@ class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fire
 
     val alerts =
         snapshot.documents.mapNotNull { doc ->
-          val data = doc.data ?: return@mapNotNull null
-          alertFromFirestore(doc.id, data)
+          try {
+            val data = doc.data ?: return@mapNotNull null
+            alertFromFirestore(doc.id, data)
+          } catch (e: Exception) {
+            Log.e("AlertRepo", "Failed to parse alert ${doc.id}", e)
+            null
+          }
         }
 
     cachedAlerts = alerts
@@ -56,18 +62,19 @@ class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fire
 
     val region = data["region"] as? String
 
-    val zonesData = data["zones"] as? List<Map<String, Any>>
+    val zonesData = data["zones"] as? List<*>
     val zones =
-        zonesData?.map { zone ->
-          val centerData = zone["center"] as? Map<*, *> ?: throw Exception("Missing zone center")
+        zonesData?.mapNotNull { zoneRaw ->
+          val zone = zoneRaw as? Map<*, *> ?: return@mapNotNull null
+          val centerData = zone["center"] as? Map<*, *> ?: return@mapNotNull null
 
           AlertZone(
               center =
                   Location(
-                      latitude = centerData["latitude"] as? Double ?: 0.0,
-                      longitude = centerData["longitude"] as? Double ?: 0.0,
+                      latitude = (centerData["latitude"] as? Number)?.toDouble() ?: 0.0,
+                      longitude = (centerData["longitude"] as? Number)?.toDouble() ?: 0.0,
                       name = centerData["name"] as? String),
-              radiusMeters = zone["radiusMeters"] as? Double ?: 0.0)
+              radiusMeters = (zone["radiusMeters"] as? Number)?.toDouble() ?: 0.0)
         }
 
     return Alert(
@@ -77,24 +84,5 @@ class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fire
         outbreakDate = LocalDate.parse(outbreakDateStr),
         region = region,
         zones = zones)
-  }
-
-  fun mapFromAlert(alert: Alert): Map<String, Any?> {
-    return mapOf(
-        "title" to alert.title,
-        "description" to alert.description,
-        "region" to alert.region,
-        "outbreakDate" to alert.outbreakDate.toString(),
-        "createdAt" to com.google.firebase.Timestamp.now(),
-        "zones" to
-            alert.zones?.map { zone ->
-              mapOf(
-                  "center" to
-                      mapOf(
-                          "latitude" to zone.center.latitude,
-                          "longitude" to zone.center.longitude,
-                          "name" to zone.center.name),
-                  "radiusMeters" to zone.radiusMeters)
-            })
   }
 }
