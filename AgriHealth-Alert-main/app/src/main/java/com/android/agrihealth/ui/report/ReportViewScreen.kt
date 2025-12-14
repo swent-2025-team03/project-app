@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.core.design.theme.statusColor
@@ -102,7 +103,7 @@ fun ReportViewScreen(
     navigationActions: NavigationActions,
     userRole: UserRole,
     viewModel: ReportViewViewModel,
-    imageViewModel: ImageViewModel = ImageViewModel(),
+    imageViewModel: ImageViewModel = viewModel(),
     reportId: String = "",
     user: User? = null
 ) {

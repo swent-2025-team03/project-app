@@ -42,6 +42,7 @@ import com.android.agrihealth.data.model.device.location.LocationRepositoryProvi
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.device.notifications.NotificationHandlerProvider
 import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.location.LocationPicker
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
@@ -230,10 +231,11 @@ fun AgriHealthApp(
         )
       }
       composable(Screen.AddReport.route) {
+        val imageVM = viewModel<ImageViewModel>()
         val createReportViewModel =
             object : androidx.lifecycle.ViewModelProvider.Factory {
               override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return AddReportViewModel(userId = currentUserId) as T
+                return AddReportViewModel(userId = currentUserId, imageViewModel = imageVM) as T
               }
             }
         val addReportViewModel: AddReportViewModel = viewModel(factory = createReportViewModel)
