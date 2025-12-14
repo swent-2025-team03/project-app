@@ -47,6 +47,7 @@ class MapViewModel(
     private val locationViewModel: LocationViewModel,
     private val userId: String,
     val selectedReportId: String? = null,
+    val selectedAlertId: String? = null,
     startingPosition: Location? = null,
     showReports: Boolean = true,
     showAlerts: Boolean = true
@@ -61,8 +62,15 @@ class MapViewModel(
   private val _selectedReport = MutableStateFlow<Report?>(null)
   val selectedReport = _selectedReport.asStateFlow()
 
+  private val _selectedAlert = MutableStateFlow<Alert?>(null)
+  val selectedAlert = _selectedAlert.asStateFlow()
+
   private fun Report?.select() {
     _selectedReport.value = this
+  }
+
+  private fun Alert?.select() {
+    _selectedAlert.value = this
   }
 
   private val _startingLocation =
@@ -72,12 +80,6 @@ class MapViewModel(
   val zoom = _zoom.asStateFlow()
 
   init {
-    if (selectedReportId != null) {
-      viewModelScope.launch { reportRepository.getReportById(selectedReportId).select() }
-    }
-
-    setStartingLocation()
-
     if (showReports) {
       refreshReports()
     }
@@ -85,6 +87,14 @@ class MapViewModel(
     if (showAlerts) {
       refreshAlerts()
     }
+
+    if (selectedReportId != null) {
+      viewModelScope.launch { reportRepository.getReportById(selectedReportId).select() }
+    } else if (selectedAlertId != null) {
+      viewModelScope.launch { alertRepository.getAlertById(selectedAlertId).select() }
+    }
+
+    setStartingLocation()
   }
 
   /** Fetches every report linked to the current user and exposes them in MapUIState */
