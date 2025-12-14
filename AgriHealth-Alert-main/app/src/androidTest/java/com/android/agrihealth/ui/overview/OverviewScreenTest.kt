@@ -1,17 +1,13 @@
 package com.android.agrihealth.ui.overview
 
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertTextEquals
-import androidx.compose.ui.test.isDisplayed
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testutil.FakeAlertRepository
 import com.android.agrihealth.testutil.FakeOverviewViewModel
 import com.android.agrihealth.testutil.InMemoryReportRepository
@@ -139,6 +135,32 @@ class OverviewScreenTest {
         inZoneFlag = false
       }
     }
+  }
+
+  @Test
+  fun overviewScreen_showsAndHidesLoadingOverlay_duringLoadAlerts() {
+    val alertRepo = FakeAlertRepository(delayMs = TestConstants.DEFAULT_TIMEOUT)
+    val reportRepo = InMemoryReportRepository(delayMs = TestConstants.DEFAULT_TIMEOUT)
+
+    val viewModel = OverviewViewModel(reportRepository = reportRepo, alertRepository = alertRepo)
+
+    composeTestRule.setContent {
+      OverviewScreen(
+          userRole = UserRole.FARMER,
+          user = farmer,
+          overviewViewModel = viewModel,
+          onAddReport = {},
+          onReportClick = {},
+          onAlertClick = {})
+    }
+
+    composeTestRule.assertOverlayDuringLoading(
+        isLoading = {
+          viewModel.uiState.value.isAlertLoading || viewModel.uiState.value.isReportLoading
+        },
+        timeoutStart = TestConstants.LONG_TIMEOUT,
+        timeoutEnd = TestConstants.LONG_TIMEOUT,
+    )
   }
 
   // --- TEST 9: Verify Assignee Filter presence ---

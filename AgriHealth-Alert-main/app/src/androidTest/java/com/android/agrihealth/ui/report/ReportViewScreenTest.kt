@@ -15,8 +15,12 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.data.repository.ReportRepository
+import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testutil.FakeImageRepository
 import com.android.agrihealth.testutil.FakeOverviewViewModel
+import com.android.agrihealth.testutil.InMemoryReportRepository
+import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
 import com.android.agrihealth.testutil.TestReportRepository
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -548,6 +552,29 @@ class ReportViewScreenTest {
     composeTestRule
         .onNodeWithTag(ReportComposableCommonsTestTags.COLLECTED_SWITCH)
         .assertIsDisplayed()
+  }
+
+  @Test
+  fun reportView_showsLoadingOverlayWhileFetchingReport() {
+    val sampleReport = ReportViewUIState().report.copy(id = "RPT_SLOW")
+    val slowRepo: ReportRepository =
+        InMemoryReportRepository(listOf(sampleReport), TestConstants.DEFAULT_TIMEOUT)
+    val vm = ReportViewViewModel(repository = slowRepo)
+
+    composeTestRule.setContent {
+      val nav = rememberNavController()
+      val navigation = NavigationActions(nav)
+      ReportViewScreen(
+          navigationActions = navigation,
+          userRole = UserRole.VET,
+          viewModel = vm,
+          reportId = "RPT_SLOW")
+    }
+
+    composeTestRule.assertOverlayDuringLoading(
+        isLoading = { vm.uiState.value.isLoading },
+        timeoutStart = LONG_TIMEOUT,
+        timeoutEnd = LONG_TIMEOUT)
   }
 
   @Test

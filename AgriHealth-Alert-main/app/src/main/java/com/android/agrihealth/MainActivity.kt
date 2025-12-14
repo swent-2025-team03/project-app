@@ -24,6 +24,7 @@ import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -43,6 +44,7 @@ import com.android.agrihealth.data.model.device.notifications.NotificationHandle
 import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.location.LocationPicker
+import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
 import com.android.agrihealth.data.model.user.copyCommon
 import com.android.agrihealth.resources.C
 import com.android.agrihealth.ui.alert.AlertViewModel
@@ -59,6 +61,7 @@ import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.office.CreateOfficeScreen
 import com.android.agrihealth.ui.office.ManageOfficeScreen
+import com.android.agrihealth.ui.office.ManageOfficeViewModel
 import com.android.agrihealth.ui.office.ViewOfficeScreen
 import com.android.agrihealth.ui.office.ViewOfficeViewModel
 import com.android.agrihealth.ui.overview.OverviewScreen
@@ -118,7 +121,7 @@ fun AgriHealthApp(
   val locationViewModel: LocationViewModel = viewModel()
 
   var reloadReports by remember { mutableStateOf(false) }
-  val currentUser by userViewModel.user.collectAsState()
+  val currentUser = userViewModel.uiState.collectAsState().value.user
   val currentUserId = currentUser.uid
   val currentUserRole = currentUser.role
   val currentUserEmail = currentUser.email
@@ -353,7 +356,23 @@ fun AgriHealthApp(
             userViewModel = userViewModel,
             onGoBack = { navigationActions.goBack() },
             onCreateOffice = { navigationActions.navigateTo(Screen.CreateOffice) },
-            onJoinOffice = { navigationActions.navigateTo(Screen.ClaimCode(VET_TO_OFFICE)) })
+            onJoinOffice = { navigationActions.navigateTo(Screen.ClaimCode(VET_TO_OFFICE)) },
+            manageOfficeVmFactory = {
+              object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return ManageOfficeViewModel(userViewModel, OfficeRepositoryFirestore()) as T
+                }
+              }
+            },
+            codesVmFactory = {
+              object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                  return CodesViewModel(
+                      userViewModel, ConnectionRepositoryProvider.vetToOfficeRepository)
+                      as T
+                }
+              }
+            })
       }
       composable(Screen.CreateOffice.route) {
         CreateOfficeScreen(
