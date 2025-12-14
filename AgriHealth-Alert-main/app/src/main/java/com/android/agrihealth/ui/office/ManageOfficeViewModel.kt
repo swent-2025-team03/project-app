@@ -29,27 +29,25 @@ class ManageOfficeViewModel(
   private val _uiState = MutableStateFlow(ManageOfficeUiState())
   val uiState: StateFlow<ManageOfficeUiState> = _uiState
 
-  init {
-    loadOffice()
-  }
-
   fun loadOffice() {
-    viewModelScope.launch {
-      _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
-        val currentUser = userViewModel.uiState.value.user
-        if (currentUser is Vet && currentUser.officeId != null) {
-          officeRepository.getOffice(currentUser.officeId).fold({ office ->
-            _uiState.value =
-                _uiState.value.copy(
-                    office = office,
-                    editableName = office.name,
-                    editableDescription = office.description ?: "",
-                    editableAddress = office.address?.toString() ?: "")
-          }) { error ->
-            _uiState.value =
-                _uiState.value.copy(
-                    error =
-                        "Couldn't load your office, make sure you are connected to the internet")
+    if (_uiState.value.office == null) {
+      viewModelScope.launch {
+        _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
+          val currentUser = userViewModel.uiState.value.user
+          if (currentUser is Vet && currentUser.officeId != null) {
+            officeRepository.getOffice(currentUser.officeId).fold({ office ->
+              _uiState.value =
+                  _uiState.value.copy(
+                      office = office,
+                      editableName = office.name,
+                      editableDescription = office.description ?: "",
+                      editableAddress = office.address?.toString() ?: "")
+            }) { error ->
+              _uiState.value =
+                  _uiState.value.copy(
+                      error =
+                          "Couldn't load your office, make sure you are connected to the internet")
+            }
           }
         }
       }
