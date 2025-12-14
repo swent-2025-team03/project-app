@@ -1,28 +1,16 @@
 package com.android.agrihealth.ui.common
 
-import androidx.activity.ComponentActivity
 import androidx.compose.material3.Text
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithText
-import com.android.agrihealth.ui.common.resolver.UserDirectoryDataSource
-import com.android.agrihealth.ui.common.resolver.UserDirectoryRepository
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.testhelpers.templates.UITest
 import com.android.agrihealth.ui.common.resolver.AuthorName
 import com.android.agrihealth.ui.common.resolver.AuthorNameViewModel
+import com.android.agrihealth.ui.common.resolver.UserDirectoryDataSource
+import com.android.agrihealth.ui.common.resolver.UserDirectoryRepository
 import com.android.agrihealth.ui.common.resolver.rememberUserName
-import org.junit.Rule
 import org.junit.Test
 
-class AuthorNameTest {
-
-  companion object {
-    private const val WAIT_TIMEOUT = 2_000L
-  }
-
-  @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
-
+class AuthorNameTest : UITest() {
   private class FakeUserDirectoryDataSource : UserDirectoryDataSource {
     override suspend fun getUserSummary(uid: String): UserDirectoryRepository.UserSummary? =
         when (uid) {
@@ -37,41 +25,33 @@ class AuthorNameTest {
         }
   }
 
+  private val vm = AuthorNameViewModel(repo = FakeUserDirectoryDataSource())
+
+  private fun setAuthorNameContent(uid: String?) = setContent { AuthorName(uid, viewModel = vm) }
+
+  override fun displayAllComponents() {}
+
   @Test
   fun showsUnassigned_whenUidIsNull() {
-    val vm = AuthorNameViewModel(repo = FakeUserDirectoryDataSource())
-    composeRule.setContent { AuthorName(uid = null, viewModel = vm) }
-    composeRule.waitUntil(WAIT_TIMEOUT) {
-      composeRule.onAllNodes(hasText("Unassigned")).fetchSemanticsNodes().isNotEmpty()
-    }
-    composeRule.onNodeWithText("Unassigned").assertIsDisplayed()
+    setAuthorNameContent(null)
+    textIsDisplayed("Unassigned")
   }
 
   @Test
   fun showsNameOnly_whenUserExists_andShowRoleFalse() {
-    val vm = AuthorNameViewModel(repo = FakeUserDirectoryDataSource())
-    composeRule.setContent { AuthorName(uid = "farmer_1", viewModel = vm) }
-    composeRule.waitUntil(WAIT_TIMEOUT) {
-      composeRule.onAllNodes(hasText("Fara Mer")).fetchSemanticsNodes().isNotEmpty()
-    }
-    composeRule.onNodeWithText("Fara Mer").assertIsDisplayed()
+    setAuthorNameContent("farmer_1")
+    textIsDisplayed("Fara Mer")
   }
 
   @Test
   fun showsDeletedUser_whenUserMissing() {
-    val vm = AuthorNameViewModel(repo = FakeUserDirectoryDataSource())
-    composeRule.setContent { AuthorName(uid = "missing", viewModel = vm) }
-    composeRule.waitUntil(WAIT_TIMEOUT) {
-      composeRule.onAllNodes(hasText("Deleted user")).fetchSemanticsNodes().isNotEmpty()
-    }
-    composeRule.onNodeWithText("Deleted user").assertIsDisplayed()
+    setAuthorNameContent("missing")
+    textIsDisplayed("Deleted user")
   }
 
   private fun setRememberUserNameContent(uid: String?) {
-    val repo = FakeUserDirectoryDataSource()
-    composeRule.setContent {
-      val vm = AuthorNameViewModel(repo)
-      val name = with(vm) { rememberUserName(uid) }
+    setContent {
+      val name = rememberUserName(uid)
       Text(name)
     }
   }
@@ -79,22 +59,12 @@ class AuthorNameTest {
   @Test
   fun rememberUserName_showsUnassigned_whenUidNull() {
     setRememberUserNameContent(null)
-
-    composeRule.waitUntil(WAIT_TIMEOUT) {
-      composeRule.onAllNodes(hasText("Unassigned")).fetchSemanticsNodes().isNotEmpty()
-    }
-
-    composeRule.onNodeWithText("Unassigned").assertIsDisplayed()
+    textIsDisplayed("Unassigned")
   }
 
   @Test
   fun rememberUserName_showsDeletedUser_whenMissing() {
     setRememberUserNameContent("missing")
-
-    composeRule.waitUntil(WAIT_TIMEOUT) {
-      composeRule.onAllNodes(hasText("Deleted user")).fetchSemanticsNodes().isNotEmpty()
-    }
-
-    composeRule.onNodeWithText("Deleted user").assertIsDisplayed()
+    textIsDisplayed("Deleted user")
   }
 }
