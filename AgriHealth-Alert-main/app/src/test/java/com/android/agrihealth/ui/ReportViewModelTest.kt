@@ -189,14 +189,14 @@ class FakeReportRepository : ReportRepository {
   var throwOnSave = false
   var lastDeleted = "lastDeletedReportId"
 
-  override suspend fun getReportById(id: String): Report? {
+  override suspend fun getReportById(reportId: String): Report? {
     if (throwOnGet) throw RuntimeException("Test error")
-    return if (id == sampleReport.id) sampleReport else null
+    return if (reportId == sampleReport.id) sampleReport else null
   }
 
-  override suspend fun editReport(id: String, report: Report) {
+  override suspend fun editReport(reportId: String, newReport: Report) {
     if (throwOnSave) throw RuntimeException("Save error")
-    savedReports.add(report)
+    savedReports.add(newReport)
   }
 
   // --- Unused methods for this ViewModel test ---

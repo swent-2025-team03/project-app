@@ -11,10 +11,10 @@ import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
-import com.android.agrihealth.testutil.FakeImageRepository
-import com.android.agrihealth.testutil.FakeOfficeRepository
-import com.android.agrihealth.testutil.FakeUserViewModel
-import com.android.agrihealth.testutil.TestConstants
+import com.android.agrihealth.testhelpers.TestTimeout
+import com.android.agrihealth.testhelpers.fakes.FakeImageRepository
+import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
+import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.profile.CodesViewModel
 import org.junit.Rule
@@ -50,7 +50,7 @@ class ManageOfficeScreenUiTest {
 
     val fakeOfficeRepository =
         FakeOfficeRepository(
-            initialOffices = listOf(fakeOffice), delayMs = TestConstants.DEFAULT_TIMEOUT)
+            initialOffices = listOf(fakeOffice), delayMs = TestTimeout.DEFAULT_TIMEOUT)
 
     val connectionRepository = ConnectionRepositoryProvider.farmerToOfficeRepository
 
@@ -90,8 +90,8 @@ class ManageOfficeScreenUiTest {
 
     composeTestRule.assertOverlayDuringLoading(
         isLoading = { manageOfficeViewModel.uiState.value.isLoading },
-        timeoutStart = TestConstants.LONG_TIMEOUT,
-        timeoutEnd = TestConstants.LONG_TIMEOUT,
+        timeoutStart = TestTimeout.LONG_TIMEOUT,
+        timeoutEnd = TestTimeout.LONG_TIMEOUT,
     )
   }
 }

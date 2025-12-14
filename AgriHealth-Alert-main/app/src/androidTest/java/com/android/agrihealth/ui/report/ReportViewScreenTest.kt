@@ -632,8 +632,6 @@ class ReportViewScreenTest {
 
   @Test
   fun photoDisplay_showsNothing_whenNoPhotoURL() {
-    val dependencies = setUpScreenAndRepositories(withPhoto = false)
-
     composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).assertIsNotDisplayed()

@@ -249,7 +249,7 @@ class ConnectionRepositoryTest : FirebaseTest() {
         .set(
             mapOf(
                 "code" to "222222",
-                "officeId" to vet1.officeId!!,
+                "officeId" to vet1.officeId,
                 "status" to "USED",
                 "createdAt" to Timestamp.now()))
         .await()
@@ -259,7 +259,7 @@ class ConnectionRepositoryTest : FirebaseTest() {
         .set(
             mapOf(
                 "code" to "333333",
-                "officeId" to vet1.officeId!!,
+                "officeId" to vet1.officeId,
                 "status" to "OPEN",
                 "createdAt" to Timestamp.now()))
         .await()

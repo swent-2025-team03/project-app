@@ -29,8 +29,6 @@ class AddReportViewModelTest {
   private lateinit var repository: TestReportRepository
   private lateinit var viewModel: AddReportViewModel
 
-  private val officeOptions = listOf("Best Office Ever!", "Meh Office", "Great Office")
-
   @Before
   fun setup() {
     Dispatchers.setMain(StandardTestDispatcher()) // Necessary for scheduling coroutines

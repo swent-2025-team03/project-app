@@ -59,10 +59,4 @@ open class InMemoryReportRepository(
   override suspend fun unassignReport(reportId: String) {
     delay(delayMs)
   }
-
-  fun reset(newReports: List<Report> = emptyList()) {
-    reports.clear()
-    reports.addAll(newReports)
-    nextId = 0
-  }
 }

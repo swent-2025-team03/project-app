@@ -143,7 +143,7 @@ fun AddReportScreen(
   }
 
   // For the dropdown menu
-  var selectedOption by remember { mutableStateOf((user as Farmer).defaultOffice ?: "") }
+  var selectedOption by remember { mutableStateOf(user.defaultOffice ?: "") }
 
   // For the confirmation snackbar (i.e alter window)
   val snackbarHostState = remember { SnackbarHostState() }

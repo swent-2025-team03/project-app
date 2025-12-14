@@ -29,10 +29,6 @@ class FakeViewUserViewModel(initial: ViewUserUiState) :
     get() = _state
 
   override fun load() {}
-
-  fun setState(state: ViewUserUiState) {
-    _state.value = state
-  }
 }
 
 class ViewUserScreenTest {

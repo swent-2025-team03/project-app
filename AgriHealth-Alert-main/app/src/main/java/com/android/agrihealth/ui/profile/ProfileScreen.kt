@@ -57,7 +57,6 @@ object ProfileScreenTestTags {
   const val DEFAULT_OFFICE_FIELD = "DefaultOfficeField"
   const val CODE_BUTTON_FARMER = "CodeButtonFarmer"
   const val MANAGE_OFFICE_BUTTON = "ManageOfficeButton"
-  const val GENERATE_CODE_BUTTON = "GenerateCodeButton"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -200,12 +199,11 @@ fun ProfileScreen(
 
               // Default Vet (Farmers only)
               if (user is Farmer) {
-                val officeNameVm: OfficeNameViewModel =
-                    viewModel(key = (user as Farmer).defaultOffice)
+                val officeNameVm: OfficeNameViewModel = viewModel(key = user.defaultOffice)
                 val officeName by officeNameVm.uiState.collectAsState()
                 LaunchedEffect(user) {
                   officeNameVm.loadOffice(
-                      uid = (user as Farmer).defaultOffice,
+                      uid = user.defaultOffice,
                       deletedOffice = "Deleted office",
                       noneOffice = "Unassigned")
                 }

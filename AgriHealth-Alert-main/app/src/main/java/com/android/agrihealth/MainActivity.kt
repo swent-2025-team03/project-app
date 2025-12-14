@@ -97,7 +97,7 @@ data class LocationPickedUIState(
 /**
  * ViewModel holding the state of the Location showed by fields and provided by the locationPicker.
  */
-class LocationPickedViewModel(private val initLocation: Location?) : ViewModel() {
+class LocationPickedViewModel(initLocation: Location?) : ViewModel() {
 
   private val _uiState = MutableStateFlow(LocationPickedUIState())
   val uiState: StateFlow<LocationPickedUIState> = _uiState.asStateFlow()
@@ -274,7 +274,7 @@ fun AgriHealthApp(
       composable(Screen.AddReport.route) {
         val imageVM = viewModel<ImageViewModel>()
         val createReportViewModel =
-            object : androidx.lifecycle.ViewModelProvider.Factory {
+            object : ViewModelProvider.Factory {
               override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return AddReportViewModel(userId = currentUserId, imageViewModel = imageVM) as T
               }
@@ -295,7 +295,7 @@ fun AgriHealthApp(
       }
       composable(route = Screen.LocationPicker.route) {
         val createMapViewModel =
-            object : androidx.lifecycle.ViewModelProvider.Factory {
+            object : ViewModelProvider.Factory {
               override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return MapViewModel(locationViewModel = locationViewModel, userId = currentUserId)
                     as T
@@ -541,7 +541,7 @@ fun AgriHealthApp(
                 }
               }
           val profileFactory =
-              object : androidx.lifecycle.ViewModelProvider.Factory {
+              object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                   return CodesViewModel(userViewModel, connectionRepository) as T
                 }

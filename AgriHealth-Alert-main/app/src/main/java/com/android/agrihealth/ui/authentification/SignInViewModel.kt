@@ -131,10 +131,10 @@ class SignInViewModel(
               }) { failure ->
                 _uiState.update { it.copy(verified = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
               }
-            } catch (e: GetCredentialCancellationException) {
+            } catch (_: GetCredentialCancellationException) {
               // User cancelled the sign-in flow
               _uiState.update { it.copy(verified = null) }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
               // Unexpected errors
               _uiState.update { it.copy(verified = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
             }

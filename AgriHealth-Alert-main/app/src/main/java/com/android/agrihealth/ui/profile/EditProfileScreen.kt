@@ -273,7 +273,7 @@ fun EditProfileScreen(
               if (user is Farmer) {
                 Spacer(modifier = Modifier.height(12.dp))
 
-                if ((user as Farmer).linkedOffices.isEmpty()) {
+                if (user.linkedOffices.isEmpty()) {
                   Text(
                       text = "You need to add offices before choosing your default one.",
                       style = MaterialTheme.typography.bodySmall,
@@ -284,7 +284,7 @@ fun EditProfileScreen(
                 val officeNames = remember { mutableStateMapOf<String, String>() }
 
                 // For each linked office, load their name
-                (user as Farmer).linkedOffices.forEach { officeId ->
+                user.linkedOffices.forEach { officeId ->
                   val vm: OfficeNameViewModel = viewModel(key = officeId)
                   val uiState by vm.uiState.collectAsState()
 
@@ -317,7 +317,7 @@ fun EditProfileScreen(
                       ExposedDropdownMenu(
                           expanded = expandedVetDropdown,
                           onDismissRequest = { expandedVetDropdown = false }) {
-                            (user as Farmer).linkedOffices.forEach { officeId ->
+                            user.linkedOffices.forEach { officeId ->
                               val displayName = officeNames[officeId] ?: officeId
 
                               DropdownMenuItem(
