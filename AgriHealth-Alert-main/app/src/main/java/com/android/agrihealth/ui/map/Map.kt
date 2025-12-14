@@ -123,6 +123,8 @@ fun MapScreen(
           val alertsToDisplay = alerts.filter { showAlerts }
 
           val currentUserLocation by mapViewModel.currentUserLocation.collectAsState()
+          val startingLocation by mapViewModel.startingLocation.collectAsState()
+          val userLocation = currentUserLocation ?: startingLocation
 
           GoogleMap(
               cameraPositionState = cameraPositionState,
@@ -144,11 +146,7 @@ fun MapScreen(
 
                 AlertAreas(alerts = alertsToDisplay)
 
-                currentUserLocation?.let { location -> UserLocationMarker(location = location) }
-                    ?: run {
-                      // fallback to startingLocation if currentUserLocation is null
-                      UserLocationMarker(location = mapViewModel.startingLocation.value)
-                    }
+                UserLocationMarker(location = userLocation)
               }
 
           MapTestReportMarkers(reportsToDisplay) { it.toggleSelect() }
@@ -156,6 +154,7 @@ fun MapScreen(
             val newList = listOf(it)
             selectedAlerts = if (newList == selectedAlerts) listOf() else newList
           }
+          MapTestUserLocationMarker(userLocation)
 
           // Control what to display
           Column(
@@ -227,6 +226,7 @@ object MapScreenTestTags {
   const val VISIBILITY_MENU = "mapDisplayVisibilityMenu"
   const val REPORT_VISIBILITY_SWITCH = "reportVisibilitySwitch"
   const val ALERT_VISIBILITY_SWITCH = "alertVisibilitySwitch"
+  const val USER_LOCATION_MARKER = "usersCurrentLocationMarker"
 
   // from bootcamp map
   fun getTestTagForReportMarker(reportId: String): String = "reportMarker_$reportId"

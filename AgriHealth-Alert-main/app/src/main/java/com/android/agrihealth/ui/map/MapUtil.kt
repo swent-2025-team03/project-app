@@ -248,7 +248,8 @@ fun UserLocationMarker(location: Location) {
   Marker(
       state = MarkerState(LatLng(location.latitude, location.longitude)),
       icon = markerIcon,
-      title = "You are here")
+      title = "You are here",
+  )
 }
 
 fun findAlertZonesUnderTap(alerts: List<Alert>, tap: LatLng): List<Alert> {
@@ -485,5 +486,17 @@ fun MapTestAlertCircles(alerts: List<Alert>, onClick: (Alert) -> Unit) {
                 .size(1.dp)) {
           Text(":)")
         }
+  }
+}
+
+/**
+ * Displays debug boxes to act as markers during instrumented tests. This is because Google maps
+ * markers cannot be accessed during testing. onClick should have the same behavior as the real
+ * markers
+ */
+@Composable
+fun MapTestUserLocationMarker(location: Location) {
+  Box(modifier = Modifier.testTag(MapScreenTestTags.USER_LOCATION_MARKER).alpha(0f).size(1.dp)) {
+    Text("(･ω･´)")
   }
 }
