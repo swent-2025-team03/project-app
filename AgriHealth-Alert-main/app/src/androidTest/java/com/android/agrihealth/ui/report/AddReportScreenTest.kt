@@ -5,6 +5,8 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.performClick
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.form.QuestionType
+import com.android.agrihealth.testhelpers.FileTestUtils.TEST_IMAGE
+import com.android.agrihealth.testhelpers.FileTestUtils.getUriFrom
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testhelpers.TestReport.report1
 import com.android.agrihealth.testhelpers.TestTimeout.SHORT_TIMEOUT
@@ -17,8 +19,6 @@ import com.android.agrihealth.testhelpers.templates.UITest
 import com.android.agrihealth.ui.common.ImagePickerTestTags
 import com.android.agrihealth.ui.profile.PhotoComponentsTestTags
 import com.android.agrihealth.ui.profile.PhotoComponentsTexts
-import com.android.agrihealth.utils.TestAssetUtils.FAKE_PHOTO_FILE
-import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -93,7 +93,7 @@ class AddReportScreenTest : UITest() {
 
   @Test
   fun imagePreview_isShownWhenUploaded_canRemoveImage() {
-    val imageUri = getUriFrom(FAKE_PHOTO_FILE)
+    val imageUri = getUriFrom(TEST_IMAGE)
     addReportVM.setPhoto(imageUri)
     setContentWithVM()
 

@@ -27,7 +27,7 @@ open class FakeReportRepository(
   override suspend fun getReportById(reportId: String): Report? {
     delay(delayMs)
     return reports.find { it.id == reportId }
-        ?: throw NoSuchElementException("InMemoryReportRepository: Report not found")
+        ?: throw NoSuchElementException("FakeReportRepository: Report not found")
   }
 
   override suspend fun addReport(report: Report) {
@@ -44,7 +44,7 @@ open class FakeReportRepository(
     if (index != -1) {
       reports[index] = newReport
     } else {
-      throw NoSuchElementException("InMemoryReportRepository: report not found")
+      throw NoSuchElementException("FakeReportRepository: report not found")
     }
   }
 
@@ -52,7 +52,7 @@ open class FakeReportRepository(
     delay(delayMs)
     val removed = reports.removeIf { it.id == reportId }
     if (!removed) {
-      throw NoSuchElementException("InMemoryReportRepository: Report not found")
+      throw NoSuchElementException("FakeReportRepository: Report not found")
     }
   }
 

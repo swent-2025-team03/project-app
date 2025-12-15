@@ -24,6 +24,7 @@ import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.report.ReportStatus
+import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.model.report.form.MCQ
 import com.android.agrihealth.data.model.report.form.MCQO
 import com.android.agrihealth.data.model.report.form.OpenQuestion
@@ -64,7 +65,7 @@ object ReportViewScreenTestTags {
   const val UNSAVED_ALERT_BOX_CANCEL = "UnsavedChangesAlertCancelButton"
   const val DELETE_REPORT_ALERT_BOX = "DeleteReportAlertBox"
 
-  fun getTagForStatusOption(statusName: String): String = "StatusOption_$statusName"
+  fun getTagForStatusOption(status: ReportStatus): String = "StatusOption_${status.name}"
 }
 
 @Composable
@@ -361,15 +362,14 @@ fun ReportViewScreen(
                               listOf(ReportStatus.IN_PROGRESS, ReportStatus.RESOLVED).forEach {
                                   status ->
                                 DropdownMenuItem(
-                                    text = { Text(status.name.replace("_", " ")) },
+                                    text = { Text(status.displayString().uppercase()) },
                                     onClick = {
                                       viewModel.onStatusChange(status)
                                       expanded = false
                                     },
                                     modifier =
                                         Modifier.testTag(
-                                            ReportViewScreenTestTags.getTagForStatusOption(
-                                                status.name)))
+                                            ReportViewScreenTestTags.getTagForStatusOption(status)))
                               }
                             }
                       }

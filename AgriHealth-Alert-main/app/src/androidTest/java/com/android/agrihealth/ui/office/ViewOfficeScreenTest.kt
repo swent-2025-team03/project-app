@@ -1,10 +1,10 @@
 package com.android.agrihealth.ui.office
 
-import android.net.Uri
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.data.model.images.ImageViewModel
+import com.android.agrihealth.testhelpers.FileTestUtils.FAKE_PHOTO_PATH
+import com.android.agrihealth.testhelpers.FileTestUtils.addPlaceholderPhotoToRepository
 import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.TestUser.office1
 import com.android.agrihealth.testhelpers.fakes.FakeImageRepository
@@ -12,11 +12,7 @@ import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
 import com.android.agrihealth.testhelpers.templates.UITest
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.profile.PhotoComponentsTestTags
-import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
 import org.junit.Test
-
-private const val PLACEHOLDER_OFFICE_PHOTO = "report_image_cat.jpg"
-private const val FAKE_PHOTO_PATH = "some/fake/path/to/photo"
 
 class FakeViewOfficeViewModel(initial: ViewOfficeUiState) :
     ViewOfficeViewModel(targetOfficeId = "fake", officeRepository = FakeOfficeRepository()) {
@@ -49,17 +45,6 @@ class ViewOfficeScreenTest : UITest() {
     setScreen(fakeOfficeVm, imageViewModel)
 
     return TestDependencies(fakeOfficeVm, imageViewModel, fakeImageRepository)
-  }
-
-  private fun getImageBytesFromUri(uri: Uri): ByteArray {
-    val context = InstrumentationRegistry.getInstrumentation().context
-    return context.contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: ByteArray(0)
-  }
-
-  private fun addPlaceholderPhoto(imageRepo: FakeImageRepository) {
-    val uri = getUriFrom(PLACEHOLDER_OFFICE_PHOTO)
-    val bytes = getImageBytesFromUri(uri)
-    imageRepo.forceUploadImage(bytes)
   }
 
   private data class TestDependencies(
@@ -127,7 +112,7 @@ class ViewOfficeScreenTest : UITest() {
   fun officePhoto_transitionsFromLoadingToSuccess() {
     val dependencies = setBasicTestScreen()
     dependencies.imageRepository.freezeRepoConnection()
-    addPlaceholderPhoto(dependencies.imageRepository)
+    addPlaceholderPhotoToRepository(dependencies.imageRepository)
 
     with(PhotoComponentsTestTags) {
       nodeIsDisplayed(PHOTO_LOADING_ANIMATION, LONG_TIMEOUT)

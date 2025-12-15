@@ -1,17 +1,19 @@
-package com.android.agrihealth.utils
+package com.android.agrihealth.testhelpers
 
 import android.net.Uri
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.agrihealth.testhelpers.fakes.FakeImageRepository
 import java.io.File
 
 /**
  * Utility class used during testing when dealing with test assets such as pictures, videos, etc...
  */
-object TestAssetUtils {
+object FileTestUtils {
 
   // Constants for commonly used test files
   /** Fake photo used when creating a new report */
-  const val FAKE_PHOTO_FILE = "report_image_cat.jpg"
+  const val TEST_IMAGE = "report_image_cat.jpg"
+  const val FAKE_PHOTO_PATH = "some/fake/path/to/photo.jpg"
 
   /**
    * Returns the Uri of a given file. File must be located in "androidTest/assets"
@@ -28,6 +30,18 @@ object TestAssetUtils {
     }
 
     return Uri.fromFile(cacheFile)
+  }
+
+  /** Retrieves the data of the provided image path, using its URI, returning bytes */
+  fun getBytesFromFile(fileName: String): ByteArray {
+    val uri = getUriFrom(fileName)
+    val context = InstrumentationRegistry.getInstrumentation().context
+    return context.contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: ByteArray(0)
+  }
+
+  fun addPlaceholderPhotoToRepository(imageRepository: FakeImageRepository) {
+    val fakePhotoBytes = getBytesFromFile(TEST_IMAGE)
+    imageRepository.forceUploadImage(fakePhotoBytes)
   }
 
   /**

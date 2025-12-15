@@ -6,9 +6,9 @@ import com.android.agrihealth.data.model.report.form.MCQ
 import com.android.agrihealth.data.model.report.form.MCQO
 import com.android.agrihealth.data.model.report.form.OpenQuestion
 import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
+import com.android.agrihealth.testhelpers.FileTestUtils
+import com.android.agrihealth.testhelpers.FileTestUtils.cleanupTestAssets
 import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
-import com.android.agrihealth.utils.TestAssetUtils
-import com.android.agrihealth.utils.TestAssetUtils.cleanupTestAssets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -82,7 +82,7 @@ class AddReportViewModelTest {
 
   @Test
   fun setPhoto_updatesPhotoOnly() {
-    val fakePicture = TestAssetUtils.getUriFrom(TestAssetUtils.FAKE_PHOTO_FILE)
+    val fakePicture = FileTestUtils.getUriFrom(FileTestUtils.TEST_IMAGE)
     viewModel.setPhoto(fakePicture)
     assertEquals(fakePicture, viewModel.uiState.value.photoUri)
     assertEquals("", viewModel.uiState.value.title)
