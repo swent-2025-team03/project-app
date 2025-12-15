@@ -34,6 +34,7 @@ import com.android.agrihealth.data.model.report.form.MCQ
 import com.android.agrihealth.data.model.report.form.MCQO
 import com.android.agrihealth.data.model.report.form.OpenQuestion
 import com.android.agrihealth.data.model.report.form.QuestionForm
+import com.android.agrihealth.data.model.report.form.QuestionType
 import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserViewModel
@@ -63,12 +64,18 @@ object AddReportScreenTestTags {
   const val LOCATION_BUTTON = "locationButton"
   const val CREATE_BUTTON = "createButton"
   const val SCROLL_CONTAINER = "scrollContainer"
-  const val DIALOG_SUCCESS = "dialogSuccess"
-  const val DIALOG_FAILURE = "dialogFailure"
-  const val DIALOG_SUCCESS_OK = "dialogSuccessOk"
-  const val DIALOG_FAILURE_OK = "dialogFailureOk"
+  const val DIALOG = "createReportDialog"
+  const val DIALOG_OK = "createReportDialogOk"
 
-  fun getTestTagForOffice(vetId: String): String = "officeOption_$vetId"
+  fun getTestTagForOffice(officeId: String): String = "officeOption_$officeId"
+
+  fun getTestTagForQuestion(type: QuestionType, index: Int) =
+      when (type) {
+        QuestionType.OPEN -> "QUESTION_${index}_OPEN"
+        QuestionType.YESORNO -> "QUESTION_${index}_YESORNO"
+        QuestionType.MCQ -> "QUESTION_${index}_MCQ"
+        QuestionType.MCQO -> "QUESTION_${index}_MCQO"
+      }
 }
 
 /** Texts for the report creation feedback */
@@ -303,7 +310,7 @@ fun CreateReportSuccessDialog(visible: Boolean, onDismiss: () -> Unit) {
       confirmButton = {
         TextButton(
             onClick = onDismiss,
-            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_SUCCESS_OK),
+            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_OK),
             colors =
                 ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.onSurface)) {
@@ -312,7 +319,7 @@ fun CreateReportSuccessDialog(visible: Boolean, onDismiss: () -> Unit) {
       },
       title = { Text(AddReportDialogTexts.TITLE_SUCCESS) },
       text = { Text(AddReportFeedbackTexts.SUCCESS) },
-      modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_SUCCESS),
+      modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG),
   )
 }
 
@@ -332,7 +339,7 @@ fun CreateReportErrorDialog(visible: Boolean, errorMessage: String?, onDismiss: 
       confirmButton = {
         TextButton(
             onClick = onDismiss,
-            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_FAILURE_OK),
+            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_OK),
             colors =
                 ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.onSurface)) {
@@ -341,7 +348,7 @@ fun CreateReportErrorDialog(visible: Boolean, errorMessage: String?, onDismiss: 
       },
       title = { Text(AddReportDialogTexts.TITLE_FAILURE) },
       text = { Text(errorMessage ?: AddReportFeedbackTexts.UNKNOWN) },
-      modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_FAILURE))
+      modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG))
 }
 
 /**
@@ -410,7 +417,9 @@ fun QuestionList(
               onQuestionChange(index, updated)
             },
             enabled = true,
-            modifier = Modifier.testTag("QUESTION_${index}_OPEN"))
+            modifier =
+                Modifier.testTag(
+                    AddReportScreenTestTags.getTestTagForQuestion(question.type, index)))
       }
       is YesOrNoQuestion -> {
         YesOrNoQuestionItem(
@@ -420,7 +429,9 @@ fun QuestionList(
               onQuestionChange(index, updated)
             },
             enabled = true,
-            modifier = Modifier.testTag("QUESTION_${index}_YESORNO"))
+            modifier =
+                Modifier.testTag(
+                    AddReportScreenTestTags.getTestTagForQuestion(question.type, index)))
       }
       is MCQ -> {
         MCQItem(
@@ -430,7 +441,9 @@ fun QuestionList(
               onQuestionChange(index, updated)
             },
             enabled = true,
-            modifier = Modifier.testTag("QUESTION_${index}_MCQ"))
+            modifier =
+                Modifier.testTag(
+                    AddReportScreenTestTags.getTestTagForQuestion(question.type, index)))
       }
       is MCQO -> {
         MCQOItem(
@@ -440,7 +453,9 @@ fun QuestionList(
               onQuestionChange(index, updated)
             },
             enabled = true,
-            modifier = Modifier.testTag("QUESTION_${index}_MCQO"))
+            modifier =
+                Modifier.testTag(
+                    AddReportScreenTestTags.getTestTagForQuestion(question.type, index)))
       }
     }
   }

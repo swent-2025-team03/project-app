@@ -1,470 +1,147 @@
 package com.android.agrihealth.ui.report
 
-import android.net.Uri
-import androidx.activity.ComponentActivity
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.test.assertAny
 import androidx.compose.ui.test.assertHasClickAction
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotDisplayed
-import androidx.compose.ui.test.assertTextEquals
-import androidx.compose.ui.test.hasAnyAncestor
-import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollToNode
-import androidx.compose.ui.test.performTextInput
-import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.report.form.MCQ
-import com.android.agrihealth.data.model.report.form.MCQO
-import com.android.agrihealth.data.model.report.form.OpenQuestion
-import com.android.agrihealth.data.model.report.form.QuestionForm
-import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
-import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.data.model.user.UserViewModelContract
+import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.form.QuestionType
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
-import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
-import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
+import com.android.agrihealth.testhelpers.TestReport.report1
+import com.android.agrihealth.testhelpers.TestTimeout.SHORT_TIMEOUT
+import com.android.agrihealth.testhelpers.TestUser.farmer1
+import com.android.agrihealth.testhelpers.TestUser.office1
 import com.android.agrihealth.testhelpers.fakes.FakeAddReportViewModel
 import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
 import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
+import com.android.agrihealth.testhelpers.templates.UITest
 import com.android.agrihealth.ui.common.ImagePickerTestTags
 import com.android.agrihealth.ui.profile.PhotoComponentsTestTags
 import com.android.agrihealth.ui.profile.PhotoComponentsTexts
 import com.android.agrihealth.utils.TestAssetUtils.FAKE_PHOTO_FILE
-import com.android.agrihealth.utils.TestAssetUtils.cleanupTestAssets
 import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
-import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Assert.assertTrue
-import org.junit.Rule
 import org.junit.Test
 
 private val linkedOffices =
     mapOf(
-        "Best Office Ever!" to "Deleted office",
+        office1.id to office1.name,
         "Meh Office" to "Deleted office",
         "Great Office" to "Deleted office")
 
-private fun fakeFarmerViewModel(): UserViewModelContract =
-    FakeUserViewModel(
-        Farmer(
-            uid = "test_user",
-            firstname = "Farmer",
-            lastname = "Joe",
-            email = "email@email.com",
-            address = Location(0.0, 0.0, "123 Farm Lane"),
-            linkedOffices = linkedOffices.keys.toList(),
-            defaultOffice = linkedOffices.keys.toList().first(),
-        ))
+class AddReportScreenTest : UITest() {
+  val report = report1
+  val farmer =
+      farmer1.copy(
+          linkedOffices = linkedOffices.keys.toList(),
+          defaultOffice = linkedOffices.keys.toList().first())
+  val addReportVM = FakeAddReportViewModel()
+  val userVM = FakeUserViewModel(farmer)
 
-// Helper AddReportViewModel used to simulate a specific result of creating a report
-// (i.e success, validation error, ...)
-private class ResultFakeAddReportViewModel(
-    private val resultToReturn: CreateReportResult,
-) : AddReportViewModelContract {
-  private val _uiState =
-      MutableStateFlow(
-          AddReportUiState(
-              title = "title",
-              description = "description",
-              questionForms = emptyList(),
-          ))
-
-  override val uiState = _uiState
-
-  override fun switchCollected() {}
-
-  override fun setTitle(newTitle: String) {}
-
-  override fun setDescription(newDescription: String) {}
-
-  override fun setOffice(officeId: String) {}
-
-  override fun setAddress(address: Location?) {}
-
-  override fun setPhoto(uri: Uri?) {}
-
-  override fun removePhoto() {}
-
-  override fun setUploadedImagePath(path: String?) {}
-
-  override fun updateQuestion(index: Int, updated: QuestionForm) {}
-
-  override suspend fun createReport(): CreateReportResult = resultToReturn
-
-  override fun clearInputs() {}
-}
-
-class AddReportScreenTest {
-
-  @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
-
-  // Waits until the dialog is shown
-  private fun assertDialogIsShown(testTag: String) {
-    composeRule.waitUntil(LONG_TIMEOUT) {
-      composeRule.onAllNodesWithTag(testTag).fetchSemanticsNodes().isNotEmpty()
-    }
-  }
-
-  // Checks if all the components of the dialog work correctly
-  private fun assertDialogWorks(
-      dialogTestTag: String,
-      dialogTitle: String,
-      dismissTestTag: String
+  private fun setContentWithVM(
+      addReportViewModel: AddReportViewModelContract = addReportVM,
+      onBack: () -> Unit = {},
+      onCreate: () -> Unit = {}
   ) {
-    assertDialogIsShown(dialogTestTag)
-
-    composeRule.onNodeWithText(dialogTitle).assertIsDisplayed()
-
-    composeRule.onNodeWithTag(dismissTestTag).assertHasClickAction()
-  }
-
-  // Scrolls down
-  private fun scrollToUploadSection() {
-    composeRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
-  }
-
-  // Manually fills a report
-  private fun fillReportWith(
-      title: String,
-      description: String,
-      doSubmitReport: Boolean,
-      officeId: String? = null,
-      address: Location? = null,
-      viewModel: AddReportViewModel? = null,
-  ) {
-    composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).performTextInput(title)
-    composeRule
-        .onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD)
-        .performTextInput(description)
-
-    val scrollContainer = composeRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-    var index = 0
-    while (true) {
-      composeRule.waitForIdle()
-
-      val openTag = "QUESTION_${index}_OPEN"
-      val yesNoTag = "QUESTION_${index}_YESORNO"
-      val mcqTag = "QUESTION_${index}_MCQ"
-      val mcqOTag = "QUESTION_${index}_MCQO"
-
-      when {
-        composeRule.onAllNodesWithTag(openTag).fetchSemanticsNodes().firstOrNull() != null -> {
-          scrollContainer.performScrollToNode(hasTestTag(openTag))
-          composeRule.onNodeWithTag(openTag).performTextInput("answer $index")
-        }
-        composeRule.onAllNodesWithTag(yesNoTag).fetchSemanticsNodes().firstOrNull() != null -> {
-          scrollContainer.performScrollToNode(hasTestTag(yesNoTag))
-          composeRule.onAllNodesWithTag(yesNoTag)[0].performClick()
-        }
-        composeRule.onAllNodesWithTag(mcqTag).fetchSemanticsNodes().firstOrNull() != null -> {
-          scrollContainer.performScrollToNode(hasTestTag(mcqTag))
-          composeRule.onAllNodesWithTag(mcqTag)[0].performClick()
-        }
-        composeRule.onAllNodesWithTag(mcqOTag).fetchSemanticsNodes().firstOrNull() != null -> {
-          scrollContainer.performScrollToNode(hasTestTag(mcqOTag))
-          composeRule.onAllNodesWithTag(mcqOTag)[0].performClick()
-        }
-        else -> break
-      }
-
-      index++
-    }
-
-    if (officeId != null) {
-      scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
-      composeRule.onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN).performClick()
-
-      composeRule
-          .onNodeWithTag(
-              AddReportScreenTestTags.getTestTagForOffice(officeId),
-              useUnmergedTree = true,
-          )
-          .performClick()
-
-      viewModel?.setOffice(officeId)
-    }
-
-    if (address != null && viewModel != null) {
-      viewModel.setAddress(address)
-    }
-
-    if (doSubmitReport) {
-      scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
-      composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
+    setContent {
+      AddReportScreen(
+          userViewModel = userVM,
+          onBack = { onBack() },
+          onCreateReport = { onCreate() },
+          addReportViewModel = addReportViewModel)
     }
   }
-
-  // --- Tests ---
 
   @Test
-  fun displayAllFieldsAndButtons() {
-    composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
+  override fun displayAllComponents() {
+    setContentWithVM()
+
+    with(AddReportScreenTestTags) {
+      nodesAreDisplayed(TITLE_FIELD, DESCRIPTION_FIELD)
+
+      val questions = addReportVM.uiState.value.questionForms
+      questions.forEachIndexed { index, question ->
+        val tag = getTestTagForQuestion(question.type, index)
+        scrollFormTo(tag)
       }
+
+      scrollFormTo(OFFICE_DROPDOWN)
+      scrollFormTo(CREATE_BUTTON)
     }
-    composeRule.onNodeWithTag(AddReportScreenTestTags.TITLE_FIELD).assertIsDisplayed()
-    composeRule.onNodeWithTag(AddReportScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()
-
-    val scrollContainer = composeRule.onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-
-    val viewModel = FakeAddReportViewModel()
-    val questions = viewModel.uiState.value.questionForms
-    questions.forEachIndexed { index, question ->
-      when (question) {
-        is OpenQuestion -> {
-          val node =
-              composeRule
-                  .onAllNodesWithTag("QUESTION_${index}_OPEN")
-                  .fetchSemanticsNodes()
-                  .firstOrNull()
-          if (node != null) {
-            scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_OPEN"))
-            composeRule.onNodeWithTag("QUESTION_${index}_OPEN").assertIsDisplayed()
-          }
-        }
-        is YesOrNoQuestion -> {
-          val nodes =
-              composeRule.onAllNodesWithTag("QUESTION_${index}_YESORNO").fetchSemanticsNodes()
-          if (nodes.isNotEmpty()) {
-            scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_YESORNO"))
-            composeRule
-                .onAllNodesWithTag("QUESTION_${index}_YESORNO")
-                .assertAny(hasAnyAncestor(hasTestTag(AddReportScreenTestTags.SCROLL_CONTAINER)))
-          }
-        }
-        is MCQ -> {
-          val nodes = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQ").fetchSemanticsNodes()
-          if (nodes.isNotEmpty()) {
-            scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQ"))
-            composeRule
-                .onAllNodesWithTag("QUESTION_${index}_MCQ")
-                .assertAny(hasAnyAncestor(hasTestTag(AddReportScreenTestTags.SCROLL_CONTAINER)))
-          }
-        }
-        is MCQO -> {
-          val nodes = composeRule.onAllNodesWithTag("QUESTION_${index}_MCQO").fetchSemanticsNodes()
-          if (nodes.isNotEmpty()) {
-            scrollContainer.performScrollToNode(hasTestTag("QUESTION_${index}_MCQO"))
-            composeRule
-                .onAllNodesWithTag("QUESTION_${index}_MCQO")
-                .assertAny(hasAnyAncestor(hasTestTag(AddReportScreenTestTags.SCROLL_CONTAINER)))
-          }
-        }
-      }
-    }
-
-    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
-    composeRule.onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN).assertIsDisplayed()
-    scrollContainer.performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
-    composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).assertIsDisplayed()
   }
 
   @Test
   fun createButton_showsSnackbar_onEmptyFields() {
-    composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
-      }
-    }
-    composeRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
-    composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
-    composeRule.waitUntil(LONG_TIMEOUT) {
-      composeRule
-          .onAllNodesWithText(AddReportFeedbackTexts.INCOMPLETE)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
-    composeRule.onNodeWithText(AddReportFeedbackTexts.INCOMPLETE).assertIsDisplayed()
+    setContentWithVM()
+
+    scrollFormToUploadSection()
+    clickOn(AddReportScreenTestTags.CREATE_BUTTON)
+    textIsDisplayed(AddReportFeedbackTexts.INCOMPLETE)
   }
 
   @Test
   fun selectingOffice_updatesDisplayedOption() {
-    val fakeUserViewModel = fakeFarmerViewModel()
-
-    composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen(
-            userViewModel = fakeUserViewModel,
-            onCreateReport = {},
-            addReportViewModel = FakeAddReportViewModel())
-      }
-    }
+    setContentWithVM()
 
     val firstOfficeId = linkedOffices.keys.first()
     val firstOfficeName = linkedOffices[firstOfficeId]!!
 
-    composeRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
-
-    composeRule.onNodeWithTag(AddReportScreenTestTags.OFFICE_DROPDOWN).performClick()
-    composeRule.waitForIdle()
-
-    composeRule
-        .onNodeWithTag(
-            AddReportScreenTestTags.getTestTagForOffice(firstOfficeId), useUnmergedTree = true)
-        .assertExists()
-        .performClick()
-
-    composeRule.onNodeWithText(firstOfficeName, useUnmergedTree = true).assertIsDisplayed()
+    scrollFormTo(AddReportScreenTestTags.OFFICE_DROPDOWN)
+    clickOn(AddReportScreenTestTags.OFFICE_DROPDOWN)
+    clickOn(AddReportScreenTestTags.getTestTagForOffice(firstOfficeId))
+    textIsDisplayed(firstOfficeName)
   }
 
   @Test
   fun enteringTitleDescription_showsSuccessDialog() {
-    composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
-      }
-    }
+    setContentWithVM()
 
-    fillReportWith("title", "description", true)
+    fillReportWith(report)
 
-    assertDialogWorks(
-        AddReportScreenTestTags.DIALOG_SUCCESS,
-        AddReportDialogTexts.TITLE_SUCCESS,
-        AddReportScreenTestTags.DIALOG_SUCCESS_OK)
+    assertDialogWorks(success = true)
   }
 
   @Test
   fun dismissingDialog_callsOnCreateReport() {
     var called = false
 
-    composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen(
-            onCreateReport = { called = true }, addReportViewModel = FakeAddReportViewModel())
-      }
-    }
+    setContentWithVM(onCreate = { called = true })
 
-    fillReportWith("title", "description", true)
-
-    composeRule.waitUntil(LONG_TIMEOUT) {
-      composeRule.onAllNodesWithText(AddReportDialogTexts.OK).fetchSemanticsNodes().isNotEmpty()
-    }
-    composeRule.onNodeWithText(AddReportDialogTexts.OK).performClick()
+    fillReportWith(report)
+    clickOnText(AddReportDialogTexts.OK)
 
     assertTrue(called)
   }
 
   @Test
   fun imagePreview_isNotShownWhenEmpty() {
-    composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
-      }
-    }
-    scrollToUploadSection()
-    composeRule.waitForIdle()
-    composeRule.onNodeWithTag(PhotoComponentsTestTags.IMAGE_PREVIEW).assertDoesNotExist()
-    composeRule
-        .onNodeWithTag(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON)
-        .assertTextEquals(PhotoComponentsTexts.UPLOAD_IMAGE)
+    setContentWithVM()
+
+    scrollFormToUploadSection()
+    nodeNotDisplayed(PhotoComponentsTestTags.IMAGE_PREVIEW)
+    textContains(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON, PhotoComponentsTexts.UPLOAD_IMAGE)
   }
 
   @Test
-  fun imagePreview_canRemoveImage() {
+  fun imagePreview_isShownWhenUploaded_canRemoveImage() {
     val imageUri = getUriFrom(FAKE_PHOTO_FILE)
-    val fakeViewModel = FakeAddReportViewModel()
-    fakeViewModel.setPhoto(imageUri)
-    composeRule.setContent {
-      MaterialTheme { AddReportScreen(onCreateReport = {}, addReportViewModel = fakeViewModel) }
+    addReportVM.setPhoto(imageUri)
+    setContentWithVM()
+
+    with(PhotoComponentsTestTags) {
+      scrollFormToUploadSection()
+      nodeIsDisplayed(IMAGE_PREVIEW)
+
+      textContains(UPLOAD_IMAGE_BUTTON, PhotoComponentsTexts.REMOVE_IMAGE)
+      clickOn(UPLOAD_IMAGE_BUTTON)
+
+      textContains(UPLOAD_IMAGE_BUTTON, PhotoComponentsTexts.UPLOAD_IMAGE)
+      nodeNotDisplayed(IMAGE_PREVIEW)
+
+      clickOn(UPLOAD_IMAGE_BUTTON)
+      nodeIsDisplayed(ImagePickerTestTags.DIALOG)
+      clickOn(ImagePickerTestTags.CANCEL_BUTTON)
+      nodeNotDisplayed(ImagePickerTestTags.DIALOG)
     }
-    scrollToUploadSection()
-    composeRule.onNodeWithTag(PhotoComponentsTestTags.IMAGE_PREVIEW).assertIsDisplayed()
-    composeRule
-        .onNodeWithTag(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON)
-        .assertIsDisplayed()
-        .assertTextEquals(PhotoComponentsTexts.REMOVE_IMAGE)
-        .performClick()
-    composeRule.waitForIdle()
-    composeRule
-        .onNodeWithTag(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON)
-        .assertIsDisplayed()
-        .assertTextEquals(PhotoComponentsTexts.UPLOAD_IMAGE)
-    composeRule.onNodeWithTag(PhotoComponentsTestTags.IMAGE_PREVIEW).assertDoesNotExist()
-  }
-
-  @Test
-  fun imagePreview_isShownWhenUploaded() {
-    val imageUri = getUriFrom(FAKE_PHOTO_FILE)
-    val fakeViewModel = FakeAddReportViewModel()
-    fakeViewModel.setPhoto(imageUri)
-
-    composeRule.setContent {
-      MaterialTheme { AddReportScreen(onCreateReport = {}, addReportViewModel = fakeViewModel) }
-    }
-    scrollToUploadSection()
-    composeRule.waitForIdle()
-    composeRule.onNodeWithTag(PhotoComponentsTestTags.IMAGE_PREVIEW).assertIsDisplayed()
-    composeRule
-        .onNodeWithTag(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON)
-        .assertTextEquals(PhotoComponentsTexts.REMOVE_IMAGE)
-  }
-
-  @Test
-  fun uploadImageDialog_cancel_dismissedNoPhotoPicked() {
-    composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen(onCreateReport = {}, addReportViewModel = FakeAddReportViewModel())
-      }
-    }
-
-    scrollToUploadSection()
-    composeRule.onNodeWithTag(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON).performClick()
-    composeRule.onNodeWithTag(ImagePickerTestTags.DIALOG).assertIsDisplayed()
-    composeRule.onNodeWithTag(ImagePickerTestTags.CANCEL_BUTTON).performClick()
-    composeRule.onNodeWithTag(ImagePickerTestTags.DIALOG).assertIsNotDisplayed()
-    composeRule.onNodeWithTag(PhotoComponentsTestTags.IMAGE_PREVIEW).assertIsNotDisplayed()
-    composeRule
-        .onNodeWithTag(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON)
-        .assertTextEquals(PhotoComponentsTexts.UPLOAD_IMAGE)
-  }
-
-  @Test
-  fun chosenImage_isDisplayedInPreview() {
-    cleanupTestAssets()
-
-    composeRule.waitForIdle()
-    val imageUri = getUriFrom(FAKE_PHOTO_FILE)
-    val fakeViewModel = FakeAddReportViewModel().apply { setPhoto(imageUri) }
-
-    composeRule.waitForIdle()
-    composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen(
-            onCreateReport = {},
-            addReportViewModel = fakeViewModel,
-        )
-      }
-    }
-
-    composeRule.waitForIdle()
-    scrollToUploadSection()
-
-    composeRule.waitUntil(LONG_TIMEOUT) {
-      composeRule
-          .onAllNodesWithTag(PhotoComponentsTestTags.IMAGE_PREVIEW)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
-
-    scrollToUploadSection()
-
-    composeRule.waitForIdle()
-    composeRule
-        .onNodeWithTag(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON)
-        .assertIsDisplayed()
-        .assertTextEquals(PhotoComponentsTexts.REMOVE_IMAGE)
   }
 
   @Test
@@ -472,85 +149,119 @@ class AddReportScreenTest {
     var backCalled = false
     var onCreateCalled = false
 
-    composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen(
-            onBack = { backCalled = true },
-            onCreateReport = { onCreateCalled = true },
-            addReportViewModel = FakeAddReportViewModel(),
-        )
-      }
-    }
+    setContentWithVM(onBack = { backCalled = true }, onCreate = { onCreateCalled = true })
 
-    fillReportWith("title", "description", true)
+    fillReportWith(report)
 
-    assertDialogWorks(
-        AddReportScreenTestTags.DIALOG_SUCCESS,
-        AddReportDialogTexts.TITLE_SUCCESS,
-        AddReportScreenTestTags.DIALOG_SUCCESS_OK)
+    assertDialogWorks(success = true)
 
-    composeRule
-        .onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS_OK)
-        .assertHasClickAction()
-        .performClick()
+    clickOn(AddReportScreenTestTags.DIALOG_OK)
+    nodeNotDisplayed(AddReportScreenTestTags.DIALOG)
 
     assertTrue(backCalled)
     assertTrue(onCreateCalled)
-
-    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS).assertDoesNotExist()
   }
 
   @Test
   fun createReport_errorDialogWorksCorrectly() {
-    val errorMessage = "repository failed"
-    val error = RuntimeException(errorMessage)
-    val fakeViewModel = ResultFakeAddReportViewModel(CreateReportResult.UploadError(error))
+    val error = RuntimeException("repository failed")
+    val errorVM = FakeAddReportViewModel(overrideResult = CreateReportResult.UploadError(error))
 
-    composeRule.setContent {
-      MaterialTheme { AddReportScreen(onCreateReport = {}, addReportViewModel = fakeViewModel) }
-    }
+    setContentWithVM(errorVM)
 
-    composeRule
-        .onNodeWithTag(AddReportScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(AddReportScreenTestTags.CREATE_BUTTON))
-    composeRule.onNodeWithTag(AddReportScreenTestTags.CREATE_BUTTON).performClick()
+    scrollFormToUploadSection()
+    clickOn(AddReportScreenTestTags.CREATE_BUTTON)
 
-    assertDialogWorks(
-        AddReportScreenTestTags.DIALOG_FAILURE,
-        AddReportDialogTexts.TITLE_FAILURE,
-        AddReportScreenTestTags.DIALOG_FAILURE_OK)
+    assertDialogWorks(success = false)
 
-    composeRule
-        .onNodeWithTag(AddReportScreenTestTags.DIALOG_FAILURE_OK)
-        .assertHasClickAction()
-        .performClick()
-
-    composeRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_FAILURE).assertDoesNotExist()
+    debugFreeze()
+    clickOn(AddReportScreenTestTags.DIALOG_OK)
+    nodeNotDisplayed(AddReportScreenTestTags.DIALOG)
   }
 
   @Test
   fun createReport_showsLoadingOverlay() {
-    val slowRepo = FakeReportRepository(delayMs = DEFAULT_TIMEOUT)
-    val viewModel = AddReportViewModel(userId = "test_user", reportRepository = slowRepo)
+    val slowRepo = FakeReportRepository(delayMs = SHORT_TIMEOUT)
+    val slowVM = AddReportViewModel(userId = "test_user", reportRepository = slowRepo)
 
-    composeRule.setContent {
-      MaterialTheme {
-        AddReportScreen(
-            userViewModel = fakeFarmerViewModel(),
-            onCreateReport = {},
-            addReportViewModel = viewModel)
+    setContentWithVM(addReportViewModel = slowVM)
+
+    fillReportWith(report, viewModel = slowVM)
+
+    composeTestRule.assertOverlayDuringLoading(isLoading = { slowVM.uiState.value.isLoading })
+  }
+
+  // Checks if all the components of the dialog work correctly
+  private fun assertDialogWorks(success: Boolean) {
+    val expectedText =
+        if (success) AddReportDialogTexts.TITLE_SUCCESS else AddReportDialogTexts.TITLE_FAILURE
+
+    nodeIsDisplayed(AddReportScreenTestTags.DIALOG)
+    textIsDisplayed(expectedText)
+    node(AddReportScreenTestTags.DIALOG_OK).assertHasClickAction()
+  }
+
+  // Scrolls down
+  private fun scrollFormToUploadSection() = scrollFormTo(AddReportScreenTestTags.CREATE_BUTTON)
+
+  private fun scrollFormTo(tag: String) = scrollTo(AddReportScreenTestTags.SCROLL_CONTAINER, tag)
+
+  private fun fillReportWith(
+      report: Report,
+      doSubmitReport: Boolean = true,
+      viewModel: AddReportViewModelContract = addReportVM
+  ) {
+    fun handleQuestions() {
+      fun scrollAndWrite(tag: String, answer: String) {
+        scrollFormTo(tag)
+        writeIn(tag, answer)
+      }
+
+      fun scrollAndClickFirst(tag: String) {
+        scrollFormTo(tag)
+        composeTestRule.onAllNodesWithTag(tag)[0].performClick()
+      }
+
+      var index = 0
+      while (true) {
+        val questions =
+            listOf(
+                QuestionType.OPEN to { tag -> scrollAndWrite(tag, "answer $index") },
+                QuestionType.YESORNO to ::scrollAndClickFirst,
+                QuestionType.MCQ to ::scrollAndClickFirst,
+                QuestionType.MCQO to ::scrollAndClickFirst)
+
+        // Gets right tag and action, picks the valid one, and executes it
+        val handleQuestion =
+            questions
+                .map { (type, action) ->
+                  AddReportScreenTestTags.getTestTagForQuestion(type, index) to action
+                }
+                .firstOrNull { (tag, _) -> nodeExists(tag) }
+                ?.also { (tag, action) -> action(tag) }
+
+        if (handleQuestion == null) return
+
+        index++
       }
     }
 
-    fillReportWith(
-        title = "Slow Test",
-        description = "Desc",
-        doSubmitReport = true,
-        officeId = "Best Office Ever!",
-        address = Location(0.0, 0.0, "Test address"),
-        viewModel = viewModel,
-    )
+    with(AddReportScreenTestTags) {
+      writeIn(TITLE_FIELD, report.title)
+      writeIn(DESCRIPTION_FIELD, report.description)
+      handleQuestions()
 
-    composeRule.assertOverlayDuringLoading(isLoading = { viewModel.uiState.value.isLoading })
+      scrollFormTo(OFFICE_DROPDOWN)
+      clickOn(OFFICE_DROPDOWN)
+      clickOn(getTestTagForOffice(report.officeId))
+
+      scrollFormTo(LOCATION_BUTTON)
+      viewModel.setAddress(report.location)
+
+      if (doSubmitReport) {
+        scrollFormToUploadSection()
+        clickOn(CREATE_BUTTON)
+      }
+    }
   }
 }

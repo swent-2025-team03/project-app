@@ -8,15 +8,15 @@ package com.android.agrihealth.data.model.report.form
  * @param answerIndex the index at which the value chosen by the user is in the answers list, not
  *   relevant for open questions.
  * @param userAnswer the answer typed by the user, not relevant for MCQ and yes or no questions.
- * @param questionType the type of the answer, used to distinguish between different types of answer
- *   when storing data in firebase or rendering in UI.
+ * @param type the type of the answer, used to distinguish between different types of answer when
+ *   storing data in firebase or rendering in UI.
  */
 sealed class QuestionForm(
     open val question: String,
     open val answers: List<String>,
     open val answerIndex: Int,
     open val userAnswer: String,
-    open val questionType: QuestionType
+    open val type: QuestionType
 ) {
   /** checks if a form has valid values. */
   abstract fun isValid(): Boolean
@@ -29,7 +29,7 @@ data class OpenQuestion(override val question: String, override val userAnswer: 
         answers = emptyList(),
         answerIndex = -1,
         userAnswer = userAnswer,
-        questionType = QuestionType.OPEN) {
+        type = QuestionType.OPEN) {
   override fun isValid(): Boolean {
     return userAnswer.isNotBlank()
   }
@@ -46,7 +46,7 @@ data class MCQ(
         answers = answers,
         answerIndex = answerIndex,
         userAnswer = "",
-        questionType = QuestionType.MCQ) {
+        type = QuestionType.MCQ) {
   override fun isValid(): Boolean {
     return answerIndex >= 0 && answerIndex < answers.size
   }
@@ -59,7 +59,7 @@ data class YesOrNoQuestion(override val question: String, override val answerInd
         answers = listOf("Yes", "No"),
         answerIndex = answerIndex,
         userAnswer = "",
-        questionType = QuestionType.YESORNO) {
+        type = QuestionType.YESORNO) {
   override fun isValid(): Boolean {
     return answerIndex >= 0 && answerIndex < 2
   }
@@ -77,7 +77,7 @@ data class MCQO(
         answers = answers,
         answerIndex = answerIndex,
         userAnswer = userAnswer,
-        questionType = QuestionType.MCQO) {
+        type = QuestionType.MCQO) {
   override fun isValid(): Boolean {
     return answerIndex >= 0 &&
         (answerIndex < answers.size || (answerIndex == answers.size && userAnswer.isNotEmpty()))

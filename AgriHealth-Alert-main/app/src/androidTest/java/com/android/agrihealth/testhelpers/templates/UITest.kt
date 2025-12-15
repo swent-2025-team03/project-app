@@ -2,6 +2,7 @@ package com.android.agrihealth.testhelpers.templates
 
 import android.os.Build
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ComposeTimeoutException
@@ -12,6 +13,7 @@ import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.isNotDisplayed
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -53,6 +55,10 @@ abstract class UITest(private val grantedPermissions: Array<String> = emptyArray
   /** Returns the node with the provided tag. This is simply a shorter notation for readability */
   protected fun node(tag: String): SemanticsNodeInteraction {
     return composeTestRule.onNodeWithTag(tag)
+  }
+
+  protected fun nodes(tag: String): List<SemanticsNode> {
+    return composeTestRule.onAllNodesWithTag(tag).fetchSemanticsNodes()
   }
 
   /** Make an action on a node (assertion most of the time) with proper CI error description */
@@ -167,6 +173,10 @@ abstract class UITest(private val grantedPermissions: Array<String> = emptyArray
     withNode(scrollable) {
       composeTestRule.waitUntil(timeout) { performScrollToNode(hasTestTag(target)).isDisplayed() }
     }
+  }
+
+  protected fun nodeExists(tag: String): Boolean {
+    return nodes(tag).firstOrNull() != null
   }
 
   protected fun debugFreeze() {

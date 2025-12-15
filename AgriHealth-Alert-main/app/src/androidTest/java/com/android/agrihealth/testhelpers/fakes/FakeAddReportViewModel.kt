@@ -14,7 +14,8 @@ import com.android.agrihealth.ui.report.CreateReportResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-open class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
+open class FakeAddReportViewModel(private val overrideResult: CreateReportResult? = null) :
+    ViewModel(), AddReportViewModelContract {
   val _uiState =
       MutableStateFlow(
           AddReportUiState(
@@ -53,6 +54,8 @@ open class FakeAddReportViewModel : ViewModel(), AddReportViewModelContract {
   }
 
   override suspend fun createReport(): CreateReportResult {
+    if (overrideResult != null) return overrideResult
+
     if (_uiState.value.title.isNotBlank() && _uiState.value.description.isNotBlank()) {
       return CreateReportResult.Success
     } else {
