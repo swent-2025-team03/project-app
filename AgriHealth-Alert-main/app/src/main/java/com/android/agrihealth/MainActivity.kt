@@ -494,18 +494,20 @@ fun AgriHealthApp(
           val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull()
           val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull()
           val sourceReport = backStackEntry.arguments?.getString("reportId")
+          val sourceAlert = backStackEntry.arguments?.getString("alertId")
 
           val location = if (lat != null && lng != null) Location(lat, lng) else null
           val mapViewModel =
               MapViewModel(
                   locationViewModel = locationViewModel,
                   selectedReportId = sourceReport,
+                  selectedAlertId = sourceAlert,
                   startingPosition = location,
                   userId = currentUserId)
           MapScreen(
               mapViewModel = mapViewModel,
               navigationActions = navigationActions,
-              isViewedFromOverview = (sourceReport == null),
+              isViewedFromOverview = (sourceReport == null && sourceAlert == null),
               forceStartingPosition = (location != null))
         }
 

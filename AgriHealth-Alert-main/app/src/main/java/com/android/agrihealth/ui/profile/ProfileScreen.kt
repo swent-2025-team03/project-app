@@ -120,26 +120,30 @@ fun ProfileScreen(
               HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
 
               // Profile Image Placeholder
-              Icon(
-                  imageVector =
-                      Icons.Default.AccountCircle, // To change to actual image when available
-                  contentDescription = "Profile Picture",
-                  modifier = Modifier.size(120.dp).clip(CircleShape).testTag(PROFILE_IMAGE),
-                  tint = MaterialTheme.colorScheme.primary)
+              Box(modifier = Modifier, contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector =
+                        Icons.Default.AccountCircle, // To change to actual image when available
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier.size(120.dp).clip(CircleShape).testTag(PROFILE_IMAGE),
+                    tint = MaterialTheme.colorScheme.primary)
+                FloatingActionButton(
+                    onClick = onEditProfile,
+                    modifier = Modifier.testTag(EDIT_BUTTON).size(40.dp).align(Alignment.BottomEnd),
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
+                      Icon(Icons.Default.Edit, contentDescription = "Edit profile")
+                    }
+              }
 
               Spacer(modifier = Modifier.height(8.dp))
 
               // Name + Edit Icon
               Row(verticalAlignment = Alignment.CenterVertically) {
-                Spacer(
-                    modifier = Modifier.width(32.dp)) // Solution to center the name with edit icon
                 Text(
                     text = "${user.firstname} ${user.lastname}",
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.testTag(NAME_TEXT))
-                IconButton(onClick = onEditProfile, modifier = Modifier.testTag(EDIT_BUTTON)) {
-                  Icon(Icons.Default.Edit, contentDescription = "Edit profile")
-                }
               }
 
               // Description
@@ -196,12 +200,11 @@ fun ProfileScreen(
 
               // Default Vet (Farmers only)
               if (user is Farmer) {
-                val officeNameVm: OfficeNameViewModel =
-                    viewModel(key = (user as Farmer).defaultOffice)
+                val officeNameVm: OfficeNameViewModel = viewModel(key = (user).defaultOffice)
                 val officeName by officeNameVm.uiState.collectAsState()
                 LaunchedEffect(user) {
                   officeNameVm.loadOffice(
-                      uid = (user as Farmer).defaultOffice,
+                      uid = (user).defaultOffice,
                       deletedOffice = "Deleted office",
                       noneOffice = "Unassigned")
                 }
