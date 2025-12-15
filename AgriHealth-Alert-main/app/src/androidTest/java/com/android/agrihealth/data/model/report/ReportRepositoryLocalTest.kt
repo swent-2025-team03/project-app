@@ -1,7 +1,7 @@
 package com.android.agrihealth.data.model.report
 
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
+import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -13,7 +13,7 @@ import org.junit.Test
 // https://github.com/swent-epfl/bootcamp-25-B3-Solution/blob/main/app/src/test/java/com/github/se/bootcamp/model/todo/ToDosRepositoryLocalTest.kt
 
 class ReportRepositoryLocalTest {
-  private lateinit var repository: InMemoryReportRepository
+  private lateinit var repository: FakeReportRepository
 
   private val report =
       Report(
@@ -31,7 +31,7 @@ class ReportRepositoryLocalTest {
 
   @Before
   fun setup() {
-    repository = InMemoryReportRepository()
+    repository = FakeReportRepository()
   }
 
   /**

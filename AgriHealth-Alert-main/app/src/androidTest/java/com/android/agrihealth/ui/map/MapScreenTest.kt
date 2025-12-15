@@ -20,8 +20,8 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.testhelpers.TestReport
 import com.android.agrihealth.testhelpers.TestUser.farmer1
+import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
 import com.android.agrihealth.testhelpers.fakes.FakeUserRepository
-import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
 import com.android.agrihealth.testhelpers.templates.UITest
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -46,7 +46,7 @@ class MapScreenTest :
                 android.Manifest.permission.ACCESS_COARSE_LOCATION)) {
   val userId = farmer1.uid
   val reportRepository =
-      InMemoryReportRepository(
+      FakeReportRepository(
           listOf(
               TestReport.report1.copy(farmerId = userId),
               TestReport.report2.copy(farmerId = userId),

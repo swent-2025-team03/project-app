@@ -21,8 +21,7 @@ import com.android.agrihealth.testhelpers.TestTimeout
 import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeImageRepository
 import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
-import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
-import com.android.agrihealth.testhelpers.fakes.TestReportRepository
+import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
@@ -67,7 +66,7 @@ class ReportViewScreenTest {
 
   // --- Role-specific helpers (wrappers) ---
   private fun setVetScreen(
-      reportViewModel: ReportViewViewModel = ReportViewViewModel(TestReportRepository())
+      reportViewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
   ) =
       setReportViewScreen(
           role = UserRole.VET,
@@ -82,7 +81,7 @@ class ReportViewScreenTest {
                   officeId = "OFF_456"))
 
   private fun setValidVetScreen(
-      reportViewModel: ReportViewViewModel = ReportViewViewModel(TestReportRepository())
+      reportViewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
   ) =
       setReportViewScreen(
           role = UserRole.VET,
@@ -97,7 +96,7 @@ class ReportViewScreenTest {
                   officeId = "OFF_456"))
 
   private fun setFarmerScreen(
-      reportViewModel: ReportViewViewModel = ReportViewViewModel(TestReportRepository())
+      reportViewModel: ReportViewViewModel = ReportViewViewModel(FakeReportRepository())
   ) =
       setReportViewScreen(
           role = UserRole.FARMER,
@@ -148,7 +147,7 @@ class ReportViewScreenTest {
 
   private fun setUpScreenAndRepositories(withPhoto: Boolean = true): TestDependencies {
     val testReport = createFakeReport(withPhoto)
-    val repoWithPhoto = TestReportRepository(initialReports = listOf(testReport))
+    val repoWithPhoto = FakeReportRepository(initialReports = listOf(testReport))
     val reportViewModel = ReportViewViewModel(repository = repoWithPhoto)
 
     val fakeImageRepository = FakeImageRepository()
@@ -311,7 +310,7 @@ class ReportViewScreenTest {
   @Test
   fun farmer_canConfirmDelete() {
     val testReport = ReportViewUIState().report.copy(id = "RPT001")
-    val repo = TestReportRepository(initialReports = listOf(testReport))
+    val repo = FakeReportRepository(initialReports = listOf(testReport))
     val vm = ReportViewViewModel(repository = repo)
 
     composeTestRule.setContent {
@@ -450,7 +449,7 @@ class ReportViewScreenTest {
   fun vet_saveButton_navigatesBackAfterSuccessfulSave() {
     val TEST_REPORT_ID = "RPT001"
     val sampleReport = ReportViewUIState().report.copy(id = TEST_REPORT_ID)
-    val fakeRepoWithReport = TestReportRepository(listOf(sampleReport))
+    val fakeRepoWithReport = FakeReportRepository(listOf(sampleReport))
     val viewModel = ReportViewViewModel(repository = fakeRepoWithReport)
 
     composeTestRule.setContent {
@@ -560,7 +559,7 @@ class ReportViewScreenTest {
   fun reportView_showsLoadingOverlayWhileFetchingReport() {
     val sampleReport = ReportViewUIState().report.copy(id = "RPT_SLOW")
     val slowRepo: ReportRepository =
-        InMemoryReportRepository(listOf(sampleReport), TestTimeout.DEFAULT_TIMEOUT)
+        FakeReportRepository(listOf(sampleReport), TestTimeout.DEFAULT_TIMEOUT)
     val vm = ReportViewViewModel(repository = slowRepo)
 
     composeTestRule.setContent {

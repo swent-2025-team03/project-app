@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.overview
 
-import androidx.compose.ui.test.*
 import com.android.agrihealth.data.model.alert.FakeAlertRepository
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
@@ -8,7 +7,7 @@ import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import com.android.agrihealth.testhelpers.TestUser.farmer1
 import com.android.agrihealth.testhelpers.TestUser.vet1
 import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
-import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
+import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
 import com.android.agrihealth.testhelpers.templates.UITest
 import junit.framework.TestCase.assertEquals
 import org.junit.Test
@@ -19,7 +18,7 @@ class OverviewScreenTest : UITest() {
       OverviewScreen(
           userRole = UserRole.FARMER,
           user = farmer1,
-          overviewViewModel = OverviewViewModel(InMemoryReportRepository()))
+          overviewViewModel = OverviewViewModel(FakeReportRepository()))
     }
   }
 
@@ -28,7 +27,7 @@ class OverviewScreenTest : UITest() {
       OverviewScreen(
           userRole = UserRole.VET,
           user = vet1,
-          overviewViewModel = OverviewViewModel(InMemoryReportRepository()))
+          overviewViewModel = OverviewViewModel(FakeReportRepository()))
     }
   }
 
@@ -100,7 +99,7 @@ class OverviewScreenTest : UITest() {
   @Test
   fun overviewScreen_showsAndHidesLoadingOverlay_duringLoadAlerts() {
     val alertRepo = FakeAlertRepository(delayMs = DEFAULT_TIMEOUT)
-    val reportRepo = InMemoryReportRepository(delayMs = DEFAULT_TIMEOUT)
+    val reportRepo = FakeReportRepository(delayMs = DEFAULT_TIMEOUT)
 
     val viewModel = OverviewViewModel(reportRepository = reportRepo, alertRepository = alertRepo)
 

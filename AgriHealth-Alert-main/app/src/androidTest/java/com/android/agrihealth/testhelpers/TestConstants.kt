@@ -6,6 +6,10 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testhelpers.TestUser.farmer1
+import com.android.agrihealth.testhelpers.TestUser.office1
+import com.android.agrihealth.testhelpers.TestUser.vet1
+import java.time.LocalTime
 
 object TestTimeout {
   const val SHORT_TIMEOUT = 2_000L
@@ -57,11 +61,13 @@ object TestReport {
           "Description 1",
           emptyList(),
           null,
-          "farmerId1",
-          "officeId1",
+          farmer1.uid,
+          office1.id,
           ReportStatus.PENDING,
           null,
-          Location(46.9481, 7.4474, "Place name 1"))
+          Location(46.9481, 7.4474, "Place name 1"),
+          duration = LocalTime.of(0, 10),
+          assignedVet = vet1.uid)
   val report2 =
       Report(
           "rep_id2",

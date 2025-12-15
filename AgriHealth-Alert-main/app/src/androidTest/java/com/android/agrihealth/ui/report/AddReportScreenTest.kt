@@ -30,8 +30,8 @@ import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayD
 import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.fakes.FakeAddReportViewModel
+import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
 import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
-import com.android.agrihealth.testhelpers.fakes.InMemoryReportRepository
 import com.android.agrihealth.ui.common.ImagePickerTestTags
 import com.android.agrihealth.ui.profile.PhotoComponentsTestTags
 import com.android.agrihealth.ui.profile.PhotoComponentsTexts
@@ -530,7 +530,7 @@ class AddReportScreenTest {
 
   @Test
   fun createReport_showsLoadingOverlay() {
-    val slowRepo = InMemoryReportRepository(delayMs = DEFAULT_TIMEOUT)
+    val slowRepo = FakeReportRepository(delayMs = DEFAULT_TIMEOUT)
     val viewModel = AddReportViewModel(userId = "test_user", reportRepository = slowRepo)
 
     composeRule.setContent {

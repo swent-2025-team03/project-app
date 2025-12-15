@@ -3,7 +3,6 @@ package com.android.agrihealth.ui.office
 import android.net.Uri
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.test.*
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT

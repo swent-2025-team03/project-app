@@ -7,6 +7,7 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.isNotDisplayed
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
@@ -14,6 +15,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.rule.GrantPermissionRule
@@ -144,5 +146,20 @@ abstract class UITest(private val grantedPermissions: Array<String> = emptyArray
       if (reset) assertIsDisplayed().performTextClearance()
       assertIsDisplayed().performTextInput(text)
     }
+  }
+
+  /** Scrolls the scrollable until it reaches the target, and checks if it is displayed */
+  protected fun scrollTo(
+      scrollable: String,
+      target: String,
+      timeout: Long = TestTimeout.DEFAULT_TIMEOUT
+  ) {
+    withNode(scrollable) {
+      composeTestRule.waitUntil(timeout) { performScrollToNode(hasTestTag(target)).isDisplayed() }
+    }
+  }
+
+  protected fun debugFreeze() {
+    composeTestRule.waitUntil(60 * 1_000) { false }
   }
 }
