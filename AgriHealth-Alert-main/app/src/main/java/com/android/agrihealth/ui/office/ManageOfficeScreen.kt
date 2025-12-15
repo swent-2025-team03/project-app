@@ -49,6 +49,7 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.profile.RemotePhotoDisplay
 import com.android.agrihealth.ui.profile.UploadRemovePhotoButton
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.utils.ImagePickerDialog
 import kotlinx.coroutines.launch
 
 object ManageOfficeScreenTestTags {
@@ -314,47 +315,60 @@ fun UploadRemoveOfficePhotoSection(
     imageViewModel: ImageViewModel = viewModel()
 ) {
 
-  var initialLoad by rememberSaveable { mutableStateOf(true) }
-  val showRemote = initialLoad && uiState.photoUri == null
+  Box(
+    modifier = Modifier.size(120.dp),
+    contentAlignment = Alignment.Center,
+  ) {
 
-  if (showRemote) {
-    RemotePhotoDisplay(
-        photoURL = uiState.office?.photoUrl,
-        imageViewModel = imageViewModel,
-        modifier = Modifier.size(120.dp).clip(CircleShape),
-        contentDescription = "Office photo",
-        showPlaceHolder = true)
-  } else {
-    LocalPhotoDisplay(
-        photoURI = uiState.photoUri,
-        modifier = Modifier.size(120.dp).clip(CircleShape),
-        showPlaceHolder = true)
-  }
+    var initialLoad by rememberSaveable { mutableStateOf(true) }
+    val showRemote = initialLoad && uiState.photoUri == null
 
-  if (isOwner) {
-    // Camera icon overlay
-    FloatingActionButton(
-      onClick = { handleProfilePictureClick() },
-      modifier = Modifier
-        .size(40.dp)
-        .align(Alignment.BottomEnd)
-        .testTag(EditProfileScreenTestTags.EDIT_PROFILE_PICTURE_BUTTON),
-      containerColor = MaterialTheme.colorScheme.primaryContainer,
-      contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-    ) {
-      Icon(
-        imageVector = if (profilePictureIsEmpty) Icons.Default.CameraAlt else Icons.Default.Clear,
-        contentDescription = "Edit profile picture",
-        modifier = Modifier.size(20.dp)
-      )
+    if (showRemote) {
+      RemotePhotoDisplay(
+          photoURL = uiState.office?.photoUrl,
+          imageViewModel = imageViewModel,
+          modifier = Modifier.size(120.dp).clip(CircleShape),
+          contentDescription = "Office photo",
+          showPlaceHolder = true)
+    } else {
+      LocalPhotoDisplay(
+          photoURI = uiState.photoUri,
+          modifier = Modifier.size(120.dp).clip(CircleShape),
+          showPlaceHolder = true)
     }
 
-    UploadRemovePhotoButton(
-        photoAlreadyPicked = photoAlreadyPicked,
-        onPhotoPicked = onPhotoPicked,
-        onPhotoRemoved = {
-          onPhotoRemoved()
-          initialLoad = false
-        })
+    if (isOwner) {
+      var showImagePicker by remember { mutableStateOf(false) }
+
+      // Camera icon overlay
+      FloatingActionButton(
+        onClick = { if (photoAlreadyPicked) onPhotoRemoved() else showImagePicker = true },
+        modifier = Modifier
+          .size(40.dp)
+          .align(Alignment.BottomEnd)
+          .testTag(EditProfileScreenTestTags.EDIT_PROFILE_PICTURE_BUTTON),
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+      ) {
+        Icon(
+          imageVector = if (photoAlreadyPicked) Icons.Default.Clear else Icons.Default.CameraAlt,
+          contentDescription = "Edit profile picture",
+          modifier = Modifier.size(20.dp)
+        )
+      }
+
+      if (showImagePicker) {
+        ImagePickerDialog(
+          onDismiss = { showImagePicker = false }, onImageSelected = { uri -> onPhotoPicked(uri) })
+      }
+
+//      UploadRemovePhotoButton(
+//          photoAlreadyPicked = photoAlreadyPicked,
+//          onPhotoPicked = onPhotoPicked,
+//          onPhotoRemoved = {
+//            onPhotoRemoved()
+//            initialLoad = false
+//          })
+    }
   }
 }
