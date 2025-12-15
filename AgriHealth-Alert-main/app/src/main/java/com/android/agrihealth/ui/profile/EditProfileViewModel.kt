@@ -1,13 +1,17 @@
 package com.android.agrihealth.ui.profile
 
 import androidx.lifecycle.ViewModel
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
 
-class EditProfileViewModel(private val officeRepository: OfficeRepository) : ViewModel() {
+class EditProfileViewModel(
+  private val officeRepository: OfficeRepository,
+  private val imageViewModel: ImageViewModel
+) : ViewModel() {
 
   suspend fun saveProfileChanges(
       user: User,
@@ -16,7 +20,8 @@ class EditProfileViewModel(private val officeRepository: OfficeRepository) : Vie
       pickedLocation: Location?,
       selectedDefaultOffice: String?,
       description: String,
-      collected: Boolean
+      collected: Boolean,
+      photoByteArray: ByteArray?
   ): User? {
     val updatedDescription = description.ifBlank { null }
 
@@ -30,6 +35,17 @@ class EditProfileViewModel(private val officeRepository: OfficeRepository) : Vie
       }
     }
 
+    var uploadedPhotoURL: String? = null
+    if (photoByteArray != null) {
+      try {
+        uploadedPhotoURL = imageViewModel.uploadAndWait(photoByteArray)
+      } catch (e: Throwable) {
+        // TODO Implement error handling
+      }
+    }
+
+
+
     return when (user) {
       is Farmer ->
           user.copy(
@@ -38,14 +54,16 @@ class EditProfileViewModel(private val officeRepository: OfficeRepository) : Vie
               address = pickedLocation,
               defaultOffice = selectedDefaultOffice,
               description = updatedDescription,
-              collected = collected)
+              collected = collected,
+              photoURL = uploadedPhotoURL)
       is Vet ->
           user.copy(
               firstname = firstname,
               lastname = lastname,
               address = pickedLocation,
               description = updatedDescription,
-              collected = collected)
+              collected = collected,
+              photoURL = uploadedPhotoURL)
     }
   }
 }

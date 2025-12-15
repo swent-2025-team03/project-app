@@ -158,7 +158,7 @@ fun EditProfileScreen(
           factory =
               object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                  return EditProfileViewModel(officeRepository = OfficeRepositoryProvider.get())
+                  return EditProfileViewModel(officeRepository = OfficeRepositoryProvider.get(), imageViewModel = imageViewModel)
                       as T
                 }
               })
@@ -213,6 +213,7 @@ fun EditProfileScreen(
   }
 
 
+  // TODO: Refactor this so each UI component are in their own composable
   Scaffold(
       topBar = {
         TopAppBar(
@@ -246,7 +247,7 @@ fun EditProfileScreen(
                 imageViewModel = imageViewModel,
                 profilePictureIsEmpty = chosenPhoto == null,
                 localPhotoByteArray = chosenPhoto,
-                remotePhotoURL = null,   // TODO Change this
+                remotePhotoURL = user.photoURL,
                 handleProfilePictureClick = {
                   if (chosenPhoto == null) {
                     showPhotoPickerDialog = true
@@ -433,7 +434,8 @@ fun EditProfileScreen(
                               pickedLocation = pickedLocation,
                               selectedDefaultOffice = selectedDefaultOffice,
                               description = description,
-                              collected = collected)
+                              collected = collected,
+                              photoByteArray = chosenPhoto)
                       updatedUser?.let { onSave(it) }
                     }
                   },

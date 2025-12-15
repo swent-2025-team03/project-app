@@ -123,15 +123,7 @@ class ManageOfficeViewModel(
     }
   }
 
-  suspend fun ImageViewModel.uploadAndWait(uri: Uri): String {
-    upload(uri) // start the upload
-    val result = uiState.first { it is ImageUIState.UploadSuccess || it is ImageUIState.Error }
-    return when (result) {
-      is ImageUIState.UploadSuccess -> result.path
-      is ImageUIState.Error -> throw result.e
-      else -> throw IllegalStateException("Unexpected state")
-    }
-  }
+
 
   fun setPhoto(uri: Uri?) {
     _uiState.value = _uiState.value.copy(photoUri = uri)

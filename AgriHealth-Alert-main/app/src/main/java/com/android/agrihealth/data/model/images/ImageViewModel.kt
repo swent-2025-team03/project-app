@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -70,6 +71,36 @@ class ImageViewModel(private val repository: ImageRepository = ImageRepositoryPr
         .uploadImage(bytes)
         .onSuccess { path -> _uiState.value = ImageUIState.UploadSuccess(path) }
         .onFailure { e -> _uiState.value = ImageUIState.Error(e) }
+    }
+  }
+
+  /**
+   * Starts uploading the given image bytes of the photo and suspends until the upload finishes.
+   *
+   * @return The URL of the uploaded photo on success.
+   * @throws Throwable If the upload fails (rethrows the underlying error).
+   */
+  suspend fun uploadAndWait(byteArray: ByteArray): String {
+    return uploadAndWaitImplementation(PhotoType.ByteArray(byteArray))
+  }
+
+  /**
+   * Starts uploading the photo referenced by the given [uri] and suspends until the upload finishes.
+   *
+   * @return The URL of the uploaded photo on success.
+   * @throws Throwable If the upload fails (rethrows the underlying error).
+   */
+  suspend fun uploadAndWait(uri: Uri): String {
+    return uploadAndWaitImplementation(PhotoType.Uri(uri))
+  }
+
+  private suspend fun uploadAndWaitImplementation(photo: PhotoType): String {
+    uploadImplementation(photo) // start the upload
+    val result = uiState.first { it is ImageUIState.UploadSuccess || it is ImageUIState.Error }
+    return when (result) {
+      is ImageUIState.UploadSuccess -> result.path
+      is ImageUIState.Error -> throw result.e
+      else -> throw IllegalStateException("Unexpected state")
     }
   }
 
