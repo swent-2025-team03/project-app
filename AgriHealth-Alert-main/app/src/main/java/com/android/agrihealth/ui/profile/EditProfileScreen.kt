@@ -133,6 +133,9 @@ fun EditProfileScreen(
   val user = uiState.user
   val userRole = user.role
   val currentUser = user
+  val displayRemotePhoto: Boolean by rememberSaveable { mutableStateOf(true) }
+
+  Log.d("EditProfileScreen", "photoRUL = " + user.photoURL.toString())
 
   LaunchedEffect(user) {
     if (currentUser is Vet) {
@@ -189,11 +192,15 @@ fun EditProfileScreen(
   var errorDialogMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
   // Specific to the image cropper
+  var removeRemotePhoto by rememberSaveable { mutableStateOf(false) }
+  var localPhotoByteArray : ByteArray? by rememberSaveable {mutableStateOf(null)}
+  val effectiveRemoteUrl = if (removeRemotePhoto) null else user.photoURL
+  val hasAnyPhoto = (localPhotoByteArray != null) || (effectiveRemoteUrl != null)
   val imageCropper = rememberImageCropper()
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val croppingIsOngoing = imageCropper.cropState != null
-  var chosenPhotoByteArray : ByteArray? by rememberSaveable {mutableStateOf(null)}
+  var initialLoad by rememberSaveable { mutableStateOf(true) }
   val launchImageCropper: (Uri) -> Unit = remember {
     { uri: Uri ->
       scope.launch {
@@ -208,11 +215,19 @@ fun EditProfileScreen(
             }
           }
           is CropResult.Success -> {
-            chosenPhotoByteArray = result.bitmap.toByteArray()
+            localPhotoByteArray = result.bitmap.toByteArray()
+            initialLoad = false
+            removeRemotePhoto = false
           }
         }
       }
     }
+  }
+
+  // Reset the "initialLoad" flag when a different user is loaded
+  LaunchedEffect(user.uid) {
+    initialLoad = true
+    localPhotoByteArray = null
   }
 
 
@@ -248,14 +263,17 @@ fun EditProfileScreen(
 
             EditableProfilePicture(
                 imageViewModel = imageViewModel,
-                profilePictureIsEmpty = chosenPhotoByteArray == null,
-                localPhotoByteArray = chosenPhotoByteArray,
-                remotePhotoURL = null,   // TODO Put back "user.photoURL"
+                localPhotoByteArray = localPhotoByteArray,
+                remotePhotoURL = effectiveRemoteUrl,
+                profilePictureIsEmpty = !hasAnyPhoto,
+                initialLoad = initialLoad,
                 handleProfilePictureClick = {
-                  if (chosenPhotoByteArray == null) {
+                  if (!hasAnyPhoto) {
                     showPhotoPickerDialog = true
                   } else {
-                    chosenPhotoByteArray = null
+                    localPhotoByteArray = null
+                    initialLoad = false
+                    removeRemotePhoto = true
                   }
                 }
             )
@@ -438,8 +456,12 @@ fun EditProfileScreen(
                               selectedDefaultOffice = selectedDefaultOffice,
                               description = description,
                               collected = collected,
-                              photoByteArray = chosenPhotoByteArray)
-                      updatedUser?.let { onSave(it) }
+                              photoByteArray = localPhotoByteArray,
+                              removeRemotePhoto)
+                      updatedUser?.let {
+                        onSave(it)
+                        removeRemotePhoto = false
+                      }
                     }
                   },
                   modifier =
@@ -523,6 +545,7 @@ fun EditableProfilePicture(
   profilePictureIsEmpty: Boolean,
   localPhotoByteArray: ByteArray?,
   remotePhotoURL: String?,
+  initialLoad: Boolean,
   handleProfilePictureClick: () -> Unit
 ) {
   Box(
@@ -530,9 +553,10 @@ fun EditableProfilePicture(
     contentAlignment = Alignment.Center,
   ) {
 
-    var initialLoad by rememberSaveable { mutableStateOf(true) }
-    val showRemote = initialLoad && remotePhotoURL != null
-    //val showRemote = remotePhotoURL != null
+    //var initialLoad by rememberSaveable { mutableStateOf(true) }
+    //val showRemote = initialLoad && remotePhotoURL != null
+    val showRemote = initialLoad && localPhotoByteArray == null && remotePhotoURL != null
+    Log.d("EditProfileScreen", "remotePhotoURL = $remotePhotoURL")
 
     // TODO Make the default profile icon and the actual profile picture the same size
     if (showRemote) {
@@ -543,7 +567,7 @@ fun EditableProfilePicture(
         contentDescription = "Office photo",
         showPlaceHolder = true)
     } else {
-      Log.d("EditProfile", (localPhotoByteArray == null).toString())
+      Log.d("EditProfile", "localPhotoByteArray is null?: " + (localPhotoByteArray == null).toString())
       LocalPhotoDisplay(
         photoByteArray = localPhotoByteArray,
         modifier = Modifier.size(120.dp).clip(CircleShape),

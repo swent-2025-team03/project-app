@@ -21,7 +21,8 @@ class EditProfileViewModel(
       selectedDefaultOffice: String?,
       description: String,
       collected: Boolean,
-      photoByteArray: ByteArray?
+      photoByteArray: ByteArray?,
+      removeRemotePhoto: Boolean,
   ): User? {
     val updatedDescription = description.ifBlank { null }
 
@@ -35,13 +36,17 @@ class EditProfileViewModel(
       }
     }
 
-    var uploadedPhotoURL: String? = null
-    if (photoByteArray != null) {
-      try {
-        uploadedPhotoURL = imageViewModel.uploadAndWait(photoByteArray)
-      } catch (e: Throwable) {
-        // TODO Implement error handling
+    val finalPhotoUrl: String? = when {
+      photoByteArray != null -> {  // user picked a new photo
+        try {
+          imageViewModel.uploadAndWait(photoByteArray)
+        } catch (e: Throwable) {
+          // TODO: handle error (and probably return null / keep previous)
+          null
+        }
       }
+      removeRemotePhoto -> null  // Users wants to remove current remote photo
+      else -> user.photoURL  // User did nothing
     }
 
 
@@ -55,7 +60,7 @@ class EditProfileViewModel(
               defaultOffice = selectedDefaultOffice,
               description = updatedDescription,
               collected = collected,
-              photoURL = uploadedPhotoURL)
+              photoURL = finalPhotoUrl )
       is Vet ->
           user.copy(
               firstname = firstname,
@@ -63,7 +68,7 @@ class EditProfileViewModel(
               address = pickedLocation,
               description = updatedDescription,
               collected = collected,
-              photoURL = uploadedPhotoURL)
+              photoURL = finalPhotoUrl )
     }
   }
 }
