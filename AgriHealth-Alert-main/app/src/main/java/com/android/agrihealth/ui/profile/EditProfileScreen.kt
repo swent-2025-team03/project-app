@@ -224,12 +224,6 @@ fun EditProfileScreen(
     }
   }
 
-  // Reset the "initialLoad" flag when a different user is loaded
-  LaunchedEffect(user.uid) {
-    initialLoad = true
-    localPhotoByteArray = null
-  }
-
 
   // TODO: Refactor this so each UI component are in their own composable
   Scaffold(

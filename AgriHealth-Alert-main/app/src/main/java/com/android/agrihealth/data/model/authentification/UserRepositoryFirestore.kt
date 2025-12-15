@@ -67,7 +67,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
             "isGoogleAccount" to user.isGoogleAccount,
             "description" to user.description,
             "collected" to user.collected,
-            "deviceTokensFCM" to user.deviceTokensFCM.toList())
+            "deviceTokensFCM" to user.deviceTokensFCM.toList(),
+            "photoURL" to user.photoURL)
 
     // Add type-specific fields
     when (user) {
@@ -99,6 +100,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     val addressData = data["address"] as? Map<*, *>
     val address = locationFromMap(addressData)
     val deviceTokensFCM = (data["deviceTokensFCM"] as? List<String>)?.toSet() ?: emptySet()
+    val photoURL = data["photoURL"] as? String
 
     return when (roleFromDisplayString(roleStr)) {
       UserRole.FARMER ->
@@ -113,7 +115,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               isGoogleAccount = isGoogleAccount,
               description = description,
               collected = collected,
-              deviceTokensFCM = deviceTokensFCM)
+              deviceTokensFCM = deviceTokensFCM,
+              photoURL = photoURL)
       UserRole.VET ->
           Vet(
               uid = uid,
@@ -127,7 +130,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
               isGoogleAccount = isGoogleAccount,
               description = description,
               collected = collected,
-              deviceTokensFCM = deviceTokensFCM)
+              deviceTokensFCM = deviceTokensFCM,
+              photoURL = photoURL)
       else -> throw Exception("Unknown user type: $roleStr")
     }
   }
@@ -144,6 +148,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     if (old.collected != new.collected) changes["collected"] = new.collected
     if (old.deviceTokensFCM != new.deviceTokensFCM)
         changes["deviceTokensFCM"] = new.deviceTokensFCM.toList()
+    if (old.photoURL != new.photoURL) changes["photoURL"] = new.photoURL
 
     when {
       old is Farmer && new is Farmer -> {
