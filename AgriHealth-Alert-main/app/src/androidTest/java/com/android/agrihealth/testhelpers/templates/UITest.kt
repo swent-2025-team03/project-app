@@ -103,10 +103,15 @@ abstract class UITest(private val grantedPermissions: Array<String> = emptyArray
     withText(text) { composeTestRule.waitUntil(timeout) { isDisplayed() } }
   }
 
-  private fun SemanticsNodeInteraction.hasTextContaining(text: String): Boolean =
+  private fun SemanticsNodeInteraction.hasTextContaining(
+      text: String,
+      ignoreCase: Boolean = false
+  ): Boolean =
       fetchSemanticsNode().config.run {
-        val normalText = getOrNull(SemanticsProperties.Text)?.any { it.text.contains(text) } == true
-        val editableText = getOrNull(SemanticsProperties.EditableText)?.text?.contains(text) == true
+        val normalText =
+            getOrNull(SemanticsProperties.Text)?.any { it.text.contains(text, ignoreCase) } == true
+        val editableText =
+            getOrNull(SemanticsProperties.EditableText)?.text?.contains(text, ignoreCase) == true
 
         normalText || editableText
       }
@@ -114,11 +119,12 @@ abstract class UITest(private val grantedPermissions: Array<String> = emptyArray
   protected fun textContains(
       tag: String,
       text: String?,
-      timeout: Long = TestTimeout.DEFAULT_TIMEOUT
+      timeout: Long = TestTimeout.DEFAULT_TIMEOUT,
+      ignoreCase: Boolean = false
   ) {
     withNode(tag) {
       composeTestRule.waitUntil(timeout) {
-        text != null && isDisplayed() && hasTextContaining(text)
+        text != null && isDisplayed() && hasTextContaining(text, ignoreCase)
       }
     }
   }

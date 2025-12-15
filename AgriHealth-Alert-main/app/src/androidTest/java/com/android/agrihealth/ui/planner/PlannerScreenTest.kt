@@ -1,10 +1,5 @@
 package com.android.agrihealth.ui.planner
 
-import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.test.SemanticsNodeInteraction
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertTextContains
-import androidx.compose.ui.test.onNodeWithTag
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.User
@@ -196,7 +191,7 @@ class PlannerScreenTest : UITest() {
 
     val slowVm = PlannerViewModel(reportRepository = slowRepo)
 
-    composeTestRule.setContent {
+    setContent {
       PlannerScreen(
           user = farmer1,
           reportId = null,
@@ -277,39 +272,23 @@ class PlannerScreenTest : UITest() {
           PlannerScreenTestTags.DAILY_SCHEDULER, PlannerScreenTestTags.reportCardTag(report.id))
 
   fun checkDisplayedDateInfoIsCorrect(today: LocalDate) {
-    composeTestRule
-        .onNodeWithTag(PlannerScreenTestTags.WEEK_NUMBER)
-        .assertIsDisplayed()
-        .assertTextIncludes("${today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)}", true)
+    with(PlannerScreenTestTags) {
+      textContains(
+          WEEK_NUMBER, today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR).toString(), ignoreCase = true)
 
-    composeTestRule
-        .onNodeWithTag(PlannerScreenTestTags.SELECTED_DATE)
-        .assertIsDisplayed()
-        .assertTextIncludes("${today.dayOfMonth}", true)
-        .assertTextIncludes(today.month.name.take(3), ignoreCase = true)
-    composeTestRule
-        .onNodeWithTag(PlannerScreenTestTags.WEEK_HEADER)
-        .assertIsDisplayed()
-        .assertTextIncludes("${today.with(DayOfWeek.MONDAY).dayOfMonth}", ignoreCase = true)
-        .assertTextIncludes("${today.with(DayOfWeek.SUNDAY).dayOfMonth}", ignoreCase = true)
+      textContains(SELECTED_DATE, today.dayOfMonth.toString(), ignoreCase = true)
+      textContains(SELECTED_DATE, today.month.name.take(3), ignoreCase = true)
 
-    (0..6)
-        .map { today.with(DayOfWeek.MONDAY).plusDays(it.toLong()) }
-        .forEach { date ->
-          composeTestRule
-              .onNodeWithTag(PlannerScreenTestTags.dayCardTag(date))
-              .assertIsDisplayed()
-              .assertTextContains("${date.dayOfMonth}", ignoreCase = true)
-        }
-  }
+      textContains(
+          WEEK_HEADER, today.with(DayOfWeek.MONDAY).dayOfMonth.toString(), ignoreCase = true)
+      textContains(
+          WEEK_HEADER, today.with(DayOfWeek.SUNDAY).dayOfMonth.toString(), ignoreCase = true)
 
-  // Helper function to check if text includes a value can be used on Text() composable themselves
-  fun SemanticsNodeInteraction.assertTextIncludes(
-      value: String,
-      ignoreCase: Boolean = false
-  ): SemanticsNodeInteraction {
-    val text = this.fetchSemanticsNode().config[SemanticsProperties.Text].joinToString { it.text }
-    assertTrue("$text did not contain $value", text.contains(value, ignoreCase))
-    return this
+      (0..6)
+          .map { today.with(DayOfWeek.MONDAY).plusDays(it.toLong()) }
+          .forEach { date ->
+            textContains(dayCardTag(date), date.dayOfMonth.toString(), ignoreCase = true)
+          }
+    }
   }
 }
