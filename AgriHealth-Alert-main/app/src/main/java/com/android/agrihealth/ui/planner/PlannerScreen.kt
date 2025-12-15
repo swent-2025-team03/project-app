@@ -159,7 +159,7 @@ fun PlannerScreen(
             navigationIcon = {
               IconButton(
                   onClick = {
-                    if (plannerVM.isReportDateSet()) {
+                    if (plannerVM.isReportDateSet() || !uiState.isAllowedToSetDate) {
                       goBack()
                     } else {
                       plannerVM.setIsUnsavedAlertShowing(true)

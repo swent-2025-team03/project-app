@@ -22,7 +22,7 @@ data class ManageOfficeUiState(
     val editableDescription: String = "",
     val editableAddress: String = "",
     val isLoading: Boolean = false,
-    val error: String? = null,
+    val snackMessage: String? = null,
     val photoUri: Uri? = null,
     val uploadedImagePath: String? = null
 )
@@ -36,25 +36,32 @@ class ManageOfficeViewModel(
   private val _uiState = MutableStateFlow(ManageOfficeUiState())
   val uiState: StateFlow<ManageOfficeUiState> = _uiState
 
+  init {
+    loadOffice()
+  }
+
+  fun clearMessage() {
+    _uiState.value = _uiState.value.copy(snackMessage = null)
+  }
+
   fun loadOffice() {
-    if (_uiState.value.office == null) {
-      viewModelScope.launch {
-        _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
-          val currentUser = userViewModel.uiState.value.user
-          if (currentUser is Vet && currentUser.officeId != null) {
-            officeRepository.getOffice(currentUser.officeId).fold({ office ->
-              _uiState.value =
-                  _uiState.value.copy(
-                      office = office,
-                      editableName = office.name,
-                      editableDescription = office.description ?: "",
-                      editableAddress = office.address?.toString() ?: "")
-            }) { error ->
-              _uiState.value =
-                  _uiState.value.copy(
-                      error =
-                          "Couldn't load your office, make sure you are connected to the internet")
-            }
+    viewModelScope.launch {
+      _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
+        val currentUser = userViewModel.uiState.value.user
+        if (currentUser is Vet && currentUser.officeId != null) {
+          officeRepository.getOffice(currentUser.officeId).fold({ office ->
+            _uiState.value =
+                _uiState.value.copy(
+                    office = office,
+                    editableName = office.name,
+                    editableDescription = office.description ?: "",
+                    editableAddress = office.address?.toString() ?: "",
+                    photoUri = _uiState.value.photoUri)
+          }) { error ->
+            _uiState.value =
+                _uiState.value.copy(
+                    snackMessage =
+                        "Couldn't load your office, make sure you are connected to the internet")
           }
         }
       }
@@ -117,6 +124,7 @@ class ManageOfficeViewModel(
               photoUrl = uploadedPath)
       officeRepository.updateOffice(updatedOffice)
       _uiState.value = _uiState.value.copy(office = updatedOffice)
+      _uiState.value = _uiState.value.copy(snackMessage = "Changes successfully saved")
       onSuccess()
     } catch (e: Throwable) {
       onError(e)
