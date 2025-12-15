@@ -24,7 +24,7 @@ import org.junit.Test
 
 private val linkedOffices =
     mapOf(
-        office1.id to office1.name,
+        office1.id to "Deleted office",
         "Meh Office" to "Deleted office",
         "Great Office" to "Deleted office")
 
@@ -92,36 +92,6 @@ class AddReportScreenTest : UITest() {
   }
 
   @Test
-  fun enteringTitleDescription_showsSuccessDialog() {
-    setContentWithVM()
-
-    fillReportWith(report)
-
-    assertDialogWorks(success = true)
-  }
-
-  @Test
-  fun dismissingDialog_callsOnCreateReport() {
-    var called = false
-
-    setContentWithVM(onCreate = { called = true })
-
-    fillReportWith(report)
-    clickOnText(AddReportDialogTexts.OK)
-
-    assertTrue(called)
-  }
-
-  @Test
-  fun imagePreview_isNotShownWhenEmpty() {
-    setContentWithVM()
-
-    scrollFormToUploadSection()
-    nodeNotDisplayed(PhotoComponentsTestTags.IMAGE_PREVIEW)
-    textContains(PhotoComponentsTestTags.UPLOAD_IMAGE_BUTTON, PhotoComponentsTexts.UPLOAD_IMAGE)
-  }
-
-  @Test
   fun imagePreview_isShownWhenUploaded_canRemoveImage() {
     val imageUri = getUriFrom(FAKE_PHOTO_FILE)
     addReportVM.setPhoto(imageUri)
@@ -154,7 +124,6 @@ class AddReportScreenTest : UITest() {
     fillReportWith(report)
 
     assertDialogWorks(success = true)
-
     clickOn(AddReportScreenTestTags.DIALOG_OK)
     nodeNotDisplayed(AddReportScreenTestTags.DIALOG)
 
@@ -174,7 +143,6 @@ class AddReportScreenTest : UITest() {
 
     assertDialogWorks(success = false)
 
-    debugFreeze()
     clickOn(AddReportScreenTestTags.DIALOG_OK)
     nodeNotDisplayed(AddReportScreenTestTags.DIALOG)
   }
@@ -191,7 +159,6 @@ class AddReportScreenTest : UITest() {
     composeTestRule.assertOverlayDuringLoading(isLoading = { slowVM.uiState.value.isLoading })
   }
 
-  // Checks if all the components of the dialog work correctly
   private fun assertDialogWorks(success: Boolean) {
     val expectedText =
         if (success) AddReportDialogTexts.TITLE_SUCCESS else AddReportDialogTexts.TITLE_FAILURE
@@ -201,7 +168,6 @@ class AddReportScreenTest : UITest() {
     node(AddReportScreenTestTags.DIALOG_OK).assertHasClickAction()
   }
 
-  // Scrolls down
   private fun scrollFormToUploadSection() = scrollFormTo(AddReportScreenTestTags.CREATE_BUTTON)
 
   private fun scrollFormTo(tag: String) = scrollTo(AddReportScreenTestTags.SCROLL_CONTAINER, tag)

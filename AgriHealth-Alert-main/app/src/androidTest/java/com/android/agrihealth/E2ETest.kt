@@ -889,10 +889,10 @@ class E2ETest :
         .assertIsDisplayed()
         .performClick()
     composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS).isDisplayed()
+      composeTestRule.onNodeWithTag(AddReportScreenTestTags.DIALOG).isDisplayed()
     }
     composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS_OK)
+        .onNodeWithTag(AddReportScreenTestTags.DIALOG_OK)
         .assertIsDisplayed()
         .performClick()
 
@@ -939,10 +939,10 @@ class E2ETest :
         .assertIsDisplayed()
         .performClick()
     composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS).isDisplayed()
+      composeTestRule.onNodeWithTag(AddReportScreenTestTags.DIALOG).isDisplayed()
     }
     composeTestRule
-        .onNodeWithTag(AddReportScreenTestTags.DIALOG_SUCCESS_OK)
+        .onNodeWithTag(AddReportScreenTestTags.DIALOG_OK)
         .assertIsDisplayed()
         .performClick()
   }
