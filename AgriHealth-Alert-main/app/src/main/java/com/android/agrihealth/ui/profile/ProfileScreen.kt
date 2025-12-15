@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
@@ -64,6 +65,7 @@ object ProfileScreenTestTags {
 @Composable
 fun ProfileScreen(
     userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
+    imageViewModel: ImageViewModel = viewModel(),
     onGoBack: () -> Unit = {},
     onLogout: () -> Unit = {},
     onEditProfile: () -> Unit = {},
@@ -121,12 +123,11 @@ fun ProfileScreen(
 
               // Profile Image Placeholder
               Box(modifier = Modifier, contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector =
-                        Icons.Default.AccountCircle, // To change to actual image when available
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier.size(120.dp).clip(CircleShape).testTag(PROFILE_IMAGE),
-                    tint = MaterialTheme.colorScheme.primary)
+                RemotePhotoDisplay(
+                  user.photoURL, imageViewModel,
+                  contentDescription = "Profile Picture",
+                  showPlaceHolder = true,
+                  modifier = Modifier.size(120.dp).clip(CircleShape),) // TODO Use profile picture component
                 FloatingActionButton(
                     onClick = onEditProfile,
                     modifier = Modifier.testTag(EDIT_BUTTON).size(40.dp).align(Alignment.BottomEnd),

@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -13,11 +14,14 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.user.*
+import com.android.agrihealth.ui.profile.RemotePhotoDisplay
 
 object ViewUserScreenTestTags {
   const val TOP_BAR = "ViewUserTopBar"
@@ -38,7 +42,8 @@ object ViewUserScreenTestTags {
 fun ViewUserScreen(
     viewModel: ViewUserViewModel,
     onBack: () -> Unit,
-    userViewModel: UserViewModel = viewModel()
+    userViewModel: UserViewModel = viewModel(),
+    imageViewModel: ImageViewModel = viewModel(),
 ) {
   val uiState by viewModel.uiState
 
@@ -88,7 +93,7 @@ fun ViewUserScreen(
                 }
             is ViewUserUiState.Success -> {
               val success = uiState as ViewUserUiState.Success
-              ViewUserContent(user = success.user, officeName = success.officeName)
+              ViewUserContent(user = success.user, officeName = success.officeName, imageViewModel)
             }
           }
         }
@@ -96,7 +101,7 @@ fun ViewUserScreen(
 }
 
 @Composable
-private fun ViewUserContent(user: User, officeName: String?) {
+private fun ViewUserContent(user: User, officeName: String?, imageViewModel: ImageViewModel) {
   val scroll = rememberScrollState()
   val noInteraction = remember { MutableInteractionSource() }
 
@@ -107,10 +112,12 @@ private fun ViewUserContent(user: User, officeName: String?) {
               .padding(16.dp)
               .testTag(ViewUserScreenTestTags.CONTENT_COLUMN),
       horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(
-            imageVector = Icons.Default.AccountCircle,
-            contentDescription = "Profile",
-            modifier = Modifier.size(120.dp).testTag(ViewUserScreenTestTags.PROFILE_ICON))
+
+        RemotePhotoDisplay(
+          user.photoURL, imageViewModel,
+          contentDescription = "Profile Picture",
+          showPlaceHolder = true,
+          modifier = Modifier.size(120.dp).clip(CircleShape),) // TODO Use profile picture component
 
         Spacer(Modifier.height(24.dp))
 

@@ -11,6 +11,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -39,6 +41,8 @@ import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_NAME
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_VET_LIST
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
 import com.android.agrihealth.ui.profile.CodesViewModel
+import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
+import com.android.agrihealth.ui.profile.EditableProfilePicture
 import com.android.agrihealth.ui.profile.GenerateCode
 import com.android.agrihealth.ui.profile.LocalPhotoDisplay
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
@@ -127,6 +131,9 @@ fun ManageOfficeScreen(
                           Text("Join an Office")
                         }
                   } else {
+                    // TODO Use this from its own separate file
+
+
                     UploadRemoveOfficePhotoSection(
                         isOwner = isOwner,
                         photoAlreadyPicked = uiState.photoUri != null,
@@ -238,6 +245,60 @@ fun ManageOfficeScreen(
               }
         }
       }
+}
+
+
+// TODO: Put this in its own file
+@Composable
+fun EditableProfilePicture(
+  imageViewModel: ImageViewModel,
+  profilePictureIsEmpty: Boolean,
+  localPhotoUri: Uri?,
+  remotePhotoURL: String?,
+  initialLoad: Boolean,
+  handleProfilePictureClick: () -> Unit
+) {
+  Box(
+    modifier = Modifier.size(120.dp),
+    contentAlignment = Alignment.Center,
+  ) {
+
+
+    val showRemote = initialLoad && localPhotoUri == null && remotePhotoURL != null
+
+    // TODO Make the default profile icon and the actual profile picture the same size
+    if (showRemote) {
+      RemotePhotoDisplay(
+        photoURL = remotePhotoURL,
+        imageViewModel = imageViewModel,
+        modifier = Modifier.size(120.dp).clip(CircleShape),   // TODO Create a component for Profile Picture
+        contentDescription = "Office photo",
+        showPlaceHolder = true)
+    } else {
+      LocalPhotoDisplay(
+        photoURI = localPhotoUri,
+        modifier = Modifier.size(120.dp).clip(CircleShape),
+        showPlaceHolder = true,
+      )
+    }
+
+    // Camera icon overlay
+    FloatingActionButton(
+      onClick = { handleProfilePictureClick() },
+      modifier = Modifier
+        .size(40.dp)
+        .align(Alignment.BottomEnd)
+        .testTag(EditProfileScreenTestTags.EDIT_PROFILE_PICTURE_BUTTON),
+      containerColor = MaterialTheme.colorScheme.primaryContainer,
+      contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+    ) {
+      Icon(
+        imageVector = if (profilePictureIsEmpty) Icons.Default.CameraAlt else Icons.Default.Clear,
+        contentDescription = "Edit profile picture",
+        modifier = Modifier.size(20.dp)
+      )
+    }
+  }
 }
 
 @Composable

@@ -135,8 +135,6 @@ fun EditProfileScreen(
   val currentUser = user
   val displayRemotePhoto: Boolean by rememberSaveable { mutableStateOf(true) }
 
-  Log.d("EditProfileScreen", "photoRUL = " + user.photoURL.toString())
-
   LaunchedEffect(user) {
     if (currentUser is Vet) {
       codesViewModel.loadActiveCodesForVet(currentUser)
@@ -509,7 +507,7 @@ fun ErrorDialog(errorMessage: String?, onDismiss: () -> Unit) {
     modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_FAILURE))
 }
 
-
+// TODO: Put this in its own file
 @Composable
 fun ShowImageCropperDialog(imageCropper: ImageCropper) {
   val cropState = imageCropper.cropState!!
@@ -532,7 +530,7 @@ fun ShowImageCropperDialog(imageCropper: ImageCropper) {
     ))
 }
 
-
+// TODO: Put this in its own file
 @Composable
 fun EditableProfilePicture(
   imageViewModel: ImageViewModel,
@@ -547,21 +545,18 @@ fun EditableProfilePicture(
     contentAlignment = Alignment.Center,
   ) {
 
-    //var initialLoad by rememberSaveable { mutableStateOf(true) }
-    //val showRemote = initialLoad && remotePhotoURL != null
+
     val showRemote = initialLoad && localPhotoByteArray == null && remotePhotoURL != null
-    Log.d("EditProfileScreen", "remotePhotoURL = $remotePhotoURL")
 
     // TODO Make the default profile icon and the actual profile picture the same size
     if (showRemote) {
       RemotePhotoDisplay(
         photoURL = remotePhotoURL,
         imageViewModel = imageViewModel,
-        modifier = Modifier.size(120.dp).clip(CircleShape),
+        modifier = Modifier.size(120.dp).clip(CircleShape),   // TODO Create a component for Profile Picture
         contentDescription = "Office photo",
         showPlaceHolder = true)
     } else {
-      Log.d("EditProfile", "localPhotoByteArray is null?: " + (localPhotoByteArray == null).toString())
       LocalPhotoDisplay(
         photoByteArray = localPhotoByteArray,
         modifier = Modifier.size(120.dp).clip(CircleShape),
