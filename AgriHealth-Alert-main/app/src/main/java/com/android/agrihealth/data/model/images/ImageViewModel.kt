@@ -31,8 +31,8 @@ sealed class ImageUIState {
  *  to be used internally when overloading a function
  */
 sealed interface PhotoType {
-  data class ByteArray(val value: kotlin.ByteArray) : PhotoType
-  data class Uri(val value: android.net.Uri) : PhotoType
+  data class ByteArray(val bytes: kotlin.ByteArray) : PhotoType
+  data class Uri(val uri: android.net.Uri) : PhotoType
 }
 
 /**
@@ -62,8 +62,8 @@ class ImageViewModel(private val repository: ImageRepository = ImageRepositoryPr
       _uiState.value = ImageUIState.Loading
 
       var bytes = when (photo) {
-        is PhotoType.ByteArray -> photo.value
-        is PhotoType.Uri -> repository.resolveUri(photo.value)
+        is PhotoType.ByteArray -> photo.bytes
+        is PhotoType.Uri -> repository.resolveUri(photo.uri)
       }
       bytes = repository.reduceFileSize(bytes)
 

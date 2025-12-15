@@ -126,17 +126,20 @@ private fun ActualLocalPhotoDisplay(
     showPlaceHolder: Boolean = false,
     placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
 ) {
-  when (photo) {
-    null -> {
-      if (showPlaceHolder) { placeholder(modifier) }
-    }
-    is PhotoType.ByteArray, is PhotoType.Uri -> {
-      AsyncImage(
-        model = photo,
-        contentDescription = "Uploaded image",
-        modifier = modifier.testTag(PhotoComponentsTestTags.IMAGE_PREVIEW),
-        contentScale = ContentScale.Fit)
-    }
+  val model: Any? = when (photo) {
+    null -> null
+    is PhotoType.ByteArray -> photo.bytes
+    is PhotoType.Uri -> photo.uri
+  }
+
+  if (model == null) {
+    if (showPlaceHolder) placeholder(modifier)
+  } else {
+    AsyncImage(
+      model = model,
+      contentDescription = "Uploaded image",
+      modifier = modifier.testTag(PhotoComponentsTestTags.IMAGE_PREVIEW),
+      contentScale = ContentScale.Fit)
   }
 }
 
