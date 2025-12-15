@@ -138,7 +138,6 @@ fun EditProfileScreen(
   val user = uiState.user
   val userRole = user.role
   val currentUser = user
-  val displayRemotePhoto: Boolean by rememberSaveable { mutableStateOf(true) }
 
   LaunchedEffect(user) {
     if (currentUser is Vet) {
@@ -148,8 +147,6 @@ fun EditProfileScreen(
 
   val farmerCodes by codesViewModel.farmerCodes.collectAsState()
   val vetCodes by codesViewModel.vetCodes.collectAsState()
-
-  val imageViewModel: ImageViewModel = viewModel()
 
   val createManageOfficeViewModel =
       object : ViewModelProvider.Factory {

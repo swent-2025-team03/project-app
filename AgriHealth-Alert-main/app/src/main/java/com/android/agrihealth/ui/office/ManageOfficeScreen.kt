@@ -320,7 +320,6 @@ fun UploadRemoveOfficePhotoSection(
   ) {
 
     var initialLoad by rememberSaveable { mutableStateOf(true) }
-    //val showRemote = initialLoad && uiState.photoBytes == null
     val showRemote = initialLoad && uiState.office?.photoUrl != null
     val showLocal = uiState.photoBytes != null
     Log.d("ManageOfficeScreen", "initialLoad = $initialLoad, (uiState.photoBytes == null) = ${uiState.photoBytes == null}, showRemote = $showRemote, showLocal = $showLocal")
