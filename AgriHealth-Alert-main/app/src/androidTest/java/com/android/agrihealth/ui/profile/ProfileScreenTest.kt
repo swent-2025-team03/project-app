@@ -30,27 +30,31 @@ class ProfileScreenTest : UITest() {
   }
 
   @Test
-  fun profileScreen_showsFarmerSpecificFields() {
+  fun profileScreen_showsFarmerSpecificFields_checkButtonReactivity() {
     val role = UserRole.FARMER
-    setContentWithVM(role)
+    var codeClicked = false
+
+    setContentWithVM(role, onCode = { codeClicked = true })
+
     assertComponentsVisibility(role)
+
+    clickOn(ProfileScreenTestTags.CODE_BUTTON_FARMER)
+    assertTrue(codeClicked)
   }
 
   @Test
   fun profileScreen_showsVetSpecificFields_checkButtonReactivity() {
     val role = UserRole.VET
     var editClicked = false
-    var codeClicked = false
 
-    setContentWithVM(role, onEdit = { editClicked = true }, onCode = { codeClicked = true })
+    setContentWithVM(role, onEdit = { editClicked = true })
 
     assertComponentsVisibility(role)
 
     with(ProfileScreenTestTags) {
       clickOn(EDIT_BUTTON)
-      clickOn(CODE_BUTTON_FARMER)
 
-      assertTrue(editClicked && codeClicked)
+      assertTrue(editClicked)
     }
   }
 
