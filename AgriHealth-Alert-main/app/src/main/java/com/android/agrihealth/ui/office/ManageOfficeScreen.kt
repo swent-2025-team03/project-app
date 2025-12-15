@@ -89,6 +89,8 @@ fun ManageOfficeScreen(
 
   val isOwner = uiState.office?.ownerId == currentUser.uid
 
+  var initialLoad by rememberSaveable { mutableStateOf(true) }
+
   LaunchedEffect(currentUser) { manageOfficeViewModel.loadOffice() }
 
   LaunchedEffect(uiState.error) {
@@ -250,7 +252,7 @@ fun ManageOfficeScreen(
 
 // TODO: Put this in its own file
 @Composable
-fun EditableProfilePicture(
+fun EditableProfilePictureOffice(
   imageViewModel: ImageViewModel,
   profilePictureIsEmpty: Boolean,
   localPhotoUri: Uri?,
@@ -264,7 +266,7 @@ fun EditableProfilePicture(
   ) {
 
 
-    val showRemote = initialLoad && localPhotoUri == null && remotePhotoURL != null
+    val showRemote = initialLoad && localPhotoUri == null
 
     // TODO Make the default profile icon and the actual profile picture the same size
     if (showRemote) {
@@ -330,6 +332,23 @@ fun UploadRemoveOfficePhotoSection(
   }
 
   if (isOwner) {
+    // Camera icon overlay
+    FloatingActionButton(
+      onClick = { handleProfilePictureClick() },
+      modifier = Modifier
+        .size(40.dp)
+        .align(Alignment.BottomEnd)
+        .testTag(EditProfileScreenTestTags.EDIT_PROFILE_PICTURE_BUTTON),
+      containerColor = MaterialTheme.colorScheme.primaryContainer,
+      contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+    ) {
+      Icon(
+        imageVector = if (profilePictureIsEmpty) Icons.Default.CameraAlt else Icons.Default.Clear,
+        contentDescription = "Edit profile picture",
+        modifier = Modifier.size(20.dp)
+      )
+    }
+
     UploadRemovePhotoButton(
         photoAlreadyPicked = photoAlreadyPicked,
         onPhotoPicked = onPhotoPicked,
