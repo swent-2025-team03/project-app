@@ -24,6 +24,7 @@ data class ManageOfficeUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val photoBytes: ByteArray? = null,
+    val removeRemotePhoto: Boolean = false,
 )
 
 class ManageOfficeViewModel(
@@ -102,10 +103,12 @@ class ManageOfficeViewModel(
     try {
       val office = _uiState.value.office ?: return
 
-      var uploadedPath: String? = null
+      var newPhotoUrl: String? =
+        if (_uiState.value.removeRemotePhoto) null else office.photoUrl
+
       _uiState.value.photoBytes?.let { bytes ->
-        uploadedPath = imageViewModel.uploadAndWait(bytes)
-        _uiState.value = _uiState.value.copy(photoBytes = null)
+        newPhotoUrl = imageViewModel.uploadAndWait(bytes)
+        _uiState.value = _uiState.value.copy(photoBytes = null, removeRemotePhoto = false)
       }
 
       val updatedOffice =
@@ -113,7 +116,7 @@ class ManageOfficeViewModel(
               name = _uiState.value.editableName,
               description = _uiState.value.editableDescription,
               address = newAddress,
-              photoUrl = uploadedPath)
+              photoUrl = newPhotoUrl)
       officeRepository.updateOffice(updatedOffice)
       _uiState.value = _uiState.value.copy(office = updatedOffice)
       onSuccess()
@@ -125,10 +128,10 @@ class ManageOfficeViewModel(
 
 
   fun setPhoto(photobytes: ByteArray?) {
-    _uiState.value = _uiState.value.copy(photoBytes = photobytes)
+    _uiState.value = _uiState.value.copy(photoBytes = photobytes, removeRemotePhoto = false)
   }
 
   fun removePhoto() {
-    _uiState.value = _uiState.value.copy(photoBytes = null)
+    _uiState.value = _uiState.value.copy(photoBytes = null, removeRemotePhoto = true)
   }
 }

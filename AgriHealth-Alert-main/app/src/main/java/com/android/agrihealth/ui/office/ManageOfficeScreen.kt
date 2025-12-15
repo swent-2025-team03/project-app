@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.StatusColors
-import com.android.agrihealth.data.model.images.ImageRepository.Companion.toBitmap
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.ui.common.AuthorName
 import com.android.agrihealth.ui.loading.LoadingOverlay
@@ -45,18 +44,20 @@ import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_DESCRI
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_NAME
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_VET_LIST
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
+import com.android.agrihealth.ui.office.OfficePhotoUi
 import com.android.agrihealth.ui.profile.CodesViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
 import com.android.agrihealth.ui.profile.EditProfileScreenTexts
-import com.android.agrihealth.ui.profile.EditableProfilePicture
+import com.android.agrihealth.ui.profile.EditProfile_EditableProfilePicture
 import com.android.agrihealth.ui.profile.ErrorDialog
 import com.android.agrihealth.ui.profile.GenerateCode
 import com.android.agrihealth.ui.profile.LocalPhotoDisplay
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.profile.RemotePhotoDisplay
-import com.android.agrihealth.ui.profile.UploadRemovePhotoButton
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.utils.EditableProfilePicture
 import com.android.agrihealth.ui.utils.ImagePickerDialog
+import com.android.agrihealth.ui.utils.PhotoUi
 import com.android.agrihealth.ui.utils.ShowImageCropperDialog
 import com.android.agrihealth.ui.utils.toBitmap
 import com.android.agrihealth.ui.utils.toByteArray
@@ -76,6 +77,8 @@ object ManageOfficeScreenTestTags {
   const val SAVE_BUTTON = "SaveButton"
   const val LEAVE_OFFICE_BUTTON = "LeaveOfficeButton"
   const val CONFIRM_LEAVE = "ConfirmLeaveOffice"
+  const val PROFILE_PICTURE = "ProfilePicture"
+  const val PROFILE_PICTURE_BUTTON = "ProfilePictuerButton"
 }
 
 @SuppressLint("StateFlowValueCalledInComposition", "SuspiciousIndentation")
@@ -95,16 +98,10 @@ fun ManageOfficeScreen(
 
   val snackbarHostState = remember { SnackbarHostState() }
   val uiState by manageOfficeViewModel.uiState.collectAsState()
-
   val connectionVm: CodesViewModel = viewModel(factory = codesVmFactory())
-
   val currentUser = userViewModel.uiState.collectAsState().value.user
-
   var showLeaveDialog by remember { mutableStateOf(false) }
-
   val isOwner = uiState.office?.ownerId == currentUser.uid
-
-  var initialLoad by rememberSaveable { mutableStateOf(true) }
 
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
@@ -112,12 +109,26 @@ fun ManageOfficeScreen(
   var showErrorDialog by rememberSaveable { mutableStateOf(false) }
   var errorDialogMessage by rememberSaveable { mutableStateOf<String?>(null) }
   val croppingIsOngoing = imageCropper.cropState != null
+  var showImagePicker by rememberSaveable { mutableStateOf(false) }
+
+  // Decide what to show for the profile picture
+  val photoUi by remember(uiState.office?.photoUrl, uiState.photoBytes, uiState.removeRemotePhoto) {
+    mutableStateOf(
+      when {
+        uiState.photoBytes != null -> PhotoUi.Local(uiState.photoBytes!!)
+        uiState.removeRemotePhoto -> PhotoUi.Empty
+        uiState.office?.photoUrl != null -> PhotoUi.Remote(uiState.office!!.photoUrl!!)
+        else -> PhotoUi.Empty
+      }
+    )
+  }
+
   val launchImageCropper: (Uri) -> Unit = remember {
     { uri: Uri ->
       scope.launch {
         val bitmap = uri.toBitmap(context).asImageBitmap()
         when (val result = imageCropper.crop(IntSize(4096, 4096), bmp = bitmap)) {
-          is CropResult.Cancelled -> manageOfficeViewModel.removePhoto()
+          is CropResult.Cancelled -> {}
           is CropError -> {
             showErrorDialog = true
             errorDialogMessage = when (result) {
@@ -127,7 +138,6 @@ fun ManageOfficeScreen(
           }
           is CropResult.Success -> {
             manageOfficeViewModel.setPhoto(result.bitmap.toByteArray())
-            initialLoad = false
           }
         }
       }
@@ -176,16 +186,24 @@ fun ManageOfficeScreen(
                           Text("Join an Office")
                         }
                   } else {
-                    // TODO Use this from its own separate file
+                    EditableProfilePicture(
+                      photo = photoUi,
+                      isEditable = true,
+                      imageViewModel = imageViewModel,
+                      onAddClicked = { showImagePicker = true },
+                      onRemoveClicked = { manageOfficeViewModel.removePhoto() },
+                      profilePictureTestTag = ManageOfficeScreenTestTags.PROFILE_PICTURE,
+                      editButtonTestTag = ManageOfficeScreenTestTags.PROFILE_PICTURE_BUTTON
+                    )
 
 
-                    UploadRemoveOfficePhotoSection(
-                        isOwner = isOwner,
-                        photoAlreadyPicked = uiState.photoBytes != null,
-                        onPhotoPicked = { uri -> launchImageCropper(uri) },
-                        onPhotoRemoved = { manageOfficeViewModel.removePhoto() },
-                        uiState = uiState,
-                        imageViewModel = imageViewModel)
+//                    UploadRemoveOfficePhotoSection(
+//                        isOwner = isOwner,
+//                        photoAlreadyPicked = uiState.photoBytes != null,
+//                        onPhotoPicked = { uri -> launchImageCropper(uri) },
+//                        onPhotoRemoved = { manageOfficeViewModel.removePhoto() },
+//                        uiState = uiState,
+//                        imageViewModel = imageViewModel)
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -299,6 +317,16 @@ fun ManageOfficeScreen(
         ShowImageCropperDialog(imageCropper)
       }
 
+      if (showImagePicker) {
+        ImagePickerDialog(
+          onDismiss = { showImagePicker = false },
+          onImageSelected = { uri ->
+            showImagePicker = false
+            launchImageCropper(uri)
+          }
+        )
+      }
+
 
 }
 
@@ -306,11 +334,11 @@ fun ManageOfficeScreen(
 // TODO Make the profile picture square for offices
 @Composable
 fun UploadRemoveOfficePhotoSection(
+    photo: OfficePhotoUi,
     isOwner: Boolean = false,
     photoAlreadyPicked: Boolean,
-    onPhotoPicked: (Uri) -> Unit,
-    onPhotoRemoved: () -> Unit,
-    uiState: ManageOfficeUiState,
+    onAddClicked: () -> Unit,
+    onRemoveClicked: () -> Unit,
     imageViewModel: ImageViewModel = viewModel()
 ) {
 
@@ -319,44 +347,34 @@ fun UploadRemoveOfficePhotoSection(
     contentAlignment = Alignment.Center,
   ) {
 
-    var initialLoad by rememberSaveable { mutableStateOf(true) }
-    val showRemote = initialLoad && uiState.office?.photoUrl != null
-    val showLocal = uiState.photoBytes != null
-    Log.d("ManageOfficeScreen", "initialLoad = $initialLoad, (uiState.photoBytes == null) = ${uiState.photoBytes == null}, showRemote = $showRemote, showLocal = $showLocal")
-
-    if (showRemote) {
-      RemotePhotoDisplay(
-          photoURL = uiState.office?.photoUrl,
+    when (photo) {
+      is OfficePhotoUi.Remote -> {
+        RemotePhotoDisplay(
+          photoURL = photo.url,
           imageViewModel = imageViewModel,
           modifier = Modifier.size(120.dp).clip(CircleShape),
           contentDescription = "Office photo",
           showPlaceHolder = true)
-    } else if (showLocal) {
-      LocalPhotoDisplay(
-          photoByteArray = uiState.photoBytes,
+      }
+      is OfficePhotoUi.Local -> {
+        LocalPhotoDisplay(
+            photoByteArray = photo.bytes,
+            modifier = Modifier.size(120.dp).clip(CircleShape),
+            showPlaceHolder = true)
+      }
+      is OfficePhotoUi.Empty -> {
+        LocalPhotoDisplay(
+          photoByteArray = null,
           modifier = Modifier.size(120.dp).clip(CircleShape),
           showPlaceHolder = true)
-    } else {
-      // Show default icon
-      LocalPhotoDisplay(
-        photoByteArray = null,
-        modifier = Modifier.size(120.dp).clip(CircleShape),
-        showPlaceHolder = true)
+      }
+
     }
 
     if (isOwner) {
-      var showImagePicker by remember { mutableStateOf(false) }
-
-      // Camera icon overlay
+      val isRemoveMode = photo != OfficePhotoUi.Empty
       FloatingActionButton(
-        onClick = {
-          if (showRemote || showLocal) {
-            onPhotoRemoved()
-            initialLoad = false
-          } else {
-            showImagePicker = true
-          }
-        },
+        onClick = { if (isRemoveMode) onRemoveClicked() else onAddClicked() },
         modifier = Modifier
           .size(40.dp)
           .align(Alignment.BottomEnd)
@@ -365,15 +383,10 @@ fun UploadRemoveOfficePhotoSection(
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
       ) {
         Icon(
-          imageVector = if (showRemote || showLocal) Icons.Default.Clear else Icons.Default.CameraAlt,
+          imageVector = if (isRemoveMode) Icons.Default.Clear else Icons.Default.CameraAlt,
           contentDescription = "Edit profile picture",
           modifier = Modifier.size(20.dp)
         )
-      }
-
-      if (showImagePicker) {
-        ImagePickerDialog(
-          onDismiss = { showImagePicker = false }, onImageSelected = { uri -> onPhotoPicked(uri) })
       }
 
 //      UploadRemovePhotoButton(

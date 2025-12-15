@@ -1,10 +1,6 @@
 package com.android.agrihealth.ui.profile
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.ImageDecoder
 import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -18,20 +14,14 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.*
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -59,18 +49,11 @@ import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
 import com.android.agrihealth.ui.utils.ImagePickerDialog
-import com.mr0xf00.easycrop.AspectRatio
-import com.mr0xf00.easycrop.CircleCropShape
 import com.mr0xf00.easycrop.CropError
 import com.mr0xf00.easycrop.CropResult
-import com.mr0xf00.easycrop.CropState
-import com.mr0xf00.easycrop.CropperStyle
 import com.mr0xf00.easycrop.crop
 import com.mr0xf00.easycrop.rememberImageCropper
-import com.mr0xf00.easycrop.ui.ImageCropperDialog
 import kotlinx.coroutines.launch
-import java.io.ByteArrayOutputStream
-import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModelProvider
 import com.android.agrihealth.ui.report.AddReportDialogTexts
@@ -79,7 +62,6 @@ import com.android.agrihealth.ui.report.AddReportScreenTestTags
 import com.android.agrihealth.ui.utils.ShowImageCropperDialog
 import com.android.agrihealth.ui.utils.toBitmap
 import com.android.agrihealth.ui.utils.toByteArray
-import com.mr0xf00.easycrop.ImageCropper
 
 enum class CodeType {
   FARMER,
@@ -257,7 +239,7 @@ fun EditProfileScreen(
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
 
-            EditableProfilePicture(
+            EditProfile_EditableProfilePicture(
                 imageViewModel = imageViewModel,
                 localPhotoByteArray = localPhotoByteArray,
                 remotePhotoURL = effectiveRemoteUrl,
@@ -513,7 +495,7 @@ fun ErrorDialog(errorMessage: String?, onDismiss: () -> Unit) {
 
 // TODO: Put this in its own file
 @Composable
-fun EditableProfilePicture(
+fun EditProfile_EditableProfilePicture(
   imageViewModel: ImageViewModel,
   profilePictureIsEmpty: Boolean,
   localPhotoByteArray: ByteArray?,
