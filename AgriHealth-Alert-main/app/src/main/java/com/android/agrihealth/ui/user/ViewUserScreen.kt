@@ -149,9 +149,9 @@ private fun ViewUserContent(user: User, officeName: String?) {
           Spacer(Modifier.height(8.dp))
         }
 
-        user.address?.let {
+        user.address?.name?.let {
           OutlinedTextField(
-              value = "Not implemented yet",
+              value = it,
               onValueChange = {},
               label = { Text("Address") },
               readOnly = true,
