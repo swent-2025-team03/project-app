@@ -170,6 +170,7 @@ class MapScreenTest {
     val mapViewModel =
         MapViewModel(
             reportRepository = reportRepository,
+            alertRepository = alertRepository,
             locationViewModel = locationViewModel,
             selectedReportId = selectedReportId,
             userId = userId)
@@ -429,6 +430,7 @@ class MapScreenTest {
           val mapViewModel =
               MapViewModel(
                   reportRepository = reportRepository,
+                  alertRepository = alertRepository,
                   locationViewModel = locationViewModel,
                   userId = userId)
           MapScreen(mapViewModel = mapViewModel, navigationActions = navigation)
@@ -456,6 +458,7 @@ class MapScreenTest {
     val mapViewModel =
         MapViewModel(
             reportRepository = reportRepository,
+            alertRepository = alertRepository,
             locationViewModel = locationViewModel,
             userId = userId,
             selectedReportId = MapScreenTestReports.report1.id)
