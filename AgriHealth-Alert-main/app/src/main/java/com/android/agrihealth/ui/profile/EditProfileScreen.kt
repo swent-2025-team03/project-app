@@ -77,6 +77,8 @@ import com.android.agrihealth.ui.report.AddReportDialogTexts
 import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
 import com.android.agrihealth.ui.utils.ShowImageCropperDialog
+import com.android.agrihealth.ui.utils.toBitmap
+import com.android.agrihealth.ui.utils.toByteArray
 import com.mr0xf00.easycrop.ImageCropper
 
 enum class CodeType {
@@ -113,6 +115,8 @@ object EditProfileScreenTexts {
   const val DIALOG_LOADING_ERROR = "The supplied image is invalid, not supported, or you don't have the required permissions to read it..."
   const val DIALOG_SAVING_ERROR = "The result could not be saved. The selected area is likely to big, try selecting a smaller area..."
 }
+
+// TODO Make screen go back to view profile when saving changes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -200,6 +204,8 @@ fun EditProfileScreen(
   val context = LocalContext.current
   val croppingIsOngoing = imageCropper.cropState != null
   var initialLoad by rememberSaveable { mutableStateOf(true) }
+
+  // TODO: Put launcher in PhotoCropper
   val launchImageCropper: (Uri) -> Unit = remember {
     { uri: Uri ->
       scope.launch {
@@ -562,24 +568,6 @@ fun EditableProfilePicture(
 }
 
 
-// Created with the help of an LLM
-private fun ImageBitmap.toByteArray(format: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG, quality: Int = 100): ByteArray {
-  val bitmap = this.asAndroidBitmap()
-  val outputStream = ByteArrayOutputStream()
-  bitmap.compress(format, quality, outputStream)
-  return outputStream.toByteArray()
-}
-
-// Created with the help of an LLM
-private fun Uri.toBitmap(context: Context): Bitmap {
-  val source = ImageDecoder.createSource(context.contentResolver, this)
-
-  // Forcing to use software allocator (instead of hardware) and forcing bitmap to be mutable to prevent issues when cropping the photo
-  return ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
-    decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-    decoder.isMutableRequired = true
-  }
-}
 
 /*
 @Preview(showBackground = true)

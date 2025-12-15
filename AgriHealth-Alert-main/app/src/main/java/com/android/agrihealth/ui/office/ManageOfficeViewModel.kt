@@ -23,8 +23,7 @@ data class ManageOfficeUiState(
     val editableAddress: String = "",
     val isLoading: Boolean = false,
     val error: String? = null,
-    val photoUri: Uri? = null,
-    val uploadedImagePath: String? = null
+    val photoBytes: ByteArray? = null,
 )
 
 class ManageOfficeViewModel(
@@ -102,11 +101,11 @@ class ManageOfficeViewModel(
   ) {
     try {
       val office = _uiState.value.office ?: return
-      var uploadedPath = _uiState.value.uploadedImagePath
 
-      _uiState.value.photoUri?.let { uri ->
-        uploadedPath = imageViewModel.uploadAndWait(uri)
-        _uiState.value = _uiState.value.copy(uploadedImagePath = uploadedPath, photoUri = null)
+      var uploadedPath: String? = null
+      _uiState.value.photoBytes?.let { bytes ->
+        uploadedPath = imageViewModel.uploadAndWait(bytes)
+        _uiState.value = _uiState.value.copy(photoBytes = null)
       }
 
       val updatedOffice =
@@ -125,11 +124,11 @@ class ManageOfficeViewModel(
 
 
 
-  fun setPhoto(uri: Uri?) {
-    _uiState.value = _uiState.value.copy(photoUri = uri)
+  fun setPhoto(photobytes: ByteArray?) {
+    _uiState.value = _uiState.value.copy(photoBytes = photobytes)
   }
 
   fun removePhoto() {
-    _uiState.value = _uiState.value.copy(photoUri = null)
+    _uiState.value = _uiState.value.copy(photoBytes = null)
   }
 }
