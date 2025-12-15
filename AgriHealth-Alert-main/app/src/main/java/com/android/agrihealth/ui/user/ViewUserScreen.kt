@@ -34,7 +34,7 @@ object ViewUserScreenTestTags {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ViewUserScreen(viewModel: ViewUserViewModel, onBack: () -> Unit) {
+fun ViewUserScreen(viewModel: ViewUserViewModel, onBack: () -> Unit = {}) {
   val uiState by viewModel.uiState
 
   val context = LocalContext.current

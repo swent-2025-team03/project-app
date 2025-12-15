@@ -21,13 +21,14 @@ object TestTimeout {
 object TestUser {
   val farmer1 =
       Farmer(
-          "abc123",
-          "Rushia",
-          "Uruha",
-          "email1@thing.com",
-          Location(latitude = 46.5191, longitude = 6.5668),
-          listOf("Best Office Ever!", "Meh Office."),
-          "Test?")
+          uid = "abc123",
+          firstname = "Rushia",
+          lastname = "Uruha",
+          email = "email1@thing.com",
+          address = Location(latitude = 46.5191, longitude = 6.5668),
+          linkedOffices = listOf("Best Office Ever!", "Meh Office."),
+          defaultOffice = "Test?",
+          description = "not pettan")
 
   val farmer2 = Farmer("def456", "mike", "neko", "email2@aaaaa.balls", null, emptyList(), null)
   val farmer3 = Farmer("jklABC", "John", "Fake", "fakeUser.glorp", null, emptyList(), null)
