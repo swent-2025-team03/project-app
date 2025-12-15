@@ -9,9 +9,5 @@ object AlertRepositoryProvider {
     overrideRepo = repo
   }
 
-  fun reset() {
-    overrideRepo = null
-  }
-
   fun get(): AlertRepository = overrideRepo ?: _repository
 }
