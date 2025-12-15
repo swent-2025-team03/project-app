@@ -83,7 +83,6 @@ fun MapScreen(
   val cameraPositionState = rememberCameraPositionState {}
 
   var forcedOnce by rememberSaveable { mutableStateOf(false) }
-  var cameraInitialized by rememberSaveable { mutableStateOf(false) }
 
   LaunchedEffect(forceStartingPosition) {
     if (forceStartingPosition && !forcedOnce) {
@@ -93,12 +92,9 @@ fun MapScreen(
   }
 
   LaunchedEffect(mapInitialLocation) {
-    if (!cameraInitialized) {
-      cameraInitialized = true
-      cameraPositionState.position =
-          CameraPosition.fromLatLngZoom(
-              LatLng(mapInitialLocation.latitude, mapInitialLocation.longitude), mapInitialZoom)
-    }
+    cameraPositionState.position =
+        CameraPosition.fromLatLngZoom(
+            LatLng(mapInitialLocation.latitude, mapInitialLocation.longitude), mapInitialZoom)
   }
 
   // Map settings and theme
