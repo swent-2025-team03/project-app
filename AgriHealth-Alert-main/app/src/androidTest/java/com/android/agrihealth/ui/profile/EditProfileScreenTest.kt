@@ -1,100 +1,68 @@
 package com.android.agrihealth.ui.profile
 
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createComposeRule
-import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.*
+import com.android.agrihealth.testhelpers.TestUser.farmer1
+import com.android.agrihealth.testhelpers.TestUser.vet1
 import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
-import com.android.agrihealth.ui.common.layout.NavigationTestTags.GO_BACK_BUTTON
-import com.android.agrihealth.ui.common.layout.NavigationTestTags.TOP_BAR_TITLE
+import com.android.agrihealth.testhelpers.templates.UITest
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
-import org.junit.Rule
+import junit.framework.TestCase.assertTrue
 import org.junit.Test
 
-class EditProfileScreenTest {
-
-  @get:Rule val composeTestRule = createComposeRule()
-
-  // Some Helpers
+class EditProfileScreenTest : UITest() {
   val linkedOffices = listOf("off123", "off456")
 
-  private fun fakeFarmerViewModel(): FakeUserViewModel {
-    return FakeUserViewModel(
-        Farmer(
-            uid = "farmer_1",
-            firstname = "Alice",
-            lastname = "Johnson",
-            email = "alice@farmmail.com",
-            address = Location(0.0, 0.0, "Farm Address"),
-            linkedOffices = linkedOffices,
-            defaultOffice = linkedOffices.first()))
-  }
+  val farmer = farmer1.copy(linkedOffices = linkedOffices, defaultOffice = linkedOffices.first())
+  val vet = vet1
 
-  private fun fakeVetViewModel(
-      farmerCodes: List<String> = emptyList(),
-      vetCodes: List<String> = emptyList()
-  ): FakeUserViewModel {
-    return FakeUserViewModel(
-        Vet(
-            uid = "vet_1",
-            firstname = "Bob",
-            lastname = "Smith",
-            email = "bob@vetcare.com",
-            address = Location(0.0, 0.0, "Clinic Address"),
-            farmerConnectCodes = farmerCodes,
-            vetConnectCodes = vetCodes))
-  }
+  private fun setContent(role: UserRole, onSave: () -> Unit = {}) {
+    val initialUser =
+        when (role) {
+          UserRole.FARMER -> farmer
+          UserRole.VET -> vet
+        }
 
-  @Test
-  fun editProfileScreen_displaysBasicFields() {
-    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeFarmerViewModel()) }
-
-    composeTestRule.onNodeWithTag(TOP_BAR_TITLE).assertExists()
-    composeTestRule.onNodeWithTag(GO_BACK_BUTTON).assertExists()
-    composeTestRule.onNodeWithTag(TOP_BAR).assertExists()
-
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.FIRSTNAME_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.LASTNAME_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.ADDRESS_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.PASSWORD_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.DESCRIPTION_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.SAVE_BUTTON).assertIsDisplayed()
+    setContent { EditProfileScreen(FakeUserViewModel(initialUser), onSave = { onSave() }) }
   }
 
   @Test
   fun editProfileScreen_showsFarmerSpecificFields() {
-    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeFarmerViewModel()) }
-
-    composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
-        .assertIsDisplayed()
+    val role = UserRole.FARMER
+    setContent(role)
+    assertComponentsVisibility(role)
   }
 
   @Test
   fun editProfileScreen_showsVetSpecificFields() {
-    composeTestRule.setContent { EditProfileScreen(userViewModel = fakeVetViewModel()) }
-
-    composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.DEFAULT_VET_DROPDOWN)
-        .assertDoesNotExist()
-    composeTestRule.onNodeWithTag(EditProfileScreenTestTags.ADD_CODE_BUTTON).assertDoesNotExist()
+    val role = UserRole.VET
+    setContent(role)
+    assertComponentsVisibility(role)
   }
 
   @Test
   fun saveButton_triggersSaveCallback() {
     var saved = false
-    composeTestRule.setContent {
-      EditProfileScreen(userViewModel = fakeFarmerViewModel(), onSave = { saved = true })
-    }
+    setContent(UserRole.FARMER, onSave = { saved = true })
 
     composeTestRule.onNodeWithTag(EditProfileScreenTestTags.SAVE_BUTTON).performClick()
-    assert(saved)
+    assertTrue(saved)
   }
 
-  private fun SemanticsNodeInteractionCollection.assertAreDisplayed():
-      SemanticsNodeInteractionCollection {
-    fetchSemanticsNodes().forEachIndexed { index, _ -> get(index).assertIsDisplayed() }
-    return this
+  @Test
+  fun activeCodes_doNotShowIfEmptyList() {
+    setContent(UserRole.VET)
+
+    with(EditProfileScreenTestTags) {
+      nodeNotDisplayed(dropdownTag("FARMER"))
+      nodeNotDisplayed(dropdownTag("VET"))
+
+      composeTestRule.onAllNodesWithTag(dropdownElementTag("FARMER")).assertAreNotDisplayed()
+      composeTestRule.onAllNodesWithTag(dropdownElementTag("VET")).assertAreNotDisplayed()
+
+      composeTestRule.onAllNodesWithTag(COPY_CODE_BUTTON).assertAreNotDisplayed()
+    }
   }
 
   private fun SemanticsNodeInteractionCollection.assertAreNotDisplayed():
@@ -103,33 +71,24 @@ class EditProfileScreenTest {
     return this
   }
 
-  @Test
-  fun activeFarmerCodes_doesNotShowIfEmptyList() {
-    composeTestRule.setContent {
-      EditProfileScreen(userViewModel = fakeVetViewModel(listOf(), listOf()))
+  fun assertComponentsVisibility(role: UserRole) {
+    with(NavigationTestTags) { nodesAreDisplayed(TOP_BAR_TITLE, GO_BACK_BUTTON, TOP_BAR) }
+
+    with(EditProfileScreenTestTags) {
+      nodesAreDisplayed(
+          FIRSTNAME_FIELD,
+          LASTNAME_FIELD,
+          ADDRESS_FIELD,
+          PASSWORD_FIELD,
+          DESCRIPTION_FIELD,
+          SAVE_BUTTON)
+
+      when (role) {
+        UserRole.FARMER -> nodesAreDisplayed(DEFAULT_VET_DROPDOWN)
+        UserRole.VET -> nodesNotDisplayed(DEFAULT_VET_DROPDOWN, ADD_CODE_BUTTON)
+      }
     }
-    composeTestRule
-        .onAllNodesWithTag(EditProfileScreenTestTags.dropdownElementTag("FARMER"))
-        .assertAreNotDisplayed()
-    composeTestRule
-        .onAllNodesWithTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)
-        .assertAreNotDisplayed()
   }
 
-  @Test
-  fun activeVetCodes_doesNotShowIfEmptyList() {
-    composeTestRule.setContent {
-      EditProfileScreen(userViewModel = fakeVetViewModel(listOf(), listOf()))
-    }
-
-    composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.dropdownTag("VET"))
-        .assertIsNotDisplayed()
-    composeTestRule
-        .onAllNodesWithTag(EditProfileScreenTestTags.dropdownElementTag("VET"))
-        .assertAreNotDisplayed()
-    composeTestRule
-        .onAllNodesWithTag(EditProfileScreenTestTags.COPY_CODE_BUTTON)
-        .assertAreNotDisplayed()
-  }
+  override fun displayAllComponents() {}
 }

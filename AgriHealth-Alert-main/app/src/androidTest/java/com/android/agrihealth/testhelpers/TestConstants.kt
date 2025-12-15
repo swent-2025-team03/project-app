@@ -50,7 +50,8 @@ object TestPassword {
   val password1 = "Password123"
   val password2 = "iamaweakpassword"
   val password3 = "12345678"
-  val password4 = "weak"
+  val weakestPassword = "123"
+  val strongestPassword = "definitelyAStrongEnoughPassword123/()"
 }
 
 object TestReport {

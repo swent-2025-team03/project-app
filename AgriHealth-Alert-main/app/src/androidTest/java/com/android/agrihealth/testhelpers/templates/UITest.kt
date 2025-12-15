@@ -103,6 +103,10 @@ abstract class UITest(private val grantedPermissions: Array<String> = emptyArray
     withText(text) { composeTestRule.waitUntil(timeout) { isDisplayed() } }
   }
 
+  protected fun textNotDisplayed(text: String, timeout: Long = TestTimeout.DEFAULT_TIMEOUT) {
+    withText(text) { composeTestRule.waitUntil(timeout) { isNotDisplayed() } }
+  }
+
   private fun SemanticsNodeInteraction.hasTextContaining(
       text: String,
       ignoreCase: Boolean = false
