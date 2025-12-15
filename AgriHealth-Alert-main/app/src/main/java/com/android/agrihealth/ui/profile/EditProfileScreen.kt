@@ -76,6 +76,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.android.agrihealth.ui.report.AddReportDialogTexts
 import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
+import com.android.agrihealth.ui.utils.ShowImageCropperDialog
 import com.mr0xf00.easycrop.ImageCropper
 
 enum class CodeType {
@@ -509,29 +510,6 @@ fun ErrorDialog(errorMessage: String?, onDismiss: () -> Unit) {
 
 // TODO: Put this in its own file
 @Composable
-fun ShowImageCropperDialog(imageCropper: ImageCropper) {
-  val cropState = imageCropper.cropState!!
-
-  // Setting this once
-  LaunchedEffect(cropState) {
-    setImageCropperShapeCircle(cropState)
-  }
-
-  ImageCropperDialog(
-    state = cropState,
-    topBar = { ImageCropperCustomTopBar(cropState) },
-    cropControls = {},
-    style = CropperStyle(
-      autoZoom = true,
-      guidelines = null,
-      shapes = listOf(CircleCropShape),
-      overlay = Color.Black.copy(alpha = .7f),
-      aspects = listOf(AspectRatio(1, 1))
-    ))
-}
-
-// TODO: Put this in its own file
-@Composable
 fun EditableProfilePicture(
   imageViewModel: ImageViewModel,
   profilePictureIsEmpty: Boolean,
@@ -583,48 +561,6 @@ fun EditableProfilePicture(
   }
 }
 
-private fun setImageCropperShapeCircle(state: CropState) {
-  state.reset()
-  // Force the region to be square
-  val currentRegion = state.region
-  val size = minOf(currentRegion.width, currentRegion.height)
-  val centerX = currentRegion.center.x
-  val centerY = currentRegion.center.y
-
-  state.region = Rect(
-    left = centerX - size / 2f,
-    top = centerY - size / 2f,
-    right = centerX + size / 2f,
-    bottom = centerY + size / 2f
-  )
-
-  state.aspectLock = true
-  state.shape = CircleCropShape
-}
-
-// Replacing the default topbar of the image cropper (specifically change the reset button)
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ImageCropperCustomTopBar(state: CropState) {
-  TopAppBar(title = {},
-    navigationIcon = {
-      IconButton(onClick = { state.done(accept = false) }) {
-        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Cancel cropping")
-      }
-    },
-    actions = {
-      IconButton(onClick = {
-        setImageCropperShapeCircle(state)
-      }) {
-        Icon(Icons.Default.Replay, contentDescription = "Restore")
-      }
-      IconButton(onClick = { state.done(accept = true) }, enabled = !state.accepted) {
-        Icon(Icons.Default.Done, contentDescription = "Submit")
-      }
-    },
-    colors = topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
-  )
-}
 
 // Created with the help of an LLM
 private fun ImageBitmap.toByteArray(format: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG, quality: Int = 100): ByteArray {

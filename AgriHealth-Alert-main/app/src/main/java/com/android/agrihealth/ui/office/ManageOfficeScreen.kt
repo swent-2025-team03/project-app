@@ -301,6 +301,7 @@ fun EditableProfilePicture(
   }
 }
 
+// TODO Make the profile picture square for offices
 @Composable
 fun UploadRemoveOfficePhotoSection(
     isOwner: Boolean = false,
