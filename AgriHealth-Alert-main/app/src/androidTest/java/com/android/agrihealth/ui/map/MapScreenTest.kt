@@ -471,12 +471,8 @@ class MapScreenTest {
     advanceUntilIdle()
     mapViewModel.refreshReports()
 
-    val uiState = mapViewModel.uiState
+    val spiderifiedReport = mapViewModel.uiState.map { it.reports }.first { it.size == 19 }
 
-    uiState.map { it.reports }.first { it.isNotEmpty() }
-    advanceUntilIdle()
-
-    val spiderifiedReport = uiState.value.reports
     val groups = spiderifiedReport.groupBy { it.center }
 
     val group1 =
