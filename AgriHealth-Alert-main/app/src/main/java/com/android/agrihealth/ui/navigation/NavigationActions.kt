@@ -61,7 +61,8 @@ sealed class Screen(
     }
   }
 
-  data class ViewUser(val uid: String) : Screen(route = "view_user/${uid}", name = "View User") {
+  data class ViewUser(val uid: String) :
+      Screen(route = "view_user/${uid.ifEmpty { " " }}", name = "View User") {
     companion object {
       const val route = "view_user/{uid}"
     }

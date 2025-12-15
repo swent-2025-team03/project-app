@@ -59,7 +59,7 @@ sealed class FilterArg<out T> {
  */
 class OverviewViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
-    private val alertRepository: AlertRepository = AlertRepositoryProvider.repository
+    private val alertRepository: AlertRepository = AlertRepositoryProvider.get()
 ) : ViewModel(), OverviewViewModelContract {
 
   private val _uiState = MutableStateFlow(OverviewUIState())

@@ -11,7 +11,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.android.agrihealth.data.model.alert.Alert
-import com.android.agrihealth.data.model.alert.FakeAlertRepository
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.location.Location
@@ -20,6 +19,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.testhelpers.TestReport
 import com.android.agrihealth.testhelpers.TestUser.farmer1
+import com.android.agrihealth.testhelpers.fakes.FakeAlertRepository
 import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
 import com.android.agrihealth.testhelpers.fakes.FakeUserRepository
 import com.android.agrihealth.testhelpers.templates.UITest
@@ -85,6 +85,7 @@ class MapScreenTest :
             reportRepository = reportRepository,
             userRepository = userRepository,
             locationViewModel = locationVM,
+            alertRepository = alertRepository,
             selectedReportId = selectedReportId,
             userId = userId)
 
@@ -248,6 +249,7 @@ class MapScreenTest :
           val mapViewModel =
               MapViewModel(
                   reportRepository = reportRepository,
+                  alertRepository = alertRepository,
                   locationViewModel = locationViewModel,
                   userId = userId)
           MapScreen(mapViewModel = mapViewModel, navigationActions = navigationActions)
@@ -294,6 +296,7 @@ class MapScreenTest :
     val mapViewModel =
         MapViewModel(
             reportRepository = reportRepository,
+            alertRepository = alertRepository,
             locationViewModel = locationViewModel,
             userId = userId,
             selectedReportId = TestReport.report1.id)
@@ -306,12 +309,8 @@ class MapScreenTest :
     advanceUntilIdle()
     mapViewModel.refreshReports()
 
-    val uiState = mapViewModel.uiState
+    val spiderifiedReport = mapViewModel.uiState.map { it.reports }.first { it.size == 19 }
 
-    uiState.map { it.reports }.first { it.isNotEmpty() }
-    advanceUntilIdle()
-
-    val spiderifiedReport = uiState.value.reports
     val groups = spiderifiedReport.groupBy { it.center }
 
     val group1 =

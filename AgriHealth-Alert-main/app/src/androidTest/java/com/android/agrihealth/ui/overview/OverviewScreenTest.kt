@@ -1,11 +1,11 @@
 package com.android.agrihealth.ui.overview
 
-import com.android.agrihealth.data.model.alert.FakeAlertRepository
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
 import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import com.android.agrihealth.testhelpers.TestUser.farmer1
 import com.android.agrihealth.testhelpers.TestUser.vet1
+import com.android.agrihealth.testhelpers.fakes.FakeAlertRepository
 import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
 import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
 import com.android.agrihealth.testhelpers.templates.UITest
@@ -18,7 +18,7 @@ class OverviewScreenTest : UITest() {
       OverviewScreen(
           userRole = UserRole.FARMER,
           user = farmer1,
-          overviewViewModel = OverviewViewModel(FakeReportRepository()))
+          overviewViewModel = OverviewViewModel(FakeReportRepository(), FakeAlertRepository()))
     }
   }
 

@@ -5,6 +5,7 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
 import com.android.agrihealth.data.model.authentification.AuthRepositoryFirebase
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.verifyUser
@@ -18,6 +19,7 @@ import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.TestTimeout.SUPER_LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.TestUser.farmer1
 import com.android.agrihealth.testhelpers.TestUser.farmer2
+import com.android.agrihealth.testhelpers.fakes.FakeAlertRepository
 import com.android.agrihealth.testhelpers.fakes.FakeCredentialManager
 import com.android.agrihealth.testhelpers.fakes.FakeJwtGenerator
 import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
@@ -232,6 +234,9 @@ class E2ETest :
 
   @Test
   fun testFarmer_OverviewAlertCards_Navigation() {
+    val fakeAlertRepo = FakeAlertRepository()
+    AlertRepositoryProvider.set(fakeAlertRepo)
+
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.waitForIdle()
 

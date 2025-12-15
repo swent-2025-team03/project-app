@@ -42,7 +42,7 @@ data class SpiderifiedReport(val report: Report, val position: LatLng, val cente
 
 class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
-    private val alertRepository: AlertRepository = AlertRepositoryProvider.repository,
+    private val alertRepository: AlertRepository = AlertRepositoryProvider.get(),
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
     private val locationViewModel: LocationViewModel,
     private val userId: String,

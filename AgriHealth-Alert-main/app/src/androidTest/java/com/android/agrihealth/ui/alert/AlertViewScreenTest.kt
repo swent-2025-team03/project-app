@@ -2,7 +2,7 @@ package com.android.agrihealth.ui.alert
 
 import androidx.compose.ui.test.*
 import androidx.navigation.compose.rememberNavController
-import com.android.agrihealth.data.model.alert.FakeAlertRepository
+import com.android.agrihealth.testhelpers.fakes.FakeAlertRepository
 import com.android.agrihealth.testhelpers.templates.UITest
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.overview.AlertUiState

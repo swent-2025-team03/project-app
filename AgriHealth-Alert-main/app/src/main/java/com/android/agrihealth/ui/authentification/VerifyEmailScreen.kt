@@ -146,7 +146,7 @@ fun VerifyEmailScreen(
                 Button(onClick = { runBlocking { verifyUser(Firebase.auth.uid ?: "") } }) {
                   Text("Haxchi")
                 }
-                */
+                 */
               }
             }
       }

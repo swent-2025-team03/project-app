@@ -1,7 +1,13 @@
 package com.android.agrihealth.data.model.alert
 
 object AlertRepositoryProvider {
-  private val _repository: AlertRepository by lazy { FakeAlertRepository() }
 
-  var repository: AlertRepository = AlertRepositoryProvider._repository
+  private var overrideRepo: AlertRepository? = null
+  private val _repository: AlertRepository by lazy { AlertRepositoryFirestore() }
+
+  fun set(repo: AlertRepository) {
+    overrideRepo = repo
+  }
+
+  fun get(): AlertRepository = overrideRepo ?: _repository
 }
