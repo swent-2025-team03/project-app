@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -22,12 +23,14 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.*
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -190,7 +193,7 @@ fun EditProfileScreen(
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val croppingIsOngoing = imageCropper.cropState != null
-  var chosenPhoto : ByteArray? by rememberSaveable {mutableStateOf(null)}
+  var chosenPhotoByteArray : ByteArray? by rememberSaveable {mutableStateOf(null)}
   val launchImageCropper: (Uri) -> Unit = remember {
     { uri: Uri ->
       scope.launch {
@@ -205,7 +208,7 @@ fun EditProfileScreen(
             }
           }
           is CropResult.Success -> {
-            chosenPhoto = result.bitmap.toByteArray()
+            chosenPhotoByteArray = result.bitmap.toByteArray()
           }
         }
       }
@@ -245,14 +248,14 @@ fun EditProfileScreen(
 
             EditableProfilePicture(
                 imageViewModel = imageViewModel,
-                profilePictureIsEmpty = chosenPhoto == null,
-                localPhotoByteArray = chosenPhoto,
-                remotePhotoURL = user.photoURL,
+                profilePictureIsEmpty = chosenPhotoByteArray == null,
+                localPhotoByteArray = chosenPhotoByteArray,
+                remotePhotoURL = null,   // TODO Put back "user.photoURL"
                 handleProfilePictureClick = {
-                  if (chosenPhoto == null) {
+                  if (chosenPhotoByteArray == null) {
                     showPhotoPickerDialog = true
                   } else {
-                    chosenPhoto = null
+                    chosenPhotoByteArray = null
                   }
                 }
             )
@@ -435,7 +438,7 @@ fun EditProfileScreen(
                               selectedDefaultOffice = selectedDefaultOffice,
                               description = description,
                               collected = collected,
-                              photoByteArray = chosenPhoto)
+                              photoByteArray = chosenPhotoByteArray)
                       updatedUser?.let { onSave(it) }
                     }
                   },
@@ -508,6 +511,7 @@ fun ShowImageCropperDialog(imageCropper: ImageCropper) {
       autoZoom = true,
       guidelines = null,
       shapes = listOf(CircleCropShape),
+      overlay = Color.Black.copy(alpha = .7f),
       aspects = listOf(AspectRatio(1, 1))
     ))
 }
@@ -525,8 +529,10 @@ fun EditableProfilePicture(
     modifier = Modifier.size(120.dp),
     contentAlignment = Alignment.Center,
   ) {
+
     var initialLoad by rememberSaveable { mutableStateOf(true) }
     val showRemote = initialLoad && remotePhotoURL != null
+    //val showRemote = remotePhotoURL != null
 
     // TODO Make the default profile icon and the actual profile picture the same size
     if (showRemote) {
@@ -537,6 +543,7 @@ fun EditableProfilePicture(
         contentDescription = "Office photo",
         showPlaceHolder = true)
     } else {
+      Log.d("EditProfile", (localPhotoByteArray == null).toString())
       LocalPhotoDisplay(
         photoByteArray = localPhotoByteArray,
         modifier = Modifier.size(120.dp).clip(CircleShape),
@@ -601,7 +608,8 @@ private fun ImageCropperCustomTopBar(state: CropState) {
       IconButton(onClick = { state.done(accept = true) }, enabled = !state.accepted) {
         Icon(Icons.Default.Done, contentDescription = "Submit")
       }
-    }
+    },
+    colors = topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
   )
 }
 
