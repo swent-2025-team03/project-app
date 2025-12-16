@@ -53,7 +53,7 @@ service firebase.storage {
         )
       );
 
-      allow write: if isOwner(userId) && underMax(5 * 1024 * 1024);
+      allow write: if isOwner(userId) && underMax(200 * 1024 * 1024);
     }
 
     match /offices/{officeId}/{allPaths=**} {
@@ -67,7 +67,7 @@ service firebase.storage {
         && hasRole("Vet")
         && myUser().officeId == officeId
         && officeDoc(officeId).ownerId == request.auth.uid
-        && underMax(10 * 1024 * 1024);
+        && underMax(200 * 1024 * 1024);
     }
 
     match /reports/{reportId}/{allPaths=**} {
@@ -78,7 +78,7 @@ service firebase.storage {
       );
 
      allow write: if isSignedIn()
-        && underMax(10 * 1024 * 1024)
+        && underMax(200 * 1024 * 1024)
         && (
           (hasRole("Farmer") && reportDoc(reportId).farmerId == request.auth.uid)
           ||
