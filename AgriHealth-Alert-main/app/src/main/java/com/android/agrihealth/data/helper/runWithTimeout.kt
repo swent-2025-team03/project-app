@@ -6,7 +6,7 @@ import kotlinx.coroutines.withTimeout
 
 object TimeoutConstant {
   const val TIMEOUT = 1_000L
-  const val LARGE_TIMEOUT = 10_000L
+  const val LARGE_TIMEOUT = 5_000L
 }
 
 suspend fun <T> runWithTimeout(block: Task<T>): T {
