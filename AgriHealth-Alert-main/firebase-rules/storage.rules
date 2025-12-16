@@ -30,12 +30,12 @@ service firebase.storage {
       return isSignedIn() && request.auth.uid == uid;
     }
 
-    function underMax(bytes) {
-      return request.resource.size < bytes;
+    function underMax10MB() {
+      return request.resource.size < 10 * 1024 * 1024;
     }
 
     match /users/{userId}/{allPaths=**} {
-      allow read: if isSignedIn() && (
+      allow read: if (
         userId == request.auth.uid
         ||
         (
@@ -53,32 +53,30 @@ service firebase.storage {
         )
       );
 
-      allow write: if isOwner(userId) && underMax(200 * 1024 * 1024);
+      allow write: if isOwner(userId) && underMax10MB();
     }
 
     match /offices/{officeId}/{allPaths=**} {
-      allow read: if isSignedIn() && (
+      allow read: if (
         (hasRole("Vet") && myUser().officeId == officeId)
         ||
         (hasRole("Farmer") && officeId in myUser().linkedOffices)
       );
 
-     allow write: if isSignedIn()
-        && hasRole("Vet")
+      allow write: if hasRole("Vet")
         && myUser().officeId == officeId
         && officeDoc(officeId).ownerId == request.auth.uid
-        && underMax(200 * 1024 * 1024);
+        && underMax10MB();
     }
 
     match /reports/{reportId}/{allPaths=**} {
-      allow read: if isSignedIn() && (
+      allow read: if (
         (hasRole("Vet") && reportDoc(reportId).officeId == myUser().officeId)
         ||
         (hasRole("Farmer") && reportDoc(reportId).farmerId == request.auth.uid)
       );
 
-     allow write: if isSignedIn()
-        && underMax(200 * 1024 * 1024)
+      allow write: if underMax10MB()
         && (
           (hasRole("Farmer") && reportDoc(reportId).farmerId == request.auth.uid)
           ||
@@ -86,8 +84,5 @@ service firebase.storage {
         );
     }
 
-    match /{allPaths=**} {
-      allow read, write: if false;
-    }
   }
 }

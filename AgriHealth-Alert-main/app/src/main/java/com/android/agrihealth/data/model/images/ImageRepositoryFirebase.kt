@@ -6,6 +6,8 @@ import android.net.Uri
 import androidx.core.graphics.scale
 import androidx.exifinterface.media.ExifInterface
 import com.android.agrihealth.data.model.images.ImageRepository.Companion.toBitmap
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import com.google.firebase.storage.FirebaseStorage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -21,10 +23,7 @@ class ImageRepositoryFirebase : ImageRepository {
 
   override suspend fun uploadImage(bytes: ByteArray): Result<String> {
     return try {
-      val uid =
-          com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
-              ?: return Result.failure(IllegalStateException("Not signed in"))
-
+      val uid = Firebase.auth.uid
       val fileName = System.currentTimeMillis()
       val childPath = "users/$uid/placeholder/$fileName.jpg"
       val imageRef = storage.reference.child(childPath)
