@@ -82,6 +82,26 @@ fun AlertViewScreen(navigationActions: NavigationActions, viewModel: AlertViewMo
                         contentDescription = "Back")
                   }
             })
+      },
+      bottomBar = {
+        // --- View on Map Button ---
+        val zone: AlertZone? = alert.zones?.first()
+        Surface {
+          OutlinedButton(
+              modifier =
+                  Modifier.fillMaxWidth()
+                      .padding(16.dp)
+                      .testTag(AlertViewScreenTestTags.VIEW_ON_MAP),
+              onClick = {
+                zone?.let {
+                  navigationActions.navigateTo(
+                      Screen.Map(zone.center.latitude, zone.center.longitude, null, alert.id))
+                }
+              },
+              enabled = zone != null) {
+                Text("View on Map")
+              }
+        }
       }) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
           val alertIndex by viewModel.currentAlertIndex.collectAsState()
@@ -118,23 +138,6 @@ fun AlertViewScreen(navigationActions: NavigationActions, viewModel: AlertViewMo
                     modifier = Modifier.testTag(AlertViewScreenTestTags.ALERT_REGION))
 
                 Spacer(modifier = Modifier.height(32.dp))
-              }
-          // --- View on Map Button ---
-          val zone: AlertZone? = alert.zones?.first()
-          OutlinedButton(
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .align(Alignment.BottomCenter)
-                      .padding(bottom = 16.dp)
-                      .testTag(AlertViewScreenTestTags.VIEW_ON_MAP),
-              onClick = {
-                zone?.let {
-                  navigationActions.navigateTo(
-                      Screen.Map(zone.center.latitude, zone.center.longitude, null, alert.id))
-                }
-              },
-              enabled = zone != null) {
-                Text("View on Map")
               }
           // --- Navigation arrows (previous / next) ---
           Row(
