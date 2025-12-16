@@ -243,7 +243,8 @@ fun ShowAlertInfo(alerts: List<Alert>, onClick: (alert: Alert) -> Unit) {
  * @param location Location of the current user's location
  */
 @Composable
-fun UserLocationMarker(location: Location) {
+fun UserLocationMarker(location: Location?) {
+  if (location == null) return
   val markerIcon = createCircleMarker(Color.BLUE, 40f)
   Marker(
       state = MarkerState(LatLng(location.latitude, location.longitude)),
@@ -495,7 +496,8 @@ fun MapTestAlertCircles(alerts: List<Alert>, onClick: (Alert) -> Unit) {
  * markers
  */
 @Composable
-fun MapTestUserLocationMarker(location: Location) {
+fun MapTestUserLocationMarker(location: Location?) {
+  if (location == null) return
   Box(modifier = Modifier.testTag(MapScreenTestTags.USER_LOCATION_MARKER).alpha(0f).size(1.dp)) {
     Text("(･ω･´)")
   }

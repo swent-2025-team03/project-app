@@ -523,7 +523,7 @@ class MapScreenTest {
 
   @Test
   fun displaysCurrentUserLocationMarker() = runTest {
-    setContentToMapWithVM()
+    setContentToMapWithVM() // provides the currentUserLocation
     composeTestRule.waitForIdle()
 
     composeTestRule
