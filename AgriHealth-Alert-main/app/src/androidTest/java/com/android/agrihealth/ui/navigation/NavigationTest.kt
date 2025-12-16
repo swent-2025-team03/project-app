@@ -1,19 +1,10 @@
 package com.android.agrihealth.ui.navigation
 
 import android.Manifest
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertTextContains
-import androidx.compose.ui.test.isDisplayed
-import androidx.compose.ui.test.isNotDisplayed
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import com.android.agrihealth.AgriHealthApp
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.verifyUser
 import com.android.agrihealth.testhelpers.TestPassword.password1
-import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
-import com.android.agrihealth.testhelpers.TestTimeout.SHORT_TIMEOUT
 import com.android.agrihealth.testhelpers.TestTimeout.SUPER_LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.TestUser.farmer1
 import com.android.agrihealth.testhelpers.templates.FirebaseUITest
@@ -21,13 +12,10 @@ import com.android.agrihealth.ui.authentification.SignInScreenTestTags
 import com.android.agrihealth.ui.authentification.VerifyEmailScreenTestTags
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.map.MapScreenTestTags
-import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
 import com.android.agrihealth.ui.planner.PlannerScreenTestTags
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import java.lang.Thread.sleep
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -97,7 +85,7 @@ class NavigationTest :
   }
 
   private fun assertOnOverviewScreen() =
-    textContains(NavigationTestTags.TOP_BAR_TITLE, Screen.Overview.name)
+      textContains(NavigationTestTags.TOP_BAR_TITLE, Screen.Overview.name)
 
   override fun displayAllComponents() {}
 }

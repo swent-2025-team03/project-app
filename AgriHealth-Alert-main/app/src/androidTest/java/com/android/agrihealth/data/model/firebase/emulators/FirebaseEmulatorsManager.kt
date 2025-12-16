@@ -67,10 +67,15 @@ object FirebaseEmulatorsManager {
             functionsPort = FUNCTIONS_PORT)
 
     with(environment) {
-      Firebase.firestore.useEmulator(host, firestorePort)
-      Firebase.auth.useEmulator(host, authPort)
-      Firebase.storage.useEmulator(host, storagePort)
-      Firebase.functions.useEmulator(host, functionsPort)
+      try {
+        Firebase.firestore.useEmulator(host, firestorePort)
+        Firebase.auth.useEmulator(host, authPort)
+        Firebase.storage.useEmulator(host, storagePort)
+        Firebase.functions.useEmulator(host, functionsPort)
+      } catch (e: IllegalStateException) {
+        if (e.message?.contains("Cannot call useEmulator()") == true) emulatorInitialized = true
+        else throw e
+      }
     }
 
     emulatorInitialized = true
