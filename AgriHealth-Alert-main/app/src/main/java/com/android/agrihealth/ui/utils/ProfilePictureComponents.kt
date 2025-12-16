@@ -119,7 +119,9 @@ fun rememberDefaultImageCropperLauncher(
 
 
 /**
- *  A profile picture is displayed, with a small icon that allows the user to either remove their existing profile picture or add a enw one
+ *  A profile picture is displayed, with a small icon that allows the user to either remove their existing profile picture or add a enw one.
+ *  When the user clicks on the button when no photo is displayed, the user is asked to upload a photo from either device storage or camera, and
+ *  then the user is asked to crop the image into a circle (as the profile picture is a circle)
  *
  *  @param photo The picture to display and its source
  *  @param isEditable true to allow the user to edit the displayed photo (i.e remove it or add one), false to make the profile picture read-only
@@ -191,8 +193,11 @@ fun EditableProfilePictureWithUI(
   }
 }
 
+
 /**
- *  A profile picture is displayed, with a small icon that allows the user to either remove their existing profile picture or add a enw one
+ *  A profile picture is displayed, with a small icon that allows the user to either remove their existing profile picture or add a enw one.
+ *  What happens when the user clicks on the button must be defined with [onPhotoPicked] and [onPhotoRemoved] respectfully.
+ *  Prefer using [EditableProfilePictureWithUI] for photo picker and image cropper support
  *
  *  @param photo The picture to display and its source
  *  @param isEditable true to allow the user to edit the displayed photo (i.e remove it or add one), false to make the profile picture read-only
