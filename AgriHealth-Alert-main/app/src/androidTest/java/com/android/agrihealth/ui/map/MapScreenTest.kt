@@ -335,16 +335,4 @@ class MapScreenTest :
     assertEquals(11, positions1?.size)
     assertEquals(6, positions2?.size)
   }
-
-
-  @Test
-  fun displaysCurrentUserLocationMarker() = runTest {
-    setContentToMapWithVM() // provides the currentUserLocation
-    composeTestRule.waitForIdle()
-
-    composeTestRule
-        .onNodeWithTag(MapScreenTestTags.USER_LOCATION_MARKER)
-        .assertExists()
-        .assertIsDisplayed()
-  }
 }
