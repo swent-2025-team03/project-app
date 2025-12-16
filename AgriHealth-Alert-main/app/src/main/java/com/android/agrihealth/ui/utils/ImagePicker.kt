@@ -41,9 +41,10 @@ object ImagePickerTexts {
   const val PERMISSION_REQUIRED = "Camera permission is required to take a photo"
 }
 
- // Generative AI was used in the making of this file in order to move the original code in
- // AddReportScreen.kt into its own standalone file
- /**
+/**
+ * Generative AI was used in the making of this file in order to move the original code in
+ * AddReportScreen.kt into its own standalone file
+ *
  * A complete, self-contained image picker component that handles:
  * - Showing a dialog to choose between gallery and camera
  * - Requesting camera permissions

@@ -1,18 +1,14 @@
 package com.android.agrihealth.ui.profile
 
-import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -21,10 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
@@ -48,22 +41,10 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
-import com.android.agrihealth.ui.utils.ImagePickerDialog
-import com.mr0xf00.easycrop.CropError
-import com.mr0xf00.easycrop.CropResult
-import com.mr0xf00.easycrop.crop
-import com.mr0xf00.easycrop.rememberImageCropper
 import kotlinx.coroutines.launch
-import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModelProvider
-import com.android.agrihealth.ui.report.AddReportDialogTexts
-import com.android.agrihealth.ui.report.AddReportFeedbackTexts
-import com.android.agrihealth.ui.report.AddReportScreenTestTags
 import com.android.agrihealth.ui.utils.EditableProfilePictureWithUI
 import com.android.agrihealth.ui.utils.PhotoUi
-import com.android.agrihealth.ui.utils.ShowImageCropperDialog
-import com.android.agrihealth.ui.utils.toBitmap
-import com.android.agrihealth.ui.utils.toByteArray
 
 enum class CodeType {
   FARMER,
@@ -95,13 +76,9 @@ object EditProfileScreenTestTags {
   fun dropdownElementTag(type: String) = "ACTIVE_CODE_ELEMENT_$type"
 }
 
-object EditProfileScreenTexts {
-  const val DIALOG_LOADING_ERROR = "The supplied image is invalid, not supported, or you don't have the required permissions to read it..."
-  const val DIALOG_SAVING_ERROR = "The result could not be saved. The selected area is likely to big, try selecting a smaller area..."
-}
+
 
 // TODO Make screen go back to view profile when saving changes
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
@@ -222,7 +199,7 @@ fun EditProfileScreen(
             isEditable = true,
             imageViewModel = imageViewModel,
             onPhotoPicked = { bytes ->
-              localPhotoByteArray = bytes
+              localPhotoByteArray = bytes   // TODO Replace this with something like viewModel.setPhoto(bytes)
               removeRemotePhoto = false
             },
             onPhotoRemoved = {

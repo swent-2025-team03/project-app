@@ -22,8 +22,14 @@ import com.mr0xf00.easycrop.ImageCropper
 import com.mr0xf00.easycrop.ui.ImageCropperDialog
 
 
-// TODO: Add documentation
 // TODO Allow crop region to be square (to allow later to have square profile picture shape for office
+/**
+ *  Display the photo cropper dialog which allows the user to crop the selected photo
+ *  An [ImageCropper] must be supplied beforehand, which should be created and remembered in the composition
+ *  with ```rememberImageCropper()```
+ *
+ *  @param imageCropper The supplied [imageCropper]
+ */
 @Composable
 fun ShowImageCropperDialog(imageCropper: ImageCropper) {
   val cropState = imageCropper.cropState!!
@@ -46,7 +52,7 @@ fun ShowImageCropperDialog(imageCropper: ImageCropper) {
     ))
 }
 
-// Replacing the default topbar of the image cropper (specifically change the reset button)
+// Replacing the default topbar of the image cropper (specifically changes the reset button)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ImageCropperCustomTopBar(state: CropState) {
@@ -73,6 +79,7 @@ private fun ImageCropperCustomTopBar(state: CropState) {
 // Force the shape of the image cropper to be a circle
 private fun setImageCropperShapeCircle(state: CropState) {
   state.reset()
+
   // Force the region to be square
   val currentRegion = state.region
   val size = minOf(currentRegion.width, currentRegion.height)

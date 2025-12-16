@@ -8,9 +8,14 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import java.io.ByteArrayOutputStream
 
-// TODO Add documentation
 
 // Created with the help of an LLM
+/**
+ *  Converts this [ImageBitmap] into a [ByteArray]
+ *
+ *  @param format The output format, default to a PNG
+ *  @param quality The quality of the output, defaults to 100% (i.e no compression)
+ */
 fun ImageBitmap.toByteArray(format: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG, quality: Int = 100): ByteArray {
   val bitmap = this.asAndroidBitmap()
   val outputStream = ByteArrayOutputStream()
@@ -19,6 +24,11 @@ fun ImageBitmap.toByteArray(format: Bitmap.CompressFormat = Bitmap.CompressForma
 }
 
 // Created with the help of an LLM
+/**
+ *  Returns a [BitMap] representing the file that this [Uri] points to
+ *
+ *  @param context The environment [Context]
+ */
 fun Uri.toBitmap(context: Context): Bitmap {
   val source = ImageDecoder.createSource(context.contentResolver, this)
 

@@ -1,29 +1,20 @@
 package com.android.agrihealth.ui.office
 
 import android.annotation.SuppressLint
-import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -44,24 +35,11 @@ import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_NAME
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_VET_LIST
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
 import com.android.agrihealth.ui.profile.CodesViewModel
-import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
-import com.android.agrihealth.ui.profile.EditProfileScreenTexts
 import com.android.agrihealth.ui.profile.GenerateCode
-import com.android.agrihealth.ui.profile.LocalPhotoDisplay
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
-import com.android.agrihealth.ui.profile.RemotePhotoDisplay
 import com.android.agrihealth.ui.user.UserViewModel
-import com.android.agrihealth.ui.utils.EditableProfilePicture
 import com.android.agrihealth.ui.utils.EditableProfilePictureWithUI
-import com.android.agrihealth.ui.utils.ImagePickerDialog
 import com.android.agrihealth.ui.utils.PhotoUi
-import com.android.agrihealth.ui.utils.ShowImageCropperDialog
-import com.android.agrihealth.ui.utils.toBitmap
-import com.android.agrihealth.ui.utils.toByteArray
-import com.mr0xf00.easycrop.CropError
-import com.mr0xf00.easycrop.CropResult
-import com.mr0xf00.easycrop.crop
-import com.mr0xf00.easycrop.rememberImageCropper
 import kotlinx.coroutines.launch
 
 object ManageOfficeScreenTestTags {
@@ -74,8 +52,6 @@ object ManageOfficeScreenTestTags {
   const val SAVE_BUTTON = "SaveButton"
   const val LEAVE_OFFICE_BUTTON = "LeaveOfficeButton"
   const val CONFIRM_LEAVE = "ConfirmLeaveOffice"
-  const val PROFILE_PICTURE = "ProfilePicture"
-  const val PROFILE_PICTURE_BUTTON = "ProfilePictuerButton"
 }
 
 @SuppressLint("StateFlowValueCalledInComposition", "SuspiciousIndentation")
@@ -154,6 +130,7 @@ fun ManageOfficeScreen(
                           Text("Join an Office")
                         }
                   } else {
+
                     EditableProfilePictureWithUI(
                       photo = photoUi,
                       isEditable = isOwner,
