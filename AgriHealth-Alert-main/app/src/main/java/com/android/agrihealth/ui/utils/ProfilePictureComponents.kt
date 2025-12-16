@@ -226,7 +226,7 @@ fun EditableProfilePicture(
     onPhotoRemoved: () -> Unit,
 ) {
   Box(
-      modifier = modifier.size(imageSize),
+      modifier = modifier.size(imageSize).testTag(ProfilePictureComponentsTestTags.PROFILE_PICTURE),
       contentAlignment = Alignment.Center,
   ) {
     when (photo) {
@@ -236,8 +236,7 @@ fun EditableProfilePicture(
               imageViewModel = imageViewModel,
               modifier =
                   Modifier.size(imageSize)
-                      .clip(CircleShape)
-                      .testTag(ProfilePictureComponentsTestTags.PROFILE_PICTURE),
+                      .clip(CircleShape),
               contentDescription = "Photo",
               showPlaceHolder = true)
       is PhotoUi.Local ->
@@ -245,16 +244,14 @@ fun EditableProfilePicture(
               photoByteArray = photo.bytes,
               modifier =
                   Modifier.size(imageSize)
-                      .clip(CircleShape)
-                      .testTag(ProfilePictureComponentsTestTags.PROFILE_PICTURE),
+                      .clip(CircleShape),
               showPlaceHolder = true)
       PhotoUi.Empty ->
           LocalPhotoDisplay(
               photoByteArray = null,
               modifier =
                   Modifier.size(imageSize)
-                      .clip(CircleShape)
-                      .testTag(ProfilePictureComponentsTestTags.PROFILE_PICTURE),
+                      .clip(CircleShape),
               showPlaceHolder = true)
     }
 

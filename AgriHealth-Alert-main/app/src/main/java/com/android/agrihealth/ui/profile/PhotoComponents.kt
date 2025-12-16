@@ -93,7 +93,7 @@ fun RemotePhotoDisplay(
     is ImageUIState.Loading -> {
       Box(modifier = modifier, contentAlignment = Alignment.Center) {
         CircularProgressIndicator(
-            modifier = Modifier.testTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION))
+            modifier = modifier.testTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION))
       }
     }
     is ImageUIState.Error -> {

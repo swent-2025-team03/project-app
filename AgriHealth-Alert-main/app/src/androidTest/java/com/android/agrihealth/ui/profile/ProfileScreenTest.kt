@@ -22,7 +22,7 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_FARME
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_OFFICE_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
+import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_PICTURE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModelContract
 import java.time.LocalDate
@@ -74,7 +74,7 @@ class ProfileScreenTest {
                 address = null))
     setScreen(vm)
 
-    composeTestRule.onNodeWithTag(PROFILE_IMAGE).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(PROFILE_PICTURE).assertIsDisplayed()
   }
 
   @Test
@@ -185,7 +185,7 @@ class ProfileScreenTest {
             Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultOffice = null))
     setScreen(vm)
 
-    composeTestRule.onNodeWithTag(PROFILE_IMAGE).assertExists()
+    composeTestRule.onNodeWithTag(PROFILE_PICTURE).assertExists()
     composeTestRule.onNodeWithTag(GO_BACK_BUTTON).assertExists()
     composeTestRule.onNodeWithTag(LOGOUT_BUTTON).assertExists()
     composeTestRule.onNodeWithTag(EDIT_BUTTON).assertExists()

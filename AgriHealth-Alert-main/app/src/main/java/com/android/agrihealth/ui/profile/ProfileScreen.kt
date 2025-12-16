@@ -48,7 +48,6 @@ import com.android.agrihealth.ui.user.UserViewModelContract
 object ProfileScreenTestTags {
 
   const val TOP_BAR = "TopBar"
-  const val PROFILE_IMAGE = "ProfileImage"
   const val NAME_TEXT = "NameText"
   const val EDIT_BUTTON = "EditButton"
   const val DESCRIPTION_FIELD = "DescriptionField"
@@ -57,6 +56,7 @@ object ProfileScreenTestTags {
   const val CODE_BUTTON_FARMER = "CodeButtonFarmer"
   const val MANAGE_OFFICE_BUTTON = "ManageOfficeButton"
   const val GENERATE_CODE_BUTTON = "GenerateCodeButton"
+  const val PROFILE_PICTURE = "ProfilePicture"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -120,7 +120,7 @@ fun ProfileScreen(
               HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
 
               // Profile Image Placeholder
-              Box(modifier = Modifier, contentAlignment = Alignment.Center) {
+              Box(modifier = Modifier.testTag(ProfileScreenTestTags.PROFILE_PICTURE), contentAlignment = Alignment.Center) {
                 RemotePhotoDisplay(
                     user.photoURL,
                     imageViewModel,

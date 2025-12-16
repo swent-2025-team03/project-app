@@ -28,7 +28,7 @@ object ViewUserScreenTestTags {
   const val LOADING_INDICATOR = "ViewUserLoadingIndicator"
   const val ERROR_TEXT = "ViewUserErrorText"
   const val CONTENT_COLUMN = "ViewUserContentColumn"
-  const val PROFILE_ICON = "ViewUserProfileIcon"
+  const val PROFILE_PICTURE = "ViewUserProfilePicture"
   const val NAME_FIELD = "ViewUserNameField"
   const val ROLE_FIELD = "ViewUserRoleField"
   const val OFFICE_FIELD = "ViewUserOfficeField"
@@ -116,7 +116,7 @@ private fun ViewUserContent(user: User, officeName: String?, imageViewModel: Ima
             imageViewModel,
             contentDescription = "Profile Picture",
             showPlaceHolder = true,
-            modifier = Modifier.size(120.dp).clip(CircleShape),
+            modifier = Modifier.size(120.dp).clip(CircleShape).testTag(ViewUserScreenTestTags.PROFILE_PICTURE),
         ) // TODO Use profile picture component
 
         Spacer(Modifier.height(24.dp))
