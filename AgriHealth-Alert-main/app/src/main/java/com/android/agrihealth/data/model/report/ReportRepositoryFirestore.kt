@@ -82,7 +82,7 @@ private fun docToReport(doc: DocumentSnapshot): Report? {
     val questionFormsData = doc.get("questionForms") as? List<Map<*, *>> ?: emptyList()
     val questionForms =
         questionFormsData.mapNotNull { questionForm ->
-          val questionType = questionForm["questionType"] as String
+          val questionType = questionForm["type"] as String
           val question = questionForm["question"] as String
           val answers = questionForm["answers"] as List<String>
           val answerIndex = (questionForm["answerIndex"] as Long).toInt()
