@@ -5,6 +5,7 @@ import com.android.agrihealth.data.model.location.Location
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import java.time.LocalDate
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
@@ -51,7 +52,7 @@ class AlertRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun getAlerts_returnsOrderedByCreatedAtDescending() = runTest {
+  fun getAlerts_returnsOrderedByCreatedAtDescending() = runBlocking {
     insertAlert("a1", createdAt = Timestamp(10, 0))
     insertAlert("a2", createdAt = Timestamp(20, 0))
     insertAlert("a3", createdAt = Timestamp(30, 0))
@@ -62,7 +63,7 @@ class AlertRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun getAlertById_returnsFromCacheWhenAvailable() = runTest {
+  fun getAlertById_returnsFromCacheWhenAvailable() = runBlocking {
     insertAlert("cached", createdAt = Timestamp.now())
 
     val all = repo.getAlerts()
@@ -74,7 +75,7 @@ class AlertRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun getAlertById_fetchesFromFirestoreWhenNotCached() = runTest {
+  fun getAlertById_fetchesFromFirestoreWhenNotCached() = runBlocking {
     insertAlert("remote", createdAt = Timestamp.now())
 
     val alert = repo.getAlertById("remote")
@@ -91,7 +92,7 @@ class AlertRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun previousAndNextAlert_workBasedOnCachedOrder() = runTest {
+  fun previousAndNextAlert_workBasedOnCachedOrder() = runBlocking {
     insertAlert("a1", createdAt = Timestamp(10, 0))
     insertAlert("a2", createdAt = Timestamp(20, 0))
     insertAlert("a3", createdAt = Timestamp(30, 0))
@@ -109,7 +110,7 @@ class AlertRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   }
 
   @Test
-  fun alertFromFirestore_parsesZonesCorrectly() = runTest {
+  fun alertFromFirestore_parsesZonesCorrectly() = runBlocking {
     insertAlert("zones", createdAt = Timestamp.now())
 
     val alert = repo.getAlertById("zones")!!
