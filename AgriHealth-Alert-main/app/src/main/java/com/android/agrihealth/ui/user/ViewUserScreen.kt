@@ -4,7 +4,6 @@ import android.widget.Toast
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -13,14 +12,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.user.*
-import com.android.agrihealth.ui.profile.RemotePhotoDisplay
 import com.android.agrihealth.ui.utils.PhotoUi
 import com.android.agrihealth.ui.utils.ProfilePicture
 
@@ -113,10 +110,9 @@ private fun ViewUserContent(user: User, officeName: String?, imageViewModel: Ima
               .padding(16.dp)
               .testTag(ViewUserScreenTestTags.CONTENT_COLUMN),
       horizontalAlignment = Alignment.CenterHorizontally) {
-
         ProfilePicture(
-          photo = if (user.photoURL != null) PhotoUi.Remote(user.photoURL!!) else PhotoUi.Empty,
-          imageViewModel,
+            photo = if (user.photoURL != null) PhotoUi.Remote(user.photoURL!!) else PhotoUi.Empty,
+            imageViewModel,
         )
 
         Spacer(Modifier.height(24.dp))

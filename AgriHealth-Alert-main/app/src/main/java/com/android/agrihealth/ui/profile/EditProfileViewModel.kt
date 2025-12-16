@@ -14,18 +14,21 @@ class EditProfileViewModel(
     private val imageViewModel: ImageViewModel
 ) : ViewModel() {
 
-  /** Decides which photo to display depending on the
-   * state of the UI (i.e if a photo has been removed, picked, ...) */
+  /**
+   * Decides which photo to display depending on the state of the UI (i.e if a photo has been
+   * removed, picked, ...)
+   */
   fun choosePhotoToDisplay(
-    remotePhotoURL: String?,
-    localPhotoBytes: ByteArray?,
-    removeRemotePhoto: Boolean
-  ): PhotoUi = when {
-    localPhotoBytes != null -> PhotoUi.Local(localPhotoBytes)
-    removeRemotePhoto -> PhotoUi.Empty
-    remotePhotoURL != null -> PhotoUi.Remote(remotePhotoURL)
-    else -> PhotoUi.Empty
-  }
+      remotePhotoURL: String?,
+      localPhotoBytes: ByteArray?,
+      removeRemotePhoto: Boolean
+  ): PhotoUi =
+      when {
+        localPhotoBytes != null -> PhotoUi.Local(localPhotoBytes)
+        removeRemotePhoto -> PhotoUi.Empty
+        remotePhotoURL != null -> PhotoUi.Remote(remotePhotoURL)
+        else -> PhotoUi.Empty
+      }
 
   suspend fun saveProfileChanges(
       user: User,

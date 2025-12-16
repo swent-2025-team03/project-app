@@ -31,7 +31,6 @@ import com.mr0xf00.easycrop.ui.ImageCropperDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-
 /** To make type more clear */
 typealias ImageCropperLauncher = (Uri) -> Unit
 
@@ -48,12 +47,12 @@ typealias ImageCropperLauncher = (Uri) -> Unit
  */
 @Composable
 fun rememberDefaultImageCropperLauncher(
-  imageCropper: ImageCropper,
-  cropMaxSize: IntSize = IntSize(8192, 8192),
-  scope: CoroutineScope,
-  onCropSuccess: (ByteArray) -> Unit,
-  onCropError: (String) -> Unit,
-  onCropCancelled: () -> Unit = {},
+    imageCropper: ImageCropper,
+    cropMaxSize: IntSize = IntSize(8192, 8192),
+    scope: CoroutineScope,
+    onCropSuccess: (ByteArray) -> Unit,
+    onCropError: (String) -> Unit,
+    onCropCancelled: () -> Unit = {},
 ): ImageCropperLauncher {
   val context = LocalContext.current
 
@@ -65,11 +64,11 @@ fun rememberDefaultImageCropperLauncher(
         when (val result = imageCropper.crop(cropMaxSize, bmp = bitmap)) {
           is CropResult.Cancelled -> onCropCancelled()
           is CropError ->
-            onCropError(
-              when (result) {
-                CropError.LoadingError -> ProfilePictureComponentsTexts.DIALOG_LOADING_ERROR
-                CropError.SavingError -> ProfilePictureComponentsTexts.DIALOG_SAVING_ERROR
-              })
+              onCropError(
+                  when (result) {
+                    CropError.LoadingError -> ProfilePictureComponentsTexts.DIALOG_LOADING_ERROR
+                    CropError.SavingError -> ProfilePictureComponentsTexts.DIALOG_SAVING_ERROR
+                  })
           is CropResult.Success -> onCropSuccess(result.bitmap.toByteArray())
         }
       }
@@ -133,7 +132,7 @@ private fun setImageCropperShapeCircle(state: CropState) {
   // Force the region to be square
   val currentRegion = state.region
   val size = minOf(currentRegion.width, currentRegion.height)
-  state.region = Rect(currentRegion.center, size /2f)
+  state.region = Rect(currentRegion.center, size / 2f)
 
   state.aspectLock = true
   state.shape = CircleCropShape

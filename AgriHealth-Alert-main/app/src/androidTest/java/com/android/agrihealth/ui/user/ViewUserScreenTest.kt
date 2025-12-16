@@ -12,8 +12,6 @@ import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.FakeOfficeRepository
 import com.android.agrihealth.testutil.FakeUserRepository
 import com.android.agrihealth.testutil.TestConstants
-import com.android.agrihealth.ui.profile.PhotoComponentsTestTags
-import com.android.agrihealth.ui.utils.ProfilePictureComponentsTestTags
 import org.junit.Rule
 import org.junit.Test
 

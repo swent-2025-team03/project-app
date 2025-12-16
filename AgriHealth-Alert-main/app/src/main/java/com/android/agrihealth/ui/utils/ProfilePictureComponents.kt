@@ -62,8 +62,6 @@ object ProfilePictureComponentsTexts {
   const val DIALOG_TITLE = "Error!"
 }
 
-
-
 /**
  * A profile picture is displayed, with a small icon that allows the user to either remove their
  * existing profile picture or add a new one. When the user clicks on the button when no photo is
@@ -146,40 +144,35 @@ fun EditableProfilePictureWithImageCropper(
 }
 
 /**
- *  A profile picture. It will fetch the photo on the repository, or show the local
- *  photo, or show a default profile picture icon if no photo is given
+ * A profile picture. It will fetch the photo on the repository, or show the local photo, or show a
+ * default profile picture icon if no photo is given
  *
- *  @param photo A [PhotoUi] that stores the photo and its source (on the repository or local)
- *  @param imageViewModel The [ImageViewModel] used to display the photo
- *  @param modifier The [Modifier] used to customize the profile picture
- *  @param imageSize The size of the image in [Dp]
+ * @param photo A [PhotoUi] that stores the photo and its source (on the repository or local)
+ * @param imageViewModel The [ImageViewModel] used to display the photo
+ * @param modifier The [Modifier] used to customize the profile picture
+ * @param imageSize The size of the image in [Dp]
  */
 @Composable
 fun ProfilePicture(
-  photo: PhotoUi,
-  imageViewModel: ImageViewModel,
-  modifier: Modifier = Modifier,
-  imageSize: Dp = 120.dp,
+    photo: PhotoUi,
+    imageViewModel: ImageViewModel,
+    modifier: Modifier = Modifier,
+    imageSize: Dp = 120.dp,
 ) {
   when (photo) {
     is PhotoUi.Remote ->
-      RemotePhotoDisplay(
-        photoURL = photo.url,
-        imageViewModel = imageViewModel,
-        modifier =
-          modifier.size(imageSize)
-            .clip(CircleShape),
-        contentDescription = "Photo",
-        showPlaceHolder = true)
+        RemotePhotoDisplay(
+            photoURL = photo.url,
+            imageViewModel = imageViewModel,
+            modifier = modifier.size(imageSize).clip(CircleShape),
+            contentDescription = "Photo",
+            showPlaceHolder = true)
     is PhotoUi.Local ->
-      LocalPhotoDisplay(
-        photoByteArray = photo.bytes,
-        modifier =
-          Modifier.size(imageSize)
-            .clip(CircleShape),
-        showPlaceHolder = true)
-    PhotoUi.Empty ->
-      DefaultIconPlaceholder(Modifier.size(imageSize).clip(CircleShape))
+        LocalPhotoDisplay(
+            photoByteArray = photo.bytes,
+            modifier = Modifier.size(imageSize).clip(CircleShape),
+            showPlaceHolder = true)
+    PhotoUi.Empty -> DefaultIconPlaceholder(Modifier.size(imageSize).clip(CircleShape))
   }
 }
 
@@ -213,13 +206,7 @@ fun EditableProfilePicture(
       modifier = modifier.size(imageSize).testTag(ProfilePictureComponentsTestTags.PROFILE_PICTURE),
       contentAlignment = Alignment.Center,
   ) {
-
-    ProfilePicture(
-      photo,
-      imageViewModel,
-      Modifier,
-      imageSize
-    )
+    ProfilePicture(photo, imageViewModel, Modifier, imageSize)
 
     if (isEditable) {
       val removeMode = photo != PhotoUi.Empty

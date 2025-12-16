@@ -187,7 +187,7 @@ fun LocalPhotoDisplay(
         photoByteArray?.let { PhotoType.ByteArray(it) }, modifier, showPlaceHolder, placeholder)
 
 /**
- *  A default profile picture icon shown when the user has no profile picture
+ * A default profile picture icon shown when the user has no profile picture
  *
  * @param modifier Modifier used to customize the layout
  */

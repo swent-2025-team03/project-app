@@ -15,24 +15,27 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 data class ManageOfficeUiState(
-  val office: Office? = null,
-  val editableName: String = "",
-  val editableDescription: String = "",
-  val editableAddress: String = "",
-  val isLoading: Boolean = false,
-  val snackMessage: String? = null,
-  val photoBytesToUpload: ByteArray? = null,
-  val removeRemotePhoto: Boolean = false,
+    val office: Office? = null,
+    val editableName: String = "",
+    val editableDescription: String = "",
+    val editableAddress: String = "",
+    val isLoading: Boolean = false,
+    val snackMessage: String? = null,
+    val photoBytesToUpload: ByteArray? = null,
+    val removeRemotePhoto: Boolean = false,
 ) {
-  /** Decides which photo to display depending on the
-   * state of the UI (i.e if a photo has been removed, picked, ...) */
+  /**
+   * Decides which photo to display depending on the state of the UI (i.e if a photo has been
+   * removed, picked, ...)
+   */
   val displayedPhoto: PhotoUi
-    get() = when {
-      photoBytesToUpload != null -> PhotoUi.Local(photoBytesToUpload)
-      removeRemotePhoto -> PhotoUi.Empty
-      office?.photoUrl != null -> PhotoUi.Remote(office.photoUrl)
-      else -> PhotoUi.Empty
-    }
+    get() =
+        when {
+          photoBytesToUpload != null -> PhotoUi.Local(photoBytesToUpload)
+          removeRemotePhoto -> PhotoUi.Empty
+          office?.photoUrl != null -> PhotoUi.Remote(office.photoUrl)
+          else -> PhotoUi.Empty
+        }
 }
 
 class ManageOfficeViewModel(

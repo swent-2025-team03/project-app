@@ -2,7 +2,6 @@ package com.android.agrihealth.ui.profile
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -17,7 +16,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -122,19 +120,23 @@ fun ProfileScreen(
               HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
 
               // Profile Image Placeholder
-              Box(modifier = Modifier.testTag(ProfileScreenTestTags.PROFILE_PICTURE), contentAlignment = Alignment.Center) {
-                ProfilePicture(
-                  if (user.photoURL != null) PhotoUi.Remote(user.photoURL!!) else PhotoUi.Empty,
-                  imageViewModel,
-                )
-                FloatingActionButton(
-                    onClick = onEditProfile,
-                    modifier = Modifier.testTag(EDIT_BUTTON).size(40.dp).align(Alignment.BottomEnd),
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
-                      Icon(Icons.Default.Edit, contentDescription = "Edit profile")
-                    }
-              }
+              Box(
+                  modifier = Modifier.testTag(ProfileScreenTestTags.PROFILE_PICTURE),
+                  contentAlignment = Alignment.Center) {
+                    ProfilePicture(
+                        if (user.photoURL != null) PhotoUi.Remote(user.photoURL!!)
+                        else PhotoUi.Empty,
+                        imageViewModel,
+                    )
+                    FloatingActionButton(
+                        onClick = onEditProfile,
+                        modifier =
+                            Modifier.testTag(EDIT_BUTTON).size(40.dp).align(Alignment.BottomEnd),
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
+                          Icon(Icons.Default.Edit, contentDescription = "Edit profile")
+                        }
+                  }
 
               Spacer(modifier = Modifier.height(8.dp))
 

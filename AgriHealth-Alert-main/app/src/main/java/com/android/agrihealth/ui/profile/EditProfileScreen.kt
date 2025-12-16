@@ -179,16 +179,15 @@ fun EditProfileScreen(
               HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
 
               EditableProfilePictureWithImageCropper(
-                  photo = editProfileViewModel.choosePhotoToDisplay(
-                    remotePhotoURL = user.photoURL,
-                    localPhotoBytes = localPhotoByteArray,
-                    removeRemotePhoto = removeRemotePhoto
-                  ),
+                  photo =
+                      editProfileViewModel.choosePhotoToDisplay(
+                          remotePhotoURL = user.photoURL,
+                          localPhotoBytes = localPhotoByteArray,
+                          removeRemotePhoto = removeRemotePhoto),
                   isEditable = true,
                   imageViewModel = imageViewModel,
                   onPhotoPicked = { bytes ->
-                    localPhotoByteArray =
-                        bytes
+                    localPhotoByteArray = bytes
                     removeRemotePhoto = false
                   },
                   onPhotoRemoved = {
@@ -387,7 +386,6 @@ fun EditProfileScreen(
                   }
             }
       }
-
 }
 
 /*
