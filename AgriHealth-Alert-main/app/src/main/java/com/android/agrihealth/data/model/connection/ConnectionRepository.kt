@@ -1,5 +1,6 @@
 package com.android.agrihealth.data.model.connection
 
+import com.android.agrihealth.data.helper.runWithTimeout
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.user.Vet
@@ -10,6 +11,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Source
 import com.google.firebase.firestore.firestore
 import kotlin.random.Random
 import kotlinx.coroutines.delay
@@ -147,14 +149,22 @@ class ConnectionRepository(
 
     return try {
       val snapshot =
-          db.collection(collectionName)
-              .whereIn(FieldPath.documentId(), targetList)
-              .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
-              .get()
-              .await()
+          try {
+            runWithTimeout(
+                db.collection(collectionName)
+                    .whereIn(FieldPath.documentId(), targetList)
+                    .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
+                    .get())
+          } catch (_: Exception) {
+            db.collection(collectionName)
+                .whereIn(FieldPath.documentId(), targetList)
+                .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
+                .get(Source.CACHE)
+                .await()
+          }
 
       snapshot.documents.map { it.id }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
       emptyList()
     }
   }
@@ -175,11 +185,19 @@ class ConnectionRepository(
 
     return try {
       val snapshot =
-          db.collection(collectionName)
-              .whereIn(FieldPath.documentId(), targetList)
-              .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
-              .get()
-              .await()
+          try {
+            runWithTimeout(
+                db.collection(collectionName)
+                    .whereIn(FieldPath.documentId(), targetList)
+                    .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
+                    .get())
+          } catch (_: Exception) {
+            db.collection(collectionName)
+                .whereIn(FieldPath.documentId(), targetList)
+                .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
+                .get(Source.CACHE)
+                .await()
+          }
       snapshot.size()
     } catch (e: Exception) {
       0
