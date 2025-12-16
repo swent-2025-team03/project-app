@@ -7,12 +7,26 @@ import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.ui.utils.PhotoUi
 
 // TODO Refactor this screen to have an uiState variable and move code from screen to this viewModel
 class EditProfileViewModel(
     private val officeRepository: OfficeRepository,
     private val imageViewModel: ImageViewModel
 ) : ViewModel() {
+
+  /** Decides which photo to display depending on the
+   * state of the UI (i.e if a photo has been removed, picked, ...) */
+  fun choosePhotoToDisplay(
+    remotePhotoURL: String?,
+    localPhotoBytes: ByteArray?,
+    removeRemotePhoto: Boolean
+  ): PhotoUi = when {
+    localPhotoBytes != null -> PhotoUi.Local(localPhotoBytes)
+    removeRemotePhoto -> PhotoUi.Empty
+    remotePhotoURL != null -> PhotoUi.Remote(remotePhotoURL)
+    else -> PhotoUi.Empty
+  }
 
   suspend fun saveProfileChanges(
       user: User,

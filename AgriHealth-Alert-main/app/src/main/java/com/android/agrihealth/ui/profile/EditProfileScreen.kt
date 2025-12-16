@@ -43,7 +43,6 @@ import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
 import com.android.agrihealth.ui.utils.EditableProfilePictureWithUI
-import com.android.agrihealth.ui.utils.PhotoUi
 import kotlinx.coroutines.launch
 
 enum class CodeType {
@@ -151,18 +150,6 @@ fun EditProfileScreen(
   var removeRemotePhoto by rememberSaveable { mutableStateOf(false) }
   var localPhotoByteArray: ByteArray? by rememberSaveable { mutableStateOf(null) }
 
-  // Decide what to display for the profile picture
-  val photoUi by
-      remember(user.photoURL, localPhotoByteArray, removeRemotePhoto) {
-        mutableStateOf(
-            when {
-              localPhotoByteArray != null -> PhotoUi.Local(localPhotoByteArray!!)
-              removeRemotePhoto -> PhotoUi.Empty
-              user.photoURL != null -> PhotoUi.Remote(user.photoURL!!)
-              else -> PhotoUi.Empty
-            })
-      }
-
   // TODO: Refactor this so each UI component are in their own composable
   Scaffold(
       topBar = {
@@ -194,7 +181,11 @@ fun EditProfileScreen(
               HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
 
               EditableProfilePictureWithUI(
-                  photo = photoUi,
+                  photo = editProfileViewModel.choosePhotoToDisplay(
+                    remotePhotoURL = user.photoURL,
+                    localPhotoBytes = localPhotoByteArray,
+                    removeRemotePhoto = removeRemotePhoto
+                  ),
                   isEditable = true,
                   imageViewModel = imageViewModel,
                   onPhotoPicked = { bytes ->
