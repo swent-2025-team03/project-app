@@ -8,7 +8,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -41,7 +40,6 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DESCRIPTION_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.MANAGE_OFFICE_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
@@ -124,10 +122,12 @@ fun ProfileScreen(
               // Profile Image Placeholder
               Box(modifier = Modifier, contentAlignment = Alignment.Center) {
                 RemotePhotoDisplay(
-                  user.photoURL, imageViewModel,
-                  contentDescription = "Profile Picture",
-                  showPlaceHolder = true,
-                  modifier = Modifier.size(120.dp).clip(CircleShape),) // TODO Use profile picture component
+                    user.photoURL,
+                    imageViewModel,
+                    contentDescription = "Profile Picture",
+                    showPlaceHolder = true,
+                    modifier = Modifier.size(120.dp).clip(CircleShape),
+                ) // TODO Use profile picture component
                 FloatingActionButton(
                     onClick = onEditProfile,
                     modifier = Modifier.testTag(EDIT_BUTTON).size(40.dp).align(Alignment.BottomEnd),

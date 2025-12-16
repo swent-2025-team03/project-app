@@ -77,16 +77,16 @@ fun ManageOfficeScreen(
   val isOwner = uiState.office?.ownerId == currentUser.uid
 
   // Decide what to show for the profile picture
-  val photoUi by remember(uiState.office?.photoUrl, uiState.photoBytes, uiState.removeRemotePhoto) {
-    mutableStateOf(
-      when {
-        uiState.photoBytes != null -> PhotoUi.Local(uiState.photoBytes!!)
-        uiState.removeRemotePhoto -> PhotoUi.Empty
-        uiState.office?.photoUrl != null -> PhotoUi.Remote(uiState.office!!.photoUrl!!)
-        else -> PhotoUi.Empty
+  val photoUi by
+      remember(uiState.office?.photoUrl, uiState.photoBytes, uiState.removeRemotePhoto) {
+        mutableStateOf(
+            when {
+              uiState.photoBytes != null -> PhotoUi.Local(uiState.photoBytes!!)
+              uiState.removeRemotePhoto -> PhotoUi.Empty
+              uiState.office?.photoUrl != null -> PhotoUi.Remote(uiState.office!!.photoUrl!!)
+              else -> PhotoUi.Empty
+            })
       }
-    )
-  }
 
   LaunchedEffect(currentUser) { manageOfficeViewModel.loadOffice() }
 
@@ -119,129 +119,126 @@ fun ManageOfficeScreen(
               horizontalAlignment = Alignment.CenterHorizontally,
               verticalArrangement = Arrangement.Top) {
                 HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
-                  if (uiState.office == null) {
-                    Button(
-                        onClick = onCreateOffice,
-                        modifier = Modifier.fillMaxWidth().testTag(CREATE_OFFICE_BUTTON)) {
-                          Text("Create My Office")
-                        }
+                if (uiState.office == null) {
+                  Button(
+                      onClick = onCreateOffice,
+                      modifier = Modifier.fillMaxWidth().testTag(CREATE_OFFICE_BUTTON)) {
+                        Text("Create My Office")
+                      }
 
-                    Button(
-                        onClick = onJoinOffice,
-                        modifier = Modifier.fillMaxWidth().testTag(JOIN_OFFICE_BUTTON)) {
-                          Text("Join an Office")
-                        }
-                  } else {
+                  Button(
+                      onClick = onJoinOffice,
+                      modifier = Modifier.fillMaxWidth().testTag(JOIN_OFFICE_BUTTON)) {
+                        Text("Join an Office")
+                      }
+                } else {
 
-                    EditableProfilePictureWithUI(
+                  EditableProfilePictureWithUI(
                       photo = photoUi,
                       isEditable = isOwner,
                       imageViewModel = imageViewModel,
                       onPhotoPicked = { bytes -> manageOfficeViewModel.setPhoto(bytes) },
                       onPhotoRemoved = { manageOfficeViewModel.removePhoto() },
-                    )
+                  )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                  Spacer(modifier = Modifier.height(16.dp))
 
-                    OutlinedTextField(
-                        value = if (isOwner) uiState.editableName else uiState.office!!.name,
-                        onValueChange = { if (isOwner) manageOfficeViewModel.onNameChange(it) },
-                        label = { Text("Office Name") },
-                        enabled = isOwner,
-                        modifier = Modifier.fillMaxWidth().testTag(OFFICE_NAME))
+                  OutlinedTextField(
+                      value = if (isOwner) uiState.editableName else uiState.office!!.name,
+                      onValueChange = { if (isOwner) manageOfficeViewModel.onNameChange(it) },
+                      label = { Text("Office Name") },
+                      enabled = isOwner,
+                      modifier = Modifier.fillMaxWidth().testTag(OFFICE_NAME))
 
-                    OutlinedTextField(
-                        value =
-                            if (isOwner) uiState.editableDescription
-                            else (uiState.office!!.description ?: ""),
-                        onValueChange = {
-                          if (isOwner) manageOfficeViewModel.onDescriptionChange(it)
-                        },
-                        label = { Text("Description") },
-                        enabled = isOwner,
-                        modifier = Modifier.fillMaxWidth().testTag(OFFICE_DESCRIPTION))
+                  OutlinedTextField(
+                      value =
+                          if (isOwner) uiState.editableDescription
+                          else (uiState.office!!.description ?: ""),
+                      onValueChange = {
+                        if (isOwner) manageOfficeViewModel.onDescriptionChange(it)
+                      },
+                      label = { Text("Description") },
+                      enabled = isOwner,
+                      modifier = Modifier.fillMaxWidth().testTag(OFFICE_DESCRIPTION))
 
-                    OutlinedTextField(
-                        value = uiState.office!!.address?.name ?: "",
-                        onValueChange = { if (isOwner) manageOfficeViewModel.onAddressChange(it) },
-                        singleLine = true,
-                        readOnly = true,
-                        label = { Text("Address") },
-                        enabled = isOwner,
-                        modifier = Modifier.fillMaxWidth().testTag(OFFICE_ADDRESS))
+                  OutlinedTextField(
+                      value = uiState.office!!.address?.name ?: "",
+                      onValueChange = { if (isOwner) manageOfficeViewModel.onAddressChange(it) },
+                      singleLine = true,
+                      readOnly = true,
+                      label = { Text("Address") },
+                      enabled = isOwner,
+                      modifier = Modifier.fillMaxWidth().testTag(OFFICE_ADDRESS))
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                  Spacer(modifier = Modifier.height(16.dp))
 
-                    Text("Vets in this office:", style = MaterialTheme.typography.titleMedium)
+                  Text("Vets in this office:", style = MaterialTheme.typography.titleMedium)
 
-                    LazyColumn(
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .heightIn(max = 300.dp)
-                                .testTag(OFFICE_VET_LIST)) {
-                          items(uiState.office!!.vets) { vetId ->
-                            AuthorName(
-                                vetId,
-                                onClick = {
-                                  focusManager.clearFocus()
-                                  navigationActions.navigateTo(Screen.ViewUser(vetId))
-                                })
-                          }
+                  LazyColumn(
+                      modifier =
+                          Modifier.fillMaxWidth().heightIn(max = 300.dp).testTag(OFFICE_VET_LIST)) {
+                        items(uiState.office!!.vets) { vetId ->
+                          AuthorName(
+                              vetId,
+                              onClick = {
+                                focusManager.clearFocus()
+                                navigationActions.navigateTo(Screen.ViewUser(vetId))
+                              })
                         }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    if (isOwner) {
-                      GenerateCode(
-                          codesViewModel = connectionVm,
-                          snackbarHostState = snackbarHostState,
-                          Modifier.align(Alignment.CenterHorizontally))
-
-                      Spacer(modifier = Modifier.height(8.dp))
-
-                      val scope = rememberCoroutineScope()
-                      Button(
-                          onClick = {
-                            focusManager.clearFocus()
-                            scope.launch { manageOfficeViewModel.updateOffice() }
-                          },
-                          modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),
-                      ) {
-                        Text("Save Changes")
                       }
-                    }
 
-                    OutlinedButton(
-                        onClick = { showLeaveDialog = true },
-                        colors =
-                            ButtonDefaults.outlinedButtonColors(contentColor = StatusColors().spam),
-                        border = BorderStroke(1.dp, StatusColors().spam),
-                        modifier = Modifier.fillMaxWidth().testTag(LEAVE_OFFICE_BUTTON)) {
-                          Text("Leave My Office")
-                        }
+                  Spacer(modifier = Modifier.height(16.dp))
 
-                    if (showLeaveDialog) {
-                      AlertDialog(
-                          onDismissRequest = { showLeaveDialog = false },
-                          title = { Text("Leave Office?") },
-                          text = { Text("Are you sure you want to leave this office?") },
-                          confirmButton = {
-                            TextButton(
-                                onClick = {
-                                  showLeaveDialog = false
-                                  manageOfficeViewModel.leaveOffice(onSuccess = onGoBack)
-                                },
-                                modifier = Modifier.testTag(CONFIRM_LEAVE)) {
-                                  Text("Leave")
-                                }
-                          },
-                          dismissButton = {
-                            TextButton(onClick = { showLeaveDialog = false }) { Text("Cancel") }
-                          })
+                  if (isOwner) {
+                    GenerateCode(
+                        codesViewModel = connectionVm,
+                        snackbarHostState = snackbarHostState,
+                        Modifier.align(Alignment.CenterHorizontally))
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    val scope = rememberCoroutineScope()
+                    Button(
+                        onClick = {
+                          focusManager.clearFocus()
+                          scope.launch { manageOfficeViewModel.updateOffice() }
+                        },
+                        modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),
+                    ) {
+                      Text("Save Changes")
                     }
                   }
-                }
 
+                  OutlinedButton(
+                      onClick = { showLeaveDialog = true },
+                      colors =
+                          ButtonDefaults.outlinedButtonColors(contentColor = StatusColors().spam),
+                      border = BorderStroke(1.dp, StatusColors().spam),
+                      modifier = Modifier.fillMaxWidth().testTag(LEAVE_OFFICE_BUTTON)) {
+                        Text("Leave My Office")
+                      }
+
+                  if (showLeaveDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showLeaveDialog = false },
+                        title = { Text("Leave Office?") },
+                        text = { Text("Are you sure you want to leave this office?") },
+                        confirmButton = {
+                          TextButton(
+                              onClick = {
+                                showLeaveDialog = false
+                                manageOfficeViewModel.leaveOffice(onSuccess = onGoBack)
+                              },
+                              modifier = Modifier.testTag(CONFIRM_LEAVE)) {
+                                Text("Leave")
+                              }
+                        },
+                        dismissButton = {
+                          TextButton(onClick = { showLeaveDialog = false }) { Text("Cancel") }
+                        })
+                  }
+                }
+              }
         }
       }
 }

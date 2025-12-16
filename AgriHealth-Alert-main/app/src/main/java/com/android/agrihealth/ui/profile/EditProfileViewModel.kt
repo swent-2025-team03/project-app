@@ -10,8 +10,8 @@ import com.android.agrihealth.data.model.user.Vet
 
 // TODO Refactor this screen to have an uiState variable and move code from screen to this viewModel
 class EditProfileViewModel(
-  private val officeRepository: OfficeRepository,
-  private val imageViewModel: ImageViewModel
+    private val officeRepository: OfficeRepository,
+    private val imageViewModel: ImageViewModel
 ) : ViewModel() {
 
   suspend fun saveProfileChanges(
@@ -37,20 +37,19 @@ class EditProfileViewModel(
       }
     }
 
-    val finalPhotoUrl: String? = when {
-      photoByteArray != null -> {  // user picked a new photo
-        try {
-          imageViewModel.uploadAndWait(photoByteArray)
-        } catch (e: Throwable) {
-          // TODO: Handle error
-          null
+    val finalPhotoUrl: String? =
+        when {
+          photoByteArray != null -> { // user picked a new photo
+            try {
+              imageViewModel.uploadAndWait(photoByteArray)
+            } catch (e: Throwable) {
+              // TODO: Handle error
+              null
+            }
+          }
+          removeRemotePhoto -> null // User wants to remove current remote photo
+          else -> user.photoURL // User did nothing
         }
-      }
-      removeRemotePhoto -> null  // User wants to remove current remote photo
-      else -> user.photoURL  // User did nothing
-    }
-
-
 
     return when (user) {
       is Farmer ->
@@ -61,7 +60,7 @@ class EditProfileViewModel(
               defaultOffice = selectedDefaultOffice,
               description = updatedDescription,
               collected = collected,
-              photoURL = finalPhotoUrl )
+              photoURL = finalPhotoUrl)
       is Vet ->
           user.copy(
               firstname = firstname,
@@ -69,7 +68,7 @@ class EditProfileViewModel(
               address = pickedLocation,
               description = updatedDescription,
               collected = collected,
-              photoURL = finalPhotoUrl )
+              photoURL = finalPhotoUrl)
     }
   }
 }

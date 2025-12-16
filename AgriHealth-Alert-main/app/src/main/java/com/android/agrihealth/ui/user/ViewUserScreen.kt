@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
@@ -112,12 +111,13 @@ private fun ViewUserContent(user: User, officeName: String?, imageViewModel: Ima
               .padding(16.dp)
               .testTag(ViewUserScreenTestTags.CONTENT_COLUMN),
       horizontalAlignment = Alignment.CenterHorizontally) {
-
         RemotePhotoDisplay(
-          user.photoURL, imageViewModel,
-          contentDescription = "Profile Picture",
-          showPlaceHolder = true,
-          modifier = Modifier.size(120.dp).clip(CircleShape),) // TODO Use profile picture component
+            user.photoURL,
+            imageViewModel,
+            contentDescription = "Profile Picture",
+            showPlaceHolder = true,
+            modifier = Modifier.size(120.dp).clip(CircleShape),
+        ) // TODO Use profile picture component
 
         Spacer(Modifier.height(24.dp))
 

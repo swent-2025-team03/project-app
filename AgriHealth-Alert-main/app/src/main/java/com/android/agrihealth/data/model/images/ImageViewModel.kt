@@ -25,13 +25,14 @@ sealed class ImageUIState {
 }
 
 /**
- *  A union type so that a photo can either be stored in a ByteArray or in a Uri.
+ * A union type so that a photo can either be stored in a ByteArray or in a Uri.
  *
- *  This is meant as an internal type, it should not appear in any public interface. It is meant
- *  to be used internally when overloading a function
+ * This is meant as an internal type, it should not appear in any public interface. It is meant to
+ * be used internally when overloading a function
  */
 sealed interface PhotoType {
   data class ByteArray(val bytes: kotlin.ByteArray) : PhotoType
+
   data class Uri(val uri: android.net.Uri) : PhotoType
 }
 
@@ -61,16 +62,17 @@ class ImageViewModel(private val repository: ImageRepository = ImageRepositoryPr
     viewModelScope.launch {
       _uiState.value = ImageUIState.Loading
 
-      var bytes = when (photo) {
-        is PhotoType.ByteArray -> photo.bytes
-        is PhotoType.Uri -> repository.resolveUri(photo.uri)
-      }
+      var bytes =
+          when (photo) {
+            is PhotoType.ByteArray -> photo.bytes
+            is PhotoType.Uri -> repository.resolveUri(photo.uri)
+          }
       bytes = repository.reduceFileSize(bytes)
 
       repository
-        .uploadImage(bytes)
-        .onSuccess { path -> _uiState.value = ImageUIState.UploadSuccess(path) }
-        .onFailure { e -> _uiState.value = ImageUIState.Error(e) }
+          .uploadImage(bytes)
+          .onSuccess { path -> _uiState.value = ImageUIState.UploadSuccess(path) }
+          .onFailure { e -> _uiState.value = ImageUIState.Error(e) }
     }
   }
 
@@ -85,7 +87,8 @@ class ImageViewModel(private val repository: ImageRepository = ImageRepositoryPr
   }
 
   /**
-   * Starts uploading the photo referenced by the given [uri] and suspends until the upload finishes.
+   * Starts uploading the photo referenced by the given [uri] and suspends until the upload
+   * finishes.
    *
    * @return The URL of the uploaded photo on success.
    * @throws Throwable If the upload fails (rethrows the underlying error).

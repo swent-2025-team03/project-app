@@ -1,9 +1,7 @@
 package com.android.agrihealth.ui.office
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.agrihealth.data.model.images.ImageUIState
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.Office
@@ -13,7 +11,6 @@ import com.android.agrihealth.ui.loading.withLoadingState
 import com.android.agrihealth.ui.user.UserViewModelContract
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 data class ManageOfficeUiState(
@@ -45,27 +42,27 @@ class ManageOfficeViewModel(
   }
 
   fun loadOffice() {
-      viewModelScope.launch {
-        _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
-          val currentUser = userViewModel.uiState.value.user
-          if (currentUser is Vet && currentUser.officeId != null) {
-            officeRepository.getOffice(currentUser.officeId).fold({ office ->
-              _uiState.value =
-                  _uiState.value.copy(
-                      office = office,
-                      editableName = office.name,
-                      editableDescription = office.description ?: "",
-                      editableAddress = office.address?.toString() ?: "")
-            }) { error ->
-              _uiState.value =
-                  _uiState.value.copy(
-                      snackMessage =
-                          "Couldn't load your office, make sure you are connected to the internet")
-            }
+    viewModelScope.launch {
+      _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
+        val currentUser = userViewModel.uiState.value.user
+        if (currentUser is Vet && currentUser.officeId != null) {
+          officeRepository.getOffice(currentUser.officeId).fold({ office ->
+            _uiState.value =
+                _uiState.value.copy(
+                    office = office,
+                    editableName = office.name,
+                    editableDescription = office.description ?: "",
+                    editableAddress = office.address?.toString() ?: "")
+          }) { error ->
+            _uiState.value =
+                _uiState.value.copy(
+                    snackMessage =
+                        "Couldn't load your office, make sure you are connected to the internet")
           }
         }
       }
     }
+  }
 
   fun onNameChange(value: String) {
     _uiState.value = _uiState.value.copy(editableName = value)
@@ -109,8 +106,7 @@ class ManageOfficeViewModel(
     try {
       val office = _uiState.value.office ?: return
 
-      var newPhotoUrl: String? =
-        if (_uiState.value.removeRemotePhoto) null else office.photoUrl
+      var newPhotoUrl: String? = if (_uiState.value.removeRemotePhoto) null else office.photoUrl
 
       _uiState.value.photoBytes?.let { bytes ->
         newPhotoUrl = imageViewModel.uploadAndWait(bytes)
@@ -131,8 +127,6 @@ class ManageOfficeViewModel(
       onError(e)
     }
   }
-
-
 
   fun setPhoto(photobytes: ByteArray?) {
     _uiState.value = _uiState.value.copy(photoBytes = photobytes, removeRemotePhoto = false)

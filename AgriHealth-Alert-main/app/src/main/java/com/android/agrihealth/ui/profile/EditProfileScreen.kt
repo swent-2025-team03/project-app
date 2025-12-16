@@ -25,6 +25,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.connection.ConnectionRepository
@@ -41,10 +42,9 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
-import kotlinx.coroutines.launch
-import androidx.lifecycle.ViewModelProvider
 import com.android.agrihealth.ui.utils.EditableProfilePictureWithUI
 import com.android.agrihealth.ui.utils.PhotoUi
+import kotlinx.coroutines.launch
 
 enum class CodeType {
   FARMER,
@@ -75,8 +75,6 @@ object EditProfileScreenTestTags {
 
   fun dropdownElementTag(type: String) = "ACTIVE_CODE_ELEMENT_$type"
 }
-
-
 
 // TODO Make screen go back to view profile when saving changes
 @OptIn(ExperimentalMaterial3Api::class)
@@ -125,7 +123,9 @@ fun EditProfileScreen(
           factory =
               object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                  return EditProfileViewModel(officeRepository = OfficeRepositoryProvider.get(), imageViewModel = imageViewModel)
+                  return EditProfileViewModel(
+                      officeRepository = OfficeRepositoryProvider.get(),
+                      imageViewModel = imageViewModel)
                       as T
                 }
               })
@@ -152,17 +152,16 @@ fun EditProfileScreen(
   var localPhotoByteArray: ByteArray? by rememberSaveable { mutableStateOf(null) }
 
   // Decide what to display for the profile picture
-  val photoUi by remember(user.photoURL, localPhotoByteArray, removeRemotePhoto) {
-    mutableStateOf(
-      when {
-        localPhotoByteArray != null -> PhotoUi.Local(localPhotoByteArray!!)
-        removeRemotePhoto -> PhotoUi.Empty
-        user.photoURL != null -> PhotoUi.Remote(user.photoURL!!)
-        else -> PhotoUi.Empty
+  val photoUi by
+      remember(user.photoURL, localPhotoByteArray, removeRemotePhoto) {
+        mutableStateOf(
+            when {
+              localPhotoByteArray != null -> PhotoUi.Local(localPhotoByteArray!!)
+              removeRemotePhoto -> PhotoUi.Empty
+              user.photoURL != null -> PhotoUi.Remote(user.photoURL!!)
+              else -> PhotoUi.Empty
+            })
       }
-    )
-  }
-
 
   // TODO: Refactor this so each UI component are in their own composable
   Scaffold(
@@ -187,27 +186,26 @@ fun EditProfileScreen(
         Column(
             modifier =
                 Modifier.padding(innerPadding)
-                  .padding(16.dp)
-                  .fillMaxSize()
-                  .verticalScroll(rememberScrollState()),
+                    .padding(16.dp)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
 
-          EditableProfilePictureWithUI(
-            photo = photoUi,
-            isEditable = true,
-            imageViewModel = imageViewModel,
-            onPhotoPicked = { bytes ->
-              localPhotoByteArray = bytes   // TODO Replace this with something like viewModel.setPhoto(bytes)
-              removeRemotePhoto = false
-            },
-            onPhotoRemoved = {
-              localPhotoByteArray = null
-              removeRemotePhoto = true
-            }
-          )
-
+              EditableProfilePictureWithUI(
+                  photo = photoUi,
+                  isEditable = true,
+                  imageViewModel = imageViewModel,
+                  onPhotoPicked = { bytes ->
+                    localPhotoByteArray =
+                        bytes // TODO Replace this with something like viewModel.setPhoto(bytes)
+                    removeRemotePhoto = false
+                  },
+                  onPhotoRemoved = {
+                    localPhotoByteArray = null
+                    removeRemotePhoto = true
+                  })
 
               Spacer(modifier = Modifier.height(24.dp))
 
@@ -387,7 +385,7 @@ fun EditProfileScreen(
                               description = description,
                               collected = collected,
                               photoByteArray = localPhotoByteArray,
-                            removeRemotePhoto = removeRemotePhoto)
+                              removeRemotePhoto = removeRemotePhoto)
                       updatedUser?.let {
                         onSave(it)
                         removeRemotePhoto = false
@@ -401,7 +399,6 @@ fun EditProfileScreen(
             }
       }
 }
-
 
 /*
 @Preview(showBackground = true)

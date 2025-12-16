@@ -126,20 +126,21 @@ private fun ActualLocalPhotoDisplay(
     showPlaceHolder: Boolean = false,
     placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
 ) {
-  val model: Any? = when (photo) {
-    null -> null
-    is PhotoType.ByteArray -> photo.bytes
-    is PhotoType.Uri -> photo.uri
-  }
+  val model: Any? =
+      when (photo) {
+        null -> null
+        is PhotoType.ByteArray -> photo.bytes
+        is PhotoType.Uri -> photo.uri
+      }
 
   if (model == null) {
     if (showPlaceHolder) placeholder(modifier)
   } else {
     AsyncImage(
-      model = model,
-      contentDescription = "Uploaded image",
-      modifier = modifier.testTag(PhotoComponentsTestTags.IMAGE_PREVIEW),
-      contentScale = ContentScale.Fit)
+        model = model,
+        contentDescription = "Uploaded image",
+        modifier = modifier.testTag(PhotoComponentsTestTags.IMAGE_PREVIEW),
+        contentScale = ContentScale.Fit)
   }
 }
 
@@ -156,12 +157,13 @@ private fun ActualLocalPhotoDisplay(
  */
 @Composable
 fun LocalPhotoDisplay(
-  photoURI: Uri?,
-  modifier: Modifier = Modifier,
-  showPlaceHolder: Boolean = false,
-  placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
-) = ActualLocalPhotoDisplay(photoURI?.let { PhotoType.Uri(it) }, modifier, showPlaceHolder, placeholder)
-
+    photoURI: Uri?,
+    modifier: Modifier = Modifier,
+    showPlaceHolder: Boolean = false,
+    placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
+) =
+    ActualLocalPhotoDisplay(
+        photoURI?.let { PhotoType.Uri(it) }, modifier, showPlaceHolder, placeholder)
 
 /**
  * Displays the photo picked by the user before it is uploaded
@@ -176,11 +178,13 @@ fun LocalPhotoDisplay(
  */
 @Composable
 fun LocalPhotoDisplay(
-  photoByteArray: ByteArray?,
-  modifier: Modifier = Modifier,
-  showPlaceHolder: Boolean = false,
-  placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
-) = ActualLocalPhotoDisplay(photoByteArray?.let { PhotoType.ByteArray(it) }, modifier, showPlaceHolder, placeholder)
+    photoByteArray: ByteArray?,
+    modifier: Modifier = Modifier,
+    showPlaceHolder: Boolean = false,
+    placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
+) =
+    ActualLocalPhotoDisplay(
+        photoByteArray?.let { PhotoType.ByteArray(it) }, modifier, showPlaceHolder, placeholder)
 
 @Composable
 fun DefaultIconPlaceholder(modifier: Modifier = Modifier) {

@@ -43,7 +43,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 /**
- *  Used to give the [EditableProfilePicture] the photo it must display and it's source (to decide how to display it)
+ * Used to give the [EditableProfilePicture] the photo it must display and it's source (to decide
+ * how to display it)
  */
 sealed interface PhotoUi {
   /** An empty profile picture */
@@ -54,9 +55,7 @@ sealed interface PhotoUi {
   data class Local(val bytes: ByteArray) : PhotoUi
 }
 
-/**
- *  The various test tags associated with the components of a profile picture
- */
+/** The various test tags associated with the components of a profile picture */
 object ProfilePictureComponentsTestTags {
   const val PROFILE_PICTURE = "ProfilePicture"
   const val PROFILE_PICTURE_EDIT_BUTTON = "ProfilePictureEditButton"
@@ -64,12 +63,12 @@ object ProfilePictureComponentsTestTags {
   const val ERROR_DIALOG = "ProfilePictureErrorDialog"
 }
 
-/**
- *  The various texts used by the components of a profile picture
- */
+/** The various texts used by the components of a profile picture */
 object ProfilePictureComponentsTexts {
-  const val DIALOG_LOADING_ERROR = "The supplied image is invalid, not supported, or you don't have the required permissions to read it..."
-  const val DIALOG_SAVING_ERROR = "The result could not be saved. The selected area is likely to big, try selecting a smaller area..."
+  const val DIALOG_LOADING_ERROR =
+      "The supplied image is invalid, not supported, or you don't have the required permissions to read it..."
+  const val DIALOG_SAVING_ERROR =
+      "The result could not be saved. The selected area is likely to big, try selecting a smaller area..."
   const val DIALOG_TITLE = "Error!"
 }
 
@@ -77,23 +76,24 @@ object ProfilePictureComponentsTexts {
 typealias ImageCropperLauncher = (Uri) -> Unit
 
 /**
- *  Initializes and remembers an image cropper created by default
+ * Initializes and remembers an image cropper created by default
  *
- *  @param imageCropper The supplied [ImageCropper]
- *  @param cropMaxSize The maximum size of the crop region. Prefer leaving it as is
- *  @param scope The scope at which new coroutines will be created
- *  @param onCropSuccess Called when the user succesfully chose and cropped a photo
- *  @param onCropError Called when the user chose a picture and tried to crop if but it failed
- *  @param onCropCancelled Called when the user cancels the crop (by dismissing the window for example)
+ * @param imageCropper The supplied [ImageCropper]
+ * @param cropMaxSize The maximum size of the crop region. Prefer leaving it as is
+ * @param scope The scope at which new coroutines will be created
+ * @param onCropSuccess Called when the user succesfully chose and cropped a photo
+ * @param onCropError Called when the user chose a picture and tried to crop if but it failed
+ * @param onCropCancelled Called when the user cancels the crop (by dismissing the window for
+ *   example)
  */
 @Composable
 fun rememberDefaultImageCropperLauncher(
-  imageCropper: ImageCropper,
-  cropMaxSize: IntSize = IntSize(8192, 8192),
-  scope: CoroutineScope,
-  onCropSuccess: (ByteArray) -> Unit,
-  onCropError: (String) -> Unit,
-  onCropCancelled: () -> Unit = {},
+    imageCropper: ImageCropper,
+    cropMaxSize: IntSize = IntSize(8192, 8192),
+    scope: CoroutineScope,
+    onCropSuccess: (ByteArray) -> Unit,
+    onCropError: (String) -> Unit,
+    onCropCancelled: () -> Unit = {},
 ): ImageCropperLauncher {
   val context = LocalContext.current
 
@@ -104,12 +104,12 @@ fun rememberDefaultImageCropperLauncher(
         val bitmap = uri.toBitmap(context).asImageBitmap()
         when (val result = imageCropper.crop(cropMaxSize, bmp = bitmap)) {
           is CropResult.Cancelled -> onCropCancelled()
-          is CropError -> onCropError(
-            when (result) {
-              CropError.LoadingError -> ProfilePictureComponentsTexts.DIALOG_LOADING_ERROR
-              CropError.SavingError -> ProfilePictureComponentsTexts.DIALOG_SAVING_ERROR
-            }
-          )
+          is CropError ->
+              onCropError(
+                  when (result) {
+                    CropError.LoadingError -> ProfilePictureComponentsTexts.DIALOG_LOADING_ERROR
+                    CropError.SavingError -> ProfilePictureComponentsTexts.DIALOG_SAVING_ERROR
+                  })
           is CropResult.Success -> onCropSuccess(result.bitmap.toByteArray())
         }
       }
@@ -117,31 +117,34 @@ fun rememberDefaultImageCropperLauncher(
   }
 }
 
-
 /**
- *  A profile picture is displayed, with a small icon that allows the user to either remove their existing profile picture or add a enw one.
- *  When the user clicks on the button when no photo is displayed, the user is asked to upload a photo from either device storage or camera, and
- *  then the user is asked to crop the image into a circle (as the profile picture is a circle)
+ * A profile picture is displayed, with a small icon that allows the user to either remove their
+ * existing profile picture or add a enw one. When the user clicks on the button when no photo is
+ * displayed, the user is asked to upload a photo from either device storage or camera, and then the
+ * user is asked to crop the image into a circle (as the profile picture is a circle)
  *
- *  @param photo The picture to display and its source
- *  @param isEditable true to allow the user to edit the displayed photo (i.e remove it or add one), false to make the profile picture read-only
- *  @param imageViewModel The [ImageViewModel] used to download / upload the remote profile picture
- *  @param modifier A modifier applied to the composable
- *  @param imageSize The size of the profile picture, in [dp]
- *  @param onPhotoPicked Called when the user picked (and cropped) a photo. This lambda contains the chosen photo as an argument
- *  @param onPhotoRemoved Called when the user decides to remove the current profile picture
- *  @param imageCropperLauncher The launcher of the image cropper. Specify one for testing, prefer leaving this empty normally
+ * @param photo The picture to display and its source
+ * @param isEditable true to allow the user to edit the displayed photo (i.e remove it or add one),
+ *   false to make the profile picture read-only
+ * @param imageViewModel The [ImageViewModel] used to download / upload the remote profile picture
+ * @param modifier A modifier applied to the composable
+ * @param imageSize The size of the profile picture, in [dp]
+ * @param onPhotoPicked Called when the user picked (and cropped) a photo. This lambda contains the
+ *   chosen photo as an argument
+ * @param onPhotoRemoved Called when the user decides to remove the current profile picture
+ * @param imageCropperLauncher The launcher of the image cropper. Specify one for testing, prefer
+ *   leaving this empty normally
  */
 @Composable
 fun EditableProfilePictureWithUI(
-  photo: PhotoUi,
-  isEditable: Boolean,
-  imageViewModel: ImageViewModel,
-  modifier: Modifier = Modifier,
-  imageSize: Dp = 120.dp,
-  onPhotoPicked: (ByteArray) -> Unit,
-  onPhotoRemoved: () -> Unit,
-  imageCropperLauncher: ImageCropperLauncher? = null,
+    photo: PhotoUi,
+    isEditable: Boolean,
+    imageViewModel: ImageViewModel,
+    modifier: Modifier = Modifier,
+    imageSize: Dp = 120.dp,
+    onPhotoPicked: (ByteArray) -> Unit,
+    onPhotoRemoved: () -> Unit,
+    imageCropperLauncher: ImageCropperLauncher? = null,
 ) {
   val scope = rememberCoroutineScope()
 
@@ -150,32 +153,35 @@ fun EditableProfilePictureWithUI(
   var errorDialogMessage by rememberSaveable { mutableStateOf("") }
 
   val imageCropper = rememberImageCropper()
-  val defaultLauncher: ImageCropperLauncher = rememberDefaultImageCropperLauncher(
-    imageCropper = imageCropper,
-    scope = scope,
-    onCropSuccess = onPhotoPicked,
-    onCropError = { errorMessage ->
-      showErrorDialog = true
-      errorDialogMessage = errorMessage
-    },
-  )
+  val defaultLauncher: ImageCropperLauncher =
+      rememberDefaultImageCropperLauncher(
+          imageCropper = imageCropper,
+          scope = scope,
+          onCropSuccess = onPhotoPicked,
+          onCropError = { errorMessage ->
+            showErrorDialog = true
+            errorDialogMessage = errorMessage
+          },
+      )
 
   val effectiveLauncher = imageCropperLauncher ?: defaultLauncher
 
   val croppingIsOngoing = imageCropper.cropState != null
 
   EditableProfilePicture(
-    photo = photo,
-    isEditable = isEditable,
-    imageViewModel = imageViewModel,
-    modifier = modifier,
-    imageSize = imageSize,
-    onPhotoPicked = { showImagePicker = true },
-    onPhotoRemoved = onPhotoRemoved
-  )
+      photo = photo,
+      isEditable = isEditable,
+      imageViewModel = imageViewModel,
+      modifier = modifier,
+      imageSize = imageSize,
+      onPhotoPicked = { showImagePicker = true },
+      onPhotoRemoved = onPhotoRemoved)
 
   if (showErrorDialog) {
-    ErrorDialog(dialogTitle = ProfilePictureComponentsTexts.DIALOG_TITLE, errorMessage = errorDialogMessage, onDismiss = { showErrorDialog = false })
+    ErrorDialog(
+        dialogTitle = ProfilePictureComponentsTexts.DIALOG_TITLE,
+        errorMessage = errorDialogMessage,
+        onDismiss = { showErrorDialog = false })
   }
 
   if (croppingIsOngoing) {
@@ -184,81 +190,89 @@ fun EditableProfilePictureWithUI(
 
   if (showImagePicker) {
     ImagePickerDialog(
-      onDismiss = { showImagePicker = false },
-      onImageSelected = { uri ->
-        showImagePicker = false
-        effectiveLauncher(uri)
-      }
-    )
+        onDismiss = { showImagePicker = false },
+        onImageSelected = { uri ->
+          showImagePicker = false
+          effectiveLauncher(uri)
+        })
   }
 }
 
-
 /**
- *  A profile picture is displayed, with a small icon that allows the user to either remove their existing profile picture or add a enw one.
- *  What happens when the user clicks on the button must be defined with [onPhotoPicked] and [onPhotoRemoved] respectfully.
- *  Prefer using [EditableProfilePictureWithUI] for photo picker and image cropper support
+ * A profile picture is displayed, with a small icon that allows the user to either remove their
+ * existing profile picture or add a enw one. What happens when the user clicks on the button must
+ * be defined with [onPhotoPicked] and [onPhotoRemoved] respectfully. Prefer using
+ * [EditableProfilePictureWithUI] for photo picker and image cropper support
  *
- *  @param photo The picture to display and its source
- *  @param isEditable true to allow the user to edit the displayed photo (i.e remove it or add one), false to make the profile picture read-only
- *  @param imageViewModel The [ImageViewModel] used to download / upload the remote profile picture
- *  @param modifier A modifier applied to the composable
- *  @param imageSize The size of the profile picture, in [dp]
- *  @param onPhotoPicked Called when the user picked (and cropped) a photo. This lambda contains the chosen photo as an argument
- *  @param onPhotoRemoved Called when the user decides to remove the current profile picture
+ * @param photo The picture to display and its source
+ * @param isEditable true to allow the user to edit the displayed photo (i.e remove it or add one),
+ *   false to make the profile picture read-only
+ * @param imageViewModel The [ImageViewModel] used to download / upload the remote profile picture
+ * @param modifier A modifier applied to the composable
+ * @param imageSize The size of the profile picture, in [dp]
+ * @param onPhotoPicked Called when the user picked (and cropped) a photo. This lambda contains the
+ *   chosen photo as an argument
+ * @param onPhotoRemoved Called when the user decides to remove the current profile picture
  */
 // TODO Add support for square pictures (so office profile pictures can be square)
 @Composable
 fun EditableProfilePicture(
-  photo: PhotoUi,
-  isEditable: Boolean,
-  imageViewModel: ImageViewModel,
-  modifier: Modifier = Modifier,
-  imageSize: Dp = 120.dp,
-  onPhotoPicked: () -> Unit,
-  onPhotoRemoved: () -> Unit,
+    photo: PhotoUi,
+    isEditable: Boolean,
+    imageViewModel: ImageViewModel,
+    modifier: Modifier = Modifier,
+    imageSize: Dp = 120.dp,
+    onPhotoPicked: () -> Unit,
+    onPhotoRemoved: () -> Unit,
 ) {
   Box(
-    modifier = modifier.size(imageSize),
-    contentAlignment = Alignment.Center,
+      modifier = modifier.size(imageSize),
+      contentAlignment = Alignment.Center,
   ) {
     when (photo) {
-      is PhotoUi.Remote -> RemotePhotoDisplay(
-        photoURL = photo.url,
-        imageViewModel = imageViewModel,
-        modifier = Modifier.size(imageSize).clip(CircleShape).testTag(ProfilePictureComponentsTestTags.PROFILE_PICTURE),
-        contentDescription = "Photo",
-        showPlaceHolder = true
-      )
-      is PhotoUi.Local -> LocalPhotoDisplay(
-        photoByteArray = photo.bytes,
-        modifier = Modifier.size(imageSize).clip(CircleShape).testTag(ProfilePictureComponentsTestTags.PROFILE_PICTURE),
-        showPlaceHolder = true
-      )
-      PhotoUi.Empty -> LocalPhotoDisplay(
-        photoByteArray = null,
-        modifier = Modifier.size(imageSize).clip(CircleShape).testTag(ProfilePictureComponentsTestTags.PROFILE_PICTURE),
-        showPlaceHolder = true
-      )
+      is PhotoUi.Remote ->
+          RemotePhotoDisplay(
+              photoURL = photo.url,
+              imageViewModel = imageViewModel,
+              modifier =
+                  Modifier.size(imageSize)
+                      .clip(CircleShape)
+                      .testTag(ProfilePictureComponentsTestTags.PROFILE_PICTURE),
+              contentDescription = "Photo",
+              showPlaceHolder = true)
+      is PhotoUi.Local ->
+          LocalPhotoDisplay(
+              photoByteArray = photo.bytes,
+              modifier =
+                  Modifier.size(imageSize)
+                      .clip(CircleShape)
+                      .testTag(ProfilePictureComponentsTestTags.PROFILE_PICTURE),
+              showPlaceHolder = true)
+      PhotoUi.Empty ->
+          LocalPhotoDisplay(
+              photoByteArray = null,
+              modifier =
+                  Modifier.size(imageSize)
+                      .clip(CircleShape)
+                      .testTag(ProfilePictureComponentsTestTags.PROFILE_PICTURE),
+              showPlaceHolder = true)
     }
 
     if (isEditable) {
       val removeMode = photo != PhotoUi.Empty
       FloatingActionButton(
-        onClick = { if (removeMode) onPhotoRemoved() else onPhotoPicked() },
-        modifier = Modifier
-          .size(40.dp)
-          .align(Alignment.BottomEnd)
-          .testTag(ProfilePictureComponentsTestTags.PROFILE_PICTURE_EDIT_BUTTON),
-        containerColor = MaterialTheme.colorScheme.primaryContainer,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-      ) {
-        Icon(
-          imageVector = if (removeMode) Icons.Default.Clear else Icons.Default.CameraAlt,
-          contentDescription = if (removeMode) "Remove photo" else "Add photo",
-          modifier = Modifier.size(20.dp)
-        )
-      }
+          onClick = { if (removeMode) onPhotoRemoved() else onPhotoPicked() },
+          modifier =
+              Modifier.size(40.dp)
+                  .align(Alignment.BottomEnd)
+                  .testTag(ProfilePictureComponentsTestTags.PROFILE_PICTURE_EDIT_BUTTON),
+          containerColor = MaterialTheme.colorScheme.primaryContainer,
+          contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
+            Icon(
+                imageVector = if (removeMode) Icons.Default.Clear else Icons.Default.CameraAlt,
+                contentDescription = if (removeMode) "Remove photo" else "Add photo",
+                modifier = Modifier.size(20.dp))
+          }
     }
   }
 }
@@ -274,18 +288,18 @@ fun EditableProfilePicture(
 @Composable
 fun ErrorDialog(dialogTitle: String, errorMessage: String, onDismiss: () -> Unit) {
   AlertDialog(
-    onDismissRequest = onDismiss,
-    confirmButton = {
-      TextButton(
-        onClick = onDismiss,
-        modifier = Modifier.testTag(ProfilePictureComponentsTestTags.ERROR_DIALOG_OK_BUTTON),
-        colors =
-          ButtonDefaults.textButtonColors(
-            contentColor = MaterialTheme.colorScheme.onSurface)) {
-        Text(AddReportDialogTexts.OK)
-      }
-    },
-    title = { Text(dialogTitle) },
-    text = { Text(errorMessage) },
-    modifier = Modifier.testTag(ProfilePictureComponentsTestTags.ERROR_DIALOG))
+      onDismissRequest = onDismiss,
+      confirmButton = {
+        TextButton(
+            onClick = onDismiss,
+            modifier = Modifier.testTag(ProfilePictureComponentsTestTags.ERROR_DIALOG_OK_BUTTON),
+            colors =
+                ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurface)) {
+              Text(AddReportDialogTexts.OK)
+            }
+      },
+      title = { Text(dialogTitle) },
+      text = { Text(errorMessage) },
+      modifier = Modifier.testTag(ProfilePictureComponentsTestTags.ERROR_DIALOG))
 }
