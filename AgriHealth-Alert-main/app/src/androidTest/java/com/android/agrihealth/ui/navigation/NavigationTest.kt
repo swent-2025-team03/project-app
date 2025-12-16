@@ -67,11 +67,14 @@ class NavigationTest :
       // Bottom bar
       nodeIsDisplayed(BOTTOM_NAVIGATION_MENU)
 
+      clickOn(PLANNER_TAB)
+      nodeIsDisplayed(PlannerScreenTestTags.SCREEN)
+
       clickOn(MAP_TAB)
       nodeIsDisplayed(MapScreenTestTags.GOOGLE_MAP_SCREEN)
 
-      clickOn(PLANNER_TAB)
-      nodeIsDisplayed(PlannerScreenTestTags.SCREEN)
+      clickOn(OVERVIEW_TAB)
+      assertOnOverviewScreen()
 
       // Reports
       clickOn(OverviewScreenTestTags.ADD_REPORT_BUTTON)
