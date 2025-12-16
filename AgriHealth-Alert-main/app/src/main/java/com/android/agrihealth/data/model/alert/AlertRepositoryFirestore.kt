@@ -61,7 +61,11 @@ class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fire
         try {
           runWithTimeout(db.collection(ALERTS_COLLECTION_PATH).document(alertId).get())
         } catch (_: Exception) {
-          db.collection(ALERTS_COLLECTION_PATH).document(alertId).get(Source.CACHE).await()
+          try {
+            db.collection(ALERTS_COLLECTION_PATH).document(alertId).get(Source.CACHE).await()
+          } catch (_: Exception) {
+            return null
+          }
         }
     if (!snapshot.exists()) return null
 
