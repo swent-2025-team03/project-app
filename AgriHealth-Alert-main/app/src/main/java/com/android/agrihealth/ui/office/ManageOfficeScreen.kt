@@ -76,18 +76,6 @@ fun ManageOfficeScreen(
   var showLeaveDialog by remember { mutableStateOf(false) }
   val isOwner = uiState.office?.ownerId == currentUser.uid
 
-  // Decide what to show for the profile picture
-  val photoUi by
-      remember(uiState.office?.photoUrl, uiState.photoBytes, uiState.removeRemotePhoto) {
-        mutableStateOf(
-            when {
-              uiState.photoBytes != null -> PhotoUi.Local(uiState.photoBytes!!)
-              uiState.removeRemotePhoto -> PhotoUi.Empty
-              uiState.office?.photoUrl != null -> PhotoUi.Remote(uiState.office!!.photoUrl!!)
-              else -> PhotoUi.Empty
-            })
-      }
-
   LaunchedEffect(currentUser) { manageOfficeViewModel.loadOffice() }
 
   LaunchedEffect(uiState.snackMessage) {
@@ -134,7 +122,7 @@ fun ManageOfficeScreen(
                 } else {
 
                   EditableProfilePictureWithUI(
-                      photo = photoUi,
+                      photo = uiState.displayedPhoto,
                       isEditable = isOwner,
                       imageViewModel = imageViewModel,
                       onPhotoPicked = { bytes -> manageOfficeViewModel.setPhoto(bytes) },

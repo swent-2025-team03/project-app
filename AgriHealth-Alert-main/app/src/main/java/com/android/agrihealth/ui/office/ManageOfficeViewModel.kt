@@ -9,20 +9,31 @@ import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.ui.loading.withLoadingState
 import com.android.agrihealth.ui.user.UserViewModelContract
+import com.android.agrihealth.ui.utils.PhotoUi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 data class ManageOfficeUiState(
-    val office: Office? = null,
-    val editableName: String = "",
-    val editableDescription: String = "",
-    val editableAddress: String = "",
-    val isLoading: Boolean = false,
-    val snackMessage: String? = null,
-    val photoBytes: ByteArray? = null,
-    val removeRemotePhoto: Boolean = false,
-)
+  val office: Office? = null,
+  val editableName: String = "",
+  val editableDescription: String = "",
+  val editableAddress: String = "",
+  val isLoading: Boolean = false,
+  val snackMessage: String? = null,
+  val photoBytesToUpload: ByteArray? = null,
+  val removeRemotePhoto: Boolean = false,
+) {
+  /** Decides which photo to display depending on the
+   * state of the UI (i.e if a photo has been removed, picked, ...) */
+  val displayedPhoto: PhotoUi
+    get() = when {
+      photoBytesToUpload != null -> PhotoUi.Local(photoBytesToUpload)
+      removeRemotePhoto -> PhotoUi.Empty
+      office?.photoUrl != null -> PhotoUi.Remote(office.photoUrl)
+      else -> PhotoUi.Empty
+    }
+}
 
 class ManageOfficeViewModel(
     private val userViewModel: UserViewModelContract,
@@ -108,9 +119,9 @@ class ManageOfficeViewModel(
 
       var newPhotoUrl: String? = if (_uiState.value.removeRemotePhoto) null else office.photoUrl
 
-      _uiState.value.photoBytes?.let { bytes ->
+      _uiState.value.photoBytesToUpload?.let { bytes ->
         newPhotoUrl = imageViewModel.uploadAndWait(bytes)
-        _uiState.value = _uiState.value.copy(photoBytes = null, removeRemotePhoto = false)
+        _uiState.value = _uiState.value.copy(photoBytesToUpload = null, removeRemotePhoto = false)
       }
 
       val updatedOffice =
@@ -129,10 +140,10 @@ class ManageOfficeViewModel(
   }
 
   fun setPhoto(photobytes: ByteArray?) {
-    _uiState.value = _uiState.value.copy(photoBytes = photobytes, removeRemotePhoto = false)
+    _uiState.value = _uiState.value.copy(photoBytesToUpload = photobytes, removeRemotePhoto = false)
   }
 
   fun removePhoto() {
-    _uiState.value = _uiState.value.copy(photoBytes = null, removeRemotePhoto = true)
+    _uiState.value = _uiState.value.copy(photoBytesToUpload = null, removeRemotePhoto = true)
   }
 }
