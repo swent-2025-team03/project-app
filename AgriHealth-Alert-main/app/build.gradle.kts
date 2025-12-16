@@ -86,6 +86,8 @@ android {
     }
 
     testOptions {
+        animationsDisabled = true
+
         unitTests {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
@@ -250,4 +252,36 @@ configurations.forEach { configuration ->
     // Exclude protobuf-lite from all configurations
     // This fixes a fatal exception for tests interacting with Cloud Firestore
     configuration.exclude("com.google.protobuf", "protobuf-lite")
+}
+
+tasks.register("mergeAndroidTestCoverage", JacocoReport::class) {
+
+    executionData.setFrom(fileTree(buildDir) {
+        include(
+            "outputs/code_coverage/**/*.ec",
+            "**/*.ec"
+        )
+    })
+
+    sourceDirectories.setFrom(files(
+        "src/main/java",
+        "src/main/kotlin"
+    ))
+
+    classDirectories.setFrom(fileTree("${buildDir}") {
+        include(
+            "**/classes/**/main/**"
+        )
+        exclude(
+            "**/R.class",
+            "**/R$*.class",
+            "**/BuildConfig.*",
+            "**/*Test*.*"
+        )
+    })
+
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }
