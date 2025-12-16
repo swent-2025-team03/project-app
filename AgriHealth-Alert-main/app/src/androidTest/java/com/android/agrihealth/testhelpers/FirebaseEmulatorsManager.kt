@@ -1,4 +1,4 @@
-package com.android.agrihealth.data.model.firebase.emulators
+package com.android.agrihealth.testhelpers
 
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
