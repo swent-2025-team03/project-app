@@ -17,8 +17,8 @@ import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
 import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
 import com.android.agrihealth.testhelpers.templates.UITest
 import com.android.agrihealth.ui.common.ImagePickerTestTags
-import com.android.agrihealth.ui.profile.PhotoComponentsTestTags
-import com.android.agrihealth.ui.profile.PhotoComponentsTexts
+import com.android.agrihealth.ui.common.PhotoComponentsTestTags
+import com.android.agrihealth.ui.common.PhotoComponentsTexts
 import org.junit.Assert.assertTrue
 import org.junit.Test
 

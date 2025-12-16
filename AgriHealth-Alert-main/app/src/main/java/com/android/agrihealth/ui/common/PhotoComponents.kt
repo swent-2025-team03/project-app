@@ -1,4 +1,4 @@
-package com.android.agrihealth.ui.profile
+package com.android.agrihealth.ui.common
 
 import android.net.Uri
 import androidx.compose.foundation.layout.Box
@@ -27,26 +27,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.android.agrihealth.data.model.images.ImageUIState
 import com.android.agrihealth.data.model.images.ImageViewModel
-import com.android.agrihealth.ui.common.ImagePickerDialog
-
-object PhotoComponentsTestTags {
-  const val PHOTO_RENDER = "PhotoRender"
-  const val PHOTO_LOADING_ANIMATION = "PhotoLoadingAnimation"
-  const val PHOTO_ERROR_TEXT = "PhotoErrorText"
-  const val PHOTO_ILLEGAL_TEXT = "PhotoIllegalStateText"
-  const val UPLOAD_IMAGE_BUTTON = "uploadImageButton"
-  const val IMAGE_PREVIEW = "imageDisplay"
-  const val DEFAULT_ICON = "DefaultIconPicture"
-}
-
-object PhotoComponentsTexts {
-  const val PHOTO_ERROR_TEXT = "Failed to load image"
-  const val PHOTO_ILLEGAL_TEXT = "An unexpected error happened."
-
-  /** Texts on the button used to upload/remove a photo */
-  const val UPLOAD_IMAGE = "Upload Image"
-  const val REMOVE_IMAGE = "Remove Image"
-}
 
 /**
  * Handles the display of a remote photo URL (already uploaded).
@@ -187,4 +167,23 @@ fun UploadRemovePhotoButton(
     ImagePickerDialog(
         onDismiss = { showImagePicker = false }, onImageSelected = { uri -> onPhotoPicked(uri) })
   }
+}
+
+object PhotoComponentsTestTags {
+  const val PHOTO_RENDER = "PhotoRender"
+  const val PHOTO_LOADING_ANIMATION = "PhotoLoadingAnimation"
+  const val PHOTO_ERROR_TEXT = "PhotoErrorText"
+  const val PHOTO_ILLEGAL_TEXT = "PhotoIllegalStateText"
+  const val UPLOAD_IMAGE_BUTTON = "uploadImageButton"
+  const val IMAGE_PREVIEW = "imageDisplay"
+  const val DEFAULT_ICON = "DefaultIconPicture"
+}
+
+object PhotoComponentsTexts {
+  const val PHOTO_ERROR_TEXT = "Failed to load image"
+  const val PHOTO_ILLEGAL_TEXT = "An unexpected error happened."
+
+  /** Texts on the button used to upload/remove a photo */
+  const val UPLOAD_IMAGE = "Upload Image"
+  const val REMOVE_IMAGE = "Remove Image"
 }

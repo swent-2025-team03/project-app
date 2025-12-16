@@ -33,54 +33,17 @@ import com.android.agrihealth.data.model.report.form.QuestionForm
 import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.ui.common.RemotePhotoDisplay
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.common.resolver.AuthorName
 import com.android.agrihealth.ui.common.resolver.OfficeName
 import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
-import com.android.agrihealth.ui.profile.RemotePhotoDisplay
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags.CLAIM_BUTTON
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags.UNASSIGN_BUTTON
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.launch
-
-object ReportViewScreenTestTags {
-  const val STATUS_BADGE_BOX = "StatusBadgeBox"
-  const val STATUS_BADGE_TEXT = "StatusBadgeText"
-  const val ROLE_INFO_LINE = "roleInfoLine"
-  const val CLAIM_BUTTON = "ClaimButton"
-  const val UNASSIGN_BUTTON = "UnassignButton"
-  const val ANSWER_FIELD = "AnswerField"
-  const val STATUS_DROPDOWN_BOX = "StatusDropdownBox"
-  const val STATUS_DROPDOWN_FIELD = "StatusDropdownField"
-  const val STATUS_DROPDOWN_MENU = "StatusDropdownMenu"
-  const val SPAM_BUTTON = "SpamButton"
-  const val DELETE_BUTTON = "DeleteButton"
-  const val VIEW_ON_MAP = "viewReportOnMap"
-  const val SAVE_BUTTON = "SaveButton"
-  const val SCROLL_CONTAINER = "ReportViewScrollContainer"
-  const val UNSAVED_ALERT_BOX = "UnsavedChangesAlertBox"
-  const val UNSAVED_ALERT_BOX_DISCARD = "UnsavedChangesAlertDiscardButton"
-  const val UNSAVED_ALERT_BOX_CANCEL = "UnsavedChangesAlertCancelButton"
-  const val DELETE_REPORT_ALERT_BOX = "DeleteReportAlertBox"
-
-  fun getTagForStatusOption(status: ReportStatus): String = "StatusOption_${status.name}"
-}
-
-@Composable
-private fun QuestionItem(
-    question: QuestionForm,
-    onAnswerChange: (QuestionForm) -> Unit = {},
-    enabled: Boolean = false
-) {
-  when (question) {
-    is OpenQuestion -> OpenQuestionItem(question, { onAnswerChange(it) }, enabled)
-    is YesOrNoQuestion -> YesOrNoQuestionItem(question, { onAnswerChange(it) }, enabled)
-    is MCQ -> MCQItem(question, { onAnswerChange(it) }, enabled)
-    is MCQO -> MCQOItem(question, { onAnswerChange(it) }, enabled)
-  }
-}
 
 /**
  * Displays the detailed view of a single report. The UI dynamically adapts depending on the current
@@ -572,6 +535,43 @@ fun UnsavedChangesAlert(onDiscard: () -> Unit, onStay: () -> Unit) {
               Text("Cancel")
             }
       })
+}
+
+@Composable
+private fun QuestionItem(
+    question: QuestionForm,
+    onAnswerChange: (QuestionForm) -> Unit = {},
+    enabled: Boolean = false
+) {
+  when (question) {
+    is OpenQuestion -> OpenQuestionItem(question, { onAnswerChange(it) }, enabled)
+    is YesOrNoQuestion -> YesOrNoQuestionItem(question, { onAnswerChange(it) }, enabled)
+    is MCQ -> MCQItem(question, { onAnswerChange(it) }, enabled)
+    is MCQO -> MCQOItem(question, { onAnswerChange(it) }, enabled)
+  }
+}
+
+object ReportViewScreenTestTags {
+  const val STATUS_BADGE_BOX = "StatusBadgeBox"
+  const val STATUS_BADGE_TEXT = "StatusBadgeText"
+  const val ROLE_INFO_LINE = "roleInfoLine"
+  const val CLAIM_BUTTON = "ClaimButton"
+  const val UNASSIGN_BUTTON = "UnassignButton"
+  const val ANSWER_FIELD = "AnswerField"
+  const val STATUS_DROPDOWN_BOX = "StatusDropdownBox"
+  const val STATUS_DROPDOWN_FIELD = "StatusDropdownField"
+  const val STATUS_DROPDOWN_MENU = "StatusDropdownMenu"
+  const val SPAM_BUTTON = "SpamButton"
+  const val DELETE_BUTTON = "DeleteButton"
+  const val VIEW_ON_MAP = "viewReportOnMap"
+  const val SAVE_BUTTON = "SaveButton"
+  const val SCROLL_CONTAINER = "ReportViewScrollContainer"
+  const val UNSAVED_ALERT_BOX = "UnsavedChangesAlertBox"
+  const val UNSAVED_ALERT_BOX_DISCARD = "UnsavedChangesAlertDiscardButton"
+  const val UNSAVED_ALERT_BOX_CANCEL = "UnsavedChangesAlertCancelButton"
+  const val DELETE_REPORT_ALERT_BOX = "DeleteReportAlertBox"
+
+  fun getTagForStatusOption(status: ReportStatus): String = "StatusOption_${status.name}"
 }
 
 /*  If you want to use the preview, just de-comment this block.

@@ -26,19 +26,6 @@ import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.Screen
 
-/** Tags for the various components. For testing purposes */
-object ChangePasswordScreenTestTags {
-  const val OLD_PASSWORD = "oldPassword"
-  const val NEW_PASSWORD = "newPassword"
-  const val SAVE_BUTTON = "saveButton"
-}
-
-/** Texts for the password change feedback. For testing purposes */
-object ChangePasswordFeedbackTexts {
-  const val OLD_WRONG = "Password does not match."
-  const val NEW_WEAK = "Password is too weak or common to use."
-}
-
 /** Change password screen for email and password users */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -142,6 +129,19 @@ private fun Field(
       supportingText = { if (error) Text(errorText) },
       singleLine = true,
       modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag))
+}
+
+/** Texts for the password change feedback. For testing purposes */
+object ChangePasswordFeedbackTexts {
+  const val OLD_WRONG = "Password does not match."
+  const val NEW_WEAK = "Password is too weak or common to use."
+}
+
+/** Tags for the various components. For testing purposes */
+object ChangePasswordScreenTestTags {
+  const val OLD_PASSWORD = "oldPassword"
+  const val NEW_PASSWORD = "newPassword"
+  const val SAVE_BUTTON = "saveButton"
 }
 
 /**

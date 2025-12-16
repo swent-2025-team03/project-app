@@ -34,12 +34,6 @@ import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
-object RoleSelectionScreenTestTags {
-  const val WELCOME = "Welcome"
-  const val FARMER = "FarmerButton"
-  const val VET = "VetButton"
-}
-
 /**
  * Minimalist composable function to display a screen to new google users, this should only display
  * when the user logs in with a new google account for the first time. The point of this screen is
@@ -132,6 +126,12 @@ fun RoleSelectionScreen(
                   }
             }
       }
+}
+
+object RoleSelectionScreenTestTags {
+  const val WELCOME = "Welcome"
+  const val FARMER = "FarmerButton"
+  const val VET = "VetButton"
 }
 
 @Preview

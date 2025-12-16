@@ -20,12 +20,6 @@ import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.DESCRIPTION_F
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.NAME_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 
-object CreateOfficeScreenTestTags {
-  const val NAME_FIELD = "CreateOfficeNameField"
-  const val DESCRIPTION_FIELD = "CreateOfficeDescriptionField"
-  const val CREATE_BUTTON = "CreateOfficeButtonConfirm"
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateOfficeScreen(
@@ -34,6 +28,7 @@ fun CreateOfficeScreen(
     onCreated: () -> Unit,
 ) {
   val focusManager = LocalFocusManager.current
+  @Suppress("UNCHECKED_CAST")
   val vm: CreateOfficeViewModel =
       viewModel(
           factory =
@@ -95,4 +90,10 @@ fun CreateOfficeScreen(
                   }
             }
       }
+}
+
+object CreateOfficeScreenTestTags {
+  const val NAME_FIELD = "CreateOfficeNameField"
+  const val DESCRIPTION_FIELD = "CreateOfficeDescriptionField"
+  const val CREATE_BUTTON = "CreateOfficeButtonConfirm"
 }

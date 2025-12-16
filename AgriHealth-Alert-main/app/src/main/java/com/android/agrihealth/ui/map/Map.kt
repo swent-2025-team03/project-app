@@ -47,7 +47,6 @@ fun MapScreen(
     isViewedFromOverview: Boolean = true,
     forceStartingPosition: Boolean = false
 ) {
-  // Get UI state
   val uiState by mapViewModel.uiState.collectAsState()
 
   val reports = uiState.reports

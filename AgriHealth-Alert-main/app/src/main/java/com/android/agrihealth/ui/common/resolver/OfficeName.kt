@@ -40,7 +40,6 @@ class OfficeNameViewModel(
 @Composable
 fun OfficeName(
     uid: String?,
-    modifier: Modifier = Modifier,
     deletedOffice: String = "Deleted office",
     noneOffice: String = "Not assigned to an office",
     vm: OfficeNameViewModel = viewModel(key = uid),

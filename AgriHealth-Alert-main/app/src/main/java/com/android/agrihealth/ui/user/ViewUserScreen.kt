@@ -18,20 +18,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.data.model.user.*
 
-object ViewUserScreenTestTags {
-  const val TOP_BAR = "ViewUserTopBar"
-  const val BACK_BUTTON = "ViewUserBackButton"
-  const val LOADING_INDICATOR = "ViewUserLoadingIndicator"
-  const val ERROR_TEXT = "ViewUserErrorText"
-  const val CONTENT_COLUMN = "ViewUserContentColumn"
-  const val PROFILE_ICON = "ViewUserProfileIcon"
-  const val NAME_FIELD = "ViewUserNameField"
-  const val ROLE_FIELD = "ViewUserRoleField"
-  const val OFFICE_FIELD = "ViewUserOfficeField"
-  const val ADDRESS_FIELD = "ViewUserAddressField"
-  const val DESCRIPTION_FIELD = "ViewUserDescriptionField"
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ViewUserScreen(viewModel: ViewUserViewModel, onBack: () -> Unit = {}) {
@@ -170,4 +156,18 @@ private fun ViewUserContent(user: User, officeName: String?) {
 
         Spacer(Modifier.height(32.dp))
       }
+}
+
+object ViewUserScreenTestTags {
+  const val TOP_BAR = "ViewUserTopBar"
+  const val BACK_BUTTON = "ViewUserBackButton"
+  const val LOADING_INDICATOR = "ViewUserLoadingIndicator"
+  const val ERROR_TEXT = "ViewUserErrorText"
+  const val CONTENT_COLUMN = "ViewUserContentColumn"
+  const val PROFILE_ICON = "ViewUserProfileIcon"
+  const val NAME_FIELD = "ViewUserNameField"
+  const val ROLE_FIELD = "ViewUserRoleField"
+  const val OFFICE_FIELD = "ViewUserOfficeField"
+  const val ADDRESS_FIELD = "ViewUserAddressField"
+  const val DESCRIPTION_FIELD = "ViewUserDescriptionField"
 }

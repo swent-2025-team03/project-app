@@ -47,35 +47,6 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 import kotlinx.coroutines.launch
 
-enum class CodeType {
-  FARMER,
-  VET;
-
-  fun displayName(): String =
-      when (this) {
-        FARMER -> "Farmer"
-        VET -> "Vet"
-      }
-}
-
-object EditProfileScreenTestTags {
-  const val FIRSTNAME_FIELD = "FirstNameField"
-  const val LASTNAME_FIELD = "LastNameField"
-  const val DESCRIPTION_FIELD = "Description"
-  const val PASSWORD_FIELD = "PasswordField"
-  const val ADDRESS_FIELD = "EditAddressField"
-  const val LOCATION_BUTTON = "LocationButton"
-  const val DEFAULT_VET_DROPDOWN = "DefaultVetDropdown"
-  const val ADD_CODE_BUTTON = "AddVetButton"
-  const val SAVE_BUTTON = "SaveButton"
-  const val PASSWORD_BUTTON = "PasswordButton"
-  const val COPY_CODE_BUTTON = "CopyActiveCodeListElementButton"
-
-  fun dropdownTag(type: String) = "ACTIVE_CODES_DROPDOWN_$type"
-
-  fun dropdownElementTag(type: String) = "ACTIVE_CODE_ELEMENT_$type"
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
@@ -481,6 +452,35 @@ fun CopyToClipboardButton(toCopy: String, snackbarHostState: SnackbarHostState) 
             contentDescription = "Copy to clipboard",
             modifier = Modifier.size(16.dp))
       }
+}
+
+enum class CodeType {
+  FARMER,
+  VET;
+
+  fun displayName(): String =
+      when (this) {
+        FARMER -> "Farmer"
+        VET -> "Vet"
+      }
+}
+
+object EditProfileScreenTestTags {
+  const val FIRSTNAME_FIELD = "FirstNameField"
+  const val LASTNAME_FIELD = "LastNameField"
+  const val DESCRIPTION_FIELD = "Description"
+  const val PASSWORD_FIELD = "PasswordField"
+  const val ADDRESS_FIELD = "EditAddressField"
+  const val LOCATION_BUTTON = "LocationButton"
+  const val DEFAULT_VET_DROPDOWN = "DefaultVetDropdown"
+  const val ADD_CODE_BUTTON = "AddVetButton"
+  const val SAVE_BUTTON = "SaveButton"
+  const val PASSWORD_BUTTON = "PasswordButton"
+  const val COPY_CODE_BUTTON = "CopyActiveCodeListElementButton"
+
+  fun dropdownTag(type: String) = "ACTIVE_CODES_DROPDOWN_$type"
+
+  fun dropdownElementTag(type: String) = "ACTIVE_CODE_ELEMENT_$type"
 }
 
 @Preview

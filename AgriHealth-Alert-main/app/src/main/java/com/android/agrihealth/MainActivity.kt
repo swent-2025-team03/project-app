@@ -166,6 +166,7 @@ fun AgriHealthApp(
   val currentUserRole = currentUser.role
   val currentUserEmail = currentUser.email
 
+  @Suppress("UNCHECKED_CAST")
   val locationPickedFactory =
       object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -273,12 +274,15 @@ fun AgriHealthApp(
       }
       composable(Screen.AddReport.route) {
         val imageVM = viewModel<ImageViewModel>()
+
+        @Suppress("UNCHECKED_CAST")
         val createReportViewModel =
             object : ViewModelProvider.Factory {
               override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return AddReportViewModel(userId = currentUserId, imageViewModel = imageVM) as T
               }
             }
+
         val addReportViewModel: AddReportViewModel = viewModel(factory = createReportViewModel)
 
         AddReportScreen(
@@ -294,6 +298,7 @@ fun AgriHealthApp(
         )
       }
       composable(route = Screen.LocationPicker.route) {
+        @Suppress("UNCHECKED_CAST")
         val createMapViewModel =
             object : ViewModelProvider.Factory {
               override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -319,7 +324,7 @@ fun AgriHealthApp(
             })
       }
       composable(
-          route = Screen.ViewReport.route,
+          route = Screen.ViewReport.ROUTE,
           arguments = listOf(navArgument("reportId") { type = NavType.StringType })) {
               backStackEntry ->
             val reportId = backStackEntry.arguments?.getString("reportId") ?: ""
@@ -335,13 +340,15 @@ fun AgriHealthApp(
                 user = currentUser)
           }
       composable(
-          route = Screen.ViewAlert.route,
+          route = Screen.ViewAlert.ROUTE,
           arguments = listOf(navArgument("alertId") { type = NavType.StringType })) { backStackEntry
             ->
             val alertId = backStackEntry.arguments?.getString("alertId") ?: ""
 
             val overviewUiState by overviewViewModel.uiState.collectAsState()
             val sortedAlerts = overviewUiState.sortedAlerts
+
+            @Suppress("UNCHECKED_CAST")
             val alertFactory =
                 object : ViewModelProvider.Factory {
                   override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -353,7 +360,7 @@ fun AgriHealthApp(
             AlertViewScreen(navigationActions = navigationActions, viewModel = alertViewModel)
           }
       composable(
-          route = Screen.ViewUser.route,
+          route = Screen.ViewUser.ROUTE,
           arguments = listOf(navArgument("uid") { type = NavType.StringType })) { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("uid") ?: ""
             val viewModel: ViewUserViewModel =
@@ -362,7 +369,7 @@ fun AgriHealthApp(
             ViewUserScreen(viewModel = viewModel, onBack = { navigationActions.goBack() })
           }
       composable(
-          route = Screen.ViewOffice.route,
+          route = Screen.ViewOffice.ROUTE,
           arguments = listOf(navArgument("officeId") { type = NavType.StringType })) {
               backStackEntry ->
             val officeId = backStackEntry.arguments?.getString("officeId") ?: ""
@@ -398,6 +405,8 @@ fun AgriHealthApp(
       }
       composable(Screen.ManageOffice.route) {
         val imageViewModel: ImageViewModel = viewModel()
+
+        @Suppress("UNCHECKED_CAST")
         val manageOfficeViewModel: ManageOfficeViewModel =
             viewModel(
                 factory =
@@ -416,6 +425,7 @@ fun AgriHealthApp(
             onCreateOffice = { navigationActions.navigateTo(Screen.CreateOffice) },
             onJoinOffice = { navigationActions.navigateTo(Screen.ClaimCode(VET_TO_OFFICE)) },
             codesVmFactory = {
+              @Suppress("UNCHECKED_CAST")
               object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                   return CodesViewModel(
@@ -465,7 +475,7 @@ fun AgriHealthApp(
     }
 
     composable(
-        route = Screen.Map.route,
+        route = Screen.Map.ROUTE,
         arguments =
             listOf(
                 navArgument("lat") {
@@ -509,7 +519,7 @@ fun AgriHealthApp(
         }
 
     composable(
-        route = Screen.Planner.route,
+        route = Screen.Planner.ROUTE,
         arguments =
             listOf(
                 navArgument("reportId") {
@@ -526,7 +536,7 @@ fun AgriHealthApp(
               reportClicked = { it -> navigationActions.navigateTo(Screen.ViewReport(it)) })
         }
     composable(
-        route = Screen.ClaimCode.route,
+        route = Screen.ClaimCode.ROUTE,
         arguments =
             listOf(
                 navArgument("connectionRepo") {
@@ -545,6 +555,7 @@ fun AgriHealthApp(
                   ConnectionRepositoryProvider.farmerToOfficeRepository
                 }
               }
+          @Suppress("UNCHECKED_CAST")
           val profileFactory =
               object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -555,8 +566,9 @@ fun AgriHealthApp(
               codesViewModel =
                   viewModel(
                       factory = profileFactory,
-                      key = backStackEntry.arguments?.getString("connectionRepo")),
-              { navigationActions.goBack() })
+                      key = backStackEntry.arguments?.getString("connectionRepo"))) {
+                navigationActions.goBack()
+              }
         }
   }
 }

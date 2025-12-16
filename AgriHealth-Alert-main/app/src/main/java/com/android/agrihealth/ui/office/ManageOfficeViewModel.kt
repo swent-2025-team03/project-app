@@ -16,12 +16,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-enum class PhotoChange {
-  UNCHANGED,
-  UPDATED,
-  REMOVED
-}
-
 data class ManageOfficeUiState(
     val office: Office? = null,
     val editableName: String = "",
@@ -170,4 +164,10 @@ class ManageOfficeViewModel(
   fun removePhoto() {
     _uiState.value = _uiState.value.copy(photoUri = null, photoChange = PhotoChange.REMOVED)
   }
+}
+
+enum class PhotoChange {
+  UNCHANGED,
+  UPDATED,
+  REMOVED
 }

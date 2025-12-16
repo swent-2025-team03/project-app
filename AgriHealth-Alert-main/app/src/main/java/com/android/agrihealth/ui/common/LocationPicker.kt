@@ -39,14 +39,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.rememberCameraPositionState
 
-object LocationPickerTestTags {
-  const val MAP_SCREEN = "googleMapScreen"
-  const val SELECT_LOCATION_BUTTON = "selectLocationButton"
-  const val CONFIRMATION_PROMPT = "confirmationPromptBox"
-  const val PROMPT_CONFIRM_BUTTON = "confirmationPromptYesButton"
-  const val PROMPT_CANCEL_BUTTON = "confirmationPromptNoButton"
-}
-
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 /**
@@ -182,6 +174,15 @@ private fun AddressConfirmationPrompt(
             }
       })
 }
+
+object LocationPickerTestTags {
+  const val MAP_SCREEN = "googleMapScreen"
+  const val SELECT_LOCATION_BUTTON = "selectLocationButton"
+  const val CONFIRMATION_PROMPT = "confirmationPromptBox"
+  const val PROMPT_CONFIRM_BUTTON = "confirmationPromptYesButton"
+  const val PROMPT_CANCEL_BUTTON = "confirmationPromptNoButton"
+}
+
 /*
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable

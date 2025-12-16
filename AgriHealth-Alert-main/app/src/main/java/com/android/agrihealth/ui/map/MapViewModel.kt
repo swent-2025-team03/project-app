@@ -252,7 +252,7 @@ class MapViewModel(
     val geocoder = Geocoder(context, Locale.getDefault())
 
     try {
-      // Deprecated but I can't use the new function for some reason
+      @Suppress("DEPRECATION") // Deprecated but I can't use the new function for some reason
       val addresses = geocoder.getFromLocation(lat, lng, 1)
       val result = addresses?.firstOrNull()?.getAddressLine(0)
       updateState { copy(geocodedAddress = result) }

@@ -1,4 +1,3 @@
-// AuthorNameViewModel.kt
 package com.android.agrihealth.ui.common.resolver
 
 import androidx.compose.foundation.clickable

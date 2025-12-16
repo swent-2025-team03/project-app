@@ -46,19 +46,6 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 
-object ProfileScreenTestTags {
-
-  const val TOP_BAR = "TopBar"
-  const val PROFILE_IMAGE = "ProfileImage"
-  const val NAME_TEXT = "NameText"
-  const val EDIT_BUTTON = "EditButton"
-  const val DESCRIPTION_FIELD = "DescriptionField"
-  const val ADDRESS_FIELD = "AddressField"
-  const val DEFAULT_OFFICE_FIELD = "DefaultOfficeField"
-  const val CODE_BUTTON_FARMER = "CodeButtonFarmer"
-  const val MANAGE_OFFICE_BUTTON = "ManageOfficeButton"
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -73,6 +60,7 @@ fun ProfileScreen(
   val user = uiState.user
   val userRole = user.role
 
+  @Suppress("UNCHECKED_CAST")
   val factory = remember {
     object : androidx.lifecycle.ViewModelProvider.Factory {
       override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -246,6 +234,19 @@ fun ProfileScreen(
               }
             }
       }
+}
+
+object ProfileScreenTestTags {
+
+  const val TOP_BAR = "TopBar"
+  const val PROFILE_IMAGE = "ProfileImage"
+  const val NAME_TEXT = "NameText"
+  const val EDIT_BUTTON = "EditButton"
+  const val DESCRIPTION_FIELD = "DescriptionField"
+  const val ADDRESS_FIELD = "AddressField"
+  const val DEFAULT_OFFICE_FIELD = "DefaultOfficeField"
+  const val CODE_BUTTON_FARMER = "CodeButtonFarmer"
+  const val MANAGE_OFFICE_BUTTON = "ManageOfficeButton"
 }
 
 /* If you want to use the preview, just de-comment this block.

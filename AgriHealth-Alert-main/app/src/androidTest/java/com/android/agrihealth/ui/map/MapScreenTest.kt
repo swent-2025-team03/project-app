@@ -244,8 +244,8 @@ class MapScreenTest :
       val navController = rememberNavController()
       navigationActions = NavigationActions(navController)
 
-      NavHost(navController = navController, startDestination = Screen.Map.route) {
-        composable(Screen.Map.route) {
+      NavHost(navController = navController, startDestination = Screen.Map.ROUTE) {
+        composable(Screen.Map.ROUTE) {
           val mapViewModel =
               MapViewModel(
                   reportRepository = reportRepository,
@@ -254,13 +254,13 @@ class MapScreenTest :
                   userId = userId)
           MapScreen(mapViewModel = mapViewModel, navigationActions = navigationActions)
         }
-        composable(Screen.ViewReport.route) {
+        composable(Screen.ViewReport.ROUTE) {
           Text(reportId, modifier = Modifier.testTag(FAKE_VIEW_REPORT))
           Button(onClick = { navigationActions.goBack() }, modifier = Modifier.testTag(GO_BACK)) {
             Text(":)")
           }
         }
-        composable(Screen.ViewAlert.route) {
+        composable(Screen.ViewAlert.ROUTE) {
           Text(alertId, modifier = Modifier.testTag(FAKE_ALERT_VIEW))
         }
       }

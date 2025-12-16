@@ -10,11 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-object VerifyEmailErrorMsg {
-  const val FAIL = "Something went wrong, make sure you are connected to the internet."
-  const val SUCCESS = "Email successfully sent!"
-}
-
 data class VerifyEmailUIState(
     val verified: Boolean = false,
     val errorMsg: String? = null,
@@ -68,4 +63,9 @@ class VerifyEmailViewModel(
       }
     }
   }
+}
+
+object VerifyEmailErrorMsg {
+  const val FAIL = "Something went wrong, make sure you are connected to the internet."
+  const val SUCCESS = "Email successfully sent!"
 }

@@ -10,8 +10,8 @@ import com.android.agrihealth.testhelpers.TestUser.office1
 import com.android.agrihealth.testhelpers.fakes.FakeImageRepository
 import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
 import com.android.agrihealth.testhelpers.templates.UITest
+import com.android.agrihealth.ui.common.PhotoComponentsTestTags
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
-import com.android.agrihealth.ui.profile.PhotoComponentsTestTags
 import org.junit.Test
 
 class FakeViewOfficeViewModel(initial: ViewOfficeUiState) :

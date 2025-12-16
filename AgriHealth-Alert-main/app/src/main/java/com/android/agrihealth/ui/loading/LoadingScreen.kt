@@ -14,12 +14,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 
-object LoadingTestTags {
-  const val ROOT = "loading_overlay_root"
-  const val SCRIM = "loading_overlay_scrim"
-  const val SPINNER = "loading_overlay_spinner"
-}
-
 @Composable
 fun LoadingOverlay(isLoading: Boolean, content: @Composable () -> Unit) {
   Box(modifier = Modifier.fillMaxSize().testTag(LoadingTestTags.ROOT)) {
@@ -40,6 +34,12 @@ fun LoadingOverlay(isLoading: Boolean, content: @Composable () -> Unit) {
           }
     }
   }
+}
+
+object LoadingTestTags {
+  const val ROOT = "loading_overlay_root"
+  const val SCRIM = "loading_overlay_scrim"
+  const val SPINNER = "loading_overlay_spinner"
 }
 
 @Preview

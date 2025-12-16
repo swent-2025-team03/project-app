@@ -1,6 +1,10 @@
 package com.android.agrihealth.data.model.device
 
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -46,4 +50,15 @@ fun PermissionsRequester(
       }
 
   LaunchedEffect(Unit) { permissionRequest.launch(permissions) }
+}
+
+/** Helper function to open app permission settings */
+fun openAppPermissionsSettings(context: Context) {
+  val intent =
+      Intent(
+              Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+              Uri.fromParts("package", context.packageName, null),
+          )
+          .apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+  context.startActivity(intent)
 }

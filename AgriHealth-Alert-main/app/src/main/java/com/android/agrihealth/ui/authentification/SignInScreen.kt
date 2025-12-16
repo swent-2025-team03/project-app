@@ -22,19 +22,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.R
 import com.android.agrihealth.ui.loading.LoadingOverlay
 
-object SignInScreenTestTags {
-  const val SCREEN = "SignInScreen"
-  const val LOGIN_BUTTON = "loginButton"
-  const val SIGN_UP_BUTTON = "signUpButton"
-  const val LOGIN_TITLE = "loginTitle"
-  const val EMAIL_FIELD = "emailField"
-  const val PASSWORD_FIELD = "passwordField"
-  const val FORGOT_PASSWORD = "forgotPassword"
-  const val LOGIN_DIVIDER = "loginDivider"
-  const val GOOGLE_LOGIN_BUTTON = "googleLoginButton"
-  const val SNACKBAR = "snackbar"
-}
-
+/** Screen where a user can sign in */
 @Composable
 fun SignInScreen(
     modifier: Modifier = Modifier,
@@ -182,6 +170,7 @@ fun SignInScreen(
 }
 
 // function from bootcamp-25-B3-Solution
+/** Button to sign in with Google */
 @Composable
 fun GoogleSignInButton(onSignInClick: () -> Unit) {
   Button(
@@ -211,6 +200,19 @@ fun GoogleSignInButton(onSignInClick: () -> Unit) {
               Text(text = "Sign in with Google")
             }
       }
+}
+
+object SignInScreenTestTags {
+  const val SCREEN = "SignInScreen"
+  const val LOGIN_BUTTON = "loginButton"
+  const val SIGN_UP_BUTTON = "signUpButton"
+  const val LOGIN_TITLE = "loginTitle"
+  const val EMAIL_FIELD = "emailField"
+  const val PASSWORD_FIELD = "passwordField"
+  const val FORGOT_PASSWORD = "forgotPassword"
+  const val LOGIN_DIVIDER = "loginDivider"
+  const val GOOGLE_LOGIN_BUTTON = "googleLoginButton"
+  const val SNACKBAR = "snackbar"
 }
 
 /*

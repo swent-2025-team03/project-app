@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.report
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,12 +39,12 @@ import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.UserViewModelContract
+import com.android.agrihealth.ui.common.LocalPhotoDisplay
+import com.android.agrihealth.ui.common.UploadRemovePhotoButton
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
 import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.Screen
-import com.android.agrihealth.ui.profile.LocalPhotoDisplay
-import com.android.agrihealth.ui.profile.UploadRemovePhotoButton
 import kotlin.collections.forEachIndexed
 import kotlinx.coroutines.launch
 
@@ -55,54 +54,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.testhelpers.fakes.FakeAddReportViewModel
  */
-
-/** Tags for the various components. For testing purposes */
-object AddReportScreenTestTags {
-  const val TITLE_FIELD = "titleField"
-  const val DESCRIPTION_FIELD = "descriptionField"
-  const val OFFICE_DROPDOWN = "officeDropDown"
-  const val ADDRESS_FIELD = "addressField"
-  const val LOCATION_BUTTON = "locationButton"
-  const val CREATE_BUTTON = "createButton"
-  const val SCROLL_CONTAINER = "scrollContainer"
-  const val DIALOG = "createReportDialog"
-  const val DIALOG_OK = "createReportDialogOk"
-
-  fun getTestTagForOffice(officeId: String): String = "officeOption_$officeId"
-
-  fun getTestTagForQuestion(type: QuestionType, index: Int) =
-      when (type) {
-        QuestionType.OPEN -> "QUESTION_${index}_OPEN"
-        QuestionType.YESORNO -> "QUESTION_${index}_YESORNO"
-        QuestionType.MCQ -> "QUESTION_${index}_MCQ"
-        QuestionType.MCQO -> "QUESTION_${index}_MCQO"
-      }
-}
-
-/** Texts for the report creation feedback */
-object AddReportFeedbackTexts {
-  const val SUCCESS = "Report created successfully!"
-  const val FAILURE = "Couldn't upload report... Please verify your connection and try again..."
-  const val INCOMPLETE = "Please fill in all required fields..."
-  const val UNKNOWN = "Unknown error..."
-}
-
-/** Texts of the dialog shown when clicking on uploading photo button */
-object AddReportDialogTexts {
-  const val OK = "Ok"
-  const val TITLE_SUCCESS = "Success!"
-  const val TITLE_FAILURE = "Error!"
-}
-
-// Helper function to format the error message shown in the error dialog when creating a report
-// failed
-private fun generateCreateReportErrorMessage(e: Throwable?): String {
-  val errorMessage = e?.message ?: AddReportFeedbackTexts.UNKNOWN
-
-  val fullMessage = "${AddReportFeedbackTexts.FAILURE}\n\nDetails:\n${errorMessage}"
-
-  return fullMessage
-}
 
 /**
  * Displays the report creation screen for farmers
@@ -135,7 +86,6 @@ fun AddReportScreen(
 
   // For each linked office, load their name
   (user as Farmer).linkedOffices.forEach { officeId ->
-    Log.d("bite", "not dropdown $officeId")
     val vm: OfficeNameViewModel = viewModel(key = officeId)
     val label by vm.uiState.collectAsState()
 
@@ -224,9 +174,9 @@ fun AddReportScreen(
                       .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
               verticalArrangement = Arrangement.Top) {
                 HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
-                TitleField(reportUi.title, { addReportViewModel.setTitle(it) })
+                TitleField(reportUi.title) { addReportViewModel.setTitle(it) }
 
-                DescriptionField(reportUi.description, { addReportViewModel.setDescription(it) })
+                DescriptionField(reportUi.description) { addReportViewModel.setDescription(it) }
 
                 QuestionList(
                     questions = reportUi.questionForms,
@@ -382,7 +332,6 @@ fun OfficeDropdown(
             Modifier.menuAnchor().fillMaxWidth().testTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
 
     ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-      Log.d("bite", "dropdown $offices")
       offices.forEach { (option, displayName) ->
         DropdownMenuItem(
             text = { Text(displayName) },
@@ -527,6 +476,54 @@ fun CreateReportButton(
       onClick = onClick,
       modifier = Modifier.fillMaxWidth().testTag(AddReportScreenTestTags.CREATE_BUTTON)) {
         Text("Create Report")
+      }
+}
+
+/** Texts for the report creation feedback */
+object AddReportFeedbackTexts {
+  const val SUCCESS = "Report created successfully!"
+  const val FAILURE = "Couldn't upload report... Please verify your connection and try again..."
+  const val INCOMPLETE = "Please fill in all required fields..."
+  const val UNKNOWN = "Unknown error..."
+}
+
+/** Texts of the dialog shown when clicking on uploading photo button */
+object AddReportDialogTexts {
+  const val OK = "Ok"
+  const val TITLE_SUCCESS = "Success!"
+  const val TITLE_FAILURE = "Error!"
+}
+
+// Helper function to format the error message shown in the error dialog when creating a report
+// failed
+private fun generateCreateReportErrorMessage(e: Throwable?): String {
+  val errorMessage = e?.message ?: AddReportFeedbackTexts.UNKNOWN
+
+  val fullMessage = "${AddReportFeedbackTexts.FAILURE}\n\nDetails:\n${errorMessage}"
+
+  return fullMessage
+}
+
+/** Tags for the various components. For testing purposes */
+object AddReportScreenTestTags {
+  const val TITLE_FIELD = "titleField"
+  const val DESCRIPTION_FIELD = "descriptionField"
+  const val OFFICE_DROPDOWN = "officeDropDown"
+  const val ADDRESS_FIELD = "addressField"
+  const val LOCATION_BUTTON = "locationButton"
+  const val CREATE_BUTTON = "createButton"
+  const val SCROLL_CONTAINER = "scrollContainer"
+  const val DIALOG = "createReportDialog"
+  const val DIALOG_OK = "createReportDialogOk"
+
+  fun getTestTagForOffice(officeId: String): String = "officeOption_$officeId"
+
+  fun getTestTagForQuestion(type: QuestionType, index: Int) =
+      when (type) {
+        QuestionType.OPEN -> "QUESTION_${index}_OPEN"
+        QuestionType.YESORNO -> "QUESTION_${index}_YESORNO"
+        QuestionType.MCQ -> "QUESTION_${index}_MCQ"
+        QuestionType.MCQO -> "QUESTION_${index}_MCQO"
       }
 }
 

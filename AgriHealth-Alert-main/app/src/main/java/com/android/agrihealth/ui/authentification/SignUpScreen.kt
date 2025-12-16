@@ -22,21 +22,6 @@ import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.UserViewModelContract
 import com.android.agrihealth.ui.loading.LoadingOverlay
 
-object SignUpScreenTestTags {
-  const val SCREEN = "SignUpScreen"
-  const val BACK_BUTTON = "BackButton"
-  const val TITLE = "SignUpTitle"
-  const val FIRSTNAME_FIELD = "NameField"
-  const val LASTNAME_FIELD = "SurnameField"
-  const val EMAIL_FIELD = "EmailField"
-  const val PASSWORD_FIELD = "PasswordField"
-  const val CONFIRM_PASSWORD_FIELD = "ConfirmPasswordField"
-  const val SAVE_BUTTON = "SaveButton"
-  const val FARMER_PILL = "FarmerPill"
-  const val VET_PILL = "VetPill"
-  const val SNACKBAR = "Snackbar"
-}
-
 @Composable
 fun SignUpScreen(
     onBack: () -> Unit = {},
@@ -217,6 +202,21 @@ private fun Field(
       modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
       isError = isError,
   )
+}
+
+object SignUpScreenTestTags {
+  const val SCREEN = "SignUpScreen"
+  const val BACK_BUTTON = "BackButton"
+  const val TITLE = "SignUpTitle"
+  const val FIRSTNAME_FIELD = "NameField"
+  const val LASTNAME_FIELD = "SurnameField"
+  const val EMAIL_FIELD = "EmailField"
+  const val PASSWORD_FIELD = "PasswordField"
+  const val CONFIRM_PASSWORD_FIELD = "ConfirmPasswordField"
+  const val SAVE_BUTTON = "SaveButton"
+  const val FARMER_PILL = "FarmerPill"
+  const val VET_PILL = "VetPill"
+  const val SNACKBAR = "Snackbar"
 }
 
 /*

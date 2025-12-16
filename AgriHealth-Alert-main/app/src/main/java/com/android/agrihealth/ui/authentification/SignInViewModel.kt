@@ -19,13 +19,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-object SignInErrorMsg {
-  const val EMPTY_EMAIL_OR_PASSWORD = "Please enter your email and password."
-  const val INVALID_CREDENTIALS = "User not found with this email and password."
-  const val TIMEOUT = "Not connected to the internet."
-  const val UNEXPECTED = "Something unexpected happened, try again."
-}
-
 data class SignInUIState(
     val email: String = "",
     val password: String = "",
@@ -40,6 +33,7 @@ data class SignInUIState(
     get() = email.isNotEmpty() && password.isNotEmpty()
 }
 
+/** ViewModel to link SignInScreen and an AuthRepository and a UserRepository */
 class SignInViewModel(
     private val authRepository: AuthRepository = AuthRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository
@@ -141,4 +135,11 @@ class SignInViewModel(
           }
     }
   }
+}
+
+object SignInErrorMsg {
+  const val EMPTY_EMAIL_OR_PASSWORD = "Please enter your email and password."
+  const val INVALID_CREDENTIALS = "User not found with this email and password."
+  const val TIMEOUT = "Not connected to the internet."
+  const val UNEXPECTED = "Something unexpected happened, try again."
 }

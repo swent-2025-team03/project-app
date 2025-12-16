@@ -49,21 +49,6 @@ import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
 import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
 import com.android.agrihealth.data.model.user.defaultUser
  */
-object VerifyEmailScreenTestTags {
-  const val WELCOME = "Welcome"
-  const val SEND_EMAIL = "SendEmail"
-  const val SNACKBAR = "Snackbar"
-}
-
-object VerifyEmailScreenTexts {
-  const val GREETING = "One last step! Confirm your email address to have full access to our app"
-  const val SEND_BUTTON = "Send new email"
-  const val NO_EMAIL_QUESTIONMARK = "Didn't receive the email?"
-
-  fun textForCountdown(cd: Int): String {
-    return if (cd > 0) "Can resend email in $cd seconds" else ""
-  }
-}
 
 /**
  * Screen used to keep unverified users away from the main app, must be present for unverified users
@@ -131,7 +116,7 @@ fun VerifyEmailScreen(
                   modifier = Modifier.testTag(VerifyEmailScreenTestTags.WELCOME).fillMaxWidth())
               Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    VerifyEmailScreenTexts.NO_EMAIL_QUESTIONMARK,
+                    VerifyEmailScreenTexts.NO_EMAIL_QUESTION_MARK,
                     style = MaterialTheme.typography.bodyMedium)
                 Button(
                     onClick = { vm.sendVerifyEmail() },
@@ -150,6 +135,22 @@ fun VerifyEmailScreen(
               }
             }
       }
+}
+
+object VerifyEmailScreenTexts {
+  const val GREETING = "One last step! Confirm your email address to have full access to our app"
+  const val SEND_BUTTON = "Send new email"
+  const val NO_EMAIL_QUESTION_MARK = "Didn't receive the email?"
+
+  fun textForCountdown(cd: Int): String {
+    return if (cd > 0) "Can resend email in $cd seconds" else ""
+  }
+}
+
+object VerifyEmailScreenTestTags {
+  const val WELCOME = "Welcome"
+  const val SEND_EMAIL = "SendEmail"
+  const val SNACKBAR = "Snackbar"
 }
 
 /*

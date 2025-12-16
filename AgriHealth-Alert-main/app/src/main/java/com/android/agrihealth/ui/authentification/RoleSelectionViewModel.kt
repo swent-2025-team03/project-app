@@ -15,6 +15,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.launch
 
+/** ViewModel to link to RoleSelectionScreen and an AuthRepository and a UserRepository */
 class RoleSelectionViewModel(
     private var authRepository: AuthRepository = AuthRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository

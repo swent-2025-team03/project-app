@@ -38,24 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 */
 
-object ResetPasswordScreenTestTags {
-  const val INSTRUCTION_TEXT = "resetPasswordInstructionTest"
-  const val EMAIL = "resetPasswordEmail"
-  const val SEND_RESET_EMAIL_BUTTON = "resetPasswordResetEmailButton"
-  const val SUCCESS_FEEDBACK = "resetPasswordSuccessFeedBack"
-  const val FAIL_FEEDBACK = "resetPasswordFailFeedBack"
-  const val WAITING_FEEDBACK = "resetPasswordWaitingFeedBack"
-}
-
-object ResetPasswordStrings {
-  const val INSTRUCTION = "Enter your email and you will receive a form to reset your password."
-  const val SUCCESS_FEEDBACK = "The form was sent successfully !"
-  const val INBOX_FEEDBACK = "Check your Inbox !"
-  const val FAIL_FEEDBACK = "Something went wrong !"
-  const val WAITING_FEEDBACK = "Sending reset form !"
-  const val SEND_FORM_BUTTON = "Send reset form"
-}
-
+/** Screen where a user can get an email to reset their password */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResetPasswordScreen(onBack: () -> Unit = {}, vm: ResetPasswordViewModel = viewModel()) {
@@ -149,6 +132,24 @@ fun SendingResetFormFeedbackText(
       is EmailSendStatus.None -> Unit
     }
   }
+}
+
+object ResetPasswordStrings {
+  const val INSTRUCTION = "Enter your email and you will receive a form to reset your password."
+  const val SUCCESS_FEEDBACK = "The form was sent successfully !"
+  const val INBOX_FEEDBACK = "Check your Inbox !"
+  const val FAIL_FEEDBACK = "Something went wrong !"
+  const val WAITING_FEEDBACK = "Sending reset form !"
+  const val SEND_FORM_BUTTON = "Send reset form"
+}
+
+object ResetPasswordScreenTestTags {
+  const val INSTRUCTION_TEXT = "resetPasswordInstructionTest"
+  const val EMAIL = "resetPasswordEmail"
+  const val SEND_RESET_EMAIL_BUTTON = "resetPasswordResetEmailButton"
+  const val SUCCESS_FEEDBACK = "resetPasswordSuccessFeedBack"
+  const val FAIL_FEEDBACK = "resetPasswordFailFeedBack"
+  const val WAITING_FEEDBACK = "resetPasswordWaitingFeedBack"
 }
 
 /*

@@ -73,24 +73,6 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-object PlannerScreenTestTags {
-  const val SCREEN = "plannerScreen"
-  const val WEEK_NUMBER = "weekNumber"
-  const val WEEK_HEADER = "weekHeader"
-  const val SELECTED_DATE = "selectedDate"
-  const val WEEKLY_PAGER = "weeklyPager"
-  const val DAILY_SCHEDULER = "dailyScheduler"
-  const val SET_REPORT_DATE_BOX = "setReportDateBox"
-  const val SET_REPORT_DATE_BUTTON = "setReportDateButton"
-  const val UNSAVED_ALERT_BOX = "unsavedAlertBoxPlanner"
-  const val UNSAVED_ALERT_BOX_CANCEL = "unsavedAlertBoxPlannerCancelButton"
-  const val UNSAVED_ALERT_BOX_GO_BACK = "unsavedAlertBoxPlannerGoBackButton"
-
-  fun dayCardTag(day: LocalDate): String = "dayCard_${day}"
-
-  fun reportCardTag(reportId: String): String = "reportCard_$reportId"
-}
-
 /**
  * Planner Screen lets the user see their Reports ordered by dates.
  *
@@ -722,6 +704,24 @@ fun TimePickerBox(
             text = selectedTime.format(DateTimeFormatter.ofPattern("HH:mm")),
             style = MaterialTheme.typography.bodyLarge)
       }
+}
+
+object PlannerScreenTestTags {
+  const val SCREEN = "plannerScreen"
+  const val WEEK_NUMBER = "weekNumber"
+  const val WEEK_HEADER = "weekHeader"
+  const val SELECTED_DATE = "selectedDate"
+  const val WEEKLY_PAGER = "weeklyPager"
+  const val DAILY_SCHEDULER = "dailyScheduler"
+  const val SET_REPORT_DATE_BOX = "setReportDateBox"
+  const val SET_REPORT_DATE_BUTTON = "setReportDateButton"
+  const val UNSAVED_ALERT_BOX = "unsavedAlertBoxPlanner"
+  const val UNSAVED_ALERT_BOX_CANCEL = "unsavedAlertBoxPlannerCancelButton"
+  const val UNSAVED_ALERT_BOX_GO_BACK = "unsavedAlertBoxPlannerGoBackButton"
+
+  fun dayCardTag(day: LocalDate): String = "dayCard_${day}"
+
+  fun reportCardTag(reportId: String): String = "reportCard_$reportId"
 }
 
 /* Commented for sonar coverage

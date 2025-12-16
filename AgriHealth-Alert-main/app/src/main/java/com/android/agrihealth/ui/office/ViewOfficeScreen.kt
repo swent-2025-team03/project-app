@@ -21,20 +21,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.office.Office
+import com.android.agrihealth.ui.common.RemotePhotoDisplay
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.common.resolver.AuthorName
 import com.android.agrihealth.ui.navigation.Screen
-import com.android.agrihealth.ui.profile.RemotePhotoDisplay
-
-object ViewOfficeScreenTestTags {
-  const val LOADING_INDICATOR = "ViewOfficeLoadingIndicator"
-  const val ERROR_TEXT = "ViewOfficeErrorText"
-  const val OFFICE_INFO_COLUMN = "ViewOfficeContentColumn"
-  const val NAME_FIELD = "ViewOfficeNameField"
-  const val ADDRESS_FIELD = "ViewOfficeAddressField"
-  const val DESCRIPTION_FIELD = "ViewOfficeDescriptionField"
-  const val VET_LIST = "ViewOfficeVetList"
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -174,4 +164,14 @@ private fun ViewOfficeContent(
               }
         }
       }
+}
+
+object ViewOfficeScreenTestTags {
+  const val LOADING_INDICATOR = "ViewOfficeLoadingIndicator"
+  const val ERROR_TEXT = "ViewOfficeErrorText"
+  const val OFFICE_INFO_COLUMN = "ViewOfficeContentColumn"
+  const val NAME_FIELD = "ViewOfficeNameField"
+  const val ADDRESS_FIELD = "ViewOfficeAddressField"
+  const val DESCRIPTION_FIELD = "ViewOfficeDescriptionField"
+  const val VET_LIST = "ViewOfficeVetList"
 }

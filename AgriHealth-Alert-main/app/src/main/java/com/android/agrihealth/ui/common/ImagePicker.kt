@@ -1,9 +1,6 @@
 package com.android.agrihealth.ui.common
 
-import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,25 +18,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.android.agrihealth.core.utils.FileProviderUtils
+import com.android.agrihealth.data.model.device.openAppPermissionsSettings
 import java.io.File
-
-/** Test tags for the image picker */
-object ImagePickerTestTags {
-  const val DIALOG = "imagePickerDialog"
-  const val GALLERY_BUTTON = "imagePickerGallery"
-  const val CAMERA_BUTTON = "imagePickerCamera"
-  const val CANCEL_BUTTON = "imagePickerCancel"
-}
-
-/** Text constants for the image picker */
-object ImagePickerTexts {
-  const val DIALOG_TITLE = "Select Image Source"
-  const val DIALOG_MESSAGE = "Choose from gallery or take a new photo."
-  const val GALLERY = "Gallery"
-  const val CAMERA = "Camera"
-  const val CANCEL = "Cancel"
-  const val PERMISSION_REQUIRED = "Camera permission is required to take a photo"
-}
 
 /**
  * Generative AI was used in the making of this file in order to move the original code in
@@ -158,13 +138,20 @@ fun ImagePickerDialog(
   )
 }
 
-// Helper function to open app permission settings
-private fun openAppPermissionsSettings(context: Context) {
-  val intent =
-      Intent(
-              Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-              Uri.fromParts("package", context.packageName, null),
-          )
-          .apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-  context.startActivity(intent)
+/** Text constants for the image picker */
+object ImagePickerTexts {
+  const val DIALOG_TITLE = "Select Image Source"
+  const val DIALOG_MESSAGE = "Choose from gallery or take a new photo."
+  const val GALLERY = "Gallery"
+  const val CAMERA = "Camera"
+  const val CANCEL = "Cancel"
+  const val PERMISSION_REQUIRED = "Camera permission is required to take a photo"
+}
+
+/** Test tags for the image picker */
+object ImagePickerTestTags {
+  const val DIALOG = "imagePickerDialog"
+  const val GALLERY_BUTTON = "imagePickerGallery"
+  const val CAMERA_BUTTON = "imagePickerCamera"
+  const val CANCEL_BUTTON = "imagePickerCancel"
 }

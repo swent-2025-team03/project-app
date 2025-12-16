@@ -54,40 +54,10 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
 */
 
-object OverviewScreenTestTags {
-  const val TOP_APP_BAR_TITLE = NavigationTestTags.TOP_BAR_TITLE
-  const val ADD_REPORT_BUTTON = "addReportFab"
-  const val LOGOUT_BUTTON = "logoutButton"
-  const val SCREEN = "OverviewScreen"
-  const val REPORT_ITEM = "reportItem"
-  const val PROFILE_BUTTON = "ProfileButton"
-  const val FILTERS_TOGGLE = "FiltersToggle"
-  const val STATUS_DROPDOWN = "StatusFilterDropdown"
-  const val OFFICE_ID_DROPDOWN = "OfficeIdFilterDropdown"
-  const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
-  const val ASSIGNEE_FILTER = "AssigneeFilter"
-  const val ASSIGNED_VET_TAG = "AssignedVetTag"
-
-  fun alertItemTag(page: Int) = "ALERT_ITEM_$page"
-}
-
-object AssignedVetTagTexts {
-  const val ASSIGNED_TO_CURRENT_VET = "Assigned to You"
-}
-
-object AssigneeFilterTexts {
-  const val ASSIGNED_TO_ME = "Assigned to Me"
-  const val UNASSIGNED = "Unassigned"
-  const val ASSIGNED_TO_OTHERS = "Assigned to Others"
-}
-
 /**
  * Composable screen displaying the Overview UI. Shows latest alerts and a list of past reports.
  * Button for creating a new report will only be displayed for farmer accounts. For the list,
- * farmers can view only reports made by their own; vets can view all the reports.
- *
- * @param reports List of report to display kept only for backward compatibility and shouldn't be
- *   used
+ * farmers can view only reports made by their own; vets can view all the reports sent to them.
  */
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
@@ -604,6 +574,34 @@ fun AlertZoneTag(distanceText: String) {
             color = Color.White)
       }
 }
+
+object AssignedVetTagTexts {
+  const val ASSIGNED_TO_CURRENT_VET = "Assigned to You"
+}
+
+object AssigneeFilterTexts {
+  const val ASSIGNED_TO_ME = "Assigned to Me"
+  const val UNASSIGNED = "Unassigned"
+  const val ASSIGNED_TO_OTHERS = "Assigned to Others"
+}
+
+object OverviewScreenTestTags {
+  const val TOP_APP_BAR_TITLE = NavigationTestTags.TOP_BAR_TITLE
+  const val ADD_REPORT_BUTTON = "addReportFab"
+  const val LOGOUT_BUTTON = "logoutButton"
+  const val SCREEN = "OverviewScreen"
+  const val REPORT_ITEM = "reportItem"
+  const val PROFILE_BUTTON = "ProfileButton"
+  const val FILTERS_TOGGLE = "FiltersToggle"
+  const val STATUS_DROPDOWN = "StatusFilterDropdown"
+  const val OFFICE_ID_DROPDOWN = "OfficeIdFilterDropdown"
+  const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
+  const val ASSIGNEE_FILTER = "AssigneeFilter"
+  const val ASSIGNED_VET_TAG = "AssignedVetTag"
+
+  fun alertItemTag(page: Int) = "ALERT_ITEM_$page"
+}
+
 /*
 /** Preview of the OverviewScreen with dummy data. Temporarily commented out */
 @Preview(showBackground = true)

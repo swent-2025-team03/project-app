@@ -21,13 +21,13 @@ import com.android.agrihealth.testhelpers.fakes.FakeImageRepository
 import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
 import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
 import com.android.agrihealth.testhelpers.templates.UITest
+import com.android.agrihealth.ui.common.PhotoComponentsTestTags
+import com.android.agrihealth.ui.common.PhotoComponentsTexts
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
-import com.android.agrihealth.ui.profile.PhotoComponentsTestTags
-import com.android.agrihealth.ui.profile.PhotoComponentsTexts
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -154,7 +154,7 @@ class ReportViewScreenTest : UITest() {
               overviewViewModel = FakeOverviewViewModel(),
               navigationActions = navigation)
         }
-        composable(Screen.ViewReport.route) {
+        composable(Screen.ViewReport.ROUTE) {
           ReportViewScreen(
               navigationActions = navigation,
               userRole = UserRole.VET,
