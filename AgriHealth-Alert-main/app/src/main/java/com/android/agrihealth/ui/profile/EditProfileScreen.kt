@@ -78,6 +78,7 @@ fun EditProfileScreen(
 
   val imageViewModel: ImageViewModel = viewModel()
 
+  @Suppress("UNCHECKED_CAST")
   val createManageOfficeViewModel =
       object : androidx.lifecycle.ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -89,6 +90,7 @@ fun EditProfileScreen(
         }
       }
 
+  @Suppress("UNCHECKED_CAST")
   val editProfileViewModel: EditProfileViewModel =
       viewModel(
           factory =
