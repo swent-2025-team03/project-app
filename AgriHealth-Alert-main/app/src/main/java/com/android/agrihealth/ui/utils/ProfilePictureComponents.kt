@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.data.model.images.ImageViewModel
+import com.android.agrihealth.ui.profile.DefaultIconPlaceholder
 import com.android.agrihealth.ui.profile.LocalPhotoDisplay
 import com.android.agrihealth.ui.profile.RemotePhotoDisplay
 import com.android.agrihealth.ui.report.AddReportDialogTexts
@@ -199,6 +200,44 @@ fun EditableProfilePictureWithUI(
 }
 
 /**
+ *  A profile picture. It will fetch the photo on the repository, or show the local
+ *  photo, or show a default profile picture icon if no photo is given
+ *
+ *  @param photo A [PhotoUi] that stores the photo and its source (on the repository or local)
+ *  @param imageViewModel The [ImageViewModel] used to display the photo
+ *  @param modifier The [Modifier] used to customize the profile picture
+ *  @param imageSize The size of the image in [Dp]
+ */
+@Composable
+fun ProfilePicture(
+  photo: PhotoUi,
+  imageViewModel: ImageViewModel,
+  modifier: Modifier = Modifier,
+  imageSize: Dp = 120.dp,
+) {
+  when (photo) {
+    is PhotoUi.Remote ->
+      RemotePhotoDisplay(
+        photoURL = photo.url,
+        imageViewModel = imageViewModel,
+        modifier =
+          modifier.size(imageSize)
+            .clip(CircleShape),
+        contentDescription = "Photo",
+        showPlaceHolder = true)
+    is PhotoUi.Local ->
+      LocalPhotoDisplay(
+        photoByteArray = photo.bytes,
+        modifier =
+          Modifier.size(imageSize)
+            .clip(CircleShape),
+        showPlaceHolder = true)
+    PhotoUi.Empty ->
+      DefaultIconPlaceholder(Modifier.size(imageSize).clip(CircleShape))
+  }
+}
+
+/**
  * A profile picture is displayed, with a small icon that allows the user to either remove their
  * existing profile picture or add a enw one. What happens when the user clicks on the button must
  * be defined with [onPhotoPicked] and [onPhotoRemoved] respectfully. Prefer using
@@ -229,31 +268,13 @@ fun EditableProfilePicture(
       modifier = modifier.size(imageSize).testTag(ProfilePictureComponentsTestTags.PROFILE_PICTURE),
       contentAlignment = Alignment.Center,
   ) {
-    when (photo) {
-      is PhotoUi.Remote ->
-          RemotePhotoDisplay(
-              photoURL = photo.url,
-              imageViewModel = imageViewModel,
-              modifier =
-                  Modifier.size(imageSize)
-                      .clip(CircleShape),
-              contentDescription = "Photo",
-              showPlaceHolder = true)
-      is PhotoUi.Local ->
-          LocalPhotoDisplay(
-              photoByteArray = photo.bytes,
-              modifier =
-                  Modifier.size(imageSize)
-                      .clip(CircleShape),
-              showPlaceHolder = true)
-      PhotoUi.Empty ->
-          LocalPhotoDisplay(
-              photoByteArray = null,
-              modifier =
-                  Modifier.size(imageSize)
-                      .clip(CircleShape),
-              showPlaceHolder = true)
-    }
+
+    ProfilePicture(
+      photo,
+      imageViewModel,
+      modifier.size(imageSize).clip(CircleShape),
+      imageSize
+    )
 
     if (isEditable) {
       val removeMode = photo != PhotoUi.Empty
