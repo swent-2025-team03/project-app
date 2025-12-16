@@ -110,10 +110,14 @@ private fun ViewUserContent(user: User, officeName: String?, imageViewModel: Ima
               .padding(16.dp)
               .testTag(ViewUserScreenTestTags.CONTENT_COLUMN),
       horizontalAlignment = Alignment.CenterHorizontally) {
-        ProfilePicture(
-            photo = if (user.photoURL != null) PhotoUi.Remote(user.photoURL!!) else PhotoUi.Empty,
-            imageViewModel,
-        )
+
+        // Box needed for testing purpose
+        Box(modifier = Modifier.testTag(ViewUserScreenTestTags.PROFILE_PICTURE)) {
+          ProfilePicture(
+              photo = if (user.photoURL != null) PhotoUi.Remote(user.photoURL!!) else PhotoUi.Empty,
+              imageViewModel,
+          )
+        }
 
         Spacer(Modifier.height(24.dp))
 
