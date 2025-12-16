@@ -74,7 +74,6 @@ object EditProfileScreenTestTags {
   fun dropdownElementTag(type: String) = "ACTIVE_CODE_ELEMENT_$type"
 }
 
-// TODO Make screen go back to view profile when saving changes
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
@@ -150,7 +149,6 @@ fun EditProfileScreen(
   var removeRemotePhoto by rememberSaveable { mutableStateOf(false) }
   var localPhotoByteArray: ByteArray? by rememberSaveable { mutableStateOf(null) }
 
-  // TODO: Refactor this so each UI component are in their own composable
   Scaffold(
       topBar = {
         TopAppBar(

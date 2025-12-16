@@ -272,7 +272,7 @@ fun EditableProfilePicture(
     ProfilePicture(
       photo,
       imageViewModel,
-      modifier.size(imageSize).clip(CircleShape),
+      Modifier,
       imageSize
     )
 

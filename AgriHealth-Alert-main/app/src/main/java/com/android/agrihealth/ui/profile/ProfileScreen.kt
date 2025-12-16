@@ -44,6 +44,9 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
+import com.android.agrihealth.ui.utils.EditableProfilePicture
+import com.android.agrihealth.ui.utils.PhotoUi
+import com.android.agrihealth.ui.utils.ProfilePicture
 
 object ProfileScreenTestTags {
 
@@ -121,13 +124,12 @@ fun ProfileScreen(
 
               // Profile Image Placeholder
               Box(modifier = Modifier.testTag(ProfileScreenTestTags.PROFILE_PICTURE), contentAlignment = Alignment.Center) {
-                RemotePhotoDisplay(
-                    user.photoURL,
-                    imageViewModel,
-                    contentDescription = "Profile Picture",
-                    showPlaceHolder = true,
-                    modifier = Modifier.size(120.dp).clip(CircleShape),
-                ) // TODO Use profile picture component
+                ProfilePicture(
+                  if (user.photoURL != null) PhotoUi.Remote(user.photoURL!!) else PhotoUi.Empty,
+                  imageViewModel,
+                  imageSize = 120.dp,
+                  modifier = Modifier,
+                )
                 FloatingActionButton(
                     onClick = onEditProfile,
                     modifier = Modifier.testTag(EDIT_BUTTON).size(40.dp).align(Alignment.BottomEnd),

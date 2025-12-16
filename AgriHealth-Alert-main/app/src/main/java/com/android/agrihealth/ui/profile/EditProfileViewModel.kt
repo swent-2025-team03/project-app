@@ -9,7 +9,6 @@ import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.ui.utils.PhotoUi
 
-// TODO Refactor this screen to have an uiState variable and move code from screen to this viewModel
 class EditProfileViewModel(
     private val officeRepository: OfficeRepository,
     private val imageViewModel: ImageViewModel
