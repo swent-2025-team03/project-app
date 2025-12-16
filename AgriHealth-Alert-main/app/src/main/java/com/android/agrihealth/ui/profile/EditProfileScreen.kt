@@ -42,7 +42,7 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
-import com.android.agrihealth.ui.utils.EditableProfilePictureWithUI
+import com.android.agrihealth.ui.utils.EditableProfilePictureWithImageCropper
 import kotlinx.coroutines.launch
 
 enum class CodeType {
@@ -178,7 +178,7 @@ fun EditProfileScreen(
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
 
-              EditableProfilePictureWithUI(
+              EditableProfilePictureWithImageCropper(
                   photo = editProfileViewModel.choosePhotoToDisplay(
                     remotePhotoURL = user.photoURL,
                     localPhotoBytes = localPhotoByteArray,

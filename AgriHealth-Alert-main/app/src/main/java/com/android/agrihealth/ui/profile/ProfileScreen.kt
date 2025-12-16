@@ -44,7 +44,6 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
 import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.UserViewModelContract
-import com.android.agrihealth.ui.utils.EditableProfilePicture
 import com.android.agrihealth.ui.utils.PhotoUi
 import com.android.agrihealth.ui.utils.ProfilePicture
 

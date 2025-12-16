@@ -38,8 +38,7 @@ import com.android.agrihealth.ui.profile.CodesViewModel
 import com.android.agrihealth.ui.profile.GenerateCode
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.user.UserViewModel
-import com.android.agrihealth.ui.utils.EditableProfilePictureWithUI
-import com.android.agrihealth.ui.utils.PhotoUi
+import com.android.agrihealth.ui.utils.EditableProfilePictureWithImageCropper
 import kotlinx.coroutines.launch
 
 object ManageOfficeScreenTestTags {
@@ -121,7 +120,7 @@ fun ManageOfficeScreen(
                       }
                 } else {
 
-                  EditableProfilePictureWithUI(
+                  EditableProfilePictureWithImageCropper(
                       photo = uiState.displayedPhoto,
                       isEditable = isOwner,
                       imageViewModel = imageViewModel,

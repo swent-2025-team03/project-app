@@ -1,6 +1,5 @@
 package com.android.agrihealth.ui.utils
 
-import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -17,31 +16,21 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.ui.profile.DefaultIconPlaceholder
 import com.android.agrihealth.ui.profile.LocalPhotoDisplay
 import com.android.agrihealth.ui.profile.RemotePhotoDisplay
 import com.android.agrihealth.ui.report.AddReportDialogTexts
-import com.mr0xf00.easycrop.CropError
-import com.mr0xf00.easycrop.CropResult
-import com.mr0xf00.easycrop.ImageCropper
-import com.mr0xf00.easycrop.crop
 import com.mr0xf00.easycrop.rememberImageCropper
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 /**
  * Used to give the [EditableProfilePicture] the photo it must display and it's source (to decide
@@ -73,54 +62,11 @@ object ProfilePictureComponentsTexts {
   const val DIALOG_TITLE = "Error!"
 }
 
-/** To make type more clear */
-typealias ImageCropperLauncher = (Uri) -> Unit
 
-/**
- * Initializes and remembers an image cropper created by default
- *
- * @param imageCropper The supplied [ImageCropper]
- * @param cropMaxSize The maximum size of the crop region. Prefer leaving it as is
- * @param scope The scope at which new coroutines will be created
- * @param onCropSuccess Called when the user succesfully chose and cropped a photo
- * @param onCropError Called when the user chose a picture and tried to crop if but it failed
- * @param onCropCancelled Called when the user cancels the crop (by dismissing the window for
- *   example)
- */
-@Composable
-fun rememberDefaultImageCropperLauncher(
-    imageCropper: ImageCropper,
-    cropMaxSize: IntSize = IntSize(8192, 8192),
-    scope: CoroutineScope,
-    onCropSuccess: (ByteArray) -> Unit,
-    onCropError: (String) -> Unit,
-    onCropCancelled: () -> Unit = {},
-): ImageCropperLauncher {
-  val context = LocalContext.current
-
-  // Not sure what keys to put there (if any at all?)
-  return remember(imageCropper, onCropSuccess, onCropError, onCropCancelled) {
-    { uri: Uri ->
-      scope.launch {
-        val bitmap = uri.toBitmap(context).asImageBitmap()
-        when (val result = imageCropper.crop(cropMaxSize, bmp = bitmap)) {
-          is CropResult.Cancelled -> onCropCancelled()
-          is CropError ->
-              onCropError(
-                  when (result) {
-                    CropError.LoadingError -> ProfilePictureComponentsTexts.DIALOG_LOADING_ERROR
-                    CropError.SavingError -> ProfilePictureComponentsTexts.DIALOG_SAVING_ERROR
-                  })
-          is CropResult.Success -> onCropSuccess(result.bitmap.toByteArray())
-        }
-      }
-    }
-  }
-}
 
 /**
  * A profile picture is displayed, with a small icon that allows the user to either remove their
- * existing profile picture or add a enw one. When the user clicks on the button when no photo is
+ * existing profile picture or add a new one. When the user clicks on the button when no photo is
  * displayed, the user is asked to upload a photo from either device storage or camera, and then the
  * user is asked to crop the image into a circle (as the profile picture is a circle)
  *
@@ -137,7 +83,7 @@ fun rememberDefaultImageCropperLauncher(
  *   leaving this empty normally
  */
 @Composable
-fun EditableProfilePictureWithUI(
+fun EditableProfilePictureWithImageCropper(
     photo: PhotoUi,
     isEditable: Boolean,
     imageViewModel: ImageViewModel,
@@ -241,7 +187,7 @@ fun ProfilePicture(
  * A profile picture is displayed, with a small icon that allows the user to either remove their
  * existing profile picture or add a enw one. What happens when the user clicks on the button must
  * be defined with [onPhotoPicked] and [onPhotoRemoved] respectfully. Prefer using
- * [EditableProfilePictureWithUI] for photo picker and image cropper support
+ * [EditableProfilePictureWithImageCropper] for photo picker and image cropper support
  *
  * @param photo The picture to display and its source
  * @param isEditable true to allow the user to edit the displayed photo (i.e remove it or add one),
