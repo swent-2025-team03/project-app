@@ -185,7 +185,7 @@ fun ProfilePicture(
 
 /**
  * A profile picture is displayed, with a small icon that allows the user to either remove their
- * existing profile picture or add a enw one. What happens when the user clicks on the button must
+ * existing profile picture or add a new one. What happens when the user clicks on the button must
  * be defined with [onPhotoPicked] and [onPhotoRemoved] respectfully. Prefer using
  * [EditableProfilePictureWithImageCropper] for photo picker and image cropper support
  *
@@ -199,7 +199,6 @@ fun ProfilePicture(
  *   chosen photo as an argument
  * @param onPhotoRemoved Called when the user decides to remove the current profile picture
  */
-// TODO Add support for square pictures (so office profile pictures can be square)
 @Composable
 fun EditableProfilePicture(
     photo: PhotoUi,
