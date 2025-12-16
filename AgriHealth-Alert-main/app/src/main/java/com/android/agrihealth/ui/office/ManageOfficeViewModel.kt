@@ -1,7 +1,6 @@
 package com.android.agrihealth.ui.office
 
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.images.ImageUIState
@@ -119,35 +118,17 @@ class ManageOfficeViewModel(
       val office = _uiState.value.office ?: return
       var uploadedPath = _uiState.value.uploadedImagePath ?: _uiState.value.office?.photoUrl
 
-      Log.d("ManageOfficeViewModel", "uploadedPath: $uploadedPath")
-
       when (_uiState.value.photoChange) {
         PhotoChange.UNCHANGED -> {
-          // do nothing — keep existing photoUrl
-          Log.d(
-              "ManageOfficeViewModel",
-              "omg i thought this is a small fix like one line seriously: ${_uiState.value.photoChange}")
-          val uri = _uiState.value.photoUri
-          var testUploadedPath = ""
-          if (uri != null) {
-            testUploadedPath = imageViewModel.uploadAndWait(uri)
-          }
-          Log.d("ManageOfficeViewModel", "can i go to sleep?!: $testUploadedPath")
+          // keep existing photoUrl
         }
         PhotoChange.UPDATED -> {
-          Log.d(
-              "ManageOfficeViewModel",
-              "omg i thought this is a small fix like one line seriously: ${_uiState.value.photoChange}")
-
           val uri = _uiState.value.photoUri
           if (uri != null) {
             uploadedPath = imageViewModel.uploadAndWait(uri)
           }
         }
         PhotoChange.REMOVED -> {
-          Log.d(
-              "ManageOfficeViewModel",
-              "omg i thought this is a small fix like one line seriously: ${_uiState.value.photoChange}")
           uploadedPath = null
         }
       }
