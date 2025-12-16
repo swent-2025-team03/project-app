@@ -21,11 +21,11 @@ class AlertRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   @Before
   override fun setUp() {
     super.setUp()
+    db = FirebaseFirestore.getInstance()
     runBlocking {
       delay(1000)
       db.clearPersistence().await()
     }
-    db = FirebaseFirestore.getInstance()
     repo = AlertRepositoryFirestore(db)
   }
 
