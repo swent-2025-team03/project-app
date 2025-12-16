@@ -7,6 +7,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -15,6 +16,11 @@ class UserViewModelTest : FirebaseTest() {
   val repository = FakeUserRepository()
 
   val auth = FirebaseAuth.getInstance()
+
+  @Before
+  fun signOut() {
+    auth.signOut()
+  }
 
   @Test
   fun initKeepsDefaultUserWhenNoUserLoggedIn() = runTest {
