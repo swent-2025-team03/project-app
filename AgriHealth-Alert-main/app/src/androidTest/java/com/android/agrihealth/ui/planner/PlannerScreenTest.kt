@@ -34,11 +34,11 @@ class PlannerScreenTest : UITest() {
   val sunday: LocalDate = today.with(DayOfWeek.SUNDAY)
 
   private fun setPlannerScreen(
-    reportId: String? = null,
-    user: User = farmer1,
-    goBack: () -> Unit = {},
-    tabClicked: (Screen) -> Unit = {},
-    reportClicked: (String) -> Unit = {},
+      reportId: String? = null,
+      user: User = farmer1,
+      goBack: () -> Unit = {},
+      tabClicked: (Screen) -> Unit = {},
+      reportClicked: (String) -> Unit = {},
   ) {
     setContent {
       PlannerScreen(

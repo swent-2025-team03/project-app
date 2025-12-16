@@ -1,6 +1,5 @@
 package com.android.agrihealth.data.model.report
 
-import android.util.Log
 import com.android.agrihealth.data.model.authentification.AuthRepositoryFirebase
 import com.android.agrihealth.data.model.report.form.OpenQuestion
 import com.android.agrihealth.testhelpers.TestPassword.password1
@@ -36,35 +35,35 @@ class ReportRepositoryFirestoreTest : FirebaseTest() {
 
   val currentUser = farmer1
 
-  val baseReport1 = baseReport.copy(
-    id = "rep1",
-    title = "report 1",
-    description = "desc 1",
-    farmerId = currentUser.uid,
-    officeId = office1.id,
-    status = ReportStatus.PENDING,
-    answer = null
-  )
+  val baseReport1 =
+      baseReport.copy(
+          id = "rep1",
+          title = "report 1",
+          description = "desc 1",
+          farmerId = currentUser.uid,
+          officeId = office1.id,
+          status = ReportStatus.PENDING,
+          answer = null)
 
-  val baseReport2 = baseReport.copy(
-    id = "rep2",
-    title = "report 2",
-    description = "desc 2",
-    farmerId = farmer2.uid,
-    officeId = office2.id,
-    status = ReportStatus.RESOLVED,
-    answer = "answering"
-  )
+  val baseReport2 =
+      baseReport.copy(
+          id = "rep2",
+          title = "report 2",
+          description = "desc 2",
+          farmerId = farmer2.uid,
+          officeId = office2.id,
+          status = ReportStatus.RESOLVED,
+          answer = "answering")
 
-  val baseReport3 = baseReport.copy(
-    id = "rep3",
-    title = "report 3",
-    description = "desc 3",
-    farmerId = baseReport1.farmerId,
-    officeId = baseReport1.officeId,
-    status = baseReport1.status,
-    answer = baseReport1.answer
-  )
+  val baseReport3 =
+      baseReport.copy(
+          id = "rep3",
+          title = "report 3",
+          description = "desc 3",
+          farmerId = baseReport1.farmerId,
+          officeId = baseReport1.officeId,
+          status = baseReport1.status,
+          answer = baseReport1.answer)
 
   var report1 = baseReport1
   var report2 = baseReport2

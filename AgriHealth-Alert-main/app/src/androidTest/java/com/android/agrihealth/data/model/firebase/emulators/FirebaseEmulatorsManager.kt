@@ -26,7 +26,7 @@ data class FirebaseEnvironment(
 /** Handles which Firebase emulator to run, and makes sure useEmulators() isn't called twice */
 object FirebaseEmulatorsManager {
   private var emulatorInitialized = false
-  private const val LOCAL_HOST = "192.168.1.46"//"10.0.2.2"
+  private const val LOCAL_HOST = "10.0.2.2"
   private const val FIRESTORE_PORT = 8081
   private const val AUTH_PORT = 9099
   private const val STORAGE_PORT = 9199

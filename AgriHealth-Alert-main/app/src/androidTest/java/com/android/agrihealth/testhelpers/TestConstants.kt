@@ -25,24 +25,23 @@ object TestUser {
   val vet2 = Vet("mock_vet_id", "john", "john", "john@john.john", null, officeId = "off_2")
 
   val office1 =
-    Office(
-      id = vet1.officeId!!,
-      name = "Agri Vet Clinic",
-      address = Location(1.2, 3.4, "swag town"),
-      description = "Providing quality veterinary services for farm animals.",
-      vets = listOf(vet1.uid, "vet1b"),
-      ownerId = vet1.uid,
-      photoUrl = "/path/to/img.jpg")
+      Office(
+          id = vet1.officeId!!,
+          name = "Agri Vet Clinic",
+          address = Location(1.2, 3.4, "swag town"),
+          description = "Providing quality veterinary services for farm animals.",
+          vets = listOf(vet1.uid, "vet1b"),
+          ownerId = vet1.uid,
+          photoUrl = "/path/to/img.jpg")
 
   val office2 =
-    Office(
-      id = vet2.officeId!!,
-      name = "swag central",
-      address = Location(42.0, 6.7, "yverdon-les-bains"),
-      description = "i just wanna be done with this task",
-      vets = listOf(vet2.uid),
-      ownerId = vet2.uid
-    )
+      Office(
+          id = vet2.officeId!!,
+          name = "swag central",
+          address = Location(42.0, 6.7, "yverdon-les-bains"),
+          description = "i just wanna be done with this task",
+          vets = listOf(vet2.uid),
+          ownerId = vet2.uid)
 
   val farmer1 =
       Farmer(
@@ -55,8 +54,17 @@ object TestUser {
           defaultOffice = office1.id,
           description = "not pettan")
 
-  val farmer2 = Farmer("def456", "mike", "neko", "email2@aaaaa.balls", null, listOf(office2.id), office2.id)
-  val farmer3 = Farmer("jklABC", "John", "Fake", "fakeUser.glorp", null, listOf(office1.id, office2.id), office1.id)
+  val farmer2 =
+      Farmer("def456", "mike", "neko", "email2@aaaaa.balls", null, listOf(office2.id), office2.id)
+  val farmer3 =
+      Farmer(
+          "jklABC",
+          "John",
+          "Fake",
+          "fakeUser.glorp",
+          null,
+          listOf(office1.id, office2.id),
+          office1.id)
 }
 
 object TestPassword {
