@@ -127,8 +127,6 @@ fun ProfileScreen(
                 ProfilePicture(
                   if (user.photoURL != null) PhotoUi.Remote(user.photoURL!!) else PhotoUi.Empty,
                   imageViewModel,
-                  imageSize = 120.dp,
-                  modifier = Modifier,
                 )
                 FloatingActionButton(
                     onClick = onEditProfile,

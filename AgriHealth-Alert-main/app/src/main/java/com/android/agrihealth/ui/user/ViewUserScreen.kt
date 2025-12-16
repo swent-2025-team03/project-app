@@ -21,6 +21,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.ui.profile.RemotePhotoDisplay
+import com.android.agrihealth.ui.utils.PhotoUi
+import com.android.agrihealth.ui.utils.ProfilePicture
 
 object ViewUserScreenTestTags {
   const val TOP_BAR = "ViewUserTopBar"
@@ -111,13 +113,11 @@ private fun ViewUserContent(user: User, officeName: String?, imageViewModel: Ima
               .padding(16.dp)
               .testTag(ViewUserScreenTestTags.CONTENT_COLUMN),
       horizontalAlignment = Alignment.CenterHorizontally) {
-        RemotePhotoDisplay(
-            user.photoURL,
-            imageViewModel,
-            contentDescription = "Profile Picture",
-            showPlaceHolder = true,
-            modifier = Modifier.size(120.dp).clip(CircleShape).testTag(ViewUserScreenTestTags.PROFILE_PICTURE),
-        ) // TODO Use profile picture component
+
+        ProfilePicture(
+          photo = if (user.photoURL != null) PhotoUi.Remote(user.photoURL!!) else PhotoUi.Empty,
+          imageViewModel,
+        )
 
         Spacer(Modifier.height(24.dp))
 

@@ -21,8 +21,7 @@ import com.mr0xf00.easycrop.CropperStyle
 import com.mr0xf00.easycrop.ImageCropper
 import com.mr0xf00.easycrop.ui.ImageCropperDialog
 
-// TODO Allow crop region to be square (to allow later to have square profile picture shape for
-// office
+
 /**
  * Display the photo cropper dialog which allows the user to crop the selected photo An
  * [ImageCropper] must be supplied beforehand, which should be created and remembered in the
@@ -79,15 +78,7 @@ private fun setImageCropperShapeCircle(state: CropState) {
   // Force the region to be square
   val currentRegion = state.region
   val size = minOf(currentRegion.width, currentRegion.height)
-  val centerX = currentRegion.center.x
-  val centerY = currentRegion.center.y
-
-  state.region =
-      Rect(
-          left = centerX - size / 2f,
-          top = centerY - size / 2f,
-          right = centerX + size / 2f,
-          bottom = centerY + size / 2f)
+  state.region = Rect(currentRegion.center, size /2f)
 
   state.aspectLock = true
   state.shape = CircleCropShape
