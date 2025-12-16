@@ -1,4 +1,4 @@
-package com.android.agrihealth.ui.utils
+package com.android.agrihealth.core.utils
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable

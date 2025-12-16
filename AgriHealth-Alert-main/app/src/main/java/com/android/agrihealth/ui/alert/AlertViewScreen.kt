@@ -25,7 +25,7 @@ import com.android.agrihealth.data.model.alert.AlertZone
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
-import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
+import com.android.agrihealth.core.utils.maxTitleCharsForScreen
 
 object AlertViewScreenTestTags {
   const val ALERT_FULL_TITLE = "alertFullTitle"

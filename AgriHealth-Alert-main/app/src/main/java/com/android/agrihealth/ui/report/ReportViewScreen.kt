@@ -41,7 +41,7 @@ import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.profile.RemotePhotoDisplay
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags.CLAIM_BUTTON
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags.UNASSIGN_BUTTON
-import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
+import com.android.agrihealth.core.utils.maxTitleCharsForScreen
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.launch
 
