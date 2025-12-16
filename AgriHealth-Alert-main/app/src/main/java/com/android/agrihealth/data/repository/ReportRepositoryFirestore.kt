@@ -1,6 +1,7 @@
 package com.android.agrihealth.data.repository
 
 import android.util.Log
+import com.android.agrihealth.data.helper.runWithTimeout
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.location.locationFromMap
 import com.android.agrihealth.data.model.report.MCQ
@@ -14,6 +15,7 @@ import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Source
 import java.time.Instant
 import java.time.LocalDateTime
 import kotlinx.coroutines.tasks.await
@@ -35,36 +37,46 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
           is Farmer -> Filter.equalTo("farmerId", userId)
         }
 
-    val snapshot = db.collection(REPORTS_COLLECTION_PATH).where(filter).get().await()
+    val snapshot =
+        try {
+          runWithTimeout(db.collection(REPORTS_COLLECTION_PATH).where(filter).get())
+        } catch (_: Exception) {
+          db.collection(REPORTS_COLLECTION_PATH).where(filter).get(Source.CACHE).await()
+        }
 
     return snapshot.documents.mapNotNull { docToReport(it) }
   }
 
   override suspend fun getReportById(reportId: String): Report? {
-    val doc = db.collection(REPORTS_COLLECTION_PATH).document(reportId).get().await()
+    val doc =
+        try {
+          runWithTimeout(db.collection(REPORTS_COLLECTION_PATH).document(reportId).get())
+        } catch (_: Exception) {
+          db.collection(REPORTS_COLLECTION_PATH).document(reportId).get(Source.CACHE).await()
+        }
 
     return docToReport(doc) ?: throw Exception("ReportRepositoryFirestore: Report not found")
   }
 
   override suspend fun addReport(report: Report) {
 
-    db.collection(REPORTS_COLLECTION_PATH).document(report.id).set(report).await()
+    db.collection(REPORTS_COLLECTION_PATH).document(report.id).set(report)
   }
 
   override suspend fun editReport(reportId: String, newReport: Report) {
-    db.collection(REPORTS_COLLECTION_PATH).document(reportId).set(newReport).await()
+    db.collection(REPORTS_COLLECTION_PATH).document(reportId).set(newReport)
   }
 
   override suspend fun deleteReport(reportId: String) {
-    db.collection(REPORTS_COLLECTION_PATH).document(reportId).delete().await()
+    db.collection(REPORTS_COLLECTION_PATH).document(reportId).delete()
   }
 
   override suspend fun assignReportToVet(reportId: String, vetId: String) {
-    db.collection(REPORTS_COLLECTION_PATH).document(reportId).update("assignedVet", vetId).await()
+    db.collection(REPORTS_COLLECTION_PATH).document(reportId).update("assignedVet", vetId)
   }
 
   override suspend fun unassignReport(reportId: String) {
-    db.collection(REPORTS_COLLECTION_PATH).document(reportId).update("assignedVet", null).await()
+    db.collection(REPORTS_COLLECTION_PATH).document(reportId).update("assignedVet", null)
   }
 }
 

@@ -8,6 +8,6 @@ object TimeoutConstant {
   const val TIMEOUT = 2_000L
 }
 
-suspend fun <T> runWithTimeout(block: Task<T>) {
-  withTimeout(TimeoutConstant.TIMEOUT) { block.await() }
+suspend fun <T> runWithTimeout(block: Task<T>): T {
+  return withTimeout(TimeoutConstant.TIMEOUT) { block.await() }
 }
