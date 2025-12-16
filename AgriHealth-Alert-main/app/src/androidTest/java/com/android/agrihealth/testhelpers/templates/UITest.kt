@@ -148,8 +148,9 @@ abstract class UITest(private val grantedPermissions: Array<String> = emptyArray
   }
 
   /** Clicks on the node corresponding to the provided tag */
-  protected fun clickOn(tag: String) {
-    withNode(tag) { assertIsDisplayed().performClick() }
+  protected fun clickOn(tag: String, timeout: Long = TestTimeout.DEFAULT_TIMEOUT) {
+    nodeIsDisplayed(tag, timeout)
+    withNode(tag) { performClick() }
   }
 
   protected fun clickOnText(text: String) {

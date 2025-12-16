@@ -6,19 +6,20 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
-import com.android.agrihealth.data.model.authentification.AuthRepositoryFirebase
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.verifyUser
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
-import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.UserViewModel
-import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testhelpers.TestPassword.password1
+import com.android.agrihealth.testhelpers.TestPassword.password2
 import com.android.agrihealth.testhelpers.TestTimeout.DEFAULT_TIMEOUT
 import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.TestTimeout.SUPER_LONG_TIMEOUT
+import com.android.agrihealth.testhelpers.TestUser
 import com.android.agrihealth.testhelpers.TestUser.farmer1
 import com.android.agrihealth.testhelpers.TestUser.farmer2
+import com.android.agrihealth.testhelpers.TestUser.vet1
 import com.android.agrihealth.testhelpers.fakes.FakeAlertRepository
 import com.android.agrihealth.testhelpers.fakes.FakeCredentialManager
 import com.android.agrihealth.testhelpers.fakes.FakeJwtGenerator
@@ -50,7 +51,6 @@ import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -64,13 +64,20 @@ class E2ETest :
                 android.Manifest.permission.ACCESS_COARSE_LOCATION,
                 android.Manifest.permission.POST_NOTIFICATIONS)) {
 
-  // private val composeTestRule = createAndroidComposeRule<ComponentActivity>()
-
-  val authRepository = AuthRepositoryFirebase()
+  val authRepository = AuthRepositoryProvider.repository
+  val office1 = TestUser.office1
+  val office2 = TestUser.office2
+  val defaultFarmer = farmer1.copy(linkedOffices = listOf(office1.id, office2.id))
+  val defaultFarmerPwd = password1
+  val defaultVet = vet1
+  val defaultVetPwd = password2
 
   @Before
   fun setUp() {
-    runTest { authRepository.signUpWithEmailAndPassword(farmer1.email, "12345678", farmer1) }
+    runTest {
+      authRepository.signUpWithEmailAndPassword(
+          defaultFarmer.email, defaultFarmerPwd, defaultFarmer)
+    }
     authRepository.signOut()
   }
 
@@ -89,12 +96,13 @@ class E2ETest :
   // accounts with the same email address
   @Test
   fun testVet_SignUp_Logout_SignIn() {
-    val email = "vet@example.com"
-    val pwd = "StrongPwd!123"
+    val vet = defaultVet
+    val email = vet.email
+    val pwd = defaultVetPwd
     val fakeGoogleIdToken = FakeJwtGenerator.createFakeGoogleIdToken("12345", email = email)
     val fakeCredentialManager = FakeCredentialManager.create(fakeGoogleIdToken)
-    composeTestRule.setContent { AgriHealthApp(credentialManager = fakeCredentialManager) }
-    composeTestRule.waitForIdle()
+
+    setContent { AgriHealthApp(credentialManager = fakeCredentialManager) }
 
     signInWithGoogle()
     chooseRole()
@@ -103,7 +111,7 @@ class E2ETest :
     completeEditProfile()
     signOutFromScreen()
     var uid = Firebase.auth.uid
-    completeSignUp("Test", "User", email, pwd, isVet = true)
+    completeSignUp(vet.firstname, vet.lastname, email, pwd, isVet = true)
     checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
@@ -119,12 +127,12 @@ class E2ETest :
 
   @Test
   fun testVet_SignIn_CreateOffice() {
-    composeTestRule.setContent { AgriHealthApp() }
-    composeTestRule.waitForIdle()
-    val email = "vet@example.com"
-    val pwd = "StrongPwd!123"
+    val vet = defaultVet
+    val pwd = defaultVetPwd
 
-    completeSignUp("Test", "User", email, pwd, isVet = true)
+    setContent { AgriHealthApp() }
+
+    completeSignUp(vet.firstname, vet.lastname, vet.email, pwd, isVet = true)
     checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
@@ -140,11 +148,10 @@ class E2ETest :
 
   @Test
   fun testFarmer_SignIn_ClickReport_Back_Logout() {
-    composeTestRule.setContent { AgriHealthApp() }
-    composeTestRule.waitForIdle()
+    setContent { AgriHealthApp() }
 
     checkWrongSignIn()
-    completeSignIn(farmer1.email, "12345678")
+    completeSignIn(defaultFarmer.email, defaultFarmerPwd)
     checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
@@ -154,7 +161,7 @@ class E2ETest :
     goBack()
     goBack()
     checkOverviewScreenIsDisplayed()
-    createReport("Report title", "Report description", farmer1.defaultOffice ?: "")
+    createReport("Report title", "Report description", defaultFarmer.defaultOffice ?: "")
     clickFirstReportItem()
     reportViewClickViewOnMap()
     mapClickViewReport()
@@ -170,66 +177,56 @@ class E2ETest :
     val fakeOfficeRepo = FakeOfficeRepository()
     OfficeRepositoryProvider.set(fakeOfficeRepo)
 
-    val office2 =
-        Office(id = farmer1.linkedOffices.last(), name = "Some Other Office", ownerId = farmer1.uid)
+    runTest {
+      fakeOfficeRepo.addOffice(office1)
+      fakeOfficeRepo.addOffice(office2)
+    }
 
-    runTest { fakeOfficeRepo.addOffice(office2) }
+    setContent { AgriHealthApp() }
 
-    composeTestRule.setContent { AgriHealthApp() }
-    composeTestRule.waitForIdle()
-    completeSignIn(farmer1.email, "12345678")
+    completeSignIn(defaultFarmer.email, defaultFarmerPwd)
     checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
     goBack()
     checkOverviewScreenIsDisplayed()
-    createReport("Report 1", "Description 1", "Deleted Office")
-    createReport("Report 2", "Description 2", farmer1.linkedOffices.last())
 
-    waitUntilTestTag(OverviewScreenTestTags.FILTERS_TOGGLE)
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.FILTERS_TOGGLE).performClick()
+    createReport("Report 1", "Description 1", defaultFarmer.linkedOffices[0])
+    createReport("Report 2", "Description 2", defaultFarmer.linkedOffices[1])
 
-    // Report 1 appears when filtering for "Pending"
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN).performClick()
-    composeTestRule.onNodeWithTag("OPTION_PENDING").performClick()
-    composeTestRule
-        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
-        .assertAny(hasText("Report 1"))
+    with(OverviewScreenTestTags) {
+      clickOn(FILTERS_TOGGLE)
 
-    // Report 1 does not appears when filtering for "Resolved"
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN).performClick()
-    composeTestRule.onNodeWithTag("OPTION_RESOLVED").performClick()
-    composeTestRule
-        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
-        .filter(hasText("Report 1"))
-        .assertCountEquals(0)
+      // Report 1 appears when filtering for "Pending"
+      clickOn(STATUS_DROPDOWN)
+      clickOn("OPTION_PENDING")
+      textIsDisplayed("Report 1")
 
-    // Report 1 appears, report 2 does not appears when filtering for vet1
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.STATUS_DROPDOWN).performClick()
-    composeTestRule.onNodeWithTag("OPTION_All").performClick()
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.OFFICE_ID_DROPDOWN).performClick()
-    composeTestRule
-        .onAllNodes(hasTestTagThatStartsWith("OPTION_"))
-        .filter(hasText("Some Other Office"))
-        .onFirst()
-        .performClick()
-    composeTestRule
-        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
-        .assertAny(hasText("Report 2"))
+      // Report 1 disappears when filtering for "Resolved
+      clickOn(STATUS_DROPDOWN)
+      clickOn("OPTION_RESOLVED")
+      textNotDisplayed("Report 1")
 
-    // Report 1 and 2 both appear when filtering for All
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.OFFICE_ID_DROPDOWN).performClick()
-    composeTestRule.onNodeWithTag("OPTION_All").performClick()
-    composeTestRule
-        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
-        .assertAny(hasText("Report 1"))
-    composeTestRule
-        .onAllNodesWithTag(OverviewScreenTestTags.REPORT_ITEM)
-        .assertAny(hasText("Report 2"))
+      // Report 1 appears, report 2 does not appear when filtering for vet1
+      clickOn(STATUS_DROPDOWN)
+      clickOn("OPTION_All")
+      clickOn(OFFICE_ID_DROPDOWN)
+      composeTestRule
+          .onAllNodes(hasTestTagThatStartsWith("OPTION_"))
+          .filter(hasText(office2.name))
+          .onFirst()
+          .performClick()
+
+      // Report 1 and 2 both appear when filtering for all
+      clickOn(OFFICE_ID_DROPDOWN)
+      clickOn("OPTION_All")
+      textIsDisplayed("Report 1")
+      textIsDisplayed("Report 2")
+    }
 
     signOutFromScreen()
 
-    tearDown()
+    OfficeRepositoryProvider.reset()
   }
 
   @Test
@@ -237,26 +234,27 @@ class E2ETest :
     val fakeAlertRepo = FakeAlertRepository()
     AlertRepositoryProvider.set(fakeAlertRepo)
 
-    composeTestRule.setContent { AgriHealthApp() }
-    composeTestRule.waitForIdle()
+    setContent { AgriHealthApp() }
 
-    completeSignIn(farmer1.email, "12345678")
+    completeSignIn(defaultFarmer.email, defaultFarmerPwd)
     checkEmailVerification()
     checkEditProfileScreenIsDisplayed()
     goBack()
     goBack()
     checkOverviewScreenIsDisplayed()
 
-    composeTestRule.onNodeWithTag("ALERT_ITEM_0").assertIsDisplayed()
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.alertItemTag(0)).performClick()
+    with(AlertViewScreenTestTags) {
+      nodeIsDisplayed("ALERT_ITEM_0")
+      clickOn(OverviewScreenTestTags.alertItemTag(0))
 
-    composeTestRule.onNodeWithTag(AlertViewScreenTestTags.containerTag(0)).assertIsDisplayed()
+      nodeIsDisplayed(containerTag(0))
 
-    composeTestRule.onNodeWithTag(AlertViewScreenTestTags.NEXT_ALERT_ARROW).performClick()
-    composeTestRule.onNodeWithTag(AlertViewScreenTestTags.containerTag(1)).assertIsDisplayed()
+      clickOn(NEXT_ALERT_ARROW)
+      nodeIsDisplayed(containerTag(1))
 
-    composeTestRule.onNodeWithTag(AlertViewScreenTestTags.PREVIOUS_ALERT_ARROW).performClick()
-    composeTestRule.onNodeWithTag(AlertViewScreenTestTags.containerTag(0)).assertIsDisplayed()
+      clickOn(PREVIOUS_ALERT_ARROW)
+      containerTag(0)
+    }
 
     goBack()
     checkOverviewScreenIsDisplayed()
@@ -265,24 +263,16 @@ class E2ETest :
 
   @Test
   fun testVetFarmerLinkAndPasswordChange() {
-    composeTestRule.setContent { AgriHealthApp() }
-    composeTestRule.waitForIdle()
+    setContent { AgriHealthApp() }
+
     val farmerEmail = "farmer.link@example.com"
     val password = "Password!123"
     val newPassword = "NewPassword!456"
-    val vet =
-        Vet(
-            uid = "vet_001",
-            firstname = "Dr",
-            lastname = "Vet",
-            email = "vet@test.com",
-            address = null,
-            farmerConnectCodes = emptyList(),
-            vetConnectCodes = emptyList(),
-            officeId = "off1")
+    val vet = defaultVet
+
     val userViewModel = UserViewModel(initialUser = vet)
     runTest {
-      AuthRepositoryProvider.repository.signUpWithEmailAndPassword(vet.email, "123456", vet)
+      AuthRepositoryProvider.repository.signUpWithEmailAndPassword(vet.email, defaultVetPwd, vet)
     }
     val codesViewModel =
         CodesViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
@@ -302,24 +292,13 @@ class E2ETest :
 
   @Test
   fun vetCreatesCodes_editProfileShowsFarmerDropdowns() {
-    composeTestRule.setContent { AgriHealthApp() }
-    composeTestRule.waitForIdle()
-    val email = "vet@test.com"
-    val password = "123456"
-    val vet =
-        Vet(
-            uid = "vet_001",
-            firstname = "Dr",
-            lastname = "Vet",
-            email = email,
-            address = null,
-            farmerConnectCodes = emptyList(),
-            vetConnectCodes = emptyList(),
-            officeId = "off1")
+    setContent { AgriHealthApp() }
+
+    val vet = defaultVet
+    val email = vet.email
+    val password = defaultVetPwd
     val userViewModel = UserViewModel(initialUser = vet)
-    runTest {
-      AuthRepositoryProvider.repository.signUpWithEmailAndPassword(vet.email, "123456", vet)
-    }
+    runTest { AuthRepositoryProvider.repository.signUpWithEmailAndPassword(email, password, vet) }
     val codesViewModel =
         CodesViewModel(userViewModel, ConnectionRepositoryProvider.farmerToOfficeRepository)
     codesViewModel.generateCode()
@@ -331,18 +310,10 @@ class E2ETest :
     goBack()
     checkOverviewScreenIsDisplayed()
     goToProfileFromOverview()
-    composeTestRule
-        .onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
+    clickEditProfile()
     checkEditProfileScreenIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.dropdownTag("FARMER"))
-        .assertIsDisplayed()
-        .performClick()
-    composeTestRule
-        .onNodeWithTag(EditProfileScreenTestTags.dropdownElementTag("FARMER"))
-        .assertIsDisplayed()
+    clickOn(EditProfileScreenTestTags.dropdownTag("FARMER"))
+    nodeIsDisplayed(EditProfileScreenTestTags.dropdownElementTag("FARMER"))
   }
 
   // ----------- Scenario: Both Users -----------
@@ -357,8 +328,7 @@ class E2ETest :
     val vet2Password = "vet2vet2"
     val farmerPassword = "farmfarm"
 
-    composeTestRule.setContent { AgriHealthApp() }
-    composeTestRule.waitForIdle()
+    setContent { AgriHealthApp() }
 
     completeSignUp("Test", "Vet", vetEmail, vetPassword, true)
     checkEmailVerification()
@@ -417,11 +387,6 @@ class E2ETest :
   }
 
   // ----------- Helper functions -----------
-
-  @After
-  fun tearDown() {
-    OfficeRepositoryProvider.reset()
-  }
 
   private fun readGeneratedCodeFromUi(): String {
     val tag = CodeComposableComponentsTestTags.GENERATE_FIELD

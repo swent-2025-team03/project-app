@@ -14,7 +14,7 @@ class FakeOfficeRepository(
     private val delayMs: Long = 0L
 ) : OfficeRepository {
 
-  private val offices =
+  val offices =
       ConcurrentHashMap<String, Office>().apply { initialOffices.forEach { put(it.id, it) } }
 
   override fun getNewUid(): String = UUID.randomUUID().toString()

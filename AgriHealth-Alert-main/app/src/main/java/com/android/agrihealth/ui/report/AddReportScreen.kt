@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -134,6 +135,7 @@ fun AddReportScreen(
 
   // For each linked office, load their name
   (user as Farmer).linkedOffices.forEach { officeId ->
+    Log.d("bite", "not dropdown $officeId")
     val vm: OfficeNameViewModel = viewModel(key = officeId)
     val label by vm.uiState.collectAsState()
 
@@ -380,6 +382,7 @@ fun OfficeDropdown(
             Modifier.menuAnchor().fillMaxWidth().testTag(AddReportScreenTestTags.OFFICE_DROPDOWN))
 
     ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+      Log.d("bite", "dropdown $offices")
       offices.forEach { (option, displayName) ->
         DropdownMenuItem(
             text = { Text(displayName) },
