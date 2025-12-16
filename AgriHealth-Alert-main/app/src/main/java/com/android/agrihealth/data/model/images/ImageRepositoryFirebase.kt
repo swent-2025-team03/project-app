@@ -5,12 +5,12 @@ import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.graphics.scale
 import androidx.exifinterface.media.ExifInterface
+import com.android.agrihealth.data.helper.runWithTimeout
 import com.android.agrihealth.data.model.images.ImageRepository.Companion.toBitmap
 import com.android.agrihealth.ui.user.UserViewModel
 import com.google.firebase.storage.FirebaseStorage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import kotlinx.coroutines.tasks.await
 
 /** Image repository communicating with Firebase Storage to handle images */
 class ImageRepositoryFirebase : ImageRepository {
@@ -27,7 +27,7 @@ class ImageRepositoryFirebase : ImageRepository {
       val childPath = "$uid/$fileName.jpg"
       val imageRef = storage.reference.child(childPath)
 
-      imageRef.putBytes(bytes).await()
+      imageRef.putBytes(bytes)
 
       val fullPath = imageRef.path
 
@@ -41,7 +41,7 @@ class ImageRepositoryFirebase : ImageRepository {
     return try {
       val storageRef = storage.reference.child(path)
 
-      val bytes = storageRef.getBytes(MAX_FILE_SIZE).await()
+      val bytes = runWithTimeout(storageRef.getBytes(MAX_FILE_SIZE))
 
       Result.success(bytes)
     } catch (e: Exception) {
