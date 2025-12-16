@@ -482,6 +482,11 @@ fun AgriHealthApp(
                   type = NavType.StringType
                   nullable = true
                   defaultValue = null
+                },
+                navArgument("alertId") {
+                  type = NavType.StringType
+                  nullable = true
+                  defaultValue = null
                 })) { backStackEntry ->
           val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull()
           val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull()
