@@ -7,7 +7,8 @@ import androidx.core.graphics.scale
 import androidx.exifinterface.media.ExifInterface
 import com.android.agrihealth.data.helper.TimeoutConstant
 import com.android.agrihealth.data.model.images.ImageRepository.Companion.toBitmap
-import com.android.agrihealth.ui.user.UserViewModel
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import com.google.firebase.storage.FirebaseStorage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -24,16 +25,14 @@ class ImageRepositoryFirebase : ImageRepository {
 
   override suspend fun uploadImage(bytes: ByteArray): Result<String> {
     return try {
-      val uid = UserViewModel().uiState.value.user.uid
+      val uid = Firebase.auth.uid
       val fileName = System.currentTimeMillis()
-      val childPath = "$uid/$fileName.jpg"
+      val childPath = "users/$uid/placeholder/$fileName.jpg"
       val imageRef = storage.reference.child(childPath)
 
       imageRef.putBytes(bytes)
 
-      val fullPath = imageRef.path
-
-      Result.success(fullPath)
+      Result.success(childPath)
     } catch (e: Exception) {
       Result.failure(e)
     }
