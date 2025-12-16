@@ -69,7 +69,6 @@ object EditProfileScreenTestTags {
   const val SAVE_BUTTON = "SaveButton"
   const val PASSWORD_BUTTON = "PasswordButton"
   const val COPY_CODE_BUTTON = "CopyActiveCodeListElementButton"
-  const val EDIT_PROFILE_PICTURE_BUTTON = "EditProfilePictureButton"
 
   fun dropdownTag(type: String) = "ACTIVE_CODES_DROPDOWN_$type"
 
@@ -136,6 +135,7 @@ fun EditProfileScreen(
 
   val snackbarHostState = remember { SnackbarHostState() }
 
+  // TODO Create a uiState in the viewModel to avoid having to remember all this
   // Local mutable states
   var firstname by rememberSaveable { mutableStateOf(user.firstname) }
   var lastname by rememberSaveable { mutableStateOf(user.lastname) }
@@ -199,7 +199,7 @@ fun EditProfileScreen(
                   imageViewModel = imageViewModel,
                   onPhotoPicked = { bytes ->
                     localPhotoByteArray =
-                        bytes // TODO Replace this with something like viewModel.setPhoto(bytes)
+                        bytes
                     removeRemotePhoto = false
                   },
                   onPhotoRemoved = {
@@ -398,6 +398,7 @@ fun EditProfileScreen(
                   }
             }
       }
+
 }
 
 /*
