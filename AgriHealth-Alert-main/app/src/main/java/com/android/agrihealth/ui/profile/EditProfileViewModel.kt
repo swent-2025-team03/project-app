@@ -42,11 +42,11 @@ class EditProfileViewModel(
         try {
           imageViewModel.uploadAndWait(photoByteArray)
         } catch (e: Throwable) {
-          // TODO: handle error (and probably return null / keep previous)
+          // TODO: Handle error
           null
         }
       }
-      removeRemotePhoto -> null  // Users wants to remove current remote photo
+      removeRemotePhoto -> null  // User wants to remove current remote photo
       else -> user.photoURL  // User did nothing
     }
 

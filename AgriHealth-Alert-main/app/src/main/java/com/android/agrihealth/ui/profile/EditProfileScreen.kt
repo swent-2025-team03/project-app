@@ -59,6 +59,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.android.agrihealth.ui.report.AddReportDialogTexts
 import com.android.agrihealth.ui.report.AddReportFeedbackTexts
 import com.android.agrihealth.ui.report.AddReportScreenTestTags
+import com.android.agrihealth.ui.utils.EditableProfilePictureWithUI
+import com.android.agrihealth.ui.utils.PhotoUi
 import com.android.agrihealth.ui.utils.ShowImageCropperDialog
 import com.android.agrihealth.ui.utils.toBitmap
 import com.android.agrihealth.ui.utils.toByteArray
@@ -168,44 +170,20 @@ fun EditProfileScreen(
   var expandedVetDropdown by rememberSaveable { mutableStateOf(false) }
   var collected by rememberSaveable { mutableStateOf(user.collected) }
 
-  // Specific to dialogs
-  var showPhotoPickerDialog by rememberSaveable { mutableStateOf(false) }
-  var showErrorDialog by rememberSaveable { mutableStateOf(false) }
-  var errorDialogMessage by rememberSaveable { mutableStateOf<String?>(null) }
-
-  // Specific to the image cropper
+  // Profile picture state (shared component style)
   var removeRemotePhoto by rememberSaveable { mutableStateOf(false) }
-  var localPhotoByteArray : ByteArray? by rememberSaveable {mutableStateOf(null)}
-  val effectiveRemoteUrl = if (removeRemotePhoto) null else user.photoURL
-  val hasAnyPhoto = (localPhotoByteArray != null) || (effectiveRemoteUrl != null)
-  val imageCropper = rememberImageCropper()
-  val scope = rememberCoroutineScope()
-  val context = LocalContext.current
-  val croppingIsOngoing = imageCropper.cropState != null
-  var initialLoad by rememberSaveable { mutableStateOf(true) }
+  var localPhotoByteArray: ByteArray? by rememberSaveable { mutableStateOf(null) }
 
-  // TODO: Put launcher in PhotoCropper
-  val launchImageCropper: (Uri) -> Unit = remember {
-    { uri: Uri ->
-      scope.launch {
-        val bitmap = uri.toBitmap(context).asImageBitmap()
-        when (val result = imageCropper.crop(IntSize(4096, 4096), bmp = bitmap)) {
-          is CropResult.Cancelled -> showPhotoPickerDialog = true
-          is CropError -> {
-            showErrorDialog = true
-            errorDialogMessage = when (result) {
-              CropError.LoadingError -> EditProfileScreenTexts.DIALOG_LOADING_ERROR
-              CropError.SavingError -> EditProfileScreenTexts.DIALOG_SAVING_ERROR
-            }
-          }
-          is CropResult.Success -> {
-            localPhotoByteArray = result.bitmap.toByteArray()
-            initialLoad = false
-            removeRemotePhoto = false
-          }
-        }
+  // Decide what to display for the profile picture
+  val photoUi by remember(user.photoURL, localPhotoByteArray, removeRemotePhoto) {
+    mutableStateOf(
+      when {
+        localPhotoByteArray != null -> PhotoUi.Local(localPhotoByteArray!!)
+        removeRemotePhoto -> PhotoUi.Empty
+        user.photoURL != null -> PhotoUi.Remote(user.photoURL!!)
+        else -> PhotoUi.Empty
       }
-    }
+    )
   }
 
 
@@ -239,22 +217,19 @@ fun EditProfileScreen(
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
 
-            EditProfile_EditableProfilePicture(
-                imageViewModel = imageViewModel,
-                localPhotoByteArray = localPhotoByteArray,
-                remotePhotoURL = effectiveRemoteUrl,
-                profilePictureIsEmpty = !hasAnyPhoto,
-                initialLoad = initialLoad,
-                handleProfilePictureClick = {
-                  if (!hasAnyPhoto) {
-                    showPhotoPickerDialog = true
-                  } else {
-                    localPhotoByteArray = null
-                    initialLoad = false
-                    removeRemotePhoto = true
-                  }
-                }
-            )
+          EditableProfilePictureWithUI(
+            photo = photoUi,
+            isEditable = true,
+            imageViewModel = imageViewModel,
+            onPhotoPicked = { bytes ->
+              localPhotoByteArray = bytes
+              removeRemotePhoto = false
+            },
+            onPhotoRemoved = {
+              localPhotoByteArray = null
+              removeRemotePhoto = true
+            }
+          )
 
 
               Spacer(modifier = Modifier.height(24.dp))
@@ -435,7 +410,7 @@ fun EditProfileScreen(
                               description = description,
                               collected = collected,
                               photoByteArray = localPhotoByteArray,
-                              removeRemotePhoto)
+                            removeRemotePhoto = removeRemotePhoto)
                       updatedUser?.let {
                         onSave(it)
                         removeRemotePhoto = false
@@ -448,104 +423,7 @@ fun EditProfileScreen(
                   }
             }
       }
-
-  if (showPhotoPickerDialog) {
-    ImagePickerDialog(
-      onDismiss = { showPhotoPickerDialog = false },
-      onImageSelected = { uri -> launchImageCropper(uri) }
-    )
-  }
-
-  if (showErrorDialog) {
-    ErrorDialog(errorDialogMessage, onDismiss = { showErrorDialog = false })
-  }
-
-  if(croppingIsOngoing) {
-    ShowImageCropperDialog(imageCropper)
-  }
 }
-
-
-// TODO: Place this in its own file, as it is a copy of the one in AddReportScreen.kt
-/**
- * A dialog shown when an error happened and a report couldn't be created
- *
- * @param visible True if the dialog should be shown
- * @param errorMessage The error message received when attempting to create a report
- * @param onDismiss Executed when the user dismisses the dialog
- */
-@Composable
-fun ErrorDialog(errorMessage: String?, onDismiss: () -> Unit) {
-  AlertDialog(
-    onDismissRequest = onDismiss,
-    confirmButton = {
-      TextButton(
-        onClick = onDismiss,
-        modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_FAILURE_OK),
-        colors =
-          ButtonDefaults.textButtonColors(
-            contentColor = MaterialTheme.colorScheme.onSurface)) {
-        Text(AddReportDialogTexts.OK)
-      }
-    },
-    title = { Text(AddReportDialogTexts.TITLE_FAILURE) },
-    text = { Text(errorMessage ?: AddReportFeedbackTexts.UNKNOWN) },
-    modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_FAILURE))
-}
-
-// TODO: Put this in its own file
-@Composable
-fun EditProfile_EditableProfilePicture(
-  imageViewModel: ImageViewModel,
-  profilePictureIsEmpty: Boolean,
-  localPhotoByteArray: ByteArray?,
-  remotePhotoURL: String?,
-  initialLoad: Boolean,
-  handleProfilePictureClick: () -> Unit
-) {
-  Box(
-    modifier = Modifier.size(120.dp),
-    contentAlignment = Alignment.Center,
-  ) {
-
-
-    val showRemote = initialLoad && localPhotoByteArray == null && remotePhotoURL != null
-
-    // TODO Make the default profile icon and the actual profile picture the same size
-    if (showRemote) {
-      RemotePhotoDisplay(
-        photoURL = remotePhotoURL,
-        imageViewModel = imageViewModel,
-        modifier = Modifier.size(120.dp).clip(CircleShape),   // TODO Create a component for Profile Picture
-        contentDescription = "Office photo",
-        showPlaceHolder = true)
-    } else {
-      LocalPhotoDisplay(
-        photoByteArray = localPhotoByteArray,
-        modifier = Modifier.size(120.dp).clip(CircleShape),
-        showPlaceHolder = true,
-      )
-    }
-
-    // Camera icon overlay
-    FloatingActionButton(
-      onClick = { handleProfilePictureClick() },
-      modifier = Modifier
-        .size(40.dp)
-        .align(Alignment.BottomEnd)
-        .testTag(EditProfileScreenTestTags.EDIT_PROFILE_PICTURE_BUTTON),
-      containerColor = MaterialTheme.colorScheme.primaryContainer,
-      contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-    ) {
-      Icon(
-        imageVector = if (profilePictureIsEmpty) Icons.Default.CameraAlt else Icons.Default.Clear,
-        contentDescription = "Edit profile picture",
-        modifier = Modifier.size(20.dp)
-      )
-    }
-  }
-}
-
 
 
 /*

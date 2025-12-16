@@ -46,7 +46,6 @@ import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
 import com.android.agrihealth.ui.profile.CodesViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags
 import com.android.agrihealth.ui.profile.EditProfileScreenTexts
-import com.android.agrihealth.ui.profile.ErrorDialog
 import com.android.agrihealth.ui.profile.GenerateCode
 import com.android.agrihealth.ui.profile.LocalPhotoDisplay
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
