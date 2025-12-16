@@ -5,7 +5,6 @@ import com.android.agrihealth.data.model.location.Location
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import java.time.LocalDate
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.runTest
@@ -21,11 +20,11 @@ class AlertRepositoryFirestoreTest : FirebaseEmulatorsTest() {
   @Before
   override fun setUp() {
     super.setUp()
-    db = FirebaseFirestore.getInstance()
     runBlocking {
-      delay(1000)
+      db.terminate().await()
       db.clearPersistence().await()
     }
+    db = FirebaseFirestore.getInstance()
     repo = AlertRepositoryFirestore(db)
   }
 
