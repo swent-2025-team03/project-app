@@ -16,6 +16,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+enum class PhotoChange {
+  UNCHANGED,
+  UPDATED,
+  REMOVED
+}
+
 data class ManageOfficeUiState(
     val office: Office? = null,
     val editableName: String = "",
@@ -24,7 +30,8 @@ data class ManageOfficeUiState(
     val isLoading: Boolean = false,
     val snackMessage: String? = null,
     val photoUri: Uri? = null,
-    val uploadedImagePath: String? = null
+    val uploadedImagePath: String? = null,
+    val photoChange: PhotoChange = PhotoChange.UNCHANGED
 )
 
 class ManageOfficeViewModel(
@@ -109,11 +116,21 @@ class ManageOfficeViewModel(
   ) {
     try {
       val office = _uiState.value.office ?: return
-      var uploadedPath = _uiState.value.uploadedImagePath
+      var uploadedPath = _uiState.value.uploadedImagePath ?: _uiState.value.office?.photoUrl
 
-      _uiState.value.photoUri?.let { uri ->
-        uploadedPath = imageViewModel.uploadAndWait(uri)
-        _uiState.value = _uiState.value.copy(uploadedImagePath = uploadedPath, photoUri = null)
+      when (_uiState.value.photoChange) {
+        PhotoChange.UNCHANGED -> {
+          // keep existing photoUrl
+        }
+        PhotoChange.UPDATED -> {
+          val uri = _uiState.value.photoUri
+          if (uri != null) {
+            uploadedPath = imageViewModel.uploadAndWait(uri)
+          }
+        }
+        PhotoChange.REMOVED -> {
+          uploadedPath = null
+        }
       }
 
       val updatedOffice =
@@ -123,8 +140,13 @@ class ManageOfficeViewModel(
               address = newAddress,
               photoUrl = uploadedPath)
       officeRepository.updateOffice(updatedOffice)
-      _uiState.value = _uiState.value.copy(office = updatedOffice)
-      _uiState.value = _uiState.value.copy(snackMessage = "Changes successfully saved")
+      _uiState.value =
+          _uiState.value.copy(
+              office = updatedOffice,
+              uploadedImagePath = uploadedPath,
+              photoUri = null,
+              photoChange = PhotoChange.UNCHANGED,
+              snackMessage = "Changes successfully saved")
       onSuccess()
     } catch (e: Throwable) {
       onError(e)
@@ -142,10 +164,10 @@ class ManageOfficeViewModel(
   }
 
   fun setPhoto(uri: Uri?) {
-    _uiState.value = _uiState.value.copy(photoUri = uri)
+    _uiState.value = _uiState.value.copy(photoUri = uri, photoChange = PhotoChange.UPDATED)
   }
 
   fun removePhoto() {
-    _uiState.value = _uiState.value.copy(photoUri = null)
+    _uiState.value = _uiState.value.copy(photoUri = null, photoChange = PhotoChange.REMOVED)
   }
 }
