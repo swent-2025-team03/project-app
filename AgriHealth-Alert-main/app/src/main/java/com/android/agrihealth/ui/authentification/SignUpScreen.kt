@@ -13,17 +13,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.credentials.Credential
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.data.model.authentification.AuthRepository
-import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
+import com.android.agrihealth.testutil.FakeAuthRepository
+import com.android.agrihealth.testutil.FakeUserViewModel
 import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.user.UserViewModelContract
 
 object SignUpScreenTestTags {
   const val SCREEN = "SignUpScreen"
@@ -45,8 +46,10 @@ fun SignUpScreen(
     onBack: () -> Unit = {},
     onSignedUp: () -> Unit = {},
     signUpViewModel: SignUpViewModel = viewModel(),
-    userViewModel: UserViewModel = viewModel()
+    userViewModel: UserViewModelContract = viewModel<UserViewModel>()
 ) {
+  val focusManager = LocalFocusManager.current
+
   val signUpUIState by signUpViewModel.uiState.collectAsState()
   val snackbarHostState = remember { SnackbarHostState() }
   val errorMsg = signUpUIState.errorMsg
@@ -138,11 +141,18 @@ fun SignUpScreen(
                 Spacer(Modifier.height(12.dp))
 
                 RoleSelector(
-                    selected = signUpUIState.role, onSelected = { signUpViewModel.onSelected(it) })
+                    selected = signUpUIState.role,
+                    onSelected = {
+                      focusManager.clearFocus()
+                      signUpViewModel.onSelected(it)
+                    })
 
                 Spacer(Modifier.height(28.dp))
                 Button(
-                    onClick = { signUpViewModel.signUp() },
+                    onClick = {
+                      focusManager.clearFocus()
+                      signUpViewModel.signUp()
+                    },
                     modifier =
                         Modifier.fillMaxWidth()
                             .height(56.dp)
@@ -216,56 +226,8 @@ private fun Field(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun SignUpScreenPreview() {
-  val authRepo =
-      object : AuthRepository {
-        override suspend fun signInWithEmailAndPassword(
-            email: String,
-            password: String
-        ): Result<Boolean> {
-          throw NotImplementedError()
-        }
-
-        override suspend fun reAuthenticate(email: String, password: String): Result<Unit> {
-          throw NotImplementedError()
-        }
-
-        override suspend fun changePassword(password: String): Result<Unit> {
-          throw NotImplementedError()
-        }
-
-        override suspend fun sendResetPasswordEmail(email: String): Result<Unit> {
-          TODO("Not yet implemented")
-        }
-
-        override suspend fun signInWithGoogle(credential: Credential): Result<String> {
-          throw NotImplementedError()
-        }
-
-        override suspend fun signUpWithEmailAndPassword(
-            email: String,
-            password: String,
-            userData: User
-        ): Result<String> {
-          throw NotImplementedError()
-        }
-
-        override fun signOut(): Result<Unit> {
-          throw NotImplementedError()
-        }
-
-        override suspend fun deleteAccount(): Result<Unit> {
-          throw NotImplementedError()
-        }
-
-        override suspend fun checkIsVerified(): Boolean {
-          throw NotImplementedError()
-        }
-
-        override suspend fun sendVerificationEmail(): Result<Unit> {
-          throw NotImplementedError()
-        }
-      }
+  val authRepo = FakeAuthRepository()
   val vm = object : SignUpViewModel(authRepo) {}
 
-  AgriHealthAppTheme { SignUpScreen(signUpViewModel = vm) }
+  AgriHealthAppTheme { SignUpScreen(signUpViewModel = vm, userViewModel = FakeUserViewModel()) }
 }

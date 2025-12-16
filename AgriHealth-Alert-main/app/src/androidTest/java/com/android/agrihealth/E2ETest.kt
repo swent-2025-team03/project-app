@@ -8,6 +8,7 @@ import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
+import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.authentification.FakeCredentialManager
 import com.android.agrihealth.data.model.authentification.FakeJwtGenerator
@@ -18,6 +19,7 @@ import com.android.agrihealth.data.model.location.LocationPickerTestTags
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testutil.FakeAlertRepository
 import com.android.agrihealth.testutil.FakeOfficeRepository
 import com.android.agrihealth.testutil.TestConstants
 import com.android.agrihealth.ui.alert.AlertViewScreenTestTags
@@ -235,6 +237,9 @@ class E2ETest : FirebaseEmulatorsTest() {
 
   @Test
   fun testFarmer_OverviewAlertCards_Navigation() {
+    val fakeAlertRepo = FakeAlertRepository()
+    AlertRepositoryProvider.set(fakeAlertRepo)
+
     composeTestRule.setContent { AgriHealthApp() }
     composeTestRule.waitForIdle()
 

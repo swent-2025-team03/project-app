@@ -68,6 +68,8 @@ class SignInViewModel(
 
   /** initiates the sign in using available credentials * */
   fun signInWithEmailAndPassword() {
+    setEmail(_uiState.value.email.trim())
+    setPassword(_uiState.value.password.trim())
     if (_uiState.value.isValid) {
       viewModelScope.launch {
         _uiState.withLoadingState(

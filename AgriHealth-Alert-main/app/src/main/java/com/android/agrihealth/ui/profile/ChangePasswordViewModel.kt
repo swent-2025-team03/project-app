@@ -43,6 +43,9 @@ class ChangePasswordViewModel(
   }
 
   override fun changePassword() {
+    setEmail(_uiState.value.email.trim())
+    setNewPassword(_uiState.value.newPassword.trim())
+    setOldPassword(_uiState.value.oldPassword.trim())
     _uiState.value = _uiState.value.copy(newWeak = false, oldWrong = false)
 
     if (_uiState.value.isWeak()) {
