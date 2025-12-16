@@ -22,7 +22,7 @@ data class ManageOfficeUiState(
     val editableDescription: String = "",
     val editableAddress: String = "",
     val isLoading: Boolean = false,
-    val error: String? = null,
+    val snackMessage: String? = null,
     val photoBytes: ByteArray? = null,
     val removeRemotePhoto: Boolean = false,
 )
@@ -36,8 +36,15 @@ class ManageOfficeViewModel(
   private val _uiState = MutableStateFlow(ManageOfficeUiState())
   val uiState: StateFlow<ManageOfficeUiState> = _uiState
 
+  init {
+    loadOffice()
+  }
+
+  fun clearMessage() {
+    _uiState.value = _uiState.value.copy(snackMessage = null)
+  }
+
   fun loadOffice() {
-    if (_uiState.value.office == null) {
       viewModelScope.launch {
         _uiState.withLoadingState(applyLoading = { s, loading -> s.copy(isLoading = loading) }) {
           val currentUser = userViewModel.uiState.value.user
@@ -52,14 +59,13 @@ class ManageOfficeViewModel(
             }) { error ->
               _uiState.value =
                   _uiState.value.copy(
-                      error =
+                      snackMessage =
                           "Couldn't load your office, make sure you are connected to the internet")
             }
           }
         }
       }
     }
-  }
 
   fun onNameChange(value: String) {
     _uiState.value = _uiState.value.copy(editableName = value)
@@ -119,6 +125,7 @@ class ManageOfficeViewModel(
               photoUrl = newPhotoUrl)
       officeRepository.updateOffice(updatedOffice)
       _uiState.value = _uiState.value.copy(office = updatedOffice)
+      _uiState.value = _uiState.value.copy(snackMessage = "Changes successfully saved")
       onSuccess()
     } catch (e: Throwable) {
       onError(e)

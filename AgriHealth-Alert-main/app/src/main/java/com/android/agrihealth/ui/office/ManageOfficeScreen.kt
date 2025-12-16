@@ -90,8 +90,11 @@ fun ManageOfficeScreen(
 
   LaunchedEffect(currentUser) { manageOfficeViewModel.loadOffice() }
 
-  LaunchedEffect(uiState.error) {
-    uiState.error?.let { snackbarHostState.showSnackbar(uiState.error ?: "") }
+  LaunchedEffect(uiState.snackMessage) {
+    uiState.snackMessage?.let {
+      snackbarHostState.showSnackbar(uiState.snackMessage ?: "")
+      manageOfficeViewModel.clearMessage()
+    }
   }
 
   Scaffold(
@@ -116,7 +119,6 @@ fun ManageOfficeScreen(
               horizontalAlignment = Alignment.CenterHorizontally,
               verticalArrangement = Arrangement.Top) {
                 HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
-                if (uiState.error == null) {
                   if (uiState.office == null) {
                     Button(
                         onClick = onCreateOffice,
@@ -239,7 +241,7 @@ fun ManageOfficeScreen(
                     }
                   }
                 }
-              }
+
         }
       }
 }
