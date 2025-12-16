@@ -1,9 +1,88 @@
 rules_version = '2';
-
 service firebase.storage {
   match /b/{bucket}/o {
-    match /{allPaths=**} {
-      allow read, write: if true;
+
+    function isSignedIn() {
+      return request.auth != null;
     }
+
+    function myUser() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function userDoc(uid) {
+      return firestore.get(/databases/(default)/documents/users/$(uid)).data;
+    }
+
+    function officeDoc(officeId) {
+      return firestore.get(/databases/(default)/documents/offices/$(officeId)).data;
+    }
+
+    function reportDoc(reportId) {
+      return firestore.get(/databases/(default)/documents/reports/$(reportId)).data;
+    }
+
+    function hasRole(role) {
+      return isSignedIn() && myUser().role == role;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function underMax10MB() {
+      return request.resource.size < 10 * 1024 * 1024;
+    }
+
+    match /users/{userId}/{allPaths=**} {
+      allow read: if (
+        userId == request.auth.uid
+        ||
+        (
+          hasRole("Vet") && (
+            (userDoc(userId).role == "Vet" && userDoc(userId).officeId == myUser().officeId)
+            ||
+            (userDoc(userId).role == "Farmer" && myUser().officeId in userDoc(userId).linkedOffices)
+          )
+        )
+        ||
+        (
+          hasRole("Farmer")
+          && userDoc(userId).role == "Vet"
+          && userDoc(userId).officeId in myUser().linkedOffices
+        )
+      );
+
+      allow write: if isOwner(userId) && underMax10MB();
+    }
+
+    match /offices/{officeId}/{allPaths=**} {
+      allow read: if (
+        (hasRole("Vet") && myUser().officeId == officeId)
+        ||
+        (hasRole("Farmer") && officeId in myUser().linkedOffices)
+      );
+
+      allow write: if hasRole("Vet")
+        && myUser().officeId == officeId
+        && officeDoc(officeId).ownerId == request.auth.uid
+        && underMax10MB();
+    }
+
+    match /reports/{reportId}/{allPaths=**} {
+      allow read: if (
+        (hasRole("Vet") && reportDoc(reportId).officeId == myUser().officeId)
+        ||
+        (hasRole("Farmer") && reportDoc(reportId).farmerId == request.auth.uid)
+      );
+
+      allow write: if underMax10MB()
+        && (
+          (hasRole("Farmer") && reportDoc(reportId).farmerId == request.auth.uid)
+          ||
+          (hasRole("Vet") && reportDoc(reportId).officeId == myUser().officeId)
+        );
+    }
+
   }
 }

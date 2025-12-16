@@ -506,7 +506,7 @@ class MapScreenTest {
 
     coEvery { locationRepository.getLastKnownLocation() } coAnswers
         {
-          delay(2000) // simulate slow fetch
+          delay(TestConstants.SHORT_TIMEOUT) // simulate slow fetch
           Location(46.95, 7.44)
         }
 
@@ -518,5 +518,16 @@ class MapScreenTest {
       composeTestRule.onAllNodesWithText("Loading location...").fetchSemanticsNodes().isNotEmpty()
     }
     composeTestRule.onNodeWithText("Loading location...").assertIsDisplayed()
+  }
+
+  @Test
+  fun displaysCurrentUserLocationMarker() = runTest {
+    setContentToMapWithVM() // provides the currentUserLocation
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MapScreenTestTags.USER_LOCATION_MARKER)
+        .assertExists()
+        .assertIsDisplayed()
   }
 }

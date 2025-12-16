@@ -59,6 +59,7 @@ import com.android.agrihealth.R
 import com.android.agrihealth.core.design.theme.statusColor
 import com.android.agrihealth.data.model.alert.Alert
 import com.android.agrihealth.data.model.alert.distanceMeters
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.location.toLatLng
 import com.android.agrihealth.data.model.location.toLocation
 import com.android.agrihealth.data.model.report.Report
@@ -234,6 +235,22 @@ fun ShowAlertInfo(alerts: List<Alert>, onClick: (alert: Alert) -> Unit) {
           }
         }
   }
+}
+
+/**
+ * Displays the current user's location with a blue icon
+ *
+ * @param location Location of the current user's location
+ */
+@Composable
+fun UserLocationMarker(location: Location?) {
+  if (location == null) return
+  val markerIcon = createCircleMarker(Color.BLUE, 40f)
+  Marker(
+      state = MarkerState(LatLng(location.latitude, location.longitude)),
+      icon = markerIcon,
+      title = "You are here",
+  )
 }
 
 fun findAlertZonesUnderTap(alerts: List<Alert>, tap: LatLng): List<Alert> {
@@ -470,5 +487,18 @@ fun MapTestAlertCircles(alerts: List<Alert>, onClick: (Alert) -> Unit) {
                 .size(1.dp)) {
           Text(":)")
         }
+  }
+}
+
+/**
+ * Displays debug boxes to act as markers during instrumented tests. This is because Google maps
+ * markers cannot be accessed during testing. onClick should have the same behavior as the real
+ * markers
+ */
+@Composable
+fun MapTestUserLocationMarker(location: Location?) {
+  if (location == null) return
+  Box(modifier = Modifier.testTag(MapScreenTestTags.USER_LOCATION_MARKER).alpha(0f).size(1.dp)) {
+    Text("(･ω･´)")
   }
 }
