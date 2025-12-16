@@ -8,6 +8,7 @@ import kotlinx.coroutines.tasks.await
 
 const val USERS_COLLECTION_PATH = "users"
 
+/** Repository to store user data on Firestore */
 class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.firestore) :
     UserRepository {
   override suspend fun addUser(user: User) {
@@ -50,7 +51,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
 
   private fun mapFromUser(user: User): Map<String, Any?> {
     val base =
-        mutableMapOf<String, Any?>(
+        mutableMapOf(
             "firstname" to user.firstname,
             "lastname" to user.lastname,
             "email" to user.email,

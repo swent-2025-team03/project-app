@@ -1,12 +1,11 @@
 package com.android.agrihealth.data.model.report.form
 
+/** Generates a list of questions to ask in a report, depending on the animal species */
 object HealthQuestionFactory {
-
   fun questionsForSpecies(species: Species): List<QuestionForm> {
     return when (species) {
       Species.POULTRY -> poultryQuestions()
       Species.OVINE -> ovineQuestions()
-      else -> emptyList()
     }
   }
 

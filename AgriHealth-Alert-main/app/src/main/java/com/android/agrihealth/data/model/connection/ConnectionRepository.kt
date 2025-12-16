@@ -16,6 +16,7 @@ import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 
+/** Connects two users together by exchanging a connection code */
 class ConnectionRepository(
     private val db: FirebaseFirestore = Firebase.firestore,
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
@@ -52,7 +53,7 @@ class ConnectionRepository(
     }
   }
 
-  // Returns: Result<String> containing the generated code, or an exception if failed.
+  /** Generates a connection code, to be claimed by another user */
   suspend fun generateCode(): Result<String> = runCatching {
     val officeId = getCurrentUserOfficeId()
 
@@ -105,8 +106,7 @@ class ConnectionRepository(
     requireNotNull(createdAt) { "Missing createdAt" }
   }
 
-  // Claims a connection code for a farmer, and marks the code as used.
-  // Returns: Result<String> containing the vetId if successful, or an exception if failed.
+  /** Claims a connection code and marks the code as used */
   suspend fun claimCode(code: String): Result<String> = runCatching {
     val userId = getCurrentUserId()
     val docRef = db.collection(connectionType + CODES_COLLECTION).document(code)
@@ -155,7 +155,7 @@ class ConnectionRepository(
               .await()
 
       snapshot.documents.map { it.id }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
       emptyList()
     }
   }
@@ -182,7 +182,7 @@ class ConnectionRepository(
               .get()
               .await()
       snapshot.size()
-    } catch (e: Exception) {
+    } catch (_: Exception) {
       0
     }
   }

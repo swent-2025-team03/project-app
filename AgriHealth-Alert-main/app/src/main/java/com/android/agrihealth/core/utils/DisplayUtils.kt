@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 
+/** Gives the max number of characters to make a text fit this screen */
 @Composable
 fun maxTitleCharsForScreen(): Int {
   val configuration = LocalConfiguration.current

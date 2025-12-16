@@ -53,14 +53,5 @@ interface ImageRepository {
   companion object {
     /** Converts a byte array to a bitmap */
     fun ByteArray.toBitmap(): Bitmap = BitmapFactory.decodeByteArray(this, 0, this.size)
-
-    /**
-     * Converts a byte array result to a bitmap result. Made to be used like:
-     * downloadImage(path).toBitmap()
-     */
-    fun Result<ByteArray>.toBitmap(): Result<Bitmap> =
-        fold(
-            onSuccess = { byteArray -> Result.success(byteArray.toBitmap()) },
-            onFailure = { e -> Result.failure(e) })
   }
 }

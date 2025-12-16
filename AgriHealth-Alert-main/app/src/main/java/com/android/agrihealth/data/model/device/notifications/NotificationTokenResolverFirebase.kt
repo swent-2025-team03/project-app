@@ -4,6 +4,7 @@ import android.os.Build
 import com.google.android.gms.tasks.Task
 import com.google.firebase.messaging.FirebaseMessaging
 
+/** Gets the device token for Firebase Messaging to send notifications to */
 class NotificationTokenResolverFirebase : NotificationTokenResolver {
   private val messaging = FirebaseMessaging.getInstance()
 

@@ -43,6 +43,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 */
 
+/** Handles notification sending and receiving using Firebase Messaging and Firebase Functions */
 @SuppressLint("MissingFirebaseInstanceTokenRefresh") // Tokens are handled in MainActivity
 class NotificationHandlerFirebase(
     private val tokenResolver: NotificationTokenResolver = NotificationTokenResolverFirebase(),
@@ -149,9 +150,11 @@ class NotificationHandlerFirebase(
 
 // Serialization and Deserialization
 
+/** Converts a notification to a map of Strings to send to Firebase Functions */
 fun Notification.toDataMap(): Map<String, String> =
     mapOf("type" to type.toName(), "destinationUid" to destinationUid, "description" to description)
 
+/** Converts a map of Strings received from Firebase Messaging to a displayable notification */
 fun Map<String, String>.toNotification(): Notification? {
   val type = NotificationType.fromName(this["type"] ?: return null)
   val destinationUid = this["destinationUid"] ?: return null

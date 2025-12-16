@@ -21,11 +21,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.android.agrihealth.core.utils.maxTitleCharsForScreen
 import com.android.agrihealth.data.model.alert.AlertZone
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
-import com.android.agrihealth.core.utils.maxTitleCharsForScreen
 
 object AlertViewScreenTestTags {
   const val ALERT_FULL_TITLE = "alertFullTitle"

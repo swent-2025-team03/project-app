@@ -18,6 +18,7 @@ sealed class ImageUIState {
 
   data class UploadSuccess(val path: String) : ImageUIState()
 
+  @Suppress("ArrayInDataClass")
   data class DownloadSuccess(val imageData: ByteArray) : ImageUIState()
 
   data class Error(val e: Throwable) : ImageUIState()

@@ -1,5 +1,6 @@
 package com.android.agrihealth.data.model.device.notifications
 
+/** Handles notification sending and receiving */
 interface NotificationHandler {
   /** Gets a unique identifier for the current device to receive notifications */
   fun getToken(onComplete: (deviceToken: String?) -> Unit)

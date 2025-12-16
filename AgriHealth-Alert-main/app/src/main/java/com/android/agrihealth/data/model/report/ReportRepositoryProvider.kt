@@ -3,6 +3,7 @@ package com.android.agrihealth.data.model.report
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 
+/** Singleton providing the report repository used throughout the app */
 object ReportRepositoryProvider {
 
   /**

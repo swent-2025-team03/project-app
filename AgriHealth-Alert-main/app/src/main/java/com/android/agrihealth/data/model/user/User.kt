@@ -2,6 +2,7 @@ package com.android.agrihealth.data.model.user
 
 import com.android.agrihealth.data.model.location.Location
 
+/** Representation of a user */
 sealed class User(
     open var uid: String = "placeholder",
     open val firstname: String,

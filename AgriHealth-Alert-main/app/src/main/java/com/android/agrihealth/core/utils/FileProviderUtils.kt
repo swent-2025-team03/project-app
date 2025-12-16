@@ -2,6 +2,7 @@ package com.android.agrihealth.core.utils
 
 import android.content.Context
 
+/** Various reusable utility functions when dealing with the Android file system */
 object FileProviderUtils {
 
   /**

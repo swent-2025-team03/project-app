@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.core.design.theme.statusColor
+import com.android.agrihealth.core.utils.maxTitleCharsForScreen
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
@@ -41,7 +42,6 @@ import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.profile.RemotePhotoDisplay
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags.CLAIM_BUTTON
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags.UNASSIGN_BUTTON
-import com.android.agrihealth.core.utils.maxTitleCharsForScreen
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.launch
 

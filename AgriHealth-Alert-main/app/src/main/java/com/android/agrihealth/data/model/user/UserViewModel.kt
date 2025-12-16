@@ -26,6 +26,7 @@ val defaultUser =
         defaultOffice = null,
         isGoogleAccount = false)
 
+/** UI State for the front end to display user information */
 data class UserUiState(val user: User = defaultUser, val isLoading: Boolean = false)
 
 /**
@@ -40,11 +41,8 @@ open class UserViewModel(
     initialUser: User? = null
 ) : ViewModel(), UserViewModelContract {
 
-  // private val _userRole = MutableStateFlow<UserRole>(UserRole.FARMER)
   private val _uiState = MutableStateFlow(UserUiState(user = initialUser ?: defaultUser))
   override val uiState: StateFlow<UserUiState> = _uiState.asStateFlow()
-
-  // user id can be accessed using Firebase.auth.currentUser?.uid
 
   /** The current user's role as a state flow. */
   init {
@@ -75,7 +73,6 @@ open class UserViewModel(
     }
   }
 
-  /** Update user data (needed in profile screen) */
   override fun updateUser(user: User): Deferred<Unit> {
     return viewModelScope.async {
       try {
@@ -90,12 +87,10 @@ open class UserViewModel(
     }
   }
 
-  /** Sets the current user. */
   override fun setUser(user: User) {
     _uiState.value = _uiState.value.copy(user = user)
   }
 
-  /** Updating the officeId when creating or joining an office */
   override fun updateVetOfficeId(officeId: String?): Deferred<Unit> {
     return viewModelScope.async {
       val current = _uiState.value.user

@@ -3,6 +3,7 @@ package com.android.agrihealth.data.model.authentification
 import androidx.credentials.Credential
 import com.android.agrihealth.data.model.user.User
 
+/** Repository that communicates with the backend to authenticate users */
 interface AuthRepository {
   /**
    * Signs in the user using their email and password.

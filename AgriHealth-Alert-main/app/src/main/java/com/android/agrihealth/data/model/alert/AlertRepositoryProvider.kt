@@ -1,5 +1,6 @@
 package com.android.agrihealth.data.model.alert
 
+/** Singleton providing the main alert repository used throughout the app */
 object AlertRepositoryProvider {
 
   private var overrideRepo: AlertRepository? = null

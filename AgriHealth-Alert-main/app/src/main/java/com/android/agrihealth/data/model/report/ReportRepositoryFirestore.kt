@@ -20,6 +20,7 @@ import kotlinx.coroutines.tasks.await
 
 const val REPORTS_COLLECTION_PATH = "reports"
 
+/** Repository to get and upload reports and storing them on Firestore */
 class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepository {
 
   override fun getNewReportId(): String {
@@ -74,6 +75,7 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
  * @param doc The Firestore document.
  * @return The corresponding Report object, or null if conversion fails.
  */
+@Suppress("UNCHECKED_CAST")
 private fun docToReport(doc: DocumentSnapshot): Report? {
   return try {
     val id = doc.id
