@@ -25,10 +25,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.ui.navigation.NavigationTestTags
 
@@ -74,6 +76,7 @@ object VerifyEmailScreenTexts {
 @Composable
 fun VerifyEmailScreen(
     vm: VerifyEmailViewModel = viewModel(),
+    credentialManager: CredentialManager = CredentialManager.create(LocalContext.current),
     onBack: () -> Unit = {},
     onVerified: () -> Unit = {}
 ) {
@@ -100,7 +103,10 @@ fun VerifyEmailScreen(
     }
   }
 
-  BackHandler { onBack() }
+  BackHandler {
+    vm.signOut(credentialManager)
+    onBack()
+  }
 
   Scaffold(
       snackbarHost = {
@@ -113,7 +119,10 @@ fun VerifyEmailScreen(
             title = {},
             navigationIcon = {
               IconButton(
-                  onClick = { onBack() },
+                  onClick = {
+                    vm.signOut(credentialManager)
+                    onBack()
+                  },
                   modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                   }
