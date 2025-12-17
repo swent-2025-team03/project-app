@@ -77,8 +77,6 @@ object ProfilePictureComponentsTexts {
  * @param onPhotoPicked Called when the user picked (and cropped) a photo. This lambda contains the
  *   chosen photo as an argument
  * @param onPhotoRemoved Called when the user decides to remove the current profile picture
- * @param imageCropperLauncher The launcher of the image cropper. Specify one for testing, prefer
- *   leaving this empty normally
  */
 @Composable
 fun EditableProfilePictureWithImageCropper(
@@ -89,7 +87,6 @@ fun EditableProfilePictureWithImageCropper(
     imageSize: Dp = 120.dp,
     onPhotoPicked: (ByteArray) -> Unit,
     onPhotoRemoved: () -> Unit,
-    imageCropperLauncher: ImageCropperLauncher? = null,
 ) {
   val scope = rememberCoroutineScope()
 
@@ -98,7 +95,7 @@ fun EditableProfilePictureWithImageCropper(
   var errorDialogMessage by rememberSaveable { mutableStateOf("") }
 
   val imageCropper = rememberImageCropper()
-  val defaultLauncher: ImageCropperLauncher =
+  val imageCropperLauncher: ImageCropperLauncher =
       rememberDefaultImageCropperLauncher(
           imageCropper = imageCropper,
           scope = scope,
@@ -108,8 +105,6 @@ fun EditableProfilePictureWithImageCropper(
             errorDialogMessage = errorMessage
           },
       )
-
-  val effectiveLauncher = imageCropperLauncher ?: defaultLauncher
 
   val croppingIsOngoing = imageCropper.cropState != null
 
@@ -138,7 +133,7 @@ fun EditableProfilePictureWithImageCropper(
         onDismiss = { showImagePicker = false },
         onImageSelected = { uri ->
           showImagePicker = false
-          effectiveLauncher(uri)
+          imageCropperLauncher(uri)
         })
   }
 }
