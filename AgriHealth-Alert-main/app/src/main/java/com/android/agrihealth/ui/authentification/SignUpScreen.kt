@@ -2,6 +2,7 @@
 
 package com.android.agrihealth.ui.authentification
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -34,6 +35,8 @@ fun SignUpScreen(
   val signUpUIState by signUpViewModel.uiState.collectAsState()
   val snackbarHostState = remember { SnackbarHostState() }
   val errorMsg = signUpUIState.errorMsg
+
+  BackHandler { onBack() }
 
   LaunchedEffect(errorMsg) {
     if (errorMsg != null) {

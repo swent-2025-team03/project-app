@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.authentification
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,6 +41,8 @@ fun ResetPasswordScreen(onBack: () -> Unit = {}, vm: ResetPasswordViewModel = vi
   val uiState by vm.uiState.collectAsState()
 
   val scrollState = rememberScrollState()
+
+  BackHandler { onBack() }
 
   Scaffold(
       topBar = {

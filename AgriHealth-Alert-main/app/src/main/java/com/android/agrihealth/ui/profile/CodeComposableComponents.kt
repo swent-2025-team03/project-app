@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.profile
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
@@ -36,6 +37,8 @@ fun ClaimCodeScreen(
   }
 
   var code by remember { mutableStateOf("") }
+
+  BackHandler { onGoBack() }
 
   Scaffold(
       topBar = {

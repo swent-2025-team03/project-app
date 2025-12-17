@@ -2,6 +2,7 @@ package com.android.agrihealth.ui.office
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -81,6 +82,8 @@ fun ManageOfficeScreen(
       manageOfficeViewModel.clearMessage()
     }
   }
+
+  BackHandler { onGoBack() }
 
   Scaffold(
       topBar = {
@@ -185,7 +188,9 @@ fun ManageOfficeScreen(
                     Button(
                         onClick = {
                           focusManager.clearFocus()
-                          scope.launch { manageOfficeViewModel.updateOffice() }
+                          scope.launch {
+                            manageOfficeViewModel.updateOffice(newAddress = currentUser.address)
+                          }
                         },
                         modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),
                     ) {

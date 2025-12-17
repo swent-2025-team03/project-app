@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.office
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -39,6 +40,8 @@ fun CreateOfficeScreen(
               })
 
   val uiState by vm.uiState.collectAsState()
+
+  BackHandler { onGoBack() }
 
   Scaffold(
       topBar = {

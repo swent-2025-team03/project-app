@@ -1,6 +1,7 @@
 package com.android.agrihealth.ui.user
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -32,6 +33,8 @@ fun ViewUserScreen(viewModel: ViewUserViewModel, onBack: () -> Unit = {}) {
       Toast.makeText(context, (uiState as ViewUserUiState.Error).message, Toast.LENGTH_LONG).show()
     }
   }
+
+  BackHandler { onBack() }
 
   Scaffold(
       topBar = {
@@ -130,9 +133,9 @@ private fun ViewUserContent(user: User, officeName: String?) {
           Spacer(Modifier.height(8.dp))
         }
 
-        user.address?.let {
+        user.address?.name?.let {
           OutlinedTextField(
-              value = "Not implemented yet",
+              value = it,
               onValueChange = {},
               label = { Text("Address") },
               readOnly = true,

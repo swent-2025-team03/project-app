@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.authentification
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -54,6 +55,11 @@ fun RoleSelectionScreen(
     } else "Welcome!"
   }
 
+  BackHandler {
+    vm.signOut(credentialManager)
+    onBack()
+  }
+
   Scaffold(
       topBar = {
         // Top bar with back arrow and title/status
@@ -63,7 +69,7 @@ fun RoleSelectionScreen(
               IconButton(
                   onClick = {
                     vm.signOut(credentialManager)
-                    onBack.invoke()
+                    onBack()
                   },
                   modifier = Modifier.testTag(NavigationTestTags.GO_BACK_BUTTON)) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
