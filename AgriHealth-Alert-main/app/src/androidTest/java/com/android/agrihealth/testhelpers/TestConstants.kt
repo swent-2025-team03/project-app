@@ -49,7 +49,7 @@ object TestUser {
           firstname = "Rushia",
           lastname = "Uruha",
           email = "email1@thing.com",
-          address = Location(latitude = 46.5191, longitude = 6.5668),
+          address = Location(latitude = 46.5191, longitude = 6.5668, "place"),
           linkedOffices = listOf(OFFICE1.id),
           defaultOffice = OFFICE1.id,
           description = "not pettan")

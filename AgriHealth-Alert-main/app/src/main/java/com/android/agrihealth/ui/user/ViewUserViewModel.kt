@@ -6,10 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.office.OfficeRepository
-import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
+import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.data.model.user.UserRepository
-import com.android.agrihealth.data.model.user.UserRepositoryFirestore
 import kotlinx.coroutines.launch
 
 sealed class ViewUserUiState {
@@ -52,8 +51,8 @@ open class ViewUserViewModel(
     fun provideFactory(targetUserId: String): ViewModelProvider.Factory =
         object : ViewModelProvider.Factory {
           override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            val userRepo = UserRepositoryFirestore()
-            val officeRepo = OfficeRepositoryFirestore()
+            val userRepo = UserRepositoryProvider.repository
+            val officeRepo = OfficeRepositoryProvider.get()
             @Suppress("UNCHECKED_CAST")
             return ViewUserViewModel(targetUserId, userRepo, officeRepo) as T
           }
