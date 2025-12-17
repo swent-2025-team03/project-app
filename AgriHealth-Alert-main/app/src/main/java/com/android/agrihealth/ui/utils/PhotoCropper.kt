@@ -1,6 +1,7 @@
 package com.android.agrihealth.ui.utils
 
 import android.net.Uri
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Done
@@ -14,10 +15,12 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.IntSize
 import com.mr0xf00.easycrop.AspectRatio
 import com.mr0xf00.easycrop.CircleCropShape
@@ -30,6 +33,10 @@ import com.mr0xf00.easycrop.crop
 import com.mr0xf00.easycrop.ui.ImageCropperDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+
+object PhotoCropperTestTags {
+  const val CROPPER_WINDOW = "CropperWindow"
+}
 
 /** To make type more clear */
 typealias ImageCropperLauncher = (Uri) -> Unit
@@ -90,17 +97,19 @@ fun ShowImageCropperDialog(imageCropper: ImageCropper) {
   // Setting this once
   LaunchedEffect(cropState) { setImageCropperShapeCircle(cropState) }
 
-  ImageCropperDialog(
-      state = cropState,
-      topBar = { ImageCropperCustomTopBar(cropState) },
-      cropControls = {},
-      style =
-          CropperStyle(
-              autoZoom = true,
-              guidelines = null,
-              shapes = listOf(CircleCropShape),
-              overlay = Color.Black.copy(alpha = .6f),
-              aspects = listOf(AspectRatio(1, 1))))
+  Box(modifier = Modifier.testTag(PhotoCropperTestTags.CROPPER_WINDOW)) {
+    ImageCropperDialog(
+        state = cropState,
+        topBar = { ImageCropperCustomTopBar(cropState) },
+        cropControls = {},
+        style =
+            CropperStyle(
+                autoZoom = true,
+                guidelines = null,
+                shapes = listOf(CircleCropShape),
+                overlay = Color.Black.copy(alpha = .6f),
+                aspects = listOf(AspectRatio(1, 1))))
+  }
 }
 
 // Replacing the default topbar of the image cropper (specifically changes the reset button)

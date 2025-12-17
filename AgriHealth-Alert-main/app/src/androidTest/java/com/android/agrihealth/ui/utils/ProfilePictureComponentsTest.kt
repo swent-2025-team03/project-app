@@ -2,8 +2,10 @@ package com.android.agrihealth.ui.utils
 
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
@@ -18,12 +20,57 @@ import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.testutil.FakeImageRepository
 import com.android.agrihealth.testutil.TestConstants.SHORT_TIMEOUT
 import com.android.agrihealth.ui.profile.PhotoComponentsTestTags
+import com.android.agrihealth.utils.TestAssetUtils
+import com.mr0xf00.easycrop.rememberImageCropper
+import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
 class ProfilePictureComponentsTest {
   @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+
+  @After
+  fun cleanup() {
+    TestAssetUtils.cleanupTestAssets()
+  }
+
+  @Test
+  fun cropperDialog_isShown() {
+    val testPhotoUri = TestAssetUtils.getUriFrom(TestAssetUtils.FAKE_PHOTO_FILE)
+
+    composeTestRule.setContent {
+      MaterialTheme {
+        val imageCropper = rememberImageCropper()
+        val scope = rememberCoroutineScope()
+
+        val imageCropperLauncher =
+            rememberDefaultImageCropperLauncher(
+                imageCropper = imageCropper,
+                scope = scope,
+                onCropSuccess = { /* ignore */},
+                onCropError = { /* ignore */},
+            )
+
+        val croppingIsOngoing = imageCropper.cropState != null
+        if (croppingIsOngoing) {
+          ShowImageCropperDialog(imageCropper)
+        }
+
+        // Start crop once
+        LaunchedEffect(Unit) { imageCropperLauncher(testPhotoUri) }
+      }
+    }
+
+    composeTestRule.waitUntil(SHORT_TIMEOUT) {
+      composeTestRule
+          .onAllNodesWithTag(PhotoCropperTestTags.CROPPER_WINDOW)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+
+    composeTestRule.onNodeWithTag(PhotoCropperTestTags.CROPPER_WINDOW).assertExists()
+  }
 
   @Test
   fun errorDialog_rendersCorrectly() {
