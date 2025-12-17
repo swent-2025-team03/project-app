@@ -140,6 +140,8 @@ fun EditProfileScreen(
   var description by rememberSaveable { mutableStateOf(user.description ?: "") }
   var address by rememberSaveable { mutableStateOf(pickedLocation?.name ?: "") }
 
+  LaunchedEffect(pickedLocation) { address = pickedLocation?.name ?: "" }
+
   // Farmer-specific states
   var selectedDefaultOffice by rememberSaveable { mutableStateOf((user as? Farmer)?.defaultOffice) }
   var expandedVetDropdown by rememberSaveable { mutableStateOf(false) }
