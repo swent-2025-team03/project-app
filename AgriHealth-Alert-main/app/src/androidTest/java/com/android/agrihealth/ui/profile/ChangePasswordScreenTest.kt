@@ -60,6 +60,7 @@ class ChangePasswordScreenTest : UITest() {
       textIsDisplayed(OLD_WRONG)
       assertFalse(success)
 
+      composeTestRule.waitForIdle()
       fillPasswordFieldsAndSubmit(oldPassword, WEAK_PASSWORD)
       textIsDisplayed(NEW_WEAK)
       textNotDisplayed(OLD_WRONG)

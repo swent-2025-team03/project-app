@@ -964,10 +964,7 @@ class E2ETest :
     composeTestRule
         .onNodeWithTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
         .performScrollToNode(hasTestTag(ReportViewScreenTestTags.VIEW_ON_MAP))
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.VIEW_ON_MAP)
-        .assertIsDisplayed()
-        .performClick()
+    clickOn(ReportViewScreenTestTags.VIEW_ON_MAP)
     waitUntilTestTag(MapScreenTestTags.GOOGLE_MAP_SCREEN)
   }
 

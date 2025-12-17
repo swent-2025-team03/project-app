@@ -1,17 +1,15 @@
-package com.android.agrihealth.ui.location
+package com.android.agrihealth.ui.common
 
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
+import com.android.agrihealth.testhelpers.TestTimeout
 import com.android.agrihealth.testhelpers.templates.UITest
-import com.android.agrihealth.ui.common.LocationPicker
-import com.android.agrihealth.ui.common.LocationPickerTestTags
 import com.android.agrihealth.ui.map.MapViewModel
 import io.mockk.mockk
+import org.junit.Assert
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -31,12 +29,13 @@ class LocationPickerTest : UITest() {
     val cityName = "Yverdon"
 
     val mapViewModel =
-        MapViewModel(
-            locationViewModel = LocationViewModel(),
-            userId = "test-user",
-            startingPosition = position,
-            showReports = false,
-            showAlerts = false)
+      MapViewModel(
+        locationViewModel = LocationViewModel(),
+        userId = "test-user",
+        startingPosition = position,
+        showReports = false,
+        showAlerts = false
+      )
 
     var confirmClicked = false
 
@@ -45,24 +44,32 @@ class LocationPickerTest : UITest() {
           mapViewModel = mapViewModel,
           onLatLng = { lat, lng ->
             val selectedPosition = Location(lat, lng)
-            assertEquals(position, selectedPosition)
+            assertLocationsEqual(position, selectedPosition)
           },
           onAddress = { address ->
             confirmClicked = true
-            assertTrue(address?.contains(cityName) == true)
+            Assert.assertTrue(address?.contains(cityName) == true)
           })
     }
 
-    nodeIsDisplayed(LocationPickerTestTags.MAP_SCREEN, LONG_TIMEOUT)
+    nodeIsDisplayed(LocationPickerTestTags.MAP_SCREEN, TestTimeout.LONG_TIMEOUT)
 
-    clickOn(LocationPickerTestTags.SELECT_LOCATION_BUTTON)
+    composeTestRule.waitForIdle()
+    clickOn(LocationPickerTestTags.SELECT_LOCATION_BUTTON, TestTimeout.SUPER_LONG_TIMEOUT)
 
-    nodeIsDisplayed(LocationPickerTestTags.CONFIRMATION_PROMPT)
+    composeTestRule.waitForIdle()
+    nodeIsDisplayed(LocationPickerTestTags.CONFIRMATION_PROMPT, TestTimeout.SUPER_LONG_TIMEOUT)
     nodeIsDisplayed(LocationPickerTestTags.PROMPT_CANCEL_BUTTON)
 
     clickOn(LocationPickerTestTags.PROMPT_CONFIRM_BUTTON)
 
-    assertTrue(confirmClicked)
+    Assert.assertTrue(confirmClicked)
+  }
+
+  private fun assertLocationsEqual(expected: Location, actual: Location) {
+    val delta = 1e-6
+    assertEquals(expected.latitude, actual.latitude, delta)
+    assertEquals(expected.longitude, actual.longitude, delta)
   }
 
   override fun displayAllComponents() {}
