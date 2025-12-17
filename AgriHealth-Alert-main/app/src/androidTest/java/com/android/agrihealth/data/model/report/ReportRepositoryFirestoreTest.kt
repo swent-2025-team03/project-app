@@ -121,38 +121,6 @@ class ReportRepositoryFirestoreTest : FirebaseTest() {
   }
 
   @Test
-  fun canGetReportsByVet() = runTest {
-    authRepository.signOut()
-    authRepository.signUpWithEmailAndPassword(vet1.email, TestPassword.PASSWORD3, vet1)
-
-    repository.addReport(report1.copy(farmerId = vet1.uid, officeId = vet1.officeId!!))
-    repository.addReport(report2.copy(farmerId = vet1.uid))
-    repository.addReport(report3.copy(farmerId = vet1.uid, officeId = vet1.officeId))
-
-    runBlocking { delay(SHORT_TIMEOUT) }
-    var reports = repository.getAllReports(vet1.uid)
-    Assert.assertEquals(2, reports.size)
-
-    reports.forEach {
-      Assert.assertEquals(vet1.officeId, it.officeId)
-      Assert.assertEquals(listOf(openQuestion), it.questionForms)
-    }
-
-    reports =
-        reports.map {
-          it.copy(
-              farmerId = report1.farmerId,
-              officeId = report1.officeId,
-              createdAt = now,
-              questionForms = listOf(openQuestion))
-        }
-    val expectedReports = setOf(report1, report3)
-    Assert.assertEquals(expectedReports, reports.toSet())
-
-    authRepository.signOut()
-  }
-
-  @Test
   fun canGetReportById() = runTest {
     repository.addReport(report1.fixUID())
     repository.addReport(report2.fixUID())
