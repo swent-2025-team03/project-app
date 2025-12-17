@@ -1,34 +1,16 @@
 package com.android.agrihealth.ui.alert
 
-import com.android.agrihealth.testutil.FakeAlertRepository
+import com.android.agrihealth.testhelpers.fakes.FakeAlertRepository
 import com.android.agrihealth.ui.overview.AlertUiState
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.*
-import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AlertViewModelTest {
 
-  private lateinit var repository: FakeAlertRepository
+  val repository = FakeAlertRepository()
   private lateinit var viewModel: AlertViewModel
-  private val dispatcher = StandardTestDispatcher()
-
-  @Before
-  fun setup() {
-    Dispatchers.setMain(dispatcher)
-    repository = FakeAlertRepository()
-  }
-
-  @After
-  fun tearDown() {
-    Dispatchers.resetMain()
-  }
 
   @Test
   fun initial_state_isFirstAlert_ifExists() {

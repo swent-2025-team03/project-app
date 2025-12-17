@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/** UI State to show alert information */
 data class AlertViewUIState(val alert: Alert? = null, val errorMessage: String? = null)
 
 /**

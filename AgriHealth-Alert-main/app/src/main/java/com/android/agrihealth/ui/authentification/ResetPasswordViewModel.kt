@@ -11,22 +11,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-sealed class EmailSendStatus {
-  object Success : EmailSendStatus()
-
-  object Fail : EmailSendStatus()
-
-  object Waiting : EmailSendStatus()
-
-  object None : EmailSendStatus()
-}
-
 data class ResetPasswordUiState(
     val email: String = "",
     val emailIsMalformed: Boolean = false,
     val emailSendStatus: EmailSendStatus = EmailSendStatus.None
 )
 
+/** ViewModel to link to ResetPasswordScreen and an AuthRepository */
 class ResetPasswordViewModel(
     private val repository: AuthRepository = AuthRepositoryProvider.repository
 ) : ViewModel() {
@@ -69,4 +60,14 @@ class ResetPasswordViewModel(
   fun emailIsMalformed(): Boolean {
     return !Patterns.EMAIL_ADDRESS.matcher(_uiState.value.email).matches()
   }
+}
+
+sealed class EmailSendStatus {
+  object Success : EmailSendStatus()
+
+  object Fail : EmailSendStatus()
+
+  object Waiting : EmailSendStatus()
+
+  object None : EmailSendStatus()
 }

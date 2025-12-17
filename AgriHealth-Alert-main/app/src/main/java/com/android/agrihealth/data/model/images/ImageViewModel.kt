@@ -19,6 +19,7 @@ sealed class ImageUIState {
 
   data class UploadSuccess(val path: String) : ImageUIState()
 
+  @Suppress("ArrayInDataClass")
   data class DownloadSuccess(val imageData: ByteArray) : ImageUIState()
 
   data class Error(val e: Throwable) : ImageUIState()
@@ -31,7 +32,7 @@ sealed class ImageUIState {
  * be used internally when overloading a function
  */
 sealed interface PhotoType {
-  data class ByteArray(val bytes: kotlin.ByteArray) : PhotoType
+  @Suppress("ArrayInDataClass") data class ByteArray(val bytes: kotlin.ByteArray) : PhotoType
 
   data class Uri(val uri: android.net.Uri) : PhotoType
 }
@@ -84,17 +85,6 @@ class ImageViewModel(private val repository: ImageRepository = ImageRepositoryPr
    */
   suspend fun uploadAndWait(byteArray: ByteArray): String {
     return uploadAndWaitImplementation(PhotoType.ByteArray(byteArray))
-  }
-
-  /**
-   * Starts uploading the photo referenced by the given [uri] and suspends until the upload
-   * finishes.
-   *
-   * @return The URL of the uploaded photo on success.
-   * @throws Throwable If the upload fails (rethrows the underlying error).
-   */
-  suspend fun uploadAndWait(uri: Uri): String {
-    return uploadAndWaitImplementation(PhotoType.Uri(uri))
   }
 
   private suspend fun uploadAndWaitImplementation(photo: PhotoType): String {

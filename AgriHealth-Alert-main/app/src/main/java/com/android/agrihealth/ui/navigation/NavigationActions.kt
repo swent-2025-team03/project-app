@@ -50,28 +50,28 @@ sealed class Screen(
   data class ViewReport(val reportId: String) :
       Screen(route = "view_report/${reportId}", name = "view_report") {
     companion object {
-      const val route = "view_report/{reportId}"
+      const val ROUTE = "view_report/{reportId}"
     }
   }
 
   data class ViewAlert(val alertId: String) :
       Screen(route = "view_alert/${alertId}", name = "view_alert") {
     companion object {
-      const val route = "view_alert/{alertId}"
+      const val ROUTE = "view_alert/{alertId}"
     }
   }
 
   data class ViewUser(val uid: String) :
       Screen(route = "view_user/${uid.ifEmpty { " " }}", name = "View User") {
     companion object {
-      const val route = "view_user/{uid}"
+      const val ROUTE = "view_user/{uid}"
     }
   }
 
   data class ViewOffice(val officeId: String) :
       Screen(route = "view_office/${officeId}", name = "View Office") {
     companion object {
-      const val route = "view_office/{officeId}"
+      const val ROUTE = "view_office/{officeId}"
     }
   }
 
@@ -86,7 +86,7 @@ sealed class Screen(
           name = "map",
           isTopLevelDestination = true) {
     companion object {
-      const val route = "map?lat={lat}&lng={lng}&reportId={reportId}&alertId={alertId}"
+      const val ROUTE = "map?lat={lat}&lng={lng}&reportId={reportId}&alertId={alertId}"
     }
   }
 
@@ -94,14 +94,14 @@ sealed class Screen(
       Screen(
           route = "planner?reportId=${reportId}", name = "Planner", isTopLevelDestination = true) {
     companion object {
-      const val route = "planner?reportId={reportId}"
+      const val ROUTE = "planner?reportId={reportId}"
     }
   }
 
   data class ClaimCode(val connectionRepo: String) :
       Screen(route = "claim_code?connectionRepo=${connectionRepo}", name = "Claim a code") {
     companion object {
-      const val route = "claim_code?connectionRepo={connectionRepo}"
+      const val ROUTE = "claim_code?connectionRepo={connectionRepo}"
     }
   }
 }

@@ -9,22 +9,15 @@ import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.R
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
-import com.android.agrihealth.data.model.authentification.UserRepository
-import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
-import com.android.agrihealth.ui.loading.withLoadingState
+import com.android.agrihealth.data.model.user.UserRepository
+import com.android.agrihealth.data.model.user.UserRepositoryProvider
+import com.android.agrihealth.ui.common.layout.withLoadingState
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.firebase.auth.FirebaseAuthException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-object SignInErrorMsg {
-  const val EMPTY_EMAIL_OR_PASSWORD = "Please enter your email and password."
-  const val INVALID_CREDENTIALS = "User not found with this email and password."
-  const val TIMEOUT = "Not connected to the internet."
-  const val UNEXPECTED = "Something unexpected happened, try again."
-}
 
 data class SignInUIState(
     val email: String = "",
@@ -40,6 +33,7 @@ data class SignInUIState(
     get() = email.isNotEmpty() && password.isNotEmpty()
 }
 
+/** ViewModel to link SignInScreen and an AuthRepository and a UserRepository */
 class SignInViewModel(
     private val authRepository: AuthRepository = AuthRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository
@@ -131,14 +125,21 @@ class SignInViewModel(
               }) { failure ->
                 _uiState.update { it.copy(verified = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
               }
-            } catch (e: GetCredentialCancellationException) {
+            } catch (_: GetCredentialCancellationException) {
               // User cancelled the sign-in flow
               _uiState.update { it.copy(verified = null) }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
               // Unexpected errors
               _uiState.update { it.copy(verified = null, errorMsg = SignInErrorMsg.UNEXPECTED) }
             }
           }
     }
   }
+}
+
+object SignInErrorMsg {
+  const val EMPTY_EMAIL_OR_PASSWORD = "Please enter your email and password."
+  const val INVALID_CREDENTIALS = "User not found with this email and password."
+  const val TIMEOUT = "Not connected to the internet."
+  const val UNEXPECTED = "Something unexpected happened, try again."
 }

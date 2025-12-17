@@ -3,6 +3,7 @@ package com.android.agrihealth.data.model.device.notifications
 import android.util.Log
 import com.google.firebase.functions.FirebaseFunctions
 
+/** Sends notifications to a Firebase Functions backend */
 class NotificationSenderFirebase : NotificationSender {
   private val functions = FirebaseFunctions.getInstance()
 

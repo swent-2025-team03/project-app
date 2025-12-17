@@ -16,29 +16,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.R
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.testutil.FakeAuthRepository
-import com.android.agrihealth.testutil.FakeUserRepository
-import com.android.agrihealth.ui.loading.LoadingOverlay
+import com.android.agrihealth.ui.common.layout.LoadingOverlay
 
-object SignInScreenTestTags {
-  const val SCREEN = "SignInScreen"
-  const val LOGIN_BUTTON = "loginButton"
-  const val SIGN_UP_BUTTON = "signUpButton"
-  const val LOGIN_TITLE = "loginTitle"
-  const val EMAIL_FIELD = "emailField"
-  const val PASSWORD_FIELD = "passwordField"
-  const val FORGOT_PASSWORD = "forgotPassword"
-  const val LOGIN_DIVIDER = "loginDivider"
-  const val GOOGLE_LOGIN_BUTTON = "googleLoginButton"
-  const val SNACKBAR = "snackbar"
-}
-
+/** Screen where a user can sign in */
 @Composable
 fun SignInScreen(
     modifier: Modifier = Modifier,
@@ -186,6 +170,7 @@ fun SignInScreen(
 }
 
 // function from bootcamp-25-B3-Solution
+/** Button to sign in with Google */
 @Composable
 fun GoogleSignInButton(onSignInClick: () -> Unit) {
   Button(
@@ -217,14 +202,15 @@ fun GoogleSignInButton(onSignInClick: () -> Unit) {
       }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-@Composable
-private fun SignInScreenPreview() {
-  val authRepo = FakeAuthRepository()
-  val userRepo = FakeUserRepository()
-  val vm = SignInViewModel(authRepo, userRepo)
-  AgriHealthAppTheme {
-    SignInScreen(
-        credentialManager = CredentialManager.create(LocalContext.current), signInViewModel = vm)
-  }
+object SignInScreenTestTags {
+  const val SCREEN = "SignInScreen"
+  const val LOGIN_BUTTON = "loginButton"
+  const val SIGN_UP_BUTTON = "signUpButton"
+  const val LOGIN_TITLE = "loginTitle"
+  const val EMAIL_FIELD = "emailField"
+  const val PASSWORD_FIELD = "passwordField"
+  const val FORGOT_PASSWORD = "forgotPassword"
+  const val LOGIN_DIVIDER = "loginDivider"
+  const val GOOGLE_LOGIN_BUTTON = "googleLoginButton"
+  const val SNACKBAR = "snackbar"
 }

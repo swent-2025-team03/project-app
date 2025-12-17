@@ -25,21 +25,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.ui.navigation.NavigationTestTags
-import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.data.model.user.UserViewModel
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-
-object RoleSelectionScreenTestTags {
-  const val WELCOME = "Welcome"
-  const val FARMER = "FarmerButton"
-  const val VET = "VetButton"
-}
 
 /**
  * Minimalist composable function to display a screen to new google users, this should only display
@@ -140,8 +133,8 @@ fun RoleSelectionScreen(
       }
 }
 
-@Preview
-@Composable
-fun RoleSelectionScreenPreview() {
-  RoleSelectionScreen()
+object RoleSelectionScreenTestTags {
+  const val WELCOME = "Welcome"
+  const val FARMER = "FarmerButton"
+  const val VET = "VetButton"
 }

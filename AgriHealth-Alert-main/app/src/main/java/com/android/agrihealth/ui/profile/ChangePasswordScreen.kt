@@ -21,25 +21,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.android.agrihealth.testutil.FakeChangePasswordViewModel
-import com.android.agrihealth.ui.loading.LoadingOverlay
-import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.common.layout.LoadingOverlay
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
-
-/** Tags for the various components. For testing purposes */
-object ChangePasswordScreenTestTags {
-  const val OLD_PASSWORD = "oldPassword"
-  const val NEW_PASSWORD = "newPassword"
-  const val SAVE_BUTTON = "saveButton"
-}
-
-/** Texts for the password change feedback. For testing purposes */
-object ChangePasswordFeedbackTexts {
-  const val OLD_WRONG = "Password does not match."
-  const val NEW_WEAK = "Password is too weak or common to use."
-}
 
 /** Change password screen for email and password users */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -148,18 +133,15 @@ private fun Field(
       modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag(testTag))
 }
 
-/**
- * Preview of the ReportViewScreen for both farmer and vet roles. Allows testing of layout and
- * colors directly in Android Studio.
- */
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-@Composable
-fun ChangePasswordScreenPreview() {
-  MaterialTheme {
-    ChangePasswordScreen(
-        userEmail = "notan@email.no",
-        onBack = {},
-        onUpdatePassword = {},
-        changePasswordViewModel = FakeChangePasswordViewModel("password"))
-  }
+/** Texts for the password change feedback. For testing purposes */
+object ChangePasswordFeedbackTexts {
+  const val OLD_WRONG = "Password does not match."
+  const val NEW_WEAK = "Password is too weak or common to use."
+}
+
+/** Tags for the various components. For testing purposes */
+object ChangePasswordScreenTestTags {
+  const val OLD_PASSWORD = "oldPassword"
+  const val NEW_PASSWORD = "newPassword"
+  const val SAVE_BUTTON = "saveButton"
 }

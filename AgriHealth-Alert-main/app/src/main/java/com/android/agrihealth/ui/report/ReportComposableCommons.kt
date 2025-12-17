@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,10 +15,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.android.agrihealth.data.model.report.MCQ
-import com.android.agrihealth.data.model.report.MCQO
-import com.android.agrihealth.data.model.report.OpenQuestion
-import com.android.agrihealth.data.model.report.YesOrNoQuestion
+import com.android.agrihealth.data.model.report.form.MCQ
+import com.android.agrihealth.data.model.report.form.MCQO
+import com.android.agrihealth.data.model.report.form.OpenQuestion
+import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
 
 object ReportComposableCommonsTestTags {
   const val COLLECTED_SWITCH = "collectedSwitch"
@@ -28,7 +29,7 @@ fun OpenQuestionItem(
     question: OpenQuestion,
     onAnswerChange: (OpenQuestion) -> Unit,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier // Always a test tag
 ) {
   Column(modifier = Modifier.padding(vertical = 8.dp)) {
     Text(question.question)
@@ -46,7 +47,7 @@ fun YesOrNoQuestionItem(
     question: YesOrNoQuestion,
     onAnswerChange: (YesOrNoQuestion) -> Unit,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
 ) {
   Column(modifier = Modifier.padding(vertical = 8.dp)) {
     Text(question.question, modifier = Modifier.padding(bottom = 4.dp))
@@ -68,7 +69,7 @@ fun MCQItem(
     question: MCQ,
     onAnswerChange: (MCQ) -> Unit,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
 ) {
   Column(modifier = Modifier.padding(vertical = 8.dp)) {
     Text(question.question, modifier = Modifier.padding(bottom = 4.dp))
@@ -95,7 +96,7 @@ fun MCQOItem(
     question: MCQO,
     onAnswerChange: (MCQO) -> Unit,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
 ) {
   val otherText = "Other"
   val isLastItemSelected = question.answerIndex == question.answers.size

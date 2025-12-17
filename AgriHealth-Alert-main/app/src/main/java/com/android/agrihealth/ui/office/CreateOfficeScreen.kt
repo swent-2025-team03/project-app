@@ -15,17 +15,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.CREATE_BUTTON
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.DESCRIPTION_FIELD
 import com.android.agrihealth.ui.office.CreateOfficeScreenTestTags.NAME_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
-import com.android.agrihealth.ui.user.UserViewModel
-
-object CreateOfficeScreenTestTags {
-  const val NAME_FIELD = "CreateOfficeNameField"
-  const val DESCRIPTION_FIELD = "CreateOfficeDescriptionField"
-  const val CREATE_BUTTON = "CreateOfficeButtonConfirm"
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +29,7 @@ fun CreateOfficeScreen(
     onCreated: () -> Unit,
 ) {
   val focusManager = LocalFocusManager.current
+  @Suppress("UNCHECKED_CAST")
   val vm: CreateOfficeViewModel =
       viewModel(
           factory =
@@ -98,4 +93,10 @@ fun CreateOfficeScreen(
                   }
             }
       }
+}
+
+object CreateOfficeScreenTestTags {
+  const val NAME_FIELD = "CreateOfficeNameField"
+  const val DESCRIPTION_FIELD = "CreateOfficeDescriptionField"
+  const val CREATE_BUTTON = "CreateOfficeButtonConfirm"
 }

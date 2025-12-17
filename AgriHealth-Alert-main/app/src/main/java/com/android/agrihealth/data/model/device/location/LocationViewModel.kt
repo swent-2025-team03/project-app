@@ -8,8 +8,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class LocationViewModel() : ViewModel() {
-  private val locationRepository = LocationRepositoryProvider.repository
+/** Gets the device's location and permissions related to it, with error handling */
+class LocationViewModel(
+    private val locationRepository: LocationRepository = LocationRepositoryProvider.repository
+) : ViewModel() {
 
   private val _locationState = MutableStateFlow<Location?>(null)
   val locationState = _locationState.asStateFlow()

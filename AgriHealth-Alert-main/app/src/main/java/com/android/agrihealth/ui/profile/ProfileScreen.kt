@@ -26,11 +26,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.user.*
+import com.android.agrihealth.data.model.user.UserViewModel
+import com.android.agrihealth.data.model.user.UserViewModelContract
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
-import com.android.agrihealth.ui.common.OfficeNameViewModel
-import com.android.agrihealth.ui.navigation.NavigationTestTags
-import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.common.image.PhotoUi
+import com.android.agrihealth.ui.common.image.ProfilePicture
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
+import com.android.agrihealth.ui.common.layout.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.LOGOUT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_FARMER
@@ -41,24 +45,6 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.MANAGE_OFFICE_BUT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
-import com.android.agrihealth.ui.user.UserViewModel
-import com.android.agrihealth.ui.user.UserViewModelContract
-import com.android.agrihealth.ui.utils.PhotoUi
-import com.android.agrihealth.ui.utils.ProfilePicture
-
-object ProfileScreenTestTags {
-
-  const val TOP_BAR = "TopBar"
-  const val NAME_TEXT = "NameText"
-  const val EDIT_BUTTON = "EditButton"
-  const val DESCRIPTION_FIELD = "DescriptionField"
-  const val ADDRESS_FIELD = "AddressField"
-  const val DEFAULT_OFFICE_FIELD = "DefaultOfficeField"
-  const val CODE_BUTTON_FARMER = "CodeButtonFarmer"
-  const val MANAGE_OFFICE_BUTTON = "ManageOfficeButton"
-  const val GENERATE_CODE_BUTTON = "GenerateCodeButton"
-  const val PROFILE_PICTURE = "ProfilePicture"
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,6 +61,7 @@ fun ProfileScreen(
   val user = uiState.user
   val userRole = user.role
 
+  @Suppress("UNCHECKED_CAST")
   val factory = remember {
     object : androidx.lifecycle.ViewModelProvider.Factory {
       override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -204,11 +191,11 @@ fun ProfileScreen(
 
               // Default Vet (Farmers only)
               if (user is Farmer) {
-                val officeNameVm: OfficeNameViewModel = viewModel(key = (user).defaultOffice)
+                val officeNameVm: OfficeNameViewModel = viewModel(key = user.defaultOffice)
                 val officeName by officeNameVm.uiState.collectAsState()
                 LaunchedEffect(user) {
                   officeNameVm.loadOffice(
-                      uid = (user).defaultOffice,
+                      uid = user.defaultOffice,
                       deletedOffice = "Deleted office",
                       noneOffice = "Unassigned")
                 }
@@ -253,58 +240,15 @@ fun ProfileScreen(
       }
 }
 
-/* If you want to use the preview, just de-comment this block.
-@Preview(showBackground = true)
-@Composable
-fun ProfileScreenPreviewFarmer() {
-    // Create a fake UserViewModel that matches the real one (no mutableState)
-    val fakeViewModel = object : UserViewModel() {
-        init {
-            userRole = UserRole.FARMER
-            userId = "FARMER_001"
-            user = Farmer(
-                uid = "1",
-                firstname = "Alice",
-                lastname = "Johnson",
-                email = "alice@farmmail.com",
-                address = Location(0.0, 0.0, "Farm"),
-                linkedVets = listOf("vet123", "vet456"),
-                defaultVet = "vet123"
-            )
-        }
-    }
+object ProfileScreenTestTags {
 
-    ProfileScreen(
-        userViewModel = fakeViewModel,
-        onGoBack = {},
-        onLogout = {},
-        onEditProfile = {}
-    )
+  const val TOP_BAR = "TopBar"
+  const val PROFILE_PICTURE = "ProfilePicture"
+  const val NAME_TEXT = "NameText"
+  const val EDIT_BUTTON = "EditButton"
+  const val DESCRIPTION_FIELD = "DescriptionField"
+  const val ADDRESS_FIELD = "AddressField"
+  const val DEFAULT_OFFICE_FIELD = "DefaultOfficeField"
+  const val CODE_BUTTON_FARMER = "CodeButtonFarmer"
+  const val MANAGE_OFFICE_BUTTON = "ManageOfficeButton"
 }
-
-@Preview(showBackground = true)
-@Composable
-fun ProfileScreenPreviewVet() {
-    val fakeViewModel = object : UserViewModel() {
-        init {
-            userRole = UserRole.VET
-            userId = "VET_001"
-            user = Vet(
-                uid = "2",
-                firstname = "Bob",
-                lastname = "Smith",
-                email = "bob@vetcare.com",
-                address = Location(0.0, 0.0, "Clinic"),
-                linkedFarmers = listOf("farmer123", "farmer456")
-            )
-        }
-    }
-
-    ProfileScreen(
-        userViewModel = fakeViewModel,
-        onGoBack = {},
-        onLogout = {},
-        onEditProfile = {}
-    )
-}
-*/

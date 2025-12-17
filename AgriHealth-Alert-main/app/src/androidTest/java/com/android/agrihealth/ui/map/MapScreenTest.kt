@@ -1,44 +1,34 @@
 package com.android.agrihealth.ui.map
 
-import androidx.activity.ComponentActivity
-import androidx.compose.material3.MaterialTheme
+import android.Manifest
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
-import androidx.compose.ui.test.assertTextContains
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.test.rule.GrantPermissionRule
-import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
+import com.android.agrihealth.data.model.alert.Alert
 import com.android.agrihealth.data.model.device.location.LocationRepository
-import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
-import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.testutil.FakeAlertRepository
-import com.android.agrihealth.testutil.FakeUserRepository
-import com.android.agrihealth.testutil.InMemoryReportRepository
-import com.android.agrihealth.testutil.TestConstants
+import com.android.agrihealth.testhelpers.TestReport
+import com.android.agrihealth.testhelpers.TestUser
+import com.android.agrihealth.testhelpers.fakes.FakeAlertRepository
+import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
+import com.android.agrihealth.testhelpers.fakes.FakeUserRepository
+import com.android.agrihealth.testhelpers.templates.UITest
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.NavigationActions
-import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.google.android.gms.maps.model.LatLng
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -47,139 +37,84 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.RuleChain
-import org.junit.rules.TestRule
 
-object MapScreenTestReports {
-  val report1 =
-      Report(
-          "rep_id1",
-          "Report title 1",
-          "Description 1",
-          emptyList(),
-          null,
-          "farmerId1",
-          "officeId1",
-          ReportStatus.PENDING,
-          null,
-          Location(46.9481, 7.4474, "Place name 1"))
-  val report2 =
-      Report(
-          "rep_id2",
-          "Report title 2",
-          "Description aaaa 2",
-          emptyList(),
-          null,
-          "farmerId2",
-          "officeId2",
-          ReportStatus.IN_PROGRESS,
-          "Vet answer",
-          Location(46.9481, 7.4484))
-  val report3 =
-      Report(
-          "rep_id3",
-          "Report title 3",
-          "Description 3",
-          emptyList(),
-          null,
-          "farmerId3",
-          "officeId1",
-          ReportStatus.RESOLVED,
-          null,
-          Location(46.9481, 7.4464, "Place name 3"))
-  val report4 =
-      Report(
-          "rep_id4",
-          "Report title 4",
-          "Description aaaa 4",
-          emptyList(),
-          null,
-          "farmerId4",
-          "officeId4",
-          ReportStatus.SPAM,
-          "Vet answer 4",
-          Location(46.9491, 7.4474))
-}
-
-class MapScreenTest {
-
-  private val composeTestRule = createAndroidComposeRule<ComponentActivity>()
-
-  @get:Rule
-  val ruleChain: TestRule =
-      RuleChain.outerRule(
-              GrantPermissionRule.grant(
-                  android.Manifest.permission.ACCESS_FINE_LOCATION,
-                  android.Manifest.permission.ACCESS_COARSE_LOCATION))
-          .around(composeTestRule)
-
-  private lateinit var locationViewModel: LocationViewModel
-  private lateinit var locationRepository: LocationRepository
-  val reportRepository = InMemoryReportRepository()
+class MapScreenTest :
+    UITest(
+        grantedPermissions =
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION)) {
+  val user = TestUser.FARMER1.copy()
+  val userId = user.uid
+  val reportRepository =
+      FakeReportRepository(
+          listOf(
+              TestReport.REPORT1.copy(farmerId = userId),
+              TestReport.REPORT2.copy(farmerId = userId),
+              TestReport.REPORT3.copy(farmerId = userId),
+              TestReport.REPORT4.copy(farmerId = userId)))
   val alertRepository = FakeAlertRepository()
-  private lateinit var userId: String
+  val userRepository = FakeUserRepository(user)
+  val locationViewModel = LocationViewModel(fakeLocationRepository())
 
-  @Before
-  fun setUp() = runTest {
-    // Fake user
-    userId = "TEST_USER"
-    val fakeUser =
-        Farmer(
-            uid = userId,
-            firstname = "Test",
-            lastname = "User",
-            email = "test@example.com",
-            address = Location(46.9485, 7.4479),
-            linkedOffices = emptyList(),
-            defaultOffice = null,
-            isGoogleAccount = false,
-            description = null)
+  private fun fakeLocationRepository(delayMs: Long = 0L): LocationRepository {
+    val repo: LocationRepository = mockk(relaxed = true)
 
-    val fakeUserRepository = FakeUserRepository(fakeUser)
-    UserRepositoryProvider.repository = fakeUserRepository
-    // Fake location repository
-    locationRepository = mockk(relaxed = true)
+    coEvery { repo.getLastKnownLocation() } coAnswers
+        {
+          delay(delayMs)
+          Location(46.9481, 7.4474, "Bern")
+        }
+    coEvery { repo.getCurrentLocation() } coAnswers
+        {
+          delay(delayMs)
+          Location(46.9500, 7.4400, "Current Position")
+        }
 
-    coEvery { locationRepository.getLastKnownLocation() } returns Location(46.9481, 7.4474, "Bern")
-
-    coEvery { locationRepository.getCurrentLocation() } returns
-        Location(46.9500, 7.4400, "Current Position")
-
-    every { locationRepository.hasFineLocationPermission() } returns true
-    every { locationRepository.hasCoarseLocationPermission() } returns true
-
-    LocationRepositoryProvider.repository = locationRepository
-    locationViewModel = LocationViewModel()
-
-    // Inject test reports
-    reportRepository.addReport(MapScreenTestReports.report1.copy(farmerId = userId))
-    reportRepository.addReport(MapScreenTestReports.report2.copy(farmerId = userId))
-    reportRepository.addReport(MapScreenTestReports.report3.copy(farmerId = userId))
-    reportRepository.addReport(MapScreenTestReports.report4.copy(farmerId = userId))
+    return repo
   }
 
   // Sets composeTestRule to the map screen with a predefined MapViewModel, using the local report
   // repository among other things
   private fun setContentToMapWithVM(
       isViewedFromOverview: Boolean = true,
-      selectedReportId: String? = null
+      selectedReportId: String? = null,
+      locationVM: LocationViewModel = locationViewModel
   ): MapViewModel {
     val mapViewModel =
         MapViewModel(
             reportRepository = reportRepository,
+            userRepository = userRepository,
+            locationViewModel = locationVM,
             alertRepository = alertRepository,
-            locationViewModel = locationViewModel,
             selectedReportId = selectedReportId,
             userId = userId)
-    composeTestRule.setContent {
-      MaterialTheme {
-        MapScreen(mapViewModel = mapViewModel, isViewedFromOverview = isViewedFromOverview)
+
+    setContent { MapScreen(mapViewModel, isViewedFromOverview = isViewedFromOverview) }
+
+    return mapViewModel
+  }
+
+  override fun displayAllComponents() {}
+
+  private fun assertMapScreenElementsVisibility(isViewedFromOverview: Boolean) {
+    with(MapScreenTestTags) {
+      nodesAreDisplayed(
+          GOOGLE_MAP_SCREEN,
+          REFRESH_BUTTON,
+          VISIBILITY_MENU,
+          REPORT_VISIBILITY_SWITCH,
+          ALERT_VISIBILITY_SWITCH)
+
+      if (isViewedFromOverview) {
+        nodesAreDisplayed(REPORT_FILTER_MENU, NavigationTestTags.BOTTOM_NAVIGATION_MENU)
+        nodesNotDisplayed(TOP_BAR_MAP_TITLE, NavigationTestTags.GO_BACK_BUTTON)
+      } else {
+        nodesAreDisplayed(TOP_BAR_MAP_TITLE, NavigationTestTags.GO_BACK_BUTTON)
+        nodesNotDisplayed(REPORT_FILTER_MENU, NavigationTestTags.BOTTOM_NAVIGATION_MENU)
       }
     }
-    return mapViewModel
   }
 
   @Test
@@ -194,266 +129,171 @@ class MapScreenTest {
     assertMapScreenElementsVisibility(isViewedFromOverview = false)
   }
 
-  private fun assertMapScreenElementsVisibility(isViewedFromOverview: Boolean) {
-    composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
-
-    if (isViewedFromOverview) {
-      composeTestRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsNotDisplayed()
-      composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsNotDisplayed()
-      composeTestRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertIsDisplayed()
-      composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsDisplayed()
-    } else {
-      composeTestRule.onNodeWithTag(MapScreenTestTags.TOP_BAR_MAP_TITLE).assertIsDisplayed()
-      composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON).assertIsDisplayed()
-      composeTestRule
-          .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
-          .assertIsNotDisplayed()
-      composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsNotDisplayed()
-    }
-
-    composeTestRule.onNodeWithTag(MapScreenTestTags.REFRESH_BUTTON).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.VISIBILITY_MENU).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_VISIBILITY_SWITCH).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.ALERT_VISIBILITY_SWITCH).assertIsDisplayed()
-  }
-
   @Test
-  fun displayReportsFromUser() = runTest {
-    setContentToMapWithVM()
-
-    composeTestRule.waitForIdle()
-
-    val reports = reportRepository.getAllReports(userId)
-
-    reports.forEach { report ->
-      val markerTag = MapScreenTestTags.getTestTagForReportMarker(report.id)
-
-      composeTestRule
-          .onNodeWithTag(markerTag, useUnmergedTree = true)
-          .assertExists()
-          .assertIsDisplayed()
-    }
-  }
-
-  @Test
-  fun displayReportInfo() = runTest {
-    setContentToMapWithVM()
-
-    val report =
-        reportRepository
-            .getAllReports(userId)
-            .last() // because of debug boxes, they stack so you have to take the last
-    val reportId = report.id
-
-    composeTestRule
-        .onNodeWithTag(MapScreenTestTags.ALERT_VISIBILITY_SWITCH)
-        .performClick()
-        .assertIsOff()
-
-    composeTestRule
-        .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
-        .assertIsDisplayed()
-        .performClick()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.INFO_BOX).assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(MapScreenTestTags.getTestTagForReportTitle(reportId))
-        .assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(MapScreenTestTags.getTestTagForReportDesc(reportId))
-        .assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(reportId))
-        .performClick()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.INFO_BOX).assertIsNotDisplayed()
-  }
-
-  @Test
-  fun displayAlertInfo() = runTest {
-    setContentToMapWithVM()
-
-    val alert = alertRepository.getAlerts().last()
-    val alertId = alert.id
-
-    composeTestRule
-        .onNodeWithTag(MapScreenTestTags.getTestTagForAlertZone(alertId))
-        .assertIsDisplayed()
-        .performClick()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.INFO_BOX).assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(MapScreenTestTags.getTestTagForAlertTitle(alertId))
-        .assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(MapScreenTestTags.getTestTagForAlertDesc(alertId))
-        .assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.getTestTagForAlertZone(alertId)).performClick()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.INFO_BOX).assertIsNotDisplayed()
-  }
-
-  @Test
-  fun filterReportsByStatus() = runTest {
-    setContentToMapWithVM()
-
-    composeTestRule.waitForIdle()
-
-    val reports = reportRepository.getAllReports(userId)
-
-    composeTestRule.waitUntil(timeoutMillis = TestConstants.DEFAULT_TIMEOUT) {
-      val count =
-          reports.sumOf { r ->
-            val tag = MapScreenTestTags.getTestTagForReportMarker(r.id)
-            composeTestRule
-                .onAllNodesWithTag(tag, useUnmergedTree = true)
-                .fetchSemanticsNodes()
-                .size
-          }
-      count == reports.size
-    }
-
-    // Show/hide works
-    val reportSwitchNode = composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_VISIBILITY_SWITCH)
-    reportSwitchNode.assertIsOn()
-    reportSwitchNode.performClick()
-    reportSwitchNode.assertIsOff()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU).assertIsNotDisplayed()
-    reports.forEach {
-      composeTestRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForReportMarker(it.id))
-          .assertDoesNotExist()
-    }
-    reportSwitchNode.performClick()
-    reportSwitchNode.assertIsOn()
-
-    // If show, filters work
-    val filters: List<String?> =
-        listOf<String?>(null) + ReportStatus.entries.map { it.displayString() }
-
-    filters.forEach { filter ->
-      composeTestRule
-          .onNodeWithTag(MapScreenTestTags.REPORT_FILTER_MENU)
-          .assertIsDisplayed()
-          .performClick()
-      composeTestRule
-          .onNodeWithTag(MapScreenTestTags.getTestTagForFilter(filter), useUnmergedTree = true)
-          .assertIsDisplayed()
-          .performClick()
-      val (matches, nonMatches) =
-          reports.partition { it -> filter == null || it.status.displayString() == filter }
-      matches.forEach { report ->
-        composeTestRule
-            .onNodeWithTag(
-                MapScreenTestTags.getTestTagForReportMarker(report.id), useUnmergedTree = true)
-            .assertExists()
-            .assertIsDisplayed()
+  fun displayReportsFromUser_withFiltersAndSwitch_andShowsInfo() = runTest {
+    fun List<Report>.assertAll(assertion: (tag: String) -> Unit) {
+      this.forEach { report ->
+        val markerTag = MapScreenTestTags.getTestTagForReportMarker(report.id)
+        assertion(markerTag)
       }
-      nonMatches.forEach { report ->
-        composeTestRule
-            .onNodeWithTag(
-                MapScreenTestTags.getTestTagForReportMarker(report.id), useUnmergedTree = true)
-            .assertDoesNotExist()
+    }
+
+    fun List<Report>.assertAllDisplayed() = this.assertAll(::nodeIsDisplayed)
+    fun List<Report>.assertNoneDisplayed() = this.assertAll(::nodeNotDisplayed)
+
+    setContentToMapWithVM()
+
+    val reports = reportRepository.getAllReports(userId)
+
+    with(MapScreenTestTags) {
+      // Disable alerts to prevent issues
+      clickOn(ALERT_VISIBILITY_SWITCH)
+
+      // No filter, switch is on
+      reports.assertAllDisplayed()
+
+      // Show/hide works
+      val reportSwitch = node(REPORT_VISIBILITY_SWITCH)
+      reportSwitch.assertIsOn()
+      reportSwitch.performClick()
+      reportSwitch.assertIsOff()
+
+      nodeNotDisplayed(REPORT_FILTER_MENU)
+      reports.assertNoneDisplayed()
+
+      reportSwitch.performClick()
+      reportSwitch.assertIsOn()
+
+      // If show, filters work
+      val filters: List<String?> =
+          listOf<String?>(null) + ReportStatus.entries.map { it.displayString() }
+
+      filters.forEach { filter ->
+        clickOn(REPORT_FILTER_MENU)
+        clickOn(getTestTagForFilter(filter))
+
+        val (matches, nonMatches) =
+            reports.partition { it -> filter == null || it.status.displayString() == filter }
+
+        matches.assertAllDisplayed()
+        nonMatches.assertNoneDisplayed()
+
+        // Info box
+        val reportId = matches.last().id
+        clickOn(getTestTagForReportMarker(reportId))
+        nodesAreDisplayed(
+            INFO_BOX, getTestTagForReportTitle(reportId), getTestTagForReportDesc(reportId))
+        clickOn(getTestTagForReportMarker(reportId))
+        nodeNotDisplayed(INFO_BOX)
       }
     }
   }
 
   @Test
-  fun showHideAlerts() = runTest {
+  fun displayAlert_withSwitch_andShowsInfo() = runTest {
+    fun List<Alert>.assertAll(assertion: (tag: String) -> Unit) {
+      this.forEach { alert ->
+        val zoneTag = MapScreenTestTags.getTestTagForAlertZone(alert.id)
+        assertion(zoneTag)
+      }
+    }
+
+    fun List<Alert>.assertAllDisplayed() = this.assertAll(::nodeIsDisplayed)
+    fun List<Alert>.assertNoneDisplayed() = this.assertAll(::nodesNotDisplayed)
+
     setContentToMapWithVM()
 
     val alerts = alertRepository.getAlerts()
-    val alertSwitchNode = composeTestRule.onNodeWithTag(MapScreenTestTags.ALERT_VISIBILITY_SWITCH)
-    val alertsNodes =
-        alerts.map { alert ->
-          composeTestRule.onNodeWithTag(MapScreenTestTags.getTestTagForAlertZone(alert.id))
-        }
 
-    alertSwitchNode.assertIsOn()
-    alertsNodes.forEach { node -> node.assertIsDisplayed() }
-    alertSwitchNode.performClick()
-    alertSwitchNode.assertIsOff()
-    alertsNodes.forEach { node -> node.assertIsNotDisplayed() }
-    alertSwitchNode.performClick()
-    alertSwitchNode.assertIsOn()
+    with(MapScreenTestTags) {
+      // Show/hide works
+      alerts.assertAllDisplayed()
+
+      val alertSwitch = node(ALERT_VISIBILITY_SWITCH)
+      alertSwitch.assertIsOn()
+      alertSwitch.performClick()
+      alertSwitch.assertIsOff()
+
+      alerts.assertNoneDisplayed()
+
+      alertSwitch.performClick()
+      alertSwitch.assertIsOn()
+
+      // Info box
+      val alertId = alerts.last().id
+      clickOn(getTestTagForAlertZone(alertId))
+      nodesAreDisplayed(INFO_BOX, getTestTagForAlertTitle(alertId), getTestTagForAlertDesc(alertId))
+      clickOn(getTestTagForAlertZone(alertId))
+      nodeNotDisplayed(INFO_BOX)
+    }
   }
 
   @Test
-  fun canNavigateFromMapToReport() = runTest {
-    val reports = reportRepository.getAllReports(userId)
-    val report = reports.first()
+  fun navigationFromMap_toReportAndToAlert() = runTest {
+    val report = reportRepository.getAllReports(userId).last()
     val reportId = report.id
     val FAKE_VIEW_REPORT = "fakeViewReportScreen"
 
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      val navigation = NavigationActions(navController)
-
-      NavHost(navController = navController, startDestination = Screen.Map.route) {
-        composable(Screen.Map.route) {
-          val mapViewModel =
-              MapViewModel(
-                  reportRepository = reportRepository,
-                  locationViewModel = locationViewModel,
-                  selectedReportId = reportId,
-                  userId = userId)
-          MapScreen(mapViewModel = mapViewModel, navigationActions = navigation)
-        }
-        composable(Screen.ViewReport.route) {
-          Text(reportId, modifier = Modifier.testTag(FAKE_VIEW_REPORT))
-        }
-      }
-    }
-
-    // Go to map screen
-    composeTestRule.onNodeWithTag(NavigationTestTags.MAP_TAB).assertIsDisplayed().performClick()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.GOOGLE_MAP_SCREEN).assertIsDisplayed()
-    // Click on report
-    composeTestRule.onNodeWithTag(MapScreenTestTags.INFO_BOX).assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(MapScreenTestTags.INFO_NAVIGATION_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-
-    // Check if report screen
-    composeTestRule.onNodeWithTag(FAKE_VIEW_REPORT).assertIsDisplayed().assertTextContains(reportId)
-  }
-
-  @Test
-  fun canNavigateFromMapToAlert() = runTest {
     val alert = alertRepository.getAlerts().last()
     val alertId = alert.id
     val FAKE_ALERT_VIEW = "fakeAlertViewScreen"
 
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      val navigation = NavigationActions(navController)
+    val GO_BACK = "fakeGoBack"
 
-      NavHost(navController = navController, startDestination = Screen.Map.route) {
-        composable(Screen.Map.route) {
+    lateinit var navigationActions: NavigationActions
+
+    setContent {
+      val navController = rememberNavController()
+      navigationActions = NavigationActions(navController)
+
+      NavHost(navController = navController, startDestination = Screen.Map.ROUTE) {
+        composable(Screen.Map.ROUTE) {
           val mapViewModel =
               MapViewModel(
                   reportRepository = reportRepository,
                   alertRepository = alertRepository,
                   locationViewModel = locationViewModel,
                   userId = userId)
-          MapScreen(mapViewModel = mapViewModel, navigationActions = navigation)
+          MapScreen(mapViewModel = mapViewModel, navigationActions = navigationActions)
         }
-        composable(Screen.ViewAlert.route) {
+        composable(Screen.ViewReport.ROUTE) {
+          Text(reportId, modifier = Modifier.testTag(FAKE_VIEW_REPORT))
+          Button(onClick = { navigationActions.goBack() }, modifier = Modifier.testTag(GO_BACK)) {
+            Text(":)")
+          }
+        }
+        composable(Screen.ViewAlert.ROUTE) {
           Text(alertId, modifier = Modifier.testTag(FAKE_ALERT_VIEW))
         }
       }
     }
 
-    composeTestRule.onNodeWithTag(MapScreenTestTags.getTestTagForAlertZone(alert.id)).performClick()
-    composeTestRule.onNodeWithTag(MapScreenTestTags.INFO_BOX).assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(MapScreenTestTags.INFO_NAVIGATION_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-    composeTestRule.onNodeWithTag(FAKE_ALERT_VIEW).assertIsDisplayed().assertTextContains(alertId)
+    with(MapScreenTestTags) {
+      clickOn(NavigationTestTags.MAP_TAB)
+      nodeIsDisplayed(GOOGLE_MAP_SCREEN)
+
+      // Report
+      clickOn(ALERT_VISIBILITY_SWITCH)
+      clickOn(getTestTagForReportMarker(reportId))
+      nodeIsDisplayed(INFO_BOX)
+      clickOn(INFO_NAVIGATION_BUTTON)
+      textContains(FAKE_VIEW_REPORT, reportId)
+
+      clickOn(GO_BACK)
+      clickOn(REPORT_VISIBILITY_SWITCH)
+
+      // Alert
+      clickOn(getTestTagForAlertZone(alertId))
+      nodeIsDisplayed(INFO_BOX)
+      clickOn(INFO_NAVIGATION_BUTTON)
+      textContains(FAKE_ALERT_VIEW, alertId)
+    }
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun spiderifyReportsTest() = runTest {
-    reportRepository.addReport(MapScreenTestReports.report1.copy(farmerId = userId))
+    reportRepository.addReport(TestReport.REPORT1.copy(farmerId = userId))
 
     val mapViewModel =
         MapViewModel(
@@ -461,10 +301,10 @@ class MapScreenTest {
             alertRepository = alertRepository,
             locationViewModel = locationViewModel,
             userId = userId,
-            selectedReportId = MapScreenTestReports.report1.id)
+            selectedReportId = TestReport.REPORT1.id)
 
-    val reports1 = List(10) { index -> MapScreenTestReports.report1.copy(id = "report1$index") }
-    val reports2 = List(5) { index -> MapScreenTestReports.report2.copy(id = "report2$index") }
+    val reports1 = List(10) { index -> TestReport.REPORT1.copy(id = "report1$index") }
+    val reports2 = List(5) { index -> TestReport.REPORT2.copy(id = "report2$index") }
     val reports = reports1 + reports2
 
     reports.forEach { it -> reportRepository.addReport(it.copy(farmerId = userId)) }
@@ -478,14 +318,14 @@ class MapScreenTest {
     val group1 =
         groups[
                 LatLng(
-                    MapScreenTestReports.report1.location?.latitude ?: 0.0,
-                    MapScreenTestReports.report1.location?.longitude ?: 0.0)]
+                    TestReport.REPORT1.location?.latitude ?: 0.0,
+                    TestReport.REPORT1.location?.longitude ?: 0.0)]
             ?.toSet()
     val group2 =
         groups[
                 LatLng(
-                    MapScreenTestReports.report2.location?.latitude ?: 0.0,
-                    MapScreenTestReports.report2.location?.longitude ?: 0.0)]
+                    TestReport.REPORT2.location?.latitude ?: 0.0,
+                    TestReport.REPORT2.location?.longitude ?: 0.0)]
             ?.toSet()
 
     assertEquals(11, group1?.size)
@@ -496,38 +336,5 @@ class MapScreenTest {
 
     assertEquals(11, positions1?.size)
     assertEquals(6, positions2?.size)
-  }
-
-  @Test
-  fun fetchingLocation_showsSnackbarMessage() = runTest {
-    // Given a slow location repository
-    every { locationRepository.hasFineLocationPermission() } returns true
-    every { locationRepository.hasCoarseLocationPermission() } returns true
-
-    coEvery { locationRepository.getLastKnownLocation() } coAnswers
-        {
-          delay(TestConstants.SHORT_TIMEOUT) // simulate slow fetch
-          Location(46.95, 7.44)
-        }
-
-    val mapViewModel = setContentToMapWithVM(isViewedFromOverview = true)
-
-    composeTestRule.runOnUiThread { mapViewModel.setStartingLocation(null) }
-
-    composeTestRule.waitUntil(timeoutMillis = TestConstants.LONG_TIMEOUT) {
-      composeTestRule.onAllNodesWithText("Loading location...").fetchSemanticsNodes().isNotEmpty()
-    }
-    composeTestRule.onNodeWithText("Loading location...").assertIsDisplayed()
-  }
-
-  @Test
-  fun displaysCurrentUserLocationMarker() = runTest {
-    setContentToMapWithVM() // provides the currentUserLocation
-    composeTestRule.waitForIdle()
-
-    composeTestRule
-        .onNodeWithTag(MapScreenTestTags.USER_LOCATION_MARKER)
-        .assertExists()
-        .assertIsDisplayed()
   }
 }

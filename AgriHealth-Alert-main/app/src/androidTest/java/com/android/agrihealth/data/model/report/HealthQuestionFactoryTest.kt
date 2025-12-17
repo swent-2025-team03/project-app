@@ -1,6 +1,8 @@
 package com.android.agrihealth.data.model.report
 
-import org.junit.Assert.assertEquals
+import com.android.agrihealth.data.model.report.form.HealthQuestionFactory
+import com.android.agrihealth.data.model.report.form.Species
+import org.junit.Assert
 import org.junit.Test
 
 class HealthQuestionFactoryTest {
@@ -10,7 +12,7 @@ class HealthQuestionFactoryTest {
     val expected = HealthQuestionFactory.poultryQuestions().size
     val result = HealthQuestionFactory.questionsForSpecies(Species.POULTRY)
 
-    assertEquals(expected, result.size)
+    Assert.assertEquals(expected, result.size)
   }
 
   @Test
@@ -18,6 +20,6 @@ class HealthQuestionFactoryTest {
     val expected = HealthQuestionFactory.ovineQuestions().size
     val result = HealthQuestionFactory.questionsForSpecies(Species.OVINE)
 
-    assertEquals(expected, result.size)
+    Assert.assertEquals(expected, result.size)
   }
 }

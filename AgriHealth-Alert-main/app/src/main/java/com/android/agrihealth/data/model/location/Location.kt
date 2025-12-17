@@ -4,12 +4,15 @@ import com.google.android.gms.maps.model.LatLng
 import kotlin.math.cos
 import kotlin.math.sin
 
+/** Geographical coordinates paired with the address name */
 data class Location(val latitude: Double, val longitude: Double, val name: String? = null)
 
+/** Converts an AgriHealth location into a Google Maps latitude and longitude pair */
 fun Location.toLatLng(): LatLng {
   return LatLng(this.latitude, this.longitude)
 }
 
+/** Converts a Google Maps latitude and longitude pair into an AgriHealth location */
 fun LatLng.toLocation(): Location {
   return Location(this.latitude, this.longitude)
 }

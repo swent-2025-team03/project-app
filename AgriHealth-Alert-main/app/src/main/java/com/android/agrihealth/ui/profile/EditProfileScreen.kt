@@ -23,57 +23,26 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.connection.ConnectionRepository
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.*
-import com.android.agrihealth.ui.common.OfficeNameViewModel
-import com.android.agrihealth.ui.navigation.NavigationTestTags
-import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.data.model.user.UserViewModel
+import com.android.agrihealth.data.model.user.UserViewModelContract
+import com.android.agrihealth.ui.common.image.EditableProfilePictureWithImageCropper
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
+import com.android.agrihealth.ui.common.layout.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
 import com.android.agrihealth.ui.office.ManageOfficeViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
-import com.android.agrihealth.ui.user.UserViewModel
-import com.android.agrihealth.ui.user.UserViewModelContract
-import com.android.agrihealth.ui.utils.EditableProfilePictureWithImageCropper
 import kotlinx.coroutines.launch
-
-enum class CodeType {
-  FARMER,
-  VET;
-
-  fun displayName(): String =
-      when (this) {
-        FARMER -> "Farmer"
-        VET -> "Vet"
-      }
-}
-
-object EditProfileScreenTestTags {
-  const val FIRSTNAME_FIELD = "FirstNameField"
-  const val LASTNAME_FIELD = "LastNameField"
-  const val DESCRIPTION_FIELD = "Description"
-  const val PASSWORD_FIELD = "PasswordField"
-  const val ADDRESS_FIELD = "EditAddressField"
-  const val LOCATION_BUTTON = "LocationButton"
-  const val DEFAULT_VET_DROPDOWN = "DefaultVetDropdown"
-  const val ADD_CODE_BUTTON = "AddVetButton"
-  const val SAVE_BUTTON = "SaveButton"
-  const val PASSWORD_BUTTON = "PasswordButton"
-  const val COPY_CODE_BUTTON = "CopyActiveCodeListElementButton"
-
-  fun dropdownTag(type: String) = "ACTIVE_CODES_DROPDOWN_$type"
-
-  fun dropdownElementTag(type: String) = "ACTIVE_CODE_ELEMENT_$type"
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,6 +74,7 @@ fun EditProfileScreen(
   val farmerCodes by codesViewModel.farmerCodes.collectAsState()
   val vetCodes by codesViewModel.vetCodes.collectAsState()
 
+  @Suppress("UNCHECKED_CAST")
   val createManageOfficeViewModel =
       object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -116,6 +86,7 @@ fun EditProfileScreen(
         }
       }
 
+  @Suppress("UNCHECKED_CAST")
   val editProfileViewModel: EditProfileViewModel =
       viewModel(
           factory =
@@ -291,7 +262,7 @@ fun EditProfileScreen(
               if (user is Farmer) {
                 Spacer(modifier = Modifier.height(12.dp))
 
-                if ((user as Farmer).linkedOffices.isEmpty()) {
+                if (user.linkedOffices.isEmpty()) {
                   Text(
                       text = "You need to add offices before choosing your default one.",
                       style = MaterialTheme.typography.bodySmall,
@@ -302,7 +273,7 @@ fun EditProfileScreen(
                 val officeNames = remember { mutableStateMapOf<String, String>() }
 
                 // For each linked office, load their name
-                (user as Farmer).linkedOffices.forEach { officeId ->
+                user.linkedOffices.forEach { officeId ->
                   val vm: OfficeNameViewModel = viewModel(key = officeId)
                   val uiState by vm.uiState.collectAsState()
 
@@ -335,7 +306,7 @@ fun EditProfileScreen(
                       ExposedDropdownMenu(
                           expanded = expandedVetDropdown,
                           onDismissRequest = { expandedVetDropdown = false }) {
-                            (user as Farmer).linkedOffices.forEach { officeId ->
+                            user.linkedOffices.forEach { officeId ->
                               val displayName = officeNames[officeId] ?: officeId
 
                               DropdownMenuItem(
@@ -391,50 +362,6 @@ fun EditProfileScreen(
             }
       }
 }
-
-/*
-@Preview(showBackground = true)
-@Composable
-fun EditProfileScreenPreviewFarmer() {
-  val fakeViewModel =
-      object : UserViewModel() {
-        init {
-          userRole = UserRole.FARMER
-          user =
-              Farmer(
-                  uid = "1",
-                  firstname = "Alice",
-                  lastname = "Johnson",
-                  email = "alice@farmmail.com",
-                  address = Location(0.0, 0.0, "Farm"),
-                  linkedVets = listOf("vet123", "vet456"),
-                  defaultVet = "vet123")
-        }
-      }
-
-  EditProfileScreen(userViewModel = fakeViewModel, onGoBack = {}, onSave = {}, onAddVetCode = {})
-}
-
-@Preview(showBackground = true)
-@Composable
-fun EditProfileScreenPreviewVet() {
-  val fakeViewModel =
-      object : UserViewModel() {
-        init {
-          userRole = UserRole.VET
-          user =
-              Vet(
-                  uid = "2",
-                  firstname = "Bob",
-                  lastname = "Smith",
-                  email = "bob@vetcare.com",
-                  address = Location(0.0, 0.0, "Clinic")
-        }
-      }
-
-  EditProfileScreen(userViewModel = fakeViewModel, onGoBack = {}, onSave = {}, onAddVetCode = {})
-}
-*/
 
 @Composable
 /** Creates an expandable list of every given code, along a "copy to clipboard" button */
@@ -506,8 +433,31 @@ fun CopyToClipboardButton(toCopy: String, snackbarHostState: SnackbarHostState) 
       }
 }
 
-@Preview
-@Composable
-fun ActiveCodeListPreview() {
-  AgriHealthAppTheme { EditProfileScreen() }
+enum class CodeType {
+  FARMER,
+  VET;
+
+  fun displayName(): String =
+      when (this) {
+        FARMER -> "Farmer"
+        VET -> "Vet"
+      }
+}
+
+object EditProfileScreenTestTags {
+  const val FIRSTNAME_FIELD = "FirstNameField"
+  const val LASTNAME_FIELD = "LastNameField"
+  const val DESCRIPTION_FIELD = "Description"
+  const val PASSWORD_FIELD = "PasswordField"
+  const val ADDRESS_FIELD = "EditAddressField"
+  const val LOCATION_BUTTON = "LocationButton"
+  const val DEFAULT_VET_DROPDOWN = "DefaultVetDropdown"
+  const val ADD_CODE_BUTTON = "AddVetButton"
+  const val SAVE_BUTTON = "SaveButton"
+  const val PASSWORD_BUTTON = "PasswordButton"
+  const val COPY_CODE_BUTTON = "CopyActiveCodeListElementButton"
+
+  fun dropdownTag(type: String) = "ACTIVE_CODES_DROPDOWN_$type"
+
+  fun dropdownElementTag(type: String) = "ACTIVE_CODE_ELEMENT_$type"
 }

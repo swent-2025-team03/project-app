@@ -19,22 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.user.*
-import com.android.agrihealth.ui.utils.PhotoUi
-import com.android.agrihealth.ui.utils.ProfilePicture
-
-object ViewUserScreenTestTags {
-  const val TOP_BAR = "ViewUserTopBar"
-  const val BACK_BUTTON = "ViewUserBackButton"
-  const val LOADING_INDICATOR = "ViewUserLoadingIndicator"
-  const val ERROR_TEXT = "ViewUserErrorText"
-  const val CONTENT_COLUMN = "ViewUserContentColumn"
-  const val PROFILE_PICTURE = "ViewUserProfilePicture"
-  const val NAME_FIELD = "ViewUserNameField"
-  const val ROLE_FIELD = "ViewUserRoleField"
-  const val OFFICE_FIELD = "ViewUserOfficeField"
-  const val ADDRESS_FIELD = "ViewUserAddressField"
-  const val DESCRIPTION_FIELD = "ViewUserDescriptionField"
-}
+import com.android.agrihealth.ui.common.image.PhotoUi
+import com.android.agrihealth.ui.common.image.ProfilePicture
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -184,4 +170,18 @@ private fun ViewUserContent(user: User, officeName: String?, imageViewModel: Ima
 
         Spacer(Modifier.height(32.dp))
       }
+}
+
+object ViewUserScreenTestTags {
+  const val TOP_BAR = "ViewUserTopBar"
+  const val BACK_BUTTON = "ViewUserBackButton"
+  const val LOADING_INDICATOR = "ViewUserLoadingIndicator"
+  const val ERROR_TEXT = "ViewUserErrorText"
+  const val CONTENT_COLUMN = "ViewUserContentColumn"
+  const val PROFILE_PICTURE = "ViewUserProfilePicture"
+  const val NAME_FIELD = "ViewUserNameField"
+  const val ROLE_FIELD = "ViewUserRoleField"
+  const val OFFICE_FIELD = "ViewUserOfficeField"
+  const val ADDRESS_FIELD = "ViewUserAddressField"
+  const val DESCRIPTION_FIELD = "ViewUserDescriptionField"
 }

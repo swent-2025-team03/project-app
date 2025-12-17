@@ -28,71 +28,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.report.MCQ
-import com.android.agrihealth.data.model.report.MCQO
-import com.android.agrihealth.data.model.report.OpenQuestion
-import com.android.agrihealth.data.model.report.QuestionForm
-import com.android.agrihealth.data.model.report.YesOrNoQuestion
+import com.android.agrihealth.data.model.report.form.MCQ
+import com.android.agrihealth.data.model.report.form.MCQO
+import com.android.agrihealth.data.model.report.form.OpenQuestion
+import com.android.agrihealth.data.model.report.form.QuestionForm
+import com.android.agrihealth.data.model.report.form.QuestionType
+import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.testutil.FakeAddReportViewModel
-import com.android.agrihealth.testutil.FakeUserViewModel
-import com.android.agrihealth.ui.common.OfficeNameViewModel
-import com.android.agrihealth.ui.loading.LoadingOverlay
-import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.data.model.user.UserViewModel
+import com.android.agrihealth.data.model.user.UserViewModelContract
+import com.android.agrihealth.ui.common.LocalPhotoDisplay
+import com.android.agrihealth.ui.common.UploadRemovePhotoButton
+import com.android.agrihealth.ui.common.layout.LoadingOverlay
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
+import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
 import com.android.agrihealth.ui.navigation.Screen
-import com.android.agrihealth.ui.profile.LocalPhotoDisplay
-import com.android.agrihealth.ui.profile.UploadRemovePhotoButton
-import com.android.agrihealth.ui.user.UserViewModel
-import com.android.agrihealth.ui.user.UserViewModelContract
 import kotlin.collections.forEachIndexed
 import kotlinx.coroutines.launch
-
-/** Tags for the various components. For testing purposes */
-object AddReportScreenTestTags {
-  const val TITLE_FIELD = "titleField"
-  const val DESCRIPTION_FIELD = "descriptionField"
-  const val OFFICE_DROPDOWN = "officeDropDown"
-  const val ADDRESS_FIELD = "addressField"
-  const val LOCATION_BUTTON = "locationButton"
-  const val CREATE_BUTTON = "createButton"
-  const val SCROLL_CONTAINER = "scrollContainer"
-  const val DIALOG_SUCCESS = "dialogSuccess"
-  const val DIALOG_FAILURE = "dialogFailure"
-  const val DIALOG_SUCCESS_OK = "dialogSuccessOk"
-  const val DIALOG_FAILURE_OK = "dialogFailureOk"
-
-  fun getTestTagForOffice(vetId: String): String = "officeOption_$vetId"
-}
-
-/** Texts for the report creation feedback */
-object AddReportFeedbackTexts {
-  const val SUCCESS = "Report created successfully!"
-  const val FAILURE = "Couldn't upload report... Please verify your connection and try again..."
-  const val INCOMPLETE = "Please fill in all required fields..."
-  const val UNKNOWN = "Unknown error..."
-}
-
-/** Texts of the dialog shown when clicking on uploading photo button */
-object AddReportDialogTexts {
-  const val OK = "Ok"
-  const val TITLE_SUCCESS = "Success!"
-  const val TITLE_FAILURE = "Error!"
-}
-
-// Helper function to format the error message shown in the error dialog when creating a report
-// failed
-private fun generateCreateReportErrorMessage(e: Throwable?): String {
-  val errorMessage = e?.message ?: AddReportFeedbackTexts.UNKNOWN
-
-  val fullMessage = "${AddReportFeedbackTexts.FAILURE}\n\nDetails:\n${errorMessage}"
-
-  return fullMessage
-}
 
 /**
  * Displays the report creation screen for farmers
@@ -141,7 +96,7 @@ fun AddReportScreen(
   }
 
   // For the dropdown menu
-  var selectedOption by remember { mutableStateOf((user as Farmer).defaultOffice ?: "") }
+  var selectedOption by remember { mutableStateOf(user.defaultOffice ?: "") }
 
   // For the confirmation snackbar (i.e alter window)
   val snackbarHostState = remember { SnackbarHostState() }
@@ -216,9 +171,9 @@ fun AddReportScreen(
                       .testTag(AddReportScreenTestTags.SCROLL_CONTAINER),
               verticalArrangement = Arrangement.Top) {
                 HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
-                TitleField(reportUi.title, { addReportViewModel.setTitle(it) })
+                TitleField(reportUi.title) { addReportViewModel.setTitle(it) }
 
-                DescriptionField(reportUi.description, { addReportViewModel.setDescription(it) })
+                DescriptionField(reportUi.description) { addReportViewModel.setDescription(it) }
 
                 QuestionList(
                     questions = reportUi.questionForms,
@@ -304,7 +259,7 @@ fun CreateReportSuccessDialog(visible: Boolean, onDismiss: () -> Unit) {
       confirmButton = {
         TextButton(
             onClick = onDismiss,
-            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_SUCCESS_OK),
+            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_OK),
             colors =
                 ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.onSurface)) {
@@ -313,7 +268,7 @@ fun CreateReportSuccessDialog(visible: Boolean, onDismiss: () -> Unit) {
       },
       title = { Text(AddReportDialogTexts.TITLE_SUCCESS) },
       text = { Text(AddReportFeedbackTexts.SUCCESS) },
-      modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_SUCCESS),
+      modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG),
   )
 }
 
@@ -333,7 +288,7 @@ fun CreateReportErrorDialog(visible: Boolean, errorMessage: String?, onDismiss: 
       confirmButton = {
         TextButton(
             onClick = onDismiss,
-            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_FAILURE_OK),
+            modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_OK),
             colors =
                 ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.onSurface)) {
@@ -342,7 +297,7 @@ fun CreateReportErrorDialog(visible: Boolean, errorMessage: String?, onDismiss: 
       },
       title = { Text(AddReportDialogTexts.TITLE_FAILURE) },
       text = { Text(errorMessage ?: AddReportFeedbackTexts.UNKNOWN) },
-      modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG_FAILURE))
+      modifier = Modifier.testTag(AddReportScreenTestTags.DIALOG))
 }
 
 /**
@@ -411,7 +366,9 @@ fun QuestionList(
               onQuestionChange(index, updated)
             },
             enabled = true,
-            modifier = Modifier.testTag("QUESTION_${index}_OPEN"))
+            modifier =
+                Modifier.testTag(
+                    AddReportScreenTestTags.getTestTagForQuestion(question.type, index)))
       }
       is YesOrNoQuestion -> {
         YesOrNoQuestionItem(
@@ -421,7 +378,9 @@ fun QuestionList(
               onQuestionChange(index, updated)
             },
             enabled = true,
-            modifier = Modifier.testTag("QUESTION_${index}_YESORNO"))
+            modifier =
+                Modifier.testTag(
+                    AddReportScreenTestTags.getTestTagForQuestion(question.type, index)))
       }
       is MCQ -> {
         MCQItem(
@@ -431,7 +390,9 @@ fun QuestionList(
               onQuestionChange(index, updated)
             },
             enabled = true,
-            modifier = Modifier.testTag("QUESTION_${index}_MCQ"))
+            modifier =
+                Modifier.testTag(
+                    AddReportScreenTestTags.getTestTagForQuestion(question.type, index)))
       }
       is MCQO -> {
         MCQOItem(
@@ -441,7 +402,9 @@ fun QuestionList(
               onQuestionChange(index, updated)
             },
             enabled = true,
-            modifier = Modifier.testTag("QUESTION_${index}_MCQO"))
+            modifier =
+                Modifier.testTag(
+                    AddReportScreenTestTags.getTestTagForQuestion(question.type, index)))
       }
     }
   }
@@ -513,11 +476,50 @@ fun CreateReportButton(
       }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-@Composable
-fun AddReportScreenPreview() {
-  AgriHealthAppTheme {
-    AddReportScreen(
-        userViewModel = FakeUserViewModel(), addReportViewModel = FakeAddReportViewModel())
-  }
+/** Texts for the report creation feedback */
+object AddReportFeedbackTexts {
+  const val SUCCESS = "Report created successfully!"
+  const val FAILURE = "Couldn't upload report... Please verify your connection and try again..."
+  const val INCOMPLETE = "Please fill in all required fields..."
+  const val UNKNOWN = "Unknown error..."
+}
+
+/** Texts of the dialog shown when clicking on uploading photo button */
+object AddReportDialogTexts {
+  const val OK = "Ok"
+  const val TITLE_SUCCESS = "Success!"
+  const val TITLE_FAILURE = "Error!"
+}
+
+// Helper function to format the error message shown in the error dialog when creating a report
+// failed
+private fun generateCreateReportErrorMessage(e: Throwable?): String {
+  val errorMessage = e?.message ?: AddReportFeedbackTexts.UNKNOWN
+
+  val fullMessage = "${AddReportFeedbackTexts.FAILURE}\n\nDetails:\n${errorMessage}"
+
+  return fullMessage
+}
+
+/** Tags for the various components. For testing purposes */
+object AddReportScreenTestTags {
+  const val TITLE_FIELD = "titleField"
+  const val DESCRIPTION_FIELD = "descriptionField"
+  const val OFFICE_DROPDOWN = "officeDropDown"
+  const val ADDRESS_FIELD = "addressField"
+  const val LOCATION_BUTTON = "locationButton"
+  const val CREATE_BUTTON = "createButton"
+  const val SCROLL_CONTAINER = "scrollContainer"
+  const val DIALOG = "createReportDialog"
+  const val DIALOG_OK = "createReportDialogOk"
+
+  fun getTestTagForOffice(officeId: String): String = "officeOption_$officeId"
+
+  fun getTestTagForQuestion(type: QuestionType, index: Int) =
+      when (type) {
+        QuestionType.OPEN -> "QUESTION_${index}_OPEN"
+        QuestionType.YESORNO -> "QUESTION_${index}_YESORNO"
+        QuestionType.MCQ -> "QUESTION_${index}_MCQ"
+        QuestionType.MCQO -> "QUESTION_${index}_MCQO"
+      }
 }

@@ -16,31 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.testutil.FakeAuthRepository
-import com.android.agrihealth.testutil.FakeUserViewModel
-import com.android.agrihealth.ui.loading.LoadingOverlay
-import com.android.agrihealth.ui.user.UserViewModel
-import com.android.agrihealth.ui.user.UserViewModelContract
-
-object SignUpScreenTestTags {
-  const val SCREEN = "SignUpScreen"
-  const val BACK_BUTTON = "BackButton"
-  const val TITLE = "SignUpTitle"
-  const val FIRSTNAME_FIELD = "NameField"
-  const val LASTNAME_FIELD = "SurnameField"
-  const val EMAIL_FIELD = "EmailField"
-  const val PASSWORD_FIELD = "PasswordField"
-  const val CONFIRM_PASSWORD_FIELD = "ConfirmPasswordField"
-  const val SAVE_BUTTON = "SaveButton"
-  const val FARMER_PILL = "FarmerPill"
-  const val VET_PILL = "VetPill"
-  const val SNACKBAR = "Snackbar"
-}
+import com.android.agrihealth.data.model.user.UserViewModel
+import com.android.agrihealth.data.model.user.UserViewModelContract
+import com.android.agrihealth.ui.common.layout.LoadingOverlay
 
 @Composable
 fun SignUpScreen(
@@ -226,11 +207,17 @@ private fun Field(
   )
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-@Composable
-private fun SignUpScreenPreview() {
-  val authRepo = FakeAuthRepository()
-  val vm = object : SignUpViewModel(authRepo) {}
-
-  AgriHealthAppTheme { SignUpScreen(signUpViewModel = vm, userViewModel = FakeUserViewModel()) }
+object SignUpScreenTestTags {
+  const val SCREEN = "SignUpScreen"
+  const val BACK_BUTTON = "BackButton"
+  const val TITLE = "SignUpTitle"
+  const val FIRSTNAME_FIELD = "NameField"
+  const val LASTNAME_FIELD = "SurnameField"
+  const val EMAIL_FIELD = "EmailField"
+  const val PASSWORD_FIELD = "PasswordField"
+  const val CONFIRM_PASSWORD_FIELD = "ConfirmPasswordField"
+  const val SAVE_BUTTON = "SaveButton"
+  const val FARMER_PILL = "FarmerPill"
+  const val VET_PILL = "VetPill"
+  const val SNACKBAR = "Snackbar"
 }

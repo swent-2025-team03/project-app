@@ -8,5 +8,6 @@ object NetworkTestUtils {
     val uiAutomation = InstrumentationRegistry.getInstrumentation().uiAutomation
     uiAutomation.executeShellCommand("svc wifi $state").close()
     uiAutomation.executeShellCommand("svc data $state").close()
+    if (enabled) Thread.sleep(10_000)
   }
 }

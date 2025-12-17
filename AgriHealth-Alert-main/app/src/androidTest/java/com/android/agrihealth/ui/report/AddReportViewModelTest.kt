@@ -1,14 +1,14 @@
 package com.android.agrihealth.ui.report
 
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.report.MCQ
-import com.android.agrihealth.data.model.report.MCQO
-import com.android.agrihealth.data.model.report.OpenQuestion
 import com.android.agrihealth.data.model.report.ReportStatus
-import com.android.agrihealth.data.model.report.YesOrNoQuestion
-import com.android.agrihealth.testutil.TestReportRepository
-import com.android.agrihealth.utils.TestAssetUtils
-import com.android.agrihealth.utils.TestAssetUtils.cleanupTestAssets
+import com.android.agrihealth.data.model.report.form.MCQ
+import com.android.agrihealth.data.model.report.form.MCQO
+import com.android.agrihealth.data.model.report.form.OpenQuestion
+import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
+import com.android.agrihealth.testhelpers.FileTestUtils
+import com.android.agrihealth.testhelpers.FileTestUtils.cleanupTestAssets
+import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -26,15 +26,13 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddReportViewModelTest {
 
-  private lateinit var repository: TestReportRepository
+  private lateinit var repository: FakeReportRepository
   private lateinit var viewModel: AddReportViewModel
-
-  private val officeOptions = listOf("Best Office Ever!", "Meh Office", "Great Office")
 
   @Before
   fun setup() {
     Dispatchers.setMain(StandardTestDispatcher()) // Necessary for scheduling coroutines
-    repository = TestReportRepository()
+    repository = FakeReportRepository()
     viewModel = AddReportViewModel(userId = "fake-user-id", reportRepository = repository)
   }
 
@@ -84,7 +82,7 @@ class AddReportViewModelTest {
 
   @Test
   fun setPhoto_updatesPhotoOnly() {
-    val fakePicture = TestAssetUtils.getUriFrom(TestAssetUtils.FAKE_PHOTO_FILE)
+    val fakePicture = FileTestUtils.getUriFrom(FileTestUtils.TEST_IMAGE)
     viewModel.setPhoto(fakePicture)
     assertEquals(fakePicture, viewModel.uiState.value.photoUri)
     assertEquals("", viewModel.uiState.value.title)

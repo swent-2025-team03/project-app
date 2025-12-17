@@ -9,21 +9,12 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.ui.loading.withLoadingState
+import com.android.agrihealth.ui.common.layout.withLoadingState
+import com.google.firebase.auth.FirebaseAuthException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-object SignUpErrorMsg {
-  const val EMPTY_FIELDS = "Please fill every field."
-  const val ROLE_NULL = "Please select a role."
-  const val BAD_EMAIL_FORMAT = "Invalid email format."
-  const val WEAK_PASSWORD = "Your password is too weak, try adding more characters."
-  const val CNF_PASSWORD_DIFF = "The password and confirm password don't match."
-  const val ALREADY_USED_EMAIL = "This email is already in use, try using an other one."
-  const val TIMEOUT = "Not connected to the internet."
-}
 
 data class SignUpUIState(
     val email: String = "",
@@ -129,8 +120,7 @@ open class SignUpViewModel(
                     { failure ->
                       setErrorMsg(
                           when (failure) {
-                            is com.google.firebase.auth.FirebaseAuthException ->
-                                SignUpErrorMsg.ALREADY_USED_EMAIL
+                            is FirebaseAuthException -> SignUpErrorMsg.ALREADY_USED_EMAIL
                             else -> SignUpErrorMsg.TIMEOUT
                           })
                     })
@@ -174,4 +164,14 @@ open class SignUpViewModel(
       else -> null
     }
   }
+}
+
+object SignUpErrorMsg {
+  const val EMPTY_FIELDS = "Please fill every field."
+  const val ROLE_NULL = "Please select a role."
+  const val BAD_EMAIL_FORMAT = "Invalid email format."
+  const val WEAK_PASSWORD = "Your password is too weak, try adding more characters."
+  const val CNF_PASSWORD_DIFF = "The password and confirm password don't match."
+  const val ALREADY_USED_EMAIL = "This email is already in use, try using an other one."
+  const val TIMEOUT = "Not connected to the internet."
 }

@@ -1,142 +1,258 @@
 package com.android.agrihealth.ui.report
 
-import android.net.Uri
-import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.data.model.images.ImageViewModel
-import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
-import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.data.repository.ReportRepository
+import com.android.agrihealth.testhelpers.FileTestUtils.FAKE_PHOTO_PATH
+import com.android.agrihealth.testhelpers.FileTestUtils.addPlaceholderPhotoToRepository
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
-import com.android.agrihealth.testutil.FakeImageRepository
-import com.android.agrihealth.testutil.FakeOverviewViewModel
-import com.android.agrihealth.testutil.InMemoryReportRepository
-import com.android.agrihealth.testutil.TestConstants
-import com.android.agrihealth.testutil.TestConstants.LONG_TIMEOUT
-import com.android.agrihealth.testutil.TestReportRepository
+import com.android.agrihealth.testhelpers.TestReport
+import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
+import com.android.agrihealth.testhelpers.TestTimeout.SHORT_TIMEOUT
+import com.android.agrihealth.testhelpers.TestUser
+import com.android.agrihealth.testhelpers.fakes.FakeImageRepository
+import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
+import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
+import com.android.agrihealth.testhelpers.templates.UITest
+import com.android.agrihealth.ui.common.PhotoComponentsTestTags
+import com.android.agrihealth.ui.common.PhotoComponentsTexts
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.NavigationActions
-import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags
-import com.android.agrihealth.ui.profile.PhotoComponentsTestTags
-import com.android.agrihealth.ui.profile.PhotoComponentsTexts
-import com.android.agrihealth.utils.TestAssetUtils.getUriFrom
 import org.junit.Assert.assertTrue
-import org.junit.Rule
 import org.junit.Test
-
-/** Fake photo used when creating a new report */
-const val PLACEHOLDER_PHOTO_FILE = "report_image_cat.jpg"
-
-const val FAKE_PHOTO_PATH = "some/fake/path/to/photo"
 
 /**
  * UI tests for [ReportViewScreen]. These tests ensure that all interactive and display elements
  * behave as expected in both Farmer and Vet modes.
  */
-class ReportViewScreenTest {
+class ReportViewScreenTest : UITest() {
+  val farmer = TestUser.FARMER1.copy()
+  val vet = TestUser.VET1.copy()
+  val unassignedVet = TestUser.VET2.copy()
+  val report = TestReport.REPORT1.copy(assignedVet = vet.uid)
 
-  @get:Rule val composeTestRule = createComposeRule()
+  val reportRepository = FakeReportRepository(initialReports = listOf(report))
 
-  /** Sets up the ReportViewScreen for a given role (Vet or Farmer). */
-  private fun setReportViewScreen(
-      role: UserRole,
-      viewModel: ReportViewViewModel,
-      user: User? = null
+  private fun setContentWithVM(
+      user: User,
+      reportViewModel: ReportViewViewModel = ReportViewViewModel(reportRepository),
+      imageViewModel: ImageViewModel = ImageViewModel()
   ) {
-    composeTestRule.setContent {
+    setContent {
       val navController = rememberNavController()
       val navigationActions = NavigationActions(navController)
+
       ReportViewScreen(
           navigationActions = navigationActions,
-          userRole = role,
-          viewModel = viewModel,
+          userRole = user.role,
+          viewModel = reportViewModel,
+          imageViewModel = imageViewModel,
+          reportId = report.id,
           user = user)
     }
   }
 
-  // --- Role-specific helpers (wrappers) ---
-  private fun setVetScreen(
-      reportViewModel: ReportViewViewModel = ReportViewViewModel(TestReportRepository())
-  ) =
-      setReportViewScreen(
-          role = UserRole.VET,
-          reportViewModel,
-          user =
-              Vet(
-                  uid = "vet_id",
-                  firstname = "alice",
-                  lastname = "alice",
-                  email = "mail@mail",
-                  address = null,
-                  officeId = "OFF_456"))
+  @Test
+  fun vet_interactableComponentsWork() {
+    setContentWithVM(vet)
 
-  private fun setValidVetScreen(
-      reportViewModel: ReportViewViewModel = ReportViewViewModel(TestReportRepository())
-  ) =
-      setReportViewScreen(
-          role = UserRole.VET,
-          reportViewModel,
-          user =
-              Vet(
-                  uid = "valid_vet_id",
-                  firstname = "alice",
-                  lastname = "alice",
-                  email = "mail@mail",
-                  address = null,
-                  officeId = "OFF_456"))
+    with(ReportViewScreenTestTags) {
+      // Writing answer
+      writeIn(ANSWER_FIELD, "This is my diagnosis.")
 
-  private fun setFarmerScreen(
-      reportViewModel: ReportViewViewModel = ReportViewViewModel(TestReportRepository())
-  ) =
-      setReportViewScreen(
-          role = UserRole.FARMER,
-          reportViewModel,
-          user =
-              Farmer(
-                  uid = "farmer_id",
-                  firstname = "bob",
-                  lastname = "bob",
-                  email = "mail@mail",
-                  address = null,
-                  defaultOffice = "OFF_456"))
+      // Changing report status
+      val statuses = listOf(ReportStatus.IN_PROGRESS, ReportStatus.RESOLVED)
+      val firstStatus = statuses.first()
 
-  private fun createFakeReport(withPhoto: Boolean = true): Report {
-    return Report(
-        id = "RPT001",
-        title = "My sheep is acting strange",
-        description = "Since this morning, my sheep keeps getting on its front knees.",
-        questionForms = emptyList(),
-        photoURL = if (withPhoto) FAKE_PHOTO_PATH else null,
-        farmerId = "FARMER_123",
-        officeId = "OFF_456",
-        status = ReportStatus.PENDING,
-        answer = null,
-        location = Location(46.5191, 6.5668, "Lausanne Farm"),
-        assignedVet = "valid_vet_id")
+      scrollFormTo(STATUS_DROPDOWN_FIELD)
+
+      clickOn(STATUS_DROPDOWN_FIELD)
+      nodeIsDisplayed(STATUS_DROPDOWN_MENU)
+      statuses.forEach { nodeIsDisplayed(getTagForStatusOption(it)) }
+
+      clickOn(getTagForStatusOption(firstStatus))
+      textContains(STATUS_BADGE_TEXT, firstStatus.displayString(), ignoreCase = true)
+
+      // Spam - cancel then confirm
+      scrollFormTo(SPAM_BUTTON)
+      clickOn(SPAM_BUTTON)
+      textIsDisplayed("Report as spam?")
+      textIsDisplayed("Confirm")
+      clickOnText("Cancel")
+      textNotDisplayed("Report as spam?")
+      textContains(STATUS_BADGE_TEXT, firstStatus.displayString(), ignoreCase = true)
+
+      clickOn(SPAM_BUTTON)
+      clickOnText("Confirm")
+      textContains(STATUS_BADGE_TEXT, ReportStatus.SPAM.name)
+
+      scrollFormTo(VIEW_ON_MAP)
+      scrollFormTo(SAVE_BUTTON)
+      scrollFormTo(ROLE_INFO_LINE)
+      scrollFormTo(ReportComposableCommonsTestTags.COLLECTED_SWITCH)
+    }
   }
 
-  private fun getImageBytesFromUri(uri: Uri): ByteArray {
-    val context = InstrumentationRegistry.getInstrumentation().context
-    return context.contentResolver.openInputStream(uri)?.use { inputStream ->
-      inputStream.readBytes()
-    } ?: ByteArray(0)
+  @Test
+  fun farmer_interactableComponentsWork() {
+    setContentWithVM(farmer)
+
+    with(ReportViewScreenTestTags) {
+      // No answer
+      textIsDisplayed("No answer yet.")
+
+      // Delete button
+      scrollFormTo(DELETE_BUTTON)
+      clickOn(DELETE_BUTTON)
+      nodeIsDisplayed(DELETE_REPORT_ALERT_BOX)
+      textIsDisplayed("Confirm")
+      clickOnText("Cancel")
+      nodeNotDisplayed(DELETE_REPORT_ALERT_BOX)
+
+      scrollFormTo(VIEW_ON_MAP)
+      scrollFormTo(ROLE_INFO_LINE)
+      scrollFormTo(ReportComposableCommonsTestTags.COLLECTED_SWITCH)
+    }
   }
 
-  private fun addPlaceholderPhotoToReport(imageRepository: FakeImageRepository) {
-    val fakeImageUri = getUriFrom(PLACEHOLDER_PHOTO_FILE)
-    val fakePhotoBytes = getImageBytesFromUri(fakeImageUri)
-    imageRepository.forceUploadImage(fakePhotoBytes)
+  @Test
+  fun invalidVet_doesNotSeeUnassign() {
+    setContentWithVM(unassignedVet)
+
+    with(ReportViewScreenTestTags) {
+      nodesNotDisplayed(CLAIM_BUTTON, UNASSIGN_BUTTON)
+      textIsDisplayed("This report was claimed by: ")
+    }
+  }
+
+  // -------------------- Additional tests to increase coverage --------------------
+
+  @Test
+  fun vet_saveButton_navigatesBackAfterSuccessfulSave() {
+    val fakeRepoWithReport = FakeReportRepository(listOf(report))
+    val viewModel = ReportViewViewModel(repository = fakeRepoWithReport)
+
+    setContent {
+      val navController = rememberNavController()
+      val navigation = NavigationActions(navController)
+
+      NavHost(navController = navController, startDestination = Screen.Overview.route) {
+        composable(Screen.Overview.route) {
+          OverviewScreen(
+              userRole = UserRole.VET,
+              user = vet,
+              overviewViewModel = FakeOverviewViewModel(),
+              navigationActions = navigation)
+        }
+        composable(Screen.ViewReport.ROUTE) {
+          ReportViewScreen(
+              navigationActions = navigation,
+              userRole = UserRole.VET,
+              viewModel = viewModel,
+              reportId = report.id,
+              user = vet)
+        }
+      }
+
+      // Manually navigate to report, so that goBack can work
+      androidx.compose.runtime.LaunchedEffect(Unit) {
+        navigation.navigateTo(Screen.ViewReport(report.id))
+      }
+    }
+
+    with(ReportViewScreenTestTags) {
+      nodeIsDisplayed(ANSWER_FIELD, timeout = LONG_TIMEOUT)
+      writeIn(ANSWER_FIELD, "Edited answer")
+
+      scrollFormTo(SAVE_BUTTON)
+      clickOn(SAVE_BUTTON)
+
+      nodeIsDisplayed(OverviewScreenTestTags.SCREEN, timeout = LONG_TIMEOUT)
+      assertTrue(fakeRepoWithReport.editCalled)
+    }
+  }
+
+  @Test
+  fun vet_unsavedChanges() {
+    setContentWithVM(vet)
+
+    with(ReportViewScreenTestTags) {
+      // No changes
+      clickOn(NavigationTestTags.GO_BACK_BUTTON)
+      nodeNotDisplayed(UNSAVED_ALERT_BOX)
+
+      // Change something
+      writeIn(ANSWER_FIELD, "wsh")
+
+      // Go back and cancel
+      clickOn(NavigationTestTags.GO_BACK_BUTTON)
+      nodeIsDisplayed(UNSAVED_ALERT_BOX)
+      clickOn(UNSAVED_ALERT_BOX_CANCEL)
+      nodeNotDisplayed(UNSAVED_ALERT_BOX)
+
+      // Go back and discard
+      clickOn(NavigationTestTags.GO_BACK_BUTTON)
+      clickOn(UNSAVED_ALERT_BOX_DISCARD)
+      nodeNotDisplayed(UNSAVED_ALERT_BOX)
+
+      // Too lazy to add navigation, so check if the screen consumed the unsaved changes flag
+      clickOn(NavigationTestTags.GO_BACK_BUTTON)
+      nodeNotDisplayed(UNSAVED_ALERT_BOX)
+    }
+  }
+
+  @Test
+  fun reportView_showsLoadingOverlayWhileFetchingReport() {
+    val slowRepo = FakeReportRepository(listOf(report), SHORT_TIMEOUT)
+    val slowVM = ReportViewViewModel(repository = slowRepo)
+
+    setContentWithVM(vet, reportViewModel = slowVM)
+
+    composeTestRule.assertOverlayDuringLoading(isLoading = { slowVM.uiState.value.isLoading })
+  }
+
+  @Test
+  fun photoDisplay_transitionsFromLoadingToSuccess() {
+    val dependencies = setUpScreenAndRepositories()
+
+    with(PhotoComponentsTestTags) {
+      dependencies.imageRepository.freezeRepoConnection()
+
+      addPlaceholderPhotoToRepository(dependencies.imageRepository)
+      nodeIsDisplayed(PHOTO_LOADING_ANIMATION)
+      nodesNotDisplayed(PHOTO_RENDER, PHOTO_ERROR_TEXT)
+
+      dependencies.imageRepository.unfreezeRepoConnection()
+      nodeIsDisplayed(PHOTO_RENDER)
+      nodesNotDisplayed(PHOTO_LOADING_ANIMATION, PHOTO_ERROR_TEXT)
+    }
+  }
+
+  @Test
+  fun photoDisplay_showsErrorText_whenDownloadFails() {
+    val dependencies = setUpScreenAndRepositories()
+    dependencies.imageRepository.makeRepoThrowError()
+    dependencies.imageRepository.unfreezeRepoConnection()
+
+    textContains(PhotoComponentsTestTags.PHOTO_ERROR_TEXT, PhotoComponentsTexts.PHOTO_ERROR_TEXT)
+    nodeNotDisplayed(PhotoComponentsTestTags.PHOTO_RENDER)
+  }
+
+  @Test
+  fun photoDisplay_showsNothing_whenNoPhotoURL() {
+    setUpScreenAndRepositories(withPhoto = false)
+
+    with(PhotoComponentsTestTags) {
+      nodesNotDisplayed(PHOTO_RENDER, PHOTO_LOADING_ANIMATION, PHOTO_ERROR_TEXT)
+    }
   }
 
   // Returned by the setup function so we can retrieve what was created
@@ -147,527 +263,19 @@ class ReportViewScreenTest {
   )
 
   private fun setUpScreenAndRepositories(withPhoto: Boolean = true): TestDependencies {
-    val testReport = createFakeReport(withPhoto)
-    val repoWithPhoto = TestReportRepository(initialReports = listOf(testReport))
+    val testReport = report.copy(photoURL = if (withPhoto) FAKE_PHOTO_PATH else null)
+    val repoWithPhoto = FakeReportRepository(initialReports = listOf(testReport))
     val reportViewModel = ReportViewViewModel(repository = repoWithPhoto)
 
     val fakeImageRepository = FakeImageRepository()
     val imageViewModel = ImageViewModel(fakeImageRepository)
 
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      val navigationActions = NavigationActions(navController)
-
-      ReportViewScreen(
-          navigationActions = navigationActions,
-          userRole = UserRole.VET,
-          viewModel = reportViewModel,
-          imageViewModel = imageViewModel,
-          reportId = "RPT001",
-          user =
-              Vet(
-                  uid = "vet_id",
-                  firstname = "alice",
-                  lastname = "alice",
-                  email = "mail@mail",
-                  address = null,
-                  officeId = "OFF_456"))
-    }
+    setContentWithVM(vet, reportViewModel, imageViewModel)
 
     return TestDependencies(reportViewModel, imageViewModel, fakeImageRepository)
   }
 
-  // --- TEST 1: Vet typing in answer field ---
-  @Test
-  fun vet_canTypeInAnswerField() {
-    setValidVetScreen()
-    val answerNode = composeTestRule.onNodeWithTag(ReportViewScreenTestTags.ANSWER_FIELD)
-    answerNode.performTextInput("This is my diagnosis.")
-    answerNode.assertTextContains("This is my diagnosis.")
-  }
+  private fun scrollFormTo(tag: String) = scrollTo(ReportViewScreenTestTags.SCROLL_CONTAINER, tag)
 
-  // --- TEST 2: Farmer sees read-only answer text ---
-  @Test
-  fun farmer_seesReadOnlyAnswerText() {
-    setFarmerScreen()
-    composeTestRule.onNodeWithText("No answer yet.").assertIsDisplayed()
-  }
-
-  // --- TEST 3: Vet can open dropdown menu ---
-  @Test
-  fun vet_canOpenStatusDropdown() {
-    setValidVetScreen()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.STATUS_DROPDOWN_FIELD).performClick()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.STATUS_DROPDOWN_MENU).assertIsDisplayed()
-  }
-
-  // --- TEST 4: Vet can select a status ---
-  @Test
-  fun vet_canSelectResolvedStatus() {
-    setValidVetScreen()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.STATUS_DROPDOWN_FIELD).performClick()
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.getTagForStatusOption("RESOLVED"))
-        .performClick()
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.STATUS_BADGE_TEXT)
-        .assertTextContains("RESOLVED")
-  }
-
-  // --- TEST 5: Vet can open spam dialog ---
-  @Test
-  fun vet_canOpenSpamDialog() {
-    setValidVetScreen()
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.SCROLL_CONTAINER)
-        .performScrollToNode(hasTestTag(ReportViewScreenTestTags.SPAM_BUTTON))
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.SPAM_BUTTON).performClick()
-    composeTestRule.onNodeWithText("Report as spam?").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Confirm").assertIsDisplayed()
-  }
-
-  // --- TEST 6: Vet can cancel spam dialog ---
-  @Test
-  fun vet_canCancelSpamDialog() {
-    setValidVetScreen()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.SPAM_BUTTON).performClick()
-    composeTestRule.onNodeWithText("Report as spam?").performClick()
-    composeTestRule.onNodeWithText("Cancel").performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("Confirm").assertDoesNotExist()
-  }
-
-  // --- TEST 7: Vet can confirm spam ---
-  @Test
-  fun vet_canConfirmSpam() {
-    setValidVetScreen()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.SPAM_BUTTON).performClick()
-    composeTestRule.onNodeWithText("Confirm").performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.STATUS_BADGE_TEXT)
-        .assertTextContains("SPAM")
-  }
-
-  // --- TEST 8: Vet sees both bottom buttons ---
-  @Test
-  fun bottomButtons_areDisplayed() {
-    setValidVetScreen()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.VIEW_ON_MAP).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.SAVE_BUTTON).assertIsDisplayed()
-  }
-
-  // --- TEST 9: Dropdown should contain all expected statuses ---
-  @Test
-  fun dropdown_containsCorrectStatusOptions() {
-    setValidVetScreen()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.STATUS_DROPDOWN_FIELD).performClick()
-    listOf("IN_PROGRESS", "RESOLVED").forEach {
-      composeTestRule
-          .onNodeWithTag(ReportViewScreenTestTags.getTagForStatusOption(it), useUnmergedTree = true)
-          .assertIsDisplayed()
-    }
-  }
-
-  // --- TEST 10: Status color logic (indirectly tested) ---
-  // We can’t directly check colors easily in Compose tests without semantics,
-  // but this serves as a sanity check that status text changes.
-  @Test
-  fun statusTextReflectsViewModelChange() {
-    val viewModel = ReportViewViewModel()
-    setVetScreen(viewModel)
-    composeTestRule.runOnUiThread { viewModel.onStatusChange(ReportStatus.RESOLVED) }
-    composeTestRule.waitForIdle()
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.STATUS_BADGE_TEXT)
-        .assertTextContains("RESOLVED")
-  }
-
-  // --- TEST 11: Farmer can open Delete dialog ---
-  @Test
-  fun farmer_canOpenDeleteDialog() {
-    setFarmerScreen()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.DELETE_BUTTON).performClick()
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.DELETE_REPORT_ALERT_BOX)
-        .assertIsDisplayed()
-    composeTestRule.onNodeWithText("Confirm").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Cancel").assertIsDisplayed()
-  }
-
-  // --- TEST 12: Farmer can cancel Delete dialog ---
-  @Test
-  fun farmer_canCancelDeleteDialog() {
-    setFarmerScreen()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.DELETE_BUTTON).performClick()
-    composeTestRule.onNodeWithText("Cancel").performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.DELETE_REPORT_ALERT_BOX)
-        .assertDoesNotExist()
-  }
-
-  // --- TEST 13: Farmer can confirm delete ---
-  @Test
-  fun farmer_canConfirmDelete() {
-    val testReport = ReportViewUIState().report.copy(id = "RPT001")
-    val repo = TestReportRepository(initialReports = listOf(testReport))
-    val vm = ReportViewViewModel(repository = repo)
-
-    composeTestRule.setContent {
-      ReportViewScreen(
-          navigationActions = NavigationActions(rememberNavController()),
-          userRole = UserRole.FARMER,
-          viewModel = vm,
-          reportId = "RPT001")
-    }
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.DELETE_BUTTON).performClick()
-    composeTestRule.onNodeWithText("Confirm").performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.DELETE_REPORT_ALERT_BOX)
-        .assertDoesNotExist()
-  }
-
-  // --- TEST 14: Farmer sees both bottom buttons ---
-  @Test
-  fun farmer_bottomButtons_areDisplayed() {
-    setFarmerScreen()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.VIEW_ON_MAP).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.DELETE_BUTTON).assertIsDisplayed()
-  }
-
-  @Test
-  fun invalidVet_doesNotSeeUnassign() {
-    setVetScreen()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.CLAIM_BUTTON).assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.UNASSIGN_BUTTON).assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("This report was claimed by: ").assertIsDisplayed()
-  }
-
-  // -------------------- Additional tests to increase coverage --------------------
-
-  @Test
-  fun farmer_roleInfoLine_showsOfficeName() {
-    setFarmerScreen()
-    composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule
-          .onAllNodes(
-              hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
-                  .and(hasAnyDescendant((hasText("Deleted office")).or(hasText("Unassigned")))),
-              useUnmergedTree = true)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
-
-    composeTestRule
-        .onNode(
-            hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
-                .and(hasAnyDescendant((hasText("Deleted office")).or(hasText("Unassigned")))),
-            useUnmergedTree = true)
-        .assertExists()
-        .assertIsDisplayed()
-  }
-
-  @Test
-  fun vet_showsFarmerIdText() {
-    val viewModel = ReportViewViewModel()
-    setVetScreen(viewModel)
-
-    composeTestRule.waitForIdle()
-
-    composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule
-          .onAllNodes(
-              hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
-                  .and(
-                      hasAnyDescendant(
-                          hasText("Deleted user")
-                              .or(hasText("Unassigned"))
-                              .or(hasText("Farmer", substring = true)))),
-              useUnmergedTree = true)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
-
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.ROLE_INFO_LINE, useUnmergedTree = true)
-        .assertExists()
-        .assertIsDisplayed()
-  }
-
-  @Test
-  fun vet_roleInfoLine_showsFarmerRole_orIdentifier() {
-    setVetScreen()
-
-    composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule
-          .onAllNodes(
-              hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
-                  .and(
-                      hasAnyDescendant(
-                          hasText("Farmer", substring = true)
-                              .or(hasText("Deleted user"))
-                              .or(hasText("Unassigned")))),
-              useUnmergedTree = true)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
-
-    composeTestRule
-        .onNode(
-            hasTestTag(ReportViewScreenTestTags.ROLE_INFO_LINE)
-                .and(
-                    hasAnyDescendant(
-                        hasText("Farmer", substring = true)
-                            .or(hasText("Deleted user"))
-                            .or(hasText("Unassigned")))),
-            useUnmergedTree = true)
-        .assertExists()
-        .assertIsDisplayed()
-  }
-
-  @Test
-  fun vet_canSelectInProgressStatus_viaDropdown() {
-    // Test selecting IN_PROGRESS via dropdown (complements existing RESOLVED test)
-    val viewModel = ReportViewViewModel()
-    setValidVetScreen(viewModel)
-    composeTestRule.waitForIdle()
-
-    // Open dropdown and pick IN_PROGRESS
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.STATUS_DROPDOWN_FIELD).performClick()
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.getTagForStatusOption("IN_PROGRESS"))
-        .performClick()
-
-    // Ensure badge text updated
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.STATUS_BADGE_TEXT)
-        .assertTextContains("IN PROGRESS")
-  }
-
-  @Test
-  fun vet_saveButton_navigatesBackAfterSuccessfulSave() {
-    val TEST_REPORT_ID = "RPT001"
-    val sampleReport = ReportViewUIState().report.copy(id = TEST_REPORT_ID)
-    val fakeRepoWithReport = TestReportRepository(listOf(sampleReport))
-    val viewModel = ReportViewViewModel(repository = fakeRepoWithReport)
-
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      val navigation = NavigationActions(navController)
-      val vet = Vet("valid_vet_id", "john", "john", "john@john.john", null)
-
-      NavHost(navController = navController, startDestination = Screen.Overview.route) {
-        composable(Screen.Overview.route) {
-          OverviewScreen(
-              userRole = UserRole.VET,
-              user = vet,
-              overviewViewModel = FakeOverviewViewModel(),
-              onAddReport = {},
-              onReportClick = {},
-              navigationActions = navigation)
-        }
-        composable(Screen.ViewReport.route) { backStackEntry ->
-          ReportViewScreen(
-              navigationActions = navigation,
-              userRole = UserRole.VET,
-              viewModel = viewModel,
-              reportId = TEST_REPORT_ID,
-              user = vet)
-        }
-      }
-
-      // Navigate to the report detail when composition starts
-      androidx.compose.runtime.LaunchedEffect(Unit) {
-        navigation.navigateTo(Screen.ViewReport(TEST_REPORT_ID))
-      }
-    }
-
-    composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule
-          .onAllNodesWithTag(ReportViewScreenTestTags.ANSWER_FIELD)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
-
-    // Edit answer to simulate changes
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.ANSWER_FIELD)
-        .assertIsDisplayed()
-        .performClick()
-        .performTextInput("Edited answer")
-
-    // Click Save via testTag (more robust than text)
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.SAVE_BUTTON)
-        .assertIsDisplayed()
-        .performClick()
-
-    // Wait until Overview screen is displayed (after save triggers goBack())
-    composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule
-          .onAllNodesWithTag(OverviewScreenTestTags.SCREEN)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
-    composeTestRule.onNodeWithTag(OverviewScreenTestTags.SCREEN).assertIsDisplayed()
-    assertTrue(fakeRepoWithReport.editCalled)
-  }
-
-  @Test
-  fun vet_unsavedChanges() {
-    setValidVetScreen()
-
-    val alertBox = composeTestRule.onNodeWithTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX)
-    val backButton = composeTestRule.onNodeWithTag(NavigationTestTags.GO_BACK_BUTTON)
-
-    // Change something
-    composeTestRule.onNodeWithTag(ReportViewScreenTestTags.ANSWER_FIELD).performTextInput("wsh")
-
-    // Try to go back and cancel
-    backButton.performClick()
-    alertBox.assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_CANCEL)
-        .assertIsDisplayed()
-        .performClick()
-    alertBox.assertIsNotDisplayed()
-
-    // Try to go back and discard
-    backButton.performClick()
-    alertBox.assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(ReportViewScreenTestTags.UNSAVED_ALERT_BOX_DISCARD)
-        .assertIsDisplayed()
-        .performClick()
-    alertBox.assertIsNotDisplayed()
-
-    // Too lazy to add navigation, so check if the screen consumed the unsaved changes flag
-    backButton.performClick()
-    alertBox.assertIsNotDisplayed()
-  }
-
-  @Test
-  fun vet_collectedSwitch() {
-    setVetScreen()
-    composeTestRule
-        .onNodeWithTag(ReportComposableCommonsTestTags.COLLECTED_SWITCH)
-        .assertIsDisplayed()
-  }
-
-  @Test
-  fun reportView_showsLoadingOverlayWhileFetchingReport() {
-    val sampleReport = ReportViewUIState().report.copy(id = "RPT_SLOW")
-    val slowRepo: ReportRepository =
-        InMemoryReportRepository(listOf(sampleReport), TestConstants.DEFAULT_TIMEOUT)
-    val vm = ReportViewViewModel(repository = slowRepo)
-
-    composeTestRule.setContent {
-      val nav = rememberNavController()
-      val navigation = NavigationActions(nav)
-      ReportViewScreen(
-          navigationActions = navigation,
-          userRole = UserRole.VET,
-          viewModel = vm,
-          reportId = "RPT_SLOW")
-    }
-
-    composeTestRule.assertOverlayDuringLoading(
-        isLoading = { vm.uiState.value.isLoading },
-        timeoutStart = LONG_TIMEOUT,
-        timeoutEnd = LONG_TIMEOUT)
-  }
-
-  @Test
-  fun photoDisplay_showsLoadingIndicator_whenImageIsLoading() {
-    val dependencies = setUpScreenAndRepositories()
-    dependencies.imageRepository.freezeRepoConnection()
-
-    composeTestRule
-        .onNodeWithTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION)
-        .assertIsDisplayed()
-  }
-
-  @Test
-  fun photoDisplay_showsImage_whenDownloadSucceeds() {
-    val dependencies = setUpScreenAndRepositories()
-    dependencies.imageRepository.freezeRepoConnection()
-
-    composeTestRule.waitForIdle()
-
-    addPlaceholderPhotoToReport(dependencies.imageRepository)
-    dependencies.imageRepository.unfreezeRepoConnection()
-
-    composeTestRule.waitForIdle()
-
-    composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).isDisplayed()
-    }
-
-    composeTestRule
-        .onNodeWithTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION)
-        .assertIsNotDisplayed()
-  }
-
-  @Test
-  fun photoDisplay_showsErrorText_whenDownloadFails() {
-    val dependencies = setUpScreenAndRepositories()
-    dependencies.imageRepository.makeRepoThrowError()
-    dependencies.imageRepository.unfreezeRepoConnection()
-
-    composeTestRule.waitForIdle()
-
-    composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_ERROR_TEXT).isDisplayed()
-    }
-
-    composeTestRule
-        .onNodeWithTag(PhotoComponentsTestTags.PHOTO_ERROR_TEXT)
-        .assertIsDisplayed()
-        .assertTextEquals(PhotoComponentsTexts.PHOTO_ERROR_TEXT)
-
-    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).assertIsNotDisplayed()
-  }
-
-  @Test
-  fun photoDisplay_showsNothing_whenNoPhotoURL() {
-    val dependencies = setUpScreenAndRepositories(withPhoto = false)
-
-    composeTestRule.waitForIdle()
-
-    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).assertIsNotDisplayed()
-
-    composeTestRule
-        .onNodeWithTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION)
-        .assertIsNotDisplayed()
-
-    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_ERROR_TEXT).assertIsNotDisplayed()
-  }
-
-  @Test
-  fun photoDisplay_transitionsFromLoadingToSuccess() {
-    val dependencies = setUpScreenAndRepositories()
-    dependencies.imageRepository.freezeRepoConnection()
-    addPlaceholderPhotoToReport(dependencies.imageRepository)
-
-    composeTestRule.waitForIdle()
-
-    composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION).isDisplayed()
-    }
-    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_ERROR_TEXT).assertIsNotDisplayed()
-
-    dependencies.imageRepository.unfreezeRepoConnection()
-
-    composeTestRule.waitForIdle()
-    composeTestRule.waitUntil(LONG_TIMEOUT) {
-      composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_RENDER).isDisplayed()
-    }
-    composeTestRule
-        .onNodeWithTag(PhotoComponentsTestTags.PHOTO_LOADING_ANIMATION)
-        .assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag(PhotoComponentsTestTags.PHOTO_ERROR_TEXT).assertIsNotDisplayed()
-  }
+  override fun displayAllComponents() {}
 }

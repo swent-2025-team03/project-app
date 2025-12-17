@@ -11,6 +11,7 @@ import kotlinx.coroutines.tasks.await
 
 private const val OFFICES_COLLECTION_PATH = "offices"
 
+/** Repository to manage offices and store them in Firestore */
 class OfficeRepositoryFirestore(private val db: FirebaseFirestore = Firebase.firestore) :
     OfficeRepository {
 
@@ -61,6 +62,7 @@ class OfficeRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fir
         "photoUrl" to office.photoUrl)
   }
 
+  @Suppress("UNCHECKED_CAST")
   private fun officeFromData(data: Map<String, Any>): Office {
     val addressData = data["address"] as? Map<*, *>
     val address = locationFromMap(addressData)

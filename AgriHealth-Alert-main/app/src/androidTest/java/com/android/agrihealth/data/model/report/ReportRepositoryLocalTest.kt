@@ -1,19 +1,14 @@
 package com.android.agrihealth.data.model.report
 
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.testutil.InMemoryReportRepository
+import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-// file taken and modified from:
-// https://github.com/swent-epfl/bootcamp-25-B3-Solution/blob/main/app/src/test/java/com/github/se/bootcamp/model/todo/ToDosRepositoryLocalTest.kt
-
 class ReportRepositoryLocalTest {
-  private lateinit var repository: InMemoryReportRepository
+  private lateinit var repository: FakeReportRepository
 
   private val report =
       Report(
@@ -31,7 +26,7 @@ class ReportRepositoryLocalTest {
 
   @Before
   fun setup() {
-    repository = InMemoryReportRepository()
+    repository = FakeReportRepository()
   }
 
   /**
@@ -41,10 +36,10 @@ class ReportRepositoryLocalTest {
   @Test
   fun correctlyGeneratesNewUID() {
     val uid = repository.getNewReportId()
-    assertTrue(uid.isNotEmpty()) // Ensure the UID is not empty
+    Assert.assertTrue(uid.isNotEmpty()) // Ensure the UID is not empty
 
     val anotherUid = repository.getNewReportId()
-    assertTrue(uid != anotherUid)
+    Assert.assertTrue(uid != anotherUid)
   }
 
   /**
@@ -57,11 +52,11 @@ class ReportRepositoryLocalTest {
 
     // Verify that the Report was added
     val repos = repository.getAllReports("farmer123")
-    assertTrue(repos.contains(report)) // Ensure the report is present
-    assertEquals(1, repos.size) // Ensure only one report is present
+    Assert.assertTrue(repos.contains(report)) // Ensure the report is present
+    Assert.assertEquals(1, repos.size) // Ensure only one report is present
 
     val retrievedReport = repository.getReportById(report.id)
-    assertEquals(report, retrievedReport)
+    Assert.assertEquals(report, retrievedReport)
   }
 
   /**
@@ -79,9 +74,9 @@ class ReportRepositoryLocalTest {
 
     // Verify that the Report was updated
     val repos = repository.getAllReports("farmer123")
-    assertTrue(repos.contains(updatedReport)) // Ensure the updated repo is present
-    assertFalse(repos.contains(report)) // Ensure the old repo is not present
-    assertEquals(1, repos.size) // Ensure only one repo is present
+    Assert.assertTrue(repos.contains(updatedReport)) // Ensure the updated repo is present
+    Assert.assertFalse(repos.contains(report)) // Ensure the old repo is not present
+    Assert.assertEquals(1, repos.size) // Ensure only one repo is present
   }
 
   /**
@@ -97,7 +92,7 @@ class ReportRepositoryLocalTest {
       caughtException = e
     }
 
-    assertTrue(caughtException is NoSuchElementException)
+    Assert.assertTrue(caughtException is NoSuchElementException)
   }
 
   /**
@@ -112,8 +107,8 @@ class ReportRepositoryLocalTest {
 
     // Verify that the Report was deleted
     val repos = repository.getAllReports("farmer123")
-    assertFalse(repos.contains(report)) // Ensure the report is not present
-    assertEquals(0, repos.size) // Ensure no reports are present
+    Assert.assertFalse(repos.contains(report)) // Ensure the report is not present
+    Assert.assertEquals(0, repos.size) // Ensure no reports are present
 
     var caughtException: Exception? = null
     try {
@@ -122,7 +117,7 @@ class ReportRepositoryLocalTest {
       caughtException = e
     }
 
-    assertTrue(caughtException is NoSuchElementException)
+    Assert.assertTrue(caughtException is NoSuchElementException)
   }
 
   @Test
@@ -135,8 +130,8 @@ class ReportRepositoryLocalTest {
 
     // Verify that the correct Report was deleted
     val repos = repository.getAllReports("farmer123")
-    assertFalse(repos.contains(report)) // Ensure the first repo is not present
-    assertTrue(repos.contains(repo2)) // Ensure the second repo is still present
+    Assert.assertFalse(repos.contains(report)) // Ensure the first repo is not present
+    Assert.assertTrue(repos.contains(repo2)) // Ensure the second repo is still present
   }
 
   /**
@@ -152,7 +147,7 @@ class ReportRepositoryLocalTest {
       caughtException = e
     }
 
-    assertTrue(caughtException is NoSuchElementException)
+    Assert.assertTrue(caughtException is NoSuchElementException)
   }
 
   /**
@@ -168,9 +163,9 @@ class ReportRepositoryLocalTest {
     repository.addReport(report3)
 
     val farmerReports = repository.getAllReports("farmer123")
-    assertEquals(2, farmerReports.size)
-    assertTrue(farmerReports.contains(report))
-    assertTrue(farmerReports.contains(report2))
-    assertFalse(farmerReports.contains(report3))
+    Assert.assertEquals(2, farmerReports.size)
+    Assert.assertTrue(farmerReports.contains(report))
+    Assert.assertTrue(farmerReports.contains(report2))
+    Assert.assertFalse(farmerReports.contains(report3))
   }
 }

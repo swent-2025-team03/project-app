@@ -10,16 +10,16 @@ import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.alert.Alert
 import com.android.agrihealth.data.model.alert.AlertRepository
 import com.android.agrihealth.data.model.alert.AlertRepositoryProvider
-import com.android.agrihealth.data.model.authentification.UserRepository
-import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.device.location.LocationViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.location.offsetLatLng
 import com.android.agrihealth.data.model.location.toLatLng
 import com.android.agrihealth.data.model.report.Report
-import com.android.agrihealth.data.repository.ReportRepository
-import com.android.agrihealth.data.repository.ReportRepositoryProvider
-import com.android.agrihealth.ui.loading.withLoadingState
+import com.android.agrihealth.data.model.report.ReportRepository
+import com.android.agrihealth.data.model.report.ReportRepositoryProvider
+import com.android.agrihealth.data.model.user.UserRepository
+import com.android.agrihealth.data.model.user.UserRepositoryProvider
+import com.android.agrihealth.ui.common.layout.withLoadingState
 import com.google.android.gms.maps.model.LatLng
 import java.util.Locale
 import kotlin.collections.firstOrNull
@@ -252,7 +252,7 @@ class MapViewModel(
     val geocoder = Geocoder(context, Locale.getDefault())
 
     try {
-      // Deprecated but I can't use the new function for some reason
+      @Suppress("DEPRECATION") // Deprecated but I can't use the new function for some reason
       val addresses = geocoder.getFromLocation(lat, lng, 1)
       val result = addresses?.firstOrNull()?.getAddressLine(0)
       updateState { copy(geocodedAddress = result) }

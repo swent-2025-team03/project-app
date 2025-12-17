@@ -31,11 +31,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.device.location.LocationPermissionsRequester
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.displayString
-import com.android.agrihealth.ui.navigation.BottomNavigationMenu
+import com.android.agrihealth.ui.common.layout.BottomNavigationMenu
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
+import com.android.agrihealth.ui.common.layout.Tab
 import com.android.agrihealth.ui.navigation.NavigationActions
-import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
-import com.android.agrihealth.ui.navigation.Tab
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -49,7 +49,6 @@ fun MapScreen(
     isViewedFromOverview: Boolean = true,
     forceStartingPosition: Boolean = false
 ) {
-  // Get UI state
   val uiState by mapViewModel.uiState.collectAsState()
 
   val reports = uiState.reports
@@ -249,46 +248,3 @@ object MapScreenTestTags {
 
   fun getTestTagForFilter(filter: String?): String = "filter_$filter"
 }
-
-// Preview composable functions
-/*
-// @Preview
-@Composable
-fun PreviewMapScreen() {
-  LocationRepositoryProvider.repository = LocationRepository(LocalContext.current)
-  val mapViewModel = MapViewModel(startingPosition = Location(46.7990813, 6.6264253), locationViewModel = LocationViewModel())
-  AgriHealthAppTheme { MapScreen(mapViewModel) }
-}
-
-// @Preview
-@Composable
-fun PreviewDropdownMenu() {
-  val options = listOf(null) + ReportStatus.entries.map { it.displayString() }
-  var selectedFilter by remember { mutableStateOf<String?>(null) }
-  AgriHealthAppTheme { FilterDropdown(options, selectedFilter) { selectedFilter = it } }
-}
-
-@Preview
-@Composable
-fun PreviewReportInfo() {
-  val report =
-      Report(
-          id = "Test",
-          title = "Veryyyyyyyyyyyyy long title",
-          description =
-              "very very very very very very very very very very very very very very very very very long description",
-          questionForms = emptyList(),
-          farmerId = "farmer id",
-          officeId = "offId",
-          status = ReportStatus.IN_PROGRESS,
-          answer = "answer to the report",
-          location = null,
-          photoURL = null,
-      )
-  AgriHealthAppTheme {
-    ShowReportInfo(
-        report = report,
-    )
-  }
-}
-*/

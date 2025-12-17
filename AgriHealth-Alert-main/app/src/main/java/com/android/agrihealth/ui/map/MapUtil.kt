@@ -65,7 +65,7 @@ import com.android.agrihealth.data.model.location.toLocation
 import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
-import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng

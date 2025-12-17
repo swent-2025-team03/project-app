@@ -21,10 +21,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.data.model.images.ImageViewModel
-import com.android.agrihealth.ui.common.AuthorName
-import com.android.agrihealth.ui.loading.LoadingOverlay
+import com.android.agrihealth.data.model.user.UserViewModel
+import com.android.agrihealth.ui.common.image.EditableProfilePictureWithImageCropper
+import com.android.agrihealth.ui.common.layout.LoadingOverlay
+import com.android.agrihealth.ui.common.layout.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.common.resolver.AuthorName
 import com.android.agrihealth.ui.navigation.NavigationActions
-import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.CONFIRM_LEAVE
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.CREATE_OFFICE_BUTTON
@@ -38,21 +40,7 @@ import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
 import com.android.agrihealth.ui.profile.CodesViewModel
 import com.android.agrihealth.ui.profile.GenerateCode
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
-import com.android.agrihealth.ui.user.UserViewModel
-import com.android.agrihealth.ui.utils.EditableProfilePictureWithImageCropper
 import kotlinx.coroutines.launch
-
-object ManageOfficeScreenTestTags {
-  const val CREATE_OFFICE_BUTTON = "CreateOfficeButton"
-  const val JOIN_OFFICE_BUTTON = "JoinOfficeButton"
-  const val OFFICE_NAME = "OfficeName"
-  const val OFFICE_ADDRESS = "OfficeAddress"
-  const val OFFICE_DESCRIPTION = "OfficeDescription"
-  const val OFFICE_VET_LIST = "OfficeVetList"
-  const val SAVE_BUTTON = "SaveButton"
-  const val LEAVE_OFFICE_BUTTON = "LeaveOfficeButton"
-  const val CONFIRM_LEAVE = "ConfirmLeaveOffice"
-}
 
 @SuppressLint("StateFlowValueCalledInComposition", "SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -233,4 +221,16 @@ fun ManageOfficeScreen(
               }
         }
       }
+}
+
+object ManageOfficeScreenTestTags {
+  const val CREATE_OFFICE_BUTTON = "CreateOfficeButton"
+  const val JOIN_OFFICE_BUTTON = "JoinOfficeButton"
+  const val OFFICE_NAME = "OfficeName"
+  const val OFFICE_ADDRESS = "OfficeAddress"
+  const val OFFICE_DESCRIPTION = "OfficeDescription"
+  const val OFFICE_VET_LIST = "OfficeVetList"
+  const val SAVE_BUTTON = "SaveButton"
+  const val LEAVE_OFFICE_BUTTON = "LeaveOfficeButton"
+  const val CONFIRM_LEAVE = "ConfirmLeaveOffice"
 }

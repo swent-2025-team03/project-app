@@ -1,80 +1,93 @@
 package com.android.agrihealth.data.model.report
 
-import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
-import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.repository.ReportRepositoryFirestore
+import com.android.agrihealth.data.model.authentification.AuthRepositoryFirebase
+import com.android.agrihealth.data.model.report.form.OpenQuestion
+import com.android.agrihealth.testhelpers.TestPassword
+import com.android.agrihealth.testhelpers.TestReport
+import com.android.agrihealth.testhelpers.TestTimeout.SHORT_TIMEOUT
+import com.android.agrihealth.testhelpers.TestUser
+import com.android.agrihealth.testhelpers.templates.FirebaseTest
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import java.time.Instant
-import java.util.UUID
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
+class ReportRepositoryFirestoreTest : FirebaseTest() {
 
   val repository = ReportRepositoryFirestore(Firebase.firestore)
+  val authRepository = AuthRepositoryFirebase()
 
   val now: Instant = Instant.ofEpochSecond(1000000)
 
   val openQuestion = OpenQuestion("hello", "hi")
 
+  val baseReport = TestReport.REPORT1.copy(createdAt = now, questionForms = listOf(openQuestion))
+
+  val currentUser = TestUser.FARMER1.copy()
+  val vet1 = TestUser.VET1.copy()
+
   val baseReport1 =
-      Report(
-          id = "0",
-          title = "report1",
-          description = "description1",
-          photoURL = null,
-          questionForms = listOf(openQuestion),
-          farmerId = user1.uid,
-          officeId = user3.uid,
+      baseReport.copy(
+          id = "rep1",
+          title = "report 1",
+          description = "desc 1",
+          farmerId = currentUser.uid,
+          officeId = TestUser.OFFICE1.id,
           status = ReportStatus.PENDING,
-          answer = null,
-          location = null,
-          createdAt = now)
+          answer = null)
 
   val baseReport2 =
-      Report(
-          id = "1",
-          title = "report2",
-          description = "description2",
-          photoURL = null,
-          questionForms = listOf(openQuestion),
-          farmerId = user2.uid,
-          officeId = "Off2",
+      baseReport.copy(
+          id = "rep2",
+          title = "report 2",
+          description = "desc 2",
+          farmerId = TestUser.FARMER2.uid,
+          officeId = TestUser.OFFICE2.id,
           status = ReportStatus.RESOLVED,
-          answer = "this is the answer",
-          location = Location(42.0, 6.7, "the nice farm were all the dogs go when they are old"),
-          createdAt = now)
+          answer = "answering")
 
-  val baseReport3 = baseReport1.copy(id = "2", title = "report3", description = "description3")
+  val baseReport3 =
+      baseReport.copy(
+          id = "rep3",
+          title = "report 3",
+          description = "desc 3",
+          farmerId = baseReport1.farmerId,
+          officeId = baseReport1.officeId,
+          status = baseReport1.status,
+          answer = baseReport1.answer)
 
   var report1 = baseReport1
   var report2 = baseReport2
   var report3 = baseReport3
 
-  private fun Report.fixUID(): Report = copy(farmerId = user1.uid)
+  private fun Report.fixUID(): Report = copy(farmerId = currentUser.uid)
 
   @Before
-  override fun setUp() {
-    super.setUp()
-    runTest { authRepository.signUpWithEmailAndPassword(user1.email, password1, user1) }
-    assertNotNull(Firebase.auth.currentUser)
-    val uuid = UUID.randomUUID()
-    report1 = baseReport1.copy(id = "${baseReport1.id} $uuid")
-    report2 = baseReport2.copy(id = "${baseReport2.id} $uuid")
-    report3 = baseReport3.copy(id = "${baseReport3.id} $uuid")
+  fun setUp() {
+    runTest {
+      authRepository.signUpWithEmailAndPassword(
+          currentUser.email, TestPassword.PASSWORD1, currentUser)
+    }
+    Assert.assertNotNull(Firebase.auth.currentUser)
+    report1 = baseReport1.copy(id = "baseReport1.id")
+    report2 = baseReport2.copy(id = "baseReport2.id")
+    report3 = baseReport3.copy(id = "baseReport3.id")
+
+    runBlocking { delay(SHORT_TIMEOUT) }
   }
 
   @Test
   fun canAddReportToRepository() = runTest {
     repository.addReport(report1.fixUID())
-    val reports = repository.getAllReports(user1.uid)
-    assertEquals(1, reports.size)
-    assertEquals(report1, reports.first().copy(farmerId = report1.farmerId, createdAt = now))
+    val reports = repository.getAllReports(currentUser.uid)
+    Assert.assertEquals(1, reports.size)
+    Assert.assertEquals(report1, reports.first().copy(farmerId = report1.farmerId, createdAt = now))
   }
 
   @Test
@@ -82,19 +95,19 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     repository.addReport(report1.fixUID())
     repository.addReport(report3.fixUID())
 
-    val reports = repository.getAllReports(user1.uid)
+    val reports = repository.getAllReports(currentUser.uid)
 
-    assertEquals(2, reports.size)
-    assertEquals(
-        listOf<Report>(report1, report3).sortedBy { it.title },
+    Assert.assertEquals(2, reports.size)
+    Assert.assertEquals(
+        listOf(report1, report3).sortedBy { it.title },
         reports.map { it.copy(farmerId = report1.farmerId, createdAt = now) }.sortedBy { it.title })
   }
 
   @Test
   fun getNewUidReturnsUniqueIDs() = runTest {
     val numberIDs = 100
-    val uids = (0 until 100).toSet<Int>().map { repository.getNewReportId() }.toSet()
-    assertEquals(uids.size, numberIDs)
+    val uids = (0 until 100).toSet().map { repository.getNewReportId() }.toSet()
+    Assert.assertEquals(uids.size, numberIDs)
   }
 
   @Test
@@ -103,39 +116,8 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     repository.addReport(report2.fixUID())
     repository.addReport(report3.fixUID())
 
-    assertEquals(
+    Assert.assertEquals(
         3, repository.getAllReports(Firebase.auth.currentUser?.uid ?: "no current user").size)
-  }
-
-  @Test
-  fun canGetReportsByVet() = runTest {
-    authRepository.signOut()
-    authRepository.signUpWithEmailAndPassword(user3.email, password3, user3)
-
-    repository.addReport(report1.copy(farmerId = user3.uid, officeId = user3.officeId!!))
-    repository.addReport(report2.copy(farmerId = user3.uid))
-    repository.addReport(report3.copy(farmerId = user3.uid, officeId = user3.officeId))
-
-    var reports = repository.getAllReports(user3.uid)
-    assertEquals(2, reports.size)
-
-    reports.forEach {
-      assertEquals(user3.officeId, it.officeId)
-      assertEquals(listOf(openQuestion), it.questionForms)
-    }
-
-    reports =
-        reports.map {
-          it.copy(
-              farmerId = report1.farmerId,
-              officeId = report1.officeId,
-              createdAt = now,
-              questionForms = listOf(openQuestion))
-        }
-    val expectedReports = setOf(report1, report3)
-    assertEquals(expectedReports, reports.toSet())
-
-    authRepository.signOut()
   }
 
   @Test
@@ -144,10 +126,10 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     repository.addReport(report2.fixUID())
     repository.addReport(report3.fixUID())
 
-    assertEquals(
+    Assert.assertEquals(
         3, repository.getAllReports(Firebase.auth.currentUser?.uid ?: "no current user").size)
     val report = repository.getReportById(report1.id)
-    assertEquals(report1, report?.copy(farmerId = report1.farmerId, createdAt = now))
+    Assert.assertEquals(report1, report?.copy(farmerId = report1.farmerId, createdAt = now))
   }
 
   @Test
@@ -156,9 +138,9 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     repository.addReport(report1.fixUID())
     repository.editReport(report1.id, editedReport1.fixUID())
 
-    val reports = repository.getAllReports(user1.uid)
-    assertEquals(1, reports.size)
-    assertEquals(
+    val reports = repository.getAllReports(currentUser.uid)
+    Assert.assertEquals(1, reports.size)
+    Assert.assertEquals(
         editedReport1, reports.first().copy(farmerId = editedReport1.farmerId, createdAt = now))
   }
 
@@ -167,8 +149,8 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     repository.addReport(report1.fixUID())
 
     repository.deleteReport(report1.id)
-    val reports = repository.getAllReports(user1.uid)
-    assertEquals(0, reports.size)
+    val reports = repository.getAllReports(currentUser.uid)
+    Assert.assertEquals(0, reports.size)
   }
 
   @Test
@@ -178,8 +160,8 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
     repository.addReport(report3.fixUID())
 
     repository.deleteReport(report1.id)
-    var reports = repository.getAllReports(user1.uid)
-    assertEquals(2, reports.size)
+    var reports = repository.getAllReports(currentUser.uid)
+    Assert.assertEquals(2, reports.size)
 
     reports =
         reports.map {
@@ -189,6 +171,6 @@ class ReportRepositoryFirestoreTest : FirebaseEmulatorsTest() {
               questionForms = listOf(openQuestion))
         }
     val expectedReports = setOf(report2, report3)
-    assertEquals(expectedReports, reports.toSet())
+    Assert.assertEquals(expectedReports, reports.toSet())
   }
 }

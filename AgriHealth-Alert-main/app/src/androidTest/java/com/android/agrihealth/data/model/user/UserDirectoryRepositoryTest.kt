@@ -1,6 +1,7 @@
 package com.android.agrihealth.data.model.user
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.agrihealth.ui.common.resolver.UserDirectoryRepository
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference

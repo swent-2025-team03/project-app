@@ -6,10 +6,10 @@ import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.data.model.office.OfficeRepository
+import com.android.agrihealth.data.model.user.UserViewModelContract
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.ui.loading.withLoadingState
-import com.android.agrihealth.ui.user.UserViewModelContract
-import com.android.agrihealth.ui.utils.PhotoUi
+import com.android.agrihealth.ui.common.image.PhotoUi
+import com.android.agrihealth.ui.common.layout.withLoadingState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -21,7 +21,7 @@ data class ManageOfficeUiState(
     val editableAddress: String = "",
     val isLoading: Boolean = false,
     val snackMessage: String? = null,
-    val photoBytesToUpload: ByteArray? = null,
+    @Suppress("ArrayInDataClass") val photoBytesToUpload: ByteArray? = null,
     val removeRemotePhoto: Boolean = false,
 ) {
   /**
@@ -142,8 +142,8 @@ class ManageOfficeViewModel(
     }
   }
 
-  fun setPhoto(photobytes: ByteArray?) {
-    _uiState.value = _uiState.value.copy(photoBytesToUpload = photobytes, removeRemotePhoto = false)
+  fun setPhoto(photoBytes: ByteArray?) {
+    _uiState.value = _uiState.value.copy(photoBytesToUpload = photoBytes, removeRemotePhoto = false)
   }
 
   fun removePhoto() {

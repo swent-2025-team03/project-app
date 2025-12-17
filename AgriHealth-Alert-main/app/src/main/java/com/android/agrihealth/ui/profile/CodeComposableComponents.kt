@@ -16,18 +16,9 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
+import com.android.agrihealth.ui.common.layout.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import kotlinx.coroutines.launch
-
-object CodeComposableComponentsTestTags {
-  const val CODE_FIELD = "OfficeCodeField"
-  const val ADD_CODE_BUTTON = "AddOfficeButton"
-  const val GENERATE_BUTTON = "GenerateButton"
-  const val GENERATE_FIELD = "GenerateField"
-  const val SAVE_BUTTON = "SaveButton"
-  const val COPY_CODE = "CopyCode"
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -157,4 +148,13 @@ fun GenerateCode(
           }
         }
   }
+}
+
+object CodeComposableComponentsTestTags {
+  const val CODE_FIELD = "OfficeCodeField"
+  const val ADD_CODE_BUTTON = "AddOfficeButton"
+  const val GENERATE_BUTTON = "GenerateButton"
+  const val GENERATE_FIELD = "GenerateField"
+  const val SAVE_BUTTON = "SaveButton"
+  const val COPY_CODE = "CopyCode"
 }

@@ -3,25 +3,31 @@ package com.android.agrihealth.testhelpers
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.onNodeWithTag
-import com.android.agrihealth.ui.loading.LoadingTestTags
+import com.android.agrihealth.ui.common.layout.LoadingTestTags
 
 object LoadingOverlayTestUtils {
 
-  fun ComposeContentTestRule.assertLoadingOverlayVisible() {
+  private fun ComposeContentTestRule.assertLoadingOverlayVisible() {
     onNodeWithTag(LoadingTestTags.SCRIM).assertIsDisplayed()
     onNodeWithTag(LoadingTestTags.SPINNER).assertIsDisplayed()
   }
 
-  fun ComposeContentTestRule.assertLoadingOverlayHidden() {
+  private fun ComposeContentTestRule.assertLoadingOverlayHidden() {
     onNodeWithTag(LoadingTestTags.SCRIM).assertDoesNotExist()
     onNodeWithTag(LoadingTestTags.SPINNER).assertDoesNotExist()
   }
 
-  fun ComposeContentTestRule.waitForLoadingToStart(timeoutMillis: Long, isLoading: () -> Boolean) {
+  private fun ComposeContentTestRule.waitForLoadingToStart(
+      timeoutMillis: Long,
+      isLoading: () -> Boolean
+  ) {
     waitUntil(timeoutMillis) { isLoading() }
   }
 
-  fun ComposeContentTestRule.waitForLoadingToFinish(timeoutMillis: Long, isLoading: () -> Boolean) {
+  private fun ComposeContentTestRule.waitForLoadingToFinish(
+      timeoutMillis: Long,
+      isLoading: () -> Boolean
+  ) {
     waitUntil(timeoutMillis) { !isLoading() }
   }
 
@@ -34,12 +40,11 @@ object LoadingOverlayTestUtils {
    */
   fun ComposeContentTestRule.assertOverlayDuringLoading(
       isLoading: () -> Boolean,
-      timeoutStart: Long,
-      timeoutEnd: Long,
+      timeout: Long = TestTimeout.LONG_TIMEOUT,
   ) {
-    waitForLoadingToStart(timeoutStart, isLoading)
+    waitForLoadingToStart(timeout, isLoading)
     assertLoadingOverlayVisible()
-    waitForLoadingToFinish(timeoutEnd, isLoading)
+    waitForLoadingToFinish(timeout, isLoading)
     assertLoadingOverlayHidden()
   }
 }

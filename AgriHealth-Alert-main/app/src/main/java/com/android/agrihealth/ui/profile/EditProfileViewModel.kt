@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.profile
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
@@ -7,7 +8,7 @@ import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.ui.utils.PhotoUi
+import com.android.agrihealth.ui.common.image.PhotoUi
 
 class EditProfileViewModel(
     private val officeRepository: OfficeRepository,
@@ -59,7 +60,7 @@ class EditProfileViewModel(
             try {
               imageViewModel.uploadAndWait(photoByteArray)
             } catch (e: Throwable) {
-              // TODO: Handle error
+              Log.e("EditProfile", "Image upload failed", e)
               null
             }
           }

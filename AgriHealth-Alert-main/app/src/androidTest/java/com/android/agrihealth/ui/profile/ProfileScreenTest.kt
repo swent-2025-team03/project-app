@@ -1,252 +1,85 @@
 package com.android.agrihealth.ui.profile
 
-import androidx.activity.ComponentActivity
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import com.android.agrihealth.data.model.user.*
-import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
-import com.android.agrihealth.testutil.FakeUserViewModel
-import com.android.agrihealth.testutil.InMemoryReportRepository
-import com.android.agrihealth.testutil.TestConstants
+import com.android.agrihealth.testhelpers.TestUser
+import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
+import com.android.agrihealth.testhelpers.templates.UITest
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
-import com.android.agrihealth.ui.navigation.NavigationTestTags.GO_BACK_BUTTON
-import com.android.agrihealth.ui.navigation.NavigationTestTags.TOP_BAR_TITLE
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.LOGOUT_BUTTON
-import com.android.agrihealth.ui.planner.PlannerScreen
-import com.android.agrihealth.ui.planner.PlannerTestReportsData
-import com.android.agrihealth.ui.planner.PlannerViewModel
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.ADDRESS_FIELD
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.CODE_BUTTON_FARMER
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DEFAULT_OFFICE_FIELD
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_PICTURE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
-import com.android.agrihealth.ui.user.UserViewModelContract
-import java.time.LocalDate
-import kotlinx.coroutines.test.runTest
-import org.junit.Rule
+import junit.framework.TestCase.assertTrue
 import org.junit.Test
 
-class ProfileScreenTest {
+class ProfileScreenTest : UITest() {
+  private fun setContentWithVM(role: UserRole, onEdit: () -> Unit = {}, onCode: () -> Unit = {}) {
+    val user =
+        when (role) {
+          UserRole.FARMER -> TestUser.FARMER1.copy()
+          UserRole.VET -> TestUser.VET1.copy()
+        }
 
-  @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
-  // Some Helpers
-
-  private fun makeFakeViewModel(user: User): FakeUserViewModel {
-    return FakeUserViewModel(user)
+    setContent {
+      ProfileScreen(
+          userViewModel = FakeUserViewModel(user),
+          onEditProfile = { onEdit() },
+          onCodeFarmer = { onCode() })
+    }
   }
 
-  private fun setScreen(vm: UserViewModelContract) {
-    composeTestRule.setContent {
-      MaterialTheme {
-        ProfileScreen(userViewModel = vm, onGoBack = {}, onLogout = {}, onEditProfile = {})
+  @Test
+  fun profileScreen_showsFarmerSpecificFields_checkButtonReactivity() {
+    val role = UserRole.FARMER
+    var codeClicked = false
+
+    setContentWithVM(role, onCode = { codeClicked = true })
+
+    assertComponentsVisibility(role)
+
+    clickOn(ProfileScreenTestTags.CODE_BUTTON_FARMER)
+    assertTrue(codeClicked)
+  }
+
+  @Test
+  fun profileScreen_showsVetSpecificFields_checkButtonReactivity() {
+    val role = UserRole.VET
+    var editClicked = false
+
+    setContentWithVM(role, onEdit = { editClicked = true })
+
+    assertComponentsVisibility(role)
+
+    with(ProfileScreenTestTags) {
+      clickOn(EDIT_BUTTON)
+
+      assertTrue(editClicked)
+    }
+  }
+
+  private fun assertComponentsVisibility(role: UserRole) {
+    with(NavigationTestTags) {
+      nodesAreDisplayed(TOP_BAR, TOP_BAR_TITLE, GO_BACK_BUTTON, LOGOUT_BUTTON)
+    }
+
+    with(ProfileScreenTestTags) {
+      nodesAreDisplayed(
+          PROFILE_PICTURE,
+          ADDRESS_FIELD,
+          DESCRIPTION_FIELD,
+          EMAIL_FIELD,
+          PASSWORD_FIELD,
+          EDIT_BUTTON)
+
+      when (role) {
+        UserRole.FARMER -> nodesAreDisplayed(DEFAULT_OFFICE_FIELD)
+        UserRole.VET -> {
+          nodesAreDisplayed(MANAGE_OFFICE_BUTTON)
+          nodesNotDisplayed(DEFAULT_OFFICE_FIELD)
+        }
       }
     }
   }
 
-  // Test suite
-
-  @Test
-  fun topBar_displaysCorrectly() {
-    val vm =
-        makeFakeViewModel(
-            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultOffice = null))
-    setScreen(vm)
-
-    composeTestRule.onNodeWithTag(TOP_BAR_TITLE).assertExists()
-    composeTestRule.onNodeWithTag(TOP_BAR).assertExists()
-    composeTestRule.onNodeWithTag(GO_BACK_BUTTON).assertExists()
-    composeTestRule.onNodeWithTag(LOGOUT_BUTTON).assertExists()
-  }
-
-  @Test
-  fun profileImage_isVisible() {
-    val vm =
-        makeFakeViewModel(
-            Vet(
-                uid = "2",
-                firstname = "Bob",
-                lastname = "Smith",
-                email = "bob@vetcare.com",
-                address = null))
-    setScreen(vm)
-
-    composeTestRule.onNodeWithTag(PROFILE_PICTURE).assertIsDisplayed()
-  }
-
-  @Test
-  fun farmer_showsDefaultVetField() {
-    val vm =
-        makeFakeViewModel(
-            Farmer(
-                uid = "1",
-                firstname = "Alice",
-                lastname = "Johnson",
-                email = "alice@farmmail.com",
-                address = null,
-                defaultOffice = "off123"))
-    setScreen(vm)
-
-    composeTestRule.onNodeWithTag(DEFAULT_OFFICE_FIELD).assertExists()
-  }
-
-  @Test
-  fun vet_hidesDefaultVetField() {
-    val vm =
-        makeFakeViewModel(
-            Vet(
-                uid = "2",
-                firstname = "Bob",
-                lastname = "Smith",
-                email = "bob@vetcare.com",
-                address = null))
-    setScreen(vm)
-
-    composeTestRule.onAllNodesWithTag(DEFAULT_OFFICE_FIELD).assertCountEquals(0)
-  }
-
-  @Test
-  fun addressField_isVisibleAndPopulated() {
-    val vm =
-        makeFakeViewModel(
-            Farmer(
-                "1",
-                "Alice",
-                "Johnson",
-                "alice@farmmail.com",
-                address = null,
-                defaultOffice = null))
-    setScreen(vm)
-
-    composeTestRule.onNodeWithTag(ADDRESS_FIELD).assertExists()
-  }
-
-  @Test
-  fun descriptionField_isDisplayed() {
-    val vm =
-        makeFakeViewModel(
-            Farmer(
-                uid = "1",
-                firstname = "Alice",
-                lastname = "Johnson",
-                email = "alice@farmmail.com",
-                address = null,
-                defaultOffice = null,
-                description = "Test description"))
-    setScreen(vm)
-
-    composeTestRule.onNodeWithTag(ProfileScreenTestTags.DESCRIPTION_FIELD).assertExists()
-  }
-
-  @Test
-  fun emailAndPasswordFields_areDisplayed() {
-    val vm =
-        makeFakeViewModel(
-            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultOffice = null))
-    setScreen(vm)
-
-    composeTestRule.onNodeWithTag(EMAIL_FIELD).assertExists()
-    composeTestRule.onNodeWithTag(PASSWORD_FIELD).assertExists()
-  }
-
-  @Test
-  fun editButton_triggersCallback() {
-    var clicked = false
-    val vm =
-        makeFakeViewModel(
-            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultOffice = null))
-
-    composeTestRule.setContent {
-      MaterialTheme { ProfileScreen(userViewModel = vm, onEditProfile = { clicked = true }) }
-    }
-
-    composeTestRule.onNodeWithTag(EDIT_BUTTON).performClick()
-    assert(clicked)
-  }
-
-  @Test
-  fun nullUser_safeFallbacks() {
-    val vm =
-        makeFakeViewModel(
-            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultOffice = null))
-    setScreen(vm)
-
-    composeTestRule.onNodeWithTag(NAME_TEXT).assertExists()
-    composeTestRule.onNodeWithTag(EMAIL_FIELD).assertExists()
-  }
-
-  @Test
-  fun allAccessibleElements_haveTags() {
-    val vm =
-        makeFakeViewModel(
-            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultOffice = null))
-    setScreen(vm)
-
-    composeTestRule.onNodeWithTag(PROFILE_PICTURE).assertExists()
-    composeTestRule.onNodeWithTag(GO_BACK_BUTTON).assertExists()
-    composeTestRule.onNodeWithTag(LOGOUT_BUTTON).assertExists()
-    composeTestRule.onNodeWithTag(EDIT_BUTTON).assertExists()
-  }
-
-  @Test
-  fun codeButton_triggersCallbacks() {
-    var clicked = false
-    val vm =
-        makeFakeViewModel(
-            Farmer("1", "Alice", "Johnson", "alice@farmmail.com", null, defaultOffice = null))
-
-    composeTestRule.setContent {
-      MaterialTheme { ProfileScreen(userViewModel = vm, onCodeFarmer = { clicked = true }) }
-    }
-
-    composeTestRule.onNodeWithTag(CODE_BUTTON_FARMER).performClick()
-    assert(clicked)
-  }
-
-  @Test
-  fun vetProfile_displaysManageOfficeButton() {
-    val vm =
-        makeFakeViewModel(
-            Vet(
-                uid = "vet123",
-                firstname = "John",
-                lastname = "Doe",
-                email = "john@vet.com",
-                address = null,
-                officeId = null))
-
-    composeTestRule.setContent { ProfileScreen(userViewModel = vm, onManageOffice = {}) }
-
-    composeTestRule.onNodeWithTag(ProfileScreenTestTags.MANAGE_OFFICE_BUTTON).assertExists()
-  }
-
-  @Test
-  fun planner_loadReports_showsAndHidesLoadingOverlay() = runTest {
-    val report = PlannerTestReportsData.report1.copy(startTime = LocalDate.now().atTime(9, 0))
-    val delayedRepo =
-        InMemoryReportRepository(
-            initialReports = listOf(report), delayMs = TestConstants.DEFAULT_TIMEOUT)
-
-    val viewModel = PlannerViewModel(reportRepository = delayedRepo)
-
-    composeTestRule.setContent {
-      PlannerScreen(
-          user = PlannerTestReportsData.farmer,
-          reportId = null,
-          goBack = {},
-          tabClicked = {},
-          reportClicked = {},
-          plannerVM = viewModel,
-      )
-    }
-
-    composeTestRule.assertOverlayDuringLoading(
-        isLoading = { viewModel.uiState.value.isLoading },
-        timeoutStart = TestConstants.LONG_TIMEOUT,
-        timeoutEnd = TestConstants.LONG_TIMEOUT,
-    )
-  }
+  override fun displayAllComponents() {}
 }

@@ -32,62 +32,23 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.ui.common.AuthorName
-import com.android.agrihealth.ui.common.OfficeName
-import com.android.agrihealth.ui.common.rememberOfficeName
-import com.android.agrihealth.ui.common.rememberUserName
-import com.android.agrihealth.ui.loading.LoadingOverlay
-import com.android.agrihealth.ui.navigation.BottomNavigationMenu
+import com.android.agrihealth.ui.common.layout.BottomNavigationMenu
+import com.android.agrihealth.ui.common.layout.LoadingOverlay
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
+import com.android.agrihealth.ui.common.layout.Tab
+import com.android.agrihealth.ui.common.resolver.AuthorName
+import com.android.agrihealth.ui.common.resolver.OfficeName
+import com.android.agrihealth.ui.common.resolver.rememberOfficeName
+import com.android.agrihealth.ui.common.resolver.rememberUserName
 import com.android.agrihealth.ui.navigation.NavigationActions
-import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
-import com.android.agrihealth.ui.navigation.Tab
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.ASSIGNED_VET_TAG
 import kotlinx.coroutines.launch
-
-// -- imports for preview --
-/*
-import androidx.compose.ui.tooling.preview.Preview
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.testutil.FakeOverviewViewModel
-*/
-
-object OverviewScreenTestTags {
-  const val TOP_APP_BAR_TITLE = NavigationTestTags.TOP_BAR_TITLE
-  const val ADD_REPORT_BUTTON = "addReportFab"
-  const val LOGOUT_BUTTON = "logoutButton"
-  const val SCREEN = "OverviewScreen"
-  const val REPORT_ITEM = "reportItem"
-  const val PROFILE_BUTTON = "ProfileButton"
-  const val FILTERS_TOGGLE = "FiltersToggle"
-  const val STATUS_DROPDOWN = "StatusFilterDropdown"
-  const val OFFICE_ID_DROPDOWN = "OfficeIdFilterDropdown"
-  const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
-  const val ASSIGNEE_FILTER = "AssigneeFilter"
-  const val ASSIGNED_VET_TAG = "AssignedVetTag"
-
-  fun alertItemTag(page: Int) = "ALERT_ITEM_$page"
-}
-
-object AssignedVetTagTexts {
-  const val ASSIGNED_TO_CURRENT_VET = "Assigned to You"
-}
-
-object AssigneeFilterTexts {
-  const val ASSIGNED_TO_ME = "Assigned to Me"
-  const val UNASSIGNED = "Unassigned"
-  const val ASSIGNED_TO_OTHERS = "Assigned to Others"
-}
 
 /**
  * Composable screen displaying the Overview UI. Shows latest alerts and a list of past reports.
  * Button for creating a new report will only be displayed for farmer accounts. For the list,
- * farmers can view only reports made by their own; vets can view all the reports.
- *
- * @param reports List of report to display kept only for backward compatibility and shouldn't be
- *   used
+ * farmers can view only reports made by their own; vets can view all the reports sent to them.
  */
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
@@ -604,31 +565,30 @@ fun AlertZoneTag(distanceText: String) {
             color = Color.White)
       }
 }
-/*
-/** Preview of the OverviewScreen with dummy data. Temporarily commented out */
-@Preview(showBackground = true)
-@Composable
-fun PreviewOverviewScreen() {
-    val fakeFarmer = Farmer(
-        uid = "farmer_001",
-        firstname = "Test",
-        lastname = "Farmer",
-        email = "test@farmer.com",
-        address = Location(46.5191, 6.5668, "EPFL"),
-        linkedOffices = listOf("off_001"),
-        defaultOffice = "off_001"
-    )
-    val fakeViewModel = FakeOverviewViewModel(fakeFarmer)
 
-    AgriHealthAppTheme {
-        OverviewScreen(
-            userRole = UserRole.FARMER,
-            user = fakeFarmer,
-            overviewViewModel = fakeViewModel,
-            onAddReport = {},
-            onReportClick = {},
-            onAlertClick = {}
-        )
-    }
+object AssignedVetTagTexts {
+  const val ASSIGNED_TO_CURRENT_VET = "Assigned to You"
 }
-*/
+
+object AssigneeFilterTexts {
+  const val ASSIGNED_TO_ME = "Assigned to Me"
+  const val UNASSIGNED = "Unassigned"
+  const val ASSIGNED_TO_OTHERS = "Assigned to Others"
+}
+
+object OverviewScreenTestTags {
+  const val TOP_APP_BAR_TITLE = NavigationTestTags.TOP_BAR_TITLE
+  const val ADD_REPORT_BUTTON = "addReportFab"
+  const val LOGOUT_BUTTON = "logoutButton"
+  const val SCREEN = "OverviewScreen"
+  const val REPORT_ITEM = "reportItem"
+  const val PROFILE_BUTTON = "ProfileButton"
+  const val FILTERS_TOGGLE = "FiltersToggle"
+  const val STATUS_DROPDOWN = "StatusFilterDropdown"
+  const val OFFICE_ID_DROPDOWN = "OfficeIdFilterDropdown"
+  const val FARMER_ID_DROPDOWN = "FarmerIdFilterDropdown"
+  const val ASSIGNEE_FILTER = "AssigneeFilter"
+  const val ASSIGNED_VET_TAG = "AssignedVetTag"
+
+  fun alertItemTag(page: Int) = "ALERT_ITEM_$page"
+}

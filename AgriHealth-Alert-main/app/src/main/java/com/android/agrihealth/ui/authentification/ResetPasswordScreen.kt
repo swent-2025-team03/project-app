@@ -27,33 +27,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.core.design.theme.successColor
-import com.android.agrihealth.testutil.FakeAuthRepository
-import com.android.agrihealth.ui.navigation.NavigationTestTags
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 
-object ResetPasswordScreenTestTags {
-  const val INSTRUCTION_TEXT = "resetPasswordInstructionTest"
-  const val EMAIL = "resetPasswordEmail"
-  const val SEND_RESET_EMAIL_BUTTON = "resetPasswordResetEmailButton"
-  const val SUCCESS_FEEDBACK = "resetPasswordSuccessFeedBack"
-  const val FAIL_FEEDBACK = "resetPasswordFailFeedBack"
-  const val WAITING_FEEDBACK = "resetPasswordWaitingFeedBack"
-}
-
-object ResetPasswordStrings {
-  const val INSTRUCTION = "Enter your email and you will receive a form to reset your password."
-  const val SUCCESS_FEEDBACK = "The form was sent successfully !"
-  const val INBOX_FEEDBACK = "Check your Inbox !"
-  const val FAIL_FEEDBACK = "Something went wrong !"
-  const val WAITING_FEEDBACK = "Sending reset form !"
-  const val SEND_FORM_BUTTON = "Send reset form"
-}
-
+/** Screen where a user can get an email to reset their password */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResetPasswordScreen(onBack: () -> Unit = {}, vm: ResetPasswordViewModel = viewModel()) {
@@ -151,9 +131,20 @@ fun SendingResetFormFeedbackText(
   }
 }
 
-@Preview
-@Composable
-fun ResetPasswordScreenPreview() {
-  val vm = ResetPasswordViewModel(FakeAuthRepository())
-  AgriHealthAppTheme { ResetPasswordScreen(vm = vm) }
+object ResetPasswordStrings {
+  const val INSTRUCTION = "Enter your email and you will receive a form to reset your password."
+  const val SUCCESS_FEEDBACK = "The form was sent successfully !"
+  const val INBOX_FEEDBACK = "Check your Inbox !"
+  const val FAIL_FEEDBACK = "Something went wrong !"
+  const val WAITING_FEEDBACK = "Sending reset form !"
+  const val SEND_FORM_BUTTON = "Send reset form"
+}
+
+object ResetPasswordScreenTestTags {
+  const val INSTRUCTION_TEXT = "resetPasswordInstructionTest"
+  const val EMAIL = "resetPasswordEmail"
+  const val SEND_RESET_EMAIL_BUTTON = "resetPasswordResetEmailButton"
+  const val SUCCESS_FEEDBACK = "resetPasswordSuccessFeedBack"
+  const val FAIL_FEEDBACK = "resetPasswordFailFeedBack"
+  const val WAITING_FEEDBACK = "resetPasswordWaitingFeedBack"
 }

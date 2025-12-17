@@ -1,7 +1,5 @@
 package com.android.agrihealth.ui.alert
 
-// -- imports for preview --
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -21,33 +19,20 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.android.agrihealth.core.utils.maxTitleCharsForScreen
 import com.android.agrihealth.data.model.alert.AlertZone
+import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.NavigationActions
-import com.android.agrihealth.ui.navigation.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
-import com.android.agrihealth.ui.utils.maxTitleCharsForScreen
-
-object AlertViewScreenTestTags {
-  const val ALERT_FULL_TITLE = "alertFullTitle"
-  const val ALERT_DESCRIPTION = "alertDescription"
-  const val ALERT_DATE = "alertDate"
-  const val ALERT_REGION = "alertRegion"
-  const val PREVIOUS_ALERT_ARROW = "previousAlertArrow"
-  const val NEXT_ALERT_ARROW = "nextAlertArrow"
-  const val VIEW_ON_MAP = "viewOnMapButton"
-
-  fun containerTag(index: Int) = "SCREEN_CONTAINER_$index"
-}
 
 /**
- * Displays detailed information for a single alert.
+ * Displays detailed information for a single alert, can scroll to other alerts.
  *
- * Loads the alert for the given [alertId], shows its main fields, and provides navigation to the
- * previous/next alert. Also includes a placeholder button for future "View on Map" functionality.
+ * Loads an alert, shows its main fields, and provides navigation to the previous/next alert. Also
+ * includes a "View on Map" button to see the alert on a map
  *
  * @param navigationActions Navigation handler for back navigation.
  * @param viewModel ViewModel that provides alert data and navigation logic.
- * @param alertId ID of the alert to load and display.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -162,22 +147,14 @@ fun AlertViewScreen(navigationActions: NavigationActions, viewModel: AlertViewMo
       }
 }
 
-/*
-@Preview(showBackground = true)
-@Composable
-fun AlertViewScreenPreview() {
-    val fakeRepo = com.android.agrihealth.testutil.FakeAlertRepository()
-    val viewModel = AlertViewModel(fakeRepo)
+object AlertViewScreenTestTags {
+  const val ALERT_FULL_TITLE = "alertFullTitle"
+  const val ALERT_DESCRIPTION = "alertDescription"
+  const val ALERT_DATE = "alertDate"
+  const val ALERT_REGION = "alertRegion"
+  const val PREVIOUS_ALERT_ARROW = "previousAlertArrow"
+  const val NEXT_ALERT_ARROW = "nextAlertArrow"
+  const val VIEW_ON_MAP = "viewOnMapButton"
 
-    val navController = androidx.navigation.compose.rememberNavController()
-    LaunchedEffect(Unit) {
-        viewModel.loadAlert("1")
-    }
-
-    AlertViewScreen(
-        navigationActions = NavigationActions(navController),
-        viewModel = viewModel,
-        alertId = "1"
-    )
+  fun containerTag(index: Int) = "SCREEN_CONTAINER_$index"
 }
-*/

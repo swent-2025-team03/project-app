@@ -1,26 +1,22 @@
 package com.android.agrihealth.ui.profile
 
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotDisplayed
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
-import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertLoadingOverlayHidden
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
-import com.android.agrihealth.testutil.FakeAuthRepository
-import com.android.agrihealth.testutil.FakeChangePasswordViewModel
-import com.android.agrihealth.testutil.TestConstants
+import com.android.agrihealth.testhelpers.TestPassword.PASSWORD1
+import com.android.agrihealth.testhelpers.TestPassword.PASSWORD2
+import com.android.agrihealth.testhelpers.TestPassword.WEAK_PASSWORD
+import com.android.agrihealth.testhelpers.TestTimeout
+import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
+import com.android.agrihealth.testhelpers.templates.UITest
 import junit.framework.TestCase.assertFalse
+import junit.framework.TestCase.assertTrue
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 
-class ChangePasswordScreenTest {
+class ChangePasswordScreenTest : UITest() {
 
   var success = false
-  @get:Rule val composeTestRule = createComposeRule()
+  val oldPassword = PASSWORD2
+  val newPassword = PASSWORD1
 
   @Before
   fun setup() {
@@ -28,10 +24,10 @@ class ChangePasswordScreenTest {
   }
 
   private fun setContentWithVM(
-      vm: ChangePasswordViewModelContract = FakeChangePasswordViewModel("password"),
+      vm: ChangePasswordViewModelContract = FakeChangePasswordViewModel(oldPassword),
       userEmail: String = ""
   ) {
-    composeTestRule.setContent {
+    setContent {
       ChangePasswordScreen(
           onBack = {},
           userEmail = userEmail,
@@ -41,72 +37,59 @@ class ChangePasswordScreenTest {
   }
 
   @Test
-  fun allComponentsAreDisplayed() {
+  override fun displayAllComponents() {
     setContentWithVM()
-    composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.NEW_PASSWORD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).assertIsDisplayed()
+
+    with(ChangePasswordScreenTestTags) {
+      nodesAreDisplayed(OLD_PASSWORD, NEW_PASSWORD, SAVE_BUTTON)
+    }
   }
 
   @Test
-  fun emptyFieldsSaysWeakPassword() {
+  fun checkFailureAndSuccess_emptyWrongOldWeakNew_validOldAndNew() {
     setContentWithVM()
-    composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
-    composeTestRule.onNodeWithText(ChangePasswordFeedbackTexts.NEW_WEAK).assertIsDisplayed()
-    composeTestRule.onNodeWithText(ChangePasswordFeedbackTexts.OLD_WRONG).assertIsNotDisplayed()
-    assert(!success)
-  }
 
-  @Test
-  fun wrongOldPasswordShowsError() {
-    setContentWithVM()
-    composeTestRule
-        .onNodeWithTag(ChangePasswordScreenTestTags.NEW_PASSWORD)
-        .performTextInput("definitelyAStrongEnoughPassword123/()")
-    composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
-    composeTestRule.onNodeWithText(ChangePasswordFeedbackTexts.OLD_WRONG).assertIsDisplayed()
-    composeTestRule.onNodeWithText(ChangePasswordFeedbackTexts.NEW_WEAK).assertIsNotDisplayed()
-    assertFalse(success)
-  }
+    with(ChangePasswordFeedbackTexts) {
+      fillPasswordFieldsAndSubmit("", "")
+      textIsDisplayed(NEW_WEAK)
+      textNotDisplayed(OLD_WRONG)
+      assertFalse(success)
 
-  @Test
-  fun goodPasswordsSuccess() {
-    setContentWithVM()
-    composeTestRule
-        .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
-        .performTextInput("password")
-    composeTestRule
-        .onNodeWithTag(ChangePasswordScreenTestTags.NEW_PASSWORD)
-        .performTextInput("definitelyAStrongEnoughPassword123/()")
-    composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
-    composeTestRule.onNodeWithText(ChangePasswordFeedbackTexts.OLD_WRONG).assertIsNotDisplayed()
-    composeTestRule.onNodeWithText(ChangePasswordFeedbackTexts.NEW_WEAK).assertIsNotDisplayed()
-    assert(success)
+      fillPasswordFieldsAndSubmit("", newPassword)
+      textNotDisplayed(NEW_WEAK)
+      textIsDisplayed(OLD_WRONG)
+      assertFalse(success)
+
+      composeTestRule.waitForIdle()
+      fillPasswordFieldsAndSubmit(oldPassword, WEAK_PASSWORD)
+      textIsDisplayed(NEW_WEAK)
+      textNotDisplayed(OLD_WRONG)
+      assertFalse(success)
+
+      fillPasswordFieldsAndSubmit(oldPassword, newPassword)
+      textNotDisplayed(NEW_WEAK)
+      textNotDisplayed(OLD_WRONG)
+      assertTrue(success)
+    }
   }
 
   @Test
   fun changePassword_showsAndHidesLoadingOverlay() {
-    val fakeRepo = FakeAuthRepository(delayMs = TestConstants.SHORT_TIMEOUT)
+    val fakeRepo = FakeAuthRepository(delayMs = TestTimeout.SHORT_TIMEOUT)
     val viewModel = ChangePasswordViewModel(repository = fakeRepo)
 
     setContentWithVM(vm = viewModel)
 
-    composeTestRule.assertLoadingOverlayHidden()
+    fillPasswordFieldsAndSubmit(oldPassword, newPassword)
 
-    composeTestRule
-        .onNodeWithTag(ChangePasswordScreenTestTags.OLD_PASSWORD)
-        .performTextInput("oldpass")
+    composeTestRule.assertOverlayDuringLoading(isLoading = { viewModel.uiState.value.isLoading })
+  }
 
-    composeTestRule
-        .onNodeWithTag(ChangePasswordScreenTestTags.NEW_PASSWORD)
-        .performTextInput("NewPassword123!")
-
-    composeTestRule.onNodeWithTag(ChangePasswordScreenTestTags.SAVE_BUTTON).performClick()
-
-    composeTestRule.assertOverlayDuringLoading(
-        isLoading = { viewModel.uiState.value.isLoading },
-        timeoutStart = TestConstants.DEFAULT_TIMEOUT,
-        timeoutEnd = TestConstants.SUPER_LONG_TIMEOUT,
-    )
+  private fun fillPasswordFieldsAndSubmit(old: String, new: String) {
+    with(ChangePasswordScreenTestTags) {
+      writeIn(OLD_PASSWORD, old, reset = true)
+      writeIn(NEW_PASSWORD, new, reset = true)
+      clickOn(SAVE_BUTTON)
+    }
   }
 }

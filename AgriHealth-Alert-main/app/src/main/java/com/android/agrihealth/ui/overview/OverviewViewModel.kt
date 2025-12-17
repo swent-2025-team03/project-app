@@ -11,12 +11,11 @@ import com.android.agrihealth.data.model.alert.getDistanceInsideZone
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.report.Report
+import com.android.agrihealth.data.model.report.ReportRepository
+import com.android.agrihealth.data.model.report.ReportRepositoryProvider
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.User
-import com.android.agrihealth.data.model.user.UserRole
-import com.android.agrihealth.data.repository.ReportRepository
-import com.android.agrihealth.data.repository.ReportRepositoryProvider
-import com.android.agrihealth.ui.loading.withLoadingState
+import com.android.agrihealth.ui.common.layout.withLoadingState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,20 +37,6 @@ data class OverviewUIState(
     val isAlertLoading: Boolean = false,
     val isReportLoading: Boolean = false,
 )
-
-enum class AssignmentFilter {
-  ASSIGNED_TO_CURRENT_VET,
-  UNASSIGNED,
-  ASSIGNED_TO_OTHERS
-}
-
-sealed class FilterArg<out T> {
-  object Unset : FilterArg<Nothing>()
-
-  object Reset : FilterArg<Nothing>()
-
-  data class Value<T>(val value: T?) : FilterArg<T>()
-}
 
 /**
  * ViewModel holding the state of reports displayed on the Overview screen. Currently uses mock data
@@ -190,18 +175,6 @@ class OverviewViewModel(
   }
 
   /**
-   * Is Now handled in when fetching the data from the repository Return reports filtered by user
-   * role. Farmers see only their own reports, Vets see all reports.
-   */
-  fun getReportsForUser(userRole: UserRole, userId: String): List<Report> {
-    val allReports = uiState.value.reports
-    return when (userRole) {
-      UserRole.FARMER -> allReports.filter { it.farmerId == userId }
-      UserRole.VET -> allReports
-    }
-  }
-
-  /**
    * Loads all alerts from the repository and updates UIState. Alerts are sorted based on the user's
    * location.
    */
@@ -242,4 +215,18 @@ class OverviewViewModel(
       credentialManager.clearCredentialState(ClearCredentialStateRequest())
     }
   }
+}
+
+enum class AssignmentFilter {
+  ASSIGNED_TO_CURRENT_VET,
+  UNASSIGNED,
+  ASSIGNED_TO_OTHERS
+}
+
+sealed class FilterArg<out T> {
+  object Unset : FilterArg<Nothing>()
+
+  object Reset : FilterArg<Nothing>()
+
+  data class Value<T>(val value: T?) : FilterArg<T>()
 }

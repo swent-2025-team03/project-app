@@ -13,6 +13,10 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.tasks.await
 
+/**
+ * Gets the device's location and permissions related to it. Not meant to be used directly, use the
+ * ViewModel instead
+ */
 class LocationRepository(
     private val context: Context,
     private val fusedLocationClient: FusedLocationProviderClient =

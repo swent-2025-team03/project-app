@@ -9,7 +9,6 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -22,8 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.view.WindowCompat.setDecorFitsSystemWindows
 import androidx.credentials.CredentialManager
@@ -36,10 +33,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.android.agrihealth.core.constants.FirestoreSchema.Collections.FARMER_TO_OFFICE
+import com.android.agrihealth.core.constants.FirestoreSchema.Collections.VET_TO_OFFICE
 import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
-import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.FARMER_TO_OFFICE
-import com.android.agrihealth.data.model.connection.FirestoreSchema.Collections.VET_TO_OFFICE
 import com.android.agrihealth.data.model.device.location.LocationPermissionsRequester
 import com.android.agrihealth.data.model.device.location.LocationRepository
 import com.android.agrihealth.data.model.device.location.LocationRepositoryProvider
@@ -48,10 +45,10 @@ import com.android.agrihealth.data.model.device.notifications.NotificationHandle
 import com.android.agrihealth.data.model.device.notifications.NotificationsPermissionsRequester
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.location.LocationPicker
 import com.android.agrihealth.data.model.office.OfficeRepositoryFirestore
+import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.copyCommon
-import com.android.agrihealth.resources.C
+import com.android.agrihealth.data.model.user.defaultUser
 import com.android.agrihealth.ui.alert.AlertViewModel
 import com.android.agrihealth.ui.alert.AlertViewScreen
 import com.android.agrihealth.ui.authentification.ResetPasswordScreen
@@ -60,6 +57,7 @@ import com.android.agrihealth.ui.authentification.RoleSelectionScreen
 import com.android.agrihealth.ui.authentification.SignInScreen
 import com.android.agrihealth.ui.authentification.SignUpScreen
 import com.android.agrihealth.ui.authentification.VerifyEmailScreen
+import com.android.agrihealth.ui.common.LocationPicker
 import com.android.agrihealth.ui.map.MapScreen
 import com.android.agrihealth.ui.map.MapViewModel
 import com.android.agrihealth.ui.navigation.NavigationActions
@@ -82,10 +80,8 @@ import com.android.agrihealth.ui.report.AddReportScreen
 import com.android.agrihealth.ui.report.AddReportViewModel
 import com.android.agrihealth.ui.report.ReportViewScreen
 import com.android.agrihealth.ui.report.ReportViewViewModel
-import com.android.agrihealth.ui.user.UserViewModel
 import com.android.agrihealth.ui.user.ViewUserScreen
 import com.android.agrihealth.ui.user.ViewUserViewModel
-import com.android.agrihealth.ui.user.defaultUser
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -101,7 +97,7 @@ data class LocationPickedUIState(
 /**
  * ViewModel holding the state of the Location showed by fields and provided by the locationPicker.
  */
-class LocationPickedViewModel(private val initLocation: Location?) : ViewModel() {
+class LocationPickedViewModel(initLocation: Location?) : ViewModel() {
 
   private val _uiState = MutableStateFlow(LocationPickedUIState())
   val uiState: StateFlow<LocationPickedUIState> = _uiState.asStateFlow()
@@ -138,11 +134,7 @@ class MainActivity : ComponentActivity() {
             Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) }
         // A surface container using the 'background' color from the theme
         Surface(
-            modifier =
-                clearFocusModifier
-                    .fillMaxSize()
-                    .semantics { testTag = C.Tag.main_screen_container }
-                    .navigationBarsPadding(),
+            modifier = clearFocusModifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background) {
               AgriHealthApp()
             }
@@ -174,6 +166,7 @@ fun AgriHealthApp(
   val currentUserRole = currentUser.role
   val currentUserEmail = currentUser.email
 
+  @Suppress("UNCHECKED_CAST")
   val locationPickedFactory =
       object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -284,12 +277,15 @@ fun AgriHealthApp(
       }
       composable(Screen.AddReport.route) {
         val imageVM = viewModel<ImageViewModel>()
+
+        @Suppress("UNCHECKED_CAST")
         val createReportViewModel =
-            object : androidx.lifecycle.ViewModelProvider.Factory {
+            object : ViewModelProvider.Factory {
               override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return AddReportViewModel(userId = currentUserId, imageViewModel = imageVM) as T
               }
             }
+
         val addReportViewModel: AddReportViewModel = viewModel(factory = createReportViewModel)
 
         AddReportScreen(
@@ -305,8 +301,9 @@ fun AgriHealthApp(
         )
       }
       composable(route = Screen.LocationPicker.route) {
+        @Suppress("UNCHECKED_CAST")
         val createMapViewModel =
-            object : androidx.lifecycle.ViewModelProvider.Factory {
+            object : ViewModelProvider.Factory {
               override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return MapViewModel(locationViewModel = locationViewModel, userId = currentUserId)
                     as T
@@ -329,7 +326,7 @@ fun AgriHealthApp(
             })
       }
       composable(
-          route = Screen.ViewReport.route,
+          route = Screen.ViewReport.ROUTE,
           arguments = listOf(navArgument("reportId") { type = NavType.StringType })) {
               backStackEntry ->
             val reportId = backStackEntry.arguments?.getString("reportId") ?: ""
@@ -345,13 +342,15 @@ fun AgriHealthApp(
                 user = currentUser)
           }
       composable(
-          route = Screen.ViewAlert.route,
+          route = Screen.ViewAlert.ROUTE,
           arguments = listOf(navArgument("alertId") { type = NavType.StringType })) { backStackEntry
             ->
             val alertId = backStackEntry.arguments?.getString("alertId") ?: ""
 
             val overviewUiState by overviewViewModel.uiState.collectAsState()
             val sortedAlerts = overviewUiState.sortedAlerts
+
+            @Suppress("UNCHECKED_CAST")
             val alertFactory =
                 object : ViewModelProvider.Factory {
                   override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -363,7 +362,7 @@ fun AgriHealthApp(
             AlertViewScreen(navigationActions = navigationActions, viewModel = alertViewModel)
           }
       composable(
-          route = Screen.ViewUser.route,
+          route = Screen.ViewUser.ROUTE,
           arguments = listOf(navArgument("uid") { type = NavType.StringType })) { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("uid") ?: ""
             val viewModel: ViewUserViewModel =
@@ -372,7 +371,7 @@ fun AgriHealthApp(
             ViewUserScreen(viewModel = viewModel, onBack = { navigationActions.goBack() })
           }
       composable(
-          route = Screen.ViewOffice.route,
+          route = Screen.ViewOffice.ROUTE,
           arguments = listOf(navArgument("officeId") { type = NavType.StringType })) {
               backStackEntry ->
             val officeId = backStackEntry.arguments?.getString("officeId") ?: ""
@@ -408,6 +407,8 @@ fun AgriHealthApp(
       }
       composable(Screen.ManageOffice.route) {
         val imageViewModel: ImageViewModel = viewModel()
+
+        @Suppress("UNCHECKED_CAST")
         val manageOfficeViewModel: ManageOfficeViewModel =
             viewModel(
                 factory =
@@ -426,6 +427,7 @@ fun AgriHealthApp(
             onCreateOffice = { navigationActions.navigateTo(Screen.CreateOffice) },
             onJoinOffice = { navigationActions.navigateTo(Screen.ClaimCode(VET_TO_OFFICE)) },
             codesVmFactory = {
+              @Suppress("UNCHECKED_CAST")
               object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                   return CodesViewModel(
@@ -475,7 +477,7 @@ fun AgriHealthApp(
     }
 
     composable(
-        route = Screen.Map.route,
+        route = Screen.Map.ROUTE,
         arguments =
             listOf(
                 navArgument("lat") {
@@ -519,7 +521,7 @@ fun AgriHealthApp(
         }
 
     composable(
-        route = Screen.Planner.route,
+        route = Screen.Planner.ROUTE,
         arguments =
             listOf(
                 navArgument("reportId") {
@@ -536,7 +538,7 @@ fun AgriHealthApp(
               reportClicked = { it -> navigationActions.navigateTo(Screen.ViewReport(it)) })
         }
     composable(
-        route = Screen.ClaimCode.route,
+        route = Screen.ClaimCode.ROUTE,
         arguments =
             listOf(
                 navArgument("connectionRepo") {
@@ -555,8 +557,9 @@ fun AgriHealthApp(
                   ConnectionRepositoryProvider.farmerToOfficeRepository
                 }
               }
+          @Suppress("UNCHECKED_CAST")
           val profileFactory =
-              object : androidx.lifecycle.ViewModelProvider.Factory {
+              object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                   return CodesViewModel(userViewModel, connectionRepository) as T
                 }
@@ -565,8 +568,9 @@ fun AgriHealthApp(
               codesViewModel =
                   viewModel(
                       factory = profileFactory,
-                      key = backStackEntry.arguments?.getString("connectionRepo")),
-              { navigationActions.goBack() })
+                      key = backStackEntry.arguments?.getString("connectionRepo"))) {
+                navigationActions.goBack()
+              }
         }
   }
 }

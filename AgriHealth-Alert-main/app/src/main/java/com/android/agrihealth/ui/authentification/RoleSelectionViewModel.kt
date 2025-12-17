@@ -6,15 +6,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
-import com.android.agrihealth.data.model.authentification.UserRepository
-import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
+import com.android.agrihealth.data.model.user.UserRepository
+import com.android.agrihealth.data.model.user.UserRepositoryProvider
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.launch
 
+/** ViewModel to link to RoleSelectionScreen and an AuthRepository and a UserRepository */
 class RoleSelectionViewModel(
     private var authRepository: AuthRepository = AuthRepositoryProvider.repository,
     private val userRepository: UserRepository = UserRepositoryProvider.repository
