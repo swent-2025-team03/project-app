@@ -7,7 +7,6 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.testutil.FakeOfficeRepository
 import com.android.agrihealth.testutil.FakeUserRepository
@@ -27,33 +26,15 @@ class FakeViewUserViewModel(initial: ViewUserUiState) :
     get() = _state
 
   override fun load() {}
-
-  fun setState(state: ViewUserUiState) {
-    _state.value = state
-  }
 }
 
 class ViewUserScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  private fun setScreen(
-      vm: FakeViewUserViewModel,
-      currentUser: User =
-          Farmer(
-              uid = "cur",
-              firstname = "Current",
-              lastname = "User",
-              email = "cur@x.com",
-              address = null,
-              linkedOffices = emptyList(),
-              defaultOffice = null)
-  ) {
-    val userVm = UserViewModel(initialUser = currentUser)
+  private fun setScreen(vm: FakeViewUserViewModel) {
 
-    composeTestRule.setContent {
-      MaterialTheme { ViewUserScreen(viewModel = vm, userViewModel = userVm, onBack = {}) }
-    }
+    composeTestRule.setContent { MaterialTheme { ViewUserScreen(viewModel = vm, onBack = {}) } }
   }
 
   @Test

@@ -1,10 +1,12 @@
 package com.android.agrihealth.data.model.alert
 
 import android.util.Log
+import com.android.agrihealth.data.helper.withDefaultTimeout
 import com.android.agrihealth.data.model.location.Location
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.Source
 import com.google.firebase.firestore.firestore
 import java.time.LocalDate
 import kotlinx.coroutines.tasks.await
@@ -26,10 +28,17 @@ class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fire
 
   override suspend fun getAlerts(): List<Alert> {
     val snapshot =
-        db.collection(ALERTS_COLLECTION_PATH)
-            .orderBy("createdAt", Query.Direction.DESCENDING)
-            .get()
-            .await()
+        try {
+          withDefaultTimeout(
+              db.collection(ALERTS_COLLECTION_PATH)
+                  .orderBy("createdAt", Query.Direction.DESCENDING)
+                  .get())
+        } catch (_: Exception) {
+          db.collection(ALERTS_COLLECTION_PATH)
+              .orderBy("createdAt", Query.Direction.DESCENDING)
+              .get(Source.CACHE)
+              .await()
+        }
 
     val alerts =
         snapshot.documents.mapNotNull { doc ->
@@ -47,14 +56,17 @@ class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fire
   }
 
   override suspend fun getAlertById(alertId: String): Alert? {
-    cachedAlerts
-        .find { it.id == alertId }
-        ?.let {
-          return it
+
+    val snapshot =
+        try {
+          withDefaultTimeout(db.collection(ALERTS_COLLECTION_PATH).document(alertId).get())
+        } catch (_: Exception) {
+          try {
+            db.collection(ALERTS_COLLECTION_PATH).document(alertId).get(Source.CACHE).await()
+          } catch (_: Exception) {
+            return null
+          }
         }
-
-    val snapshot = db.collection(ALERTS_COLLECTION_PATH).document(alertId).get().await()
-
     if (!snapshot.exists()) return null
 
     val alert = alertFromFirestore(snapshot.id, snapshot.data!!)

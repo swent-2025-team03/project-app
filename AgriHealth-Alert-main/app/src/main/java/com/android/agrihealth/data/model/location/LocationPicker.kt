@@ -153,7 +153,7 @@ private fun AddressConfirmationPrompt(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
-  val text = if (address != null) "Detected address: $address" else "Finding address..."
+  val text = if (address != null) "Detected address: $address" else "Couldn't load address"
 
   AlertDialog(
       modifier = Modifier.testTag(LocationPickerTestTags.CONFIRMATION_PROMPT),

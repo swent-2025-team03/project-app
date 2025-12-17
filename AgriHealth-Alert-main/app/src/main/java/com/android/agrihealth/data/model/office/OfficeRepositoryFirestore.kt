@@ -1,9 +1,11 @@
 package com.android.agrihealth.data.model.office
 
 import android.util.Log
+import com.android.agrihealth.data.helper.withDefaultTimeout
 import com.android.agrihealth.data.model.location.locationFromMap
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Source
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.tasks.await
 
@@ -17,20 +19,25 @@ class OfficeRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fir
   }
 
   override suspend fun addOffice(office: Office) {
-    db.collection(OFFICES_COLLECTION_PATH).document(office.id).set(mapFromOffice(office)).await()
+    db.collection(OFFICES_COLLECTION_PATH).document(office.id).set(mapFromOffice(office))
   }
 
   override suspend fun updateOffice(office: Office) {
-    db.collection(OFFICES_COLLECTION_PATH).document(office.id).update(mapFromOffice(office)).await()
+    db.collection(OFFICES_COLLECTION_PATH).document(office.id).update(mapFromOffice(office))
   }
 
   override suspend fun deleteOffice(id: String) {
-    db.collection(OFFICES_COLLECTION_PATH).document(id).delete().await()
+    db.collection(OFFICES_COLLECTION_PATH).document(id).delete()
   }
 
   override suspend fun getOffice(id: String): Result<Office> {
     return try {
-      val snapshot = db.collection(OFFICES_COLLECTION_PATH).document(id).get().await()
+      val snapshot =
+          try {
+            withDefaultTimeout(db.collection(OFFICES_COLLECTION_PATH).document(id).get())
+          } catch (_: Exception) {
+            db.collection(OFFICES_COLLECTION_PATH).document(id).get(Source.CACHE).await()
+          }
 
       if (!snapshot.exists()) {
         return Result.failure(NullPointerException("Office not found"))
