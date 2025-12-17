@@ -159,14 +159,13 @@ fun LocalPhotoDisplay(
  */
 @Composable
 fun LocalPhotoDisplay(
-  photoByteArray: ByteArray?,
-  modifier: Modifier = Modifier,
-  showPlaceHolder: Boolean = false,
-  placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
+    photoByteArray: ByteArray?,
+    modifier: Modifier = Modifier,
+    showPlaceHolder: Boolean = false,
+    placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
 ) =
-  ActualLocalPhotoDisplay(
-    photoByteArray?.let { PhotoType.ByteArray(it) }, modifier, showPlaceHolder, placeholder)
-
+    ActualLocalPhotoDisplay(
+        photoByteArray?.let { PhotoType.ByteArray(it) }, modifier, showPlaceHolder, placeholder)
 
 /**
  * A default profile picture icon shown when the user has no profile picture
@@ -212,7 +211,7 @@ fun UploadRemovePhotoButton(
 
   if (showImagePicker) {
     ImagePickerDialog(
-      onDismiss = { showImagePicker = false }, onImageSelected = { uri -> onPhotoPicked(uri) })
+        onDismiss = { showImagePicker = false }, onImageSelected = { uri -> onPhotoPicked(uri) })
   }
 }
 

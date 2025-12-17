@@ -34,6 +34,7 @@ import com.android.agrihealth.data.model.office.OfficeRepositoryProvider
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.UserViewModelContract
+import com.android.agrihealth.ui.common.image.EditableProfilePictureWithImageCropper
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.common.layout.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
@@ -41,7 +42,6 @@ import com.android.agrihealth.ui.office.ManageOfficeViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
-import com.android.agrihealth.ui.common.image.EditableProfilePictureWithImageCropper
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

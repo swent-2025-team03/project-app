@@ -30,6 +30,8 @@ import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.UserViewModelContract
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.PASSWORD_FIELD
+import com.android.agrihealth.ui.common.image.PhotoUi
+import com.android.agrihealth.ui.common.image.ProfilePicture
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.common.layout.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
@@ -43,8 +45,6 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.MANAGE_OFFICE_BUT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
-import com.android.agrihealth.ui.common.image.PhotoUi
-import com.android.agrihealth.ui.common.image.ProfilePicture
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

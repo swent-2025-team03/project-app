@@ -42,7 +42,7 @@ sealed interface PhotoUi {
   /** A profile picture stored remote at address [url] */
   data class Remote(val url: String) : PhotoUi
   /** A currently locally selected profile picture the user just recently chose */
-  data class Local(val bytes: ByteArray) : PhotoUi
+  @Suppress("ArrayInDataClass") data class Local(val bytes: ByteArray) : PhotoUi
 }
 
 /** The various test tags associated with the components of a profile picture */

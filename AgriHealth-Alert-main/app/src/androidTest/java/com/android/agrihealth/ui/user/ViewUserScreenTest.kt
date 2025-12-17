@@ -2,7 +2,6 @@ package com.android.agrihealth.ui.user
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.displayString
 import com.android.agrihealth.testhelpers.TestUser
 import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
@@ -67,7 +66,8 @@ class ViewUserScreenTest : UITest() {
     setScreen(ViewUserUiState.Success(user))
 
     with(ViewUserScreenTestTags) {
-      nodesAreDisplayed(TOP_BAR, CONTENT_COLUMN, PROFILE_PICTURE, NAME_FIELD, ROLE_FIELD, OFFICE_FIELD)
+      nodesAreDisplayed(
+          TOP_BAR, CONTENT_COLUMN, PROFILE_PICTURE, NAME_FIELD, ROLE_FIELD, OFFICE_FIELD)
       nodesNotDisplayed(ADDRESS_FIELD, DESCRIPTION_FIELD)
     }
   }

@@ -32,7 +32,7 @@ sealed class ImageUIState {
  * be used internally when overloading a function
  */
 sealed interface PhotoType {
-  data class ByteArray(val bytes: kotlin.ByteArray) : PhotoType
+  @Suppress("ArrayInDataClass") data class ByteArray(val bytes: kotlin.ByteArray) : PhotoType
 
   data class Uri(val uri: android.net.Uri) : PhotoType
 }

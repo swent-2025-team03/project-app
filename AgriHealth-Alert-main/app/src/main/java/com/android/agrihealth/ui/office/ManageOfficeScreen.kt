@@ -22,6 +22,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.core.design.theme.StatusColors
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.user.UserViewModel
+import com.android.agrihealth.ui.common.image.EditableProfilePictureWithImageCropper
 import com.android.agrihealth.ui.common.layout.LoadingOverlay
 import com.android.agrihealth.ui.common.layout.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.common.resolver.AuthorName
@@ -39,7 +40,6 @@ import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
 import com.android.agrihealth.ui.profile.CodesViewModel
 import com.android.agrihealth.ui.profile.GenerateCode
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
-import com.android.agrihealth.ui.common.image.EditableProfilePictureWithImageCropper
 import kotlinx.coroutines.launch
 
 @SuppressLint("StateFlowValueCalledInComposition", "SuspiciousIndentation")

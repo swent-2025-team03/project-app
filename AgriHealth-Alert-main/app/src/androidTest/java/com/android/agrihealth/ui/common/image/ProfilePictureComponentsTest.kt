@@ -28,8 +28,7 @@ import org.junit.Rule
 import org.junit.Test
 
 class ProfilePictureComponentsTest {
-  @get:Rule
-  val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+  @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
   @After
   fun cleanup() {
@@ -46,12 +45,12 @@ class ProfilePictureComponentsTest {
         val scope = rememberCoroutineScope()
 
         val imageCropperLauncher =
-          rememberDefaultImageCropperLauncher(
-            imageCropper = imageCropper,
-            scope = scope,
-            onCropSuccess = { /* ignore */ },
-            onCropError = { /* ignore */ },
-          )
+            rememberDefaultImageCropperLauncher(
+                imageCropper = imageCropper,
+                scope = scope,
+                onCropSuccess = { /* ignore */},
+                onCropError = { /* ignore */},
+            )
 
         val croppingIsOngoing = imageCropper.cropState != null
         if (croppingIsOngoing) {
@@ -85,12 +84,12 @@ class ProfilePictureComponentsTest {
       MaterialTheme {
         if (show) {
           ErrorDialog(
-            dialogTitle = title,
-            errorMessage = message,
-            onDismiss = {
-              wasDismissed = true
-              show = false
-            })
+              dialogTitle = title,
+              errorMessage = message,
+              onDismiss = {
+                wasDismissed = true
+                show = false
+              })
         }
       }
     }
