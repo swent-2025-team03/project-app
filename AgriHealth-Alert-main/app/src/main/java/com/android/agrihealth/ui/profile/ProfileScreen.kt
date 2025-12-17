@@ -119,7 +119,6 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
 
-              // Profile Image Placeholder
               Box(
                   modifier = Modifier.testTag(ProfileScreenTestTags.PROFILE_PICTURE),
                   contentAlignment = Alignment.Center) {

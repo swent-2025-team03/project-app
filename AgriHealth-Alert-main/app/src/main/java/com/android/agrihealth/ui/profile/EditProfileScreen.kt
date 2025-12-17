@@ -133,7 +133,6 @@ fun EditProfileScreen(
 
   val snackbarHostState = remember { SnackbarHostState() }
 
-  // TODO Create a uiState in the viewModel to avoid having to remember all this
   // Local mutable states
   var firstname by rememberSaveable { mutableStateOf(user.firstname) }
   var lastname by rememberSaveable { mutableStateOf(user.lastname) }

@@ -29,7 +29,6 @@ import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.ui.profile.DefaultIconPlaceholder
 import com.android.agrihealth.ui.profile.LocalPhotoDisplay
 import com.android.agrihealth.ui.profile.RemotePhotoDisplay
-import com.android.agrihealth.ui.report.AddReportDialogTexts
 import com.mr0xf00.easycrop.rememberImageCropper
 
 /**
@@ -60,6 +59,7 @@ object ProfilePictureComponentsTexts {
   const val DIALOG_SAVING_ERROR =
       "The result could not be saved. The selected area is likely to big, try selecting a smaller area..."
   const val DIALOG_TITLE = "Error!"
+  const val ERROR_DIALOG_OK = "Ok"
 }
 
 /**
@@ -241,7 +241,7 @@ fun ErrorDialog(dialogTitle: String, errorMessage: String, onDismiss: () -> Unit
             colors =
                 ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.onSurface)) {
-              Text(AddReportDialogTexts.OK)
+              Text(ProfilePictureComponentsTexts.ERROR_DIALOG_OK)
             }
       },
       title = { Text(dialogTitle) },
