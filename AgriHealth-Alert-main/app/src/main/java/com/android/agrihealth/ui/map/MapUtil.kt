@@ -212,10 +212,14 @@ fun AlertAreas(alerts: List<Alert>) {
 
 /** Menu to show info about every alert provided */
 @Composable
-fun ShowAlertInfo(alerts: List<Alert>, onClick: (alert: Alert) -> Unit) {
+fun ShowAlertInfo(
+    alerts: List<Alert>,
+    modifier: Modifier = Modifier,
+    onClick: (alert: Alert) -> Unit
+) {
   if (alerts.isEmpty()) return
 
-  Box(modifier = Modifier.fillMaxSize().testTag(MapScreenTestTags.INFO_BOX)) {
+  Box(modifier = modifier.fillMaxSize().testTag(MapScreenTestTags.INFO_BOX)) {
     LazyColumn(
         modifier =
             Modifier.background(color = MaterialTheme.colorScheme.surface)
