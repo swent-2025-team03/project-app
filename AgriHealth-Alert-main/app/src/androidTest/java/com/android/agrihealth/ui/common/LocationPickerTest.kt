@@ -29,13 +29,12 @@ class LocationPickerTest : UITest() {
     val cityName = "Yverdon"
 
     val mapViewModel =
-      MapViewModel(
-        locationViewModel = LocationViewModel(),
-        userId = "test-user",
-        startingPosition = position,
-        showReports = false,
-        showAlerts = false
-      )
+        MapViewModel(
+            locationViewModel = LocationViewModel(),
+            userId = "test-user",
+            startingPosition = position,
+            showReports = false,
+            showAlerts = false)
 
     var confirmClicked = false
 
