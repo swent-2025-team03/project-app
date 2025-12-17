@@ -4,6 +4,7 @@ import com.android.agrihealth.data.model.authentification.AuthRepositoryFirebase
 import com.android.agrihealth.data.model.report.form.OpenQuestion
 import com.android.agrihealth.testhelpers.TestPassword
 import com.android.agrihealth.testhelpers.TestReport
+import com.android.agrihealth.testhelpers.TestTimeout.SHORT_TIMEOUT
 import com.android.agrihealth.testhelpers.TestUser
 import com.android.agrihealth.testhelpers.templates.FirebaseTest
 import com.google.firebase.Firebase
@@ -77,6 +78,8 @@ class ReportRepositoryFirestoreTest : FirebaseTest() {
     report1 = baseReport1.copy(id = "baseReport1.id")
     report2 = baseReport2.copy(id = "baseReport2.id")
     report3 = baseReport3.copy(id = "baseReport3.id")
+
+    runBlocking { delay(SHORT_TIMEOUT) }
   }
 
   @Test
@@ -126,7 +129,7 @@ class ReportRepositoryFirestoreTest : FirebaseTest() {
     repository.addReport(report2.copy(farmerId = vet1.uid))
     repository.addReport(report3.copy(farmerId = vet1.uid, officeId = vet1.officeId))
 
-    runBlocking { delay(1000) }
+    runBlocking { delay(SHORT_TIMEOUT) }
     var reports = repository.getAllReports(vet1.uid)
     Assert.assertEquals(2, reports.size)
 
