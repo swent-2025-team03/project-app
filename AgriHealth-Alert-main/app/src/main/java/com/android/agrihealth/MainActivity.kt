@@ -216,6 +216,7 @@ fun AgriHealthApp(
         route = Screen.Auth.name,
     ) {
       composable(Screen.Auth.route) {
+        locationPickedViewModel.setLocation(null)
         SignInScreen(
             credentialManager = credentialManager,
             onForgotPasswordClick = { navigationActions.navigateTo(Screen.ResetPassword) },
@@ -265,6 +266,7 @@ fun AgriHealthApp(
         route = Screen.Overview.name,
     ) {
       composable(Screen.Overview.route) {
+        locationPickedViewModel.setLocation(currentUser.address)
         OverviewScreen(
             credentialManager = credentialManager,
             userRole = currentUserRole,

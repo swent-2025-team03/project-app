@@ -197,7 +197,9 @@ fun ManageOfficeScreen(
                     Button(
                         onClick = {
                           focusManager.clearFocus()
-                          scope.launch { manageOfficeViewModel.updateOffice() }
+                          scope.launch {
+                            manageOfficeViewModel.updateOffice(newAddress = currentUser.address)
+                          }
                         },
                         modifier = Modifier.fillMaxWidth().testTag(SAVE_BUTTON),
                     ) {
