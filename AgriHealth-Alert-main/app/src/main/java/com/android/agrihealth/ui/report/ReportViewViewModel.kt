@@ -35,10 +35,10 @@ data class ReportViewUIState(
             farmerId = "FARMER_123",
             officeId = "OFF_456",
             status = ReportStatus.PENDING,
-            answer = "null",
+            answer = null,
             location = Location(46.5191, 6.5668, "Lausanne Farm"),
             assignedVet = "valid_vet_id"),
-    val answerText: String = "I like magoes",
+    val answerText: String = "",
     val status: ReportStatus = ReportStatus.PENDING,
     val isLoading: Boolean = false,
 )
@@ -63,25 +63,26 @@ class ReportViewViewModel(
 
   /** Loads a report by its ID and updates the state. */
   fun loadReport(reportID: String, force: Boolean = false) {
-    viewModelScope.launch {
-      _uiState.withLoadingState(
-          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
-            try {
-              val fetchedReport = repository.getReportById(reportID)
-              if (fetchedReport != null) {
-                if (force || !_unsavedChanges.value)
-                    _uiState.value =
-                        ReportViewUIState(
-                            report = fetchedReport,
-                            answerText = fetchedReport.answer ?: "",
-                            status = fetchedReport.status)
-              } else {
-                Log.e("ReportViewModel", "Report with ID $reportID not found.")
+    if (!_unsavedChanges.value || force) {
+      viewModelScope.launch {
+        _uiState.withLoadingState(
+            applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+              try {
+                val fetchedReport = repository.getReportById(reportID)
+                if (fetchedReport != null) {
+                  _uiState.value =
+                      ReportViewUIState(
+                          report = fetchedReport,
+                          answerText = fetchedReport.answer ?: "",
+                          status = fetchedReport.status)
+                } else {
+                  Log.e("ReportViewModel", "Report with ID $reportID not found.")
+                }
+              } catch (e: Exception) {
+                Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
               }
-            } catch (e: Exception) {
-              Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
             }
-          }
+      }
     }
   }
 
