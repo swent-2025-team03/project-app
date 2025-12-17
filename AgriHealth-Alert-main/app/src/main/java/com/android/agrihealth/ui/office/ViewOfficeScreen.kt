@@ -139,9 +139,9 @@ private fun ViewOfficeContent(
             enabled = false,
             modifier = Modifier.fillMaxWidth().testTag(ViewOfficeScreenTestTags.NAME_FIELD))
 
-        office.address?.let {
+        office.address?.name?.let {
           OutlinedTextField(
-              value = "Not implemented yet",
+              value = it,
               onValueChange = {},
               label = { Text("Address") },
               readOnly = true,
