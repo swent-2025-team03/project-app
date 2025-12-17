@@ -63,26 +63,32 @@ class ReportViewViewModel(
 
   /** Loads a report by its ID and updates the state. */
   fun loadReport(reportID: String, force: Boolean = false) {
-    if (!_unsavedChanges.value || force) {
-      viewModelScope.launch {
-        _uiState.withLoadingState(
-            applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
-              try {
-                val fetchedReport = repository.getReportById(reportID)
-                if (fetchedReport != null) {
-                  _uiState.value =
-                      ReportViewUIState(
-                          report = fetchedReport,
-                          answerText = fetchedReport.answer ?: "",
-                          status = fetchedReport.status)
-                } else {
-                  Log.e("ReportViewModel", "Report with ID $reportID not found.")
-                }
-              } catch (e: Exception) {
-                Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
+    viewModelScope.launch {
+      _uiState.withLoadingState(
+          applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
+            try {
+              val fetchedReport = repository.getReportById(reportID)
+              if (fetchedReport != null) {
+                if (force || !_unsavedChanges.value)
+                    _uiState.value =
+                        ReportViewUIState(
+                            report = fetchedReport,
+                            answerText = fetchedReport.answer ?: "",
+                            status = fetchedReport.status)
+                else
+                    _uiState.value =
+                        _uiState.value.copy(
+                            report =
+                                fetchedReport.copy(
+                                    answer = _uiState.value.answerText,
+                                    status = _uiState.value.status))
+              } else {
+                Log.e("ReportViewModel", "Report with ID $reportID not found.")
               }
+            } catch (e: Exception) {
+              Log.e("ReportViewModel", "Error loading Report by ID: $reportID", e)
             }
-      }
+          }
     }
   }
 
@@ -123,7 +129,7 @@ class ReportViewViewModel(
               val newAnswer = _uiState.value.answerText
               val newStatus = _uiState.value.status
 
-              if (currentReport.answer != newAnswer || currentReport.status != newStatus) {
+              if (_unsavedChanges.value) {
                 val updatedReport = currentReport.copy(answer = newAnswer, status = newStatus)
                 repository.editReport(updatedReport.id, updatedReport)
 
