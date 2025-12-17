@@ -10,7 +10,8 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import java.time.Instant
-import java.util.UUID
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
@@ -73,10 +74,9 @@ class ReportRepositoryFirestoreTest : FirebaseTest() {
           currentUser.email, TestPassword.PASSWORD1, currentUser)
     }
     Assert.assertNotNull(Firebase.auth.currentUser)
-    val uuid = UUID.randomUUID()
-    report1 = baseReport1.copy(id = "${baseReport1.id} $uuid")
-    report2 = baseReport2.copy(id = "${baseReport2.id} $uuid")
-    report3 = baseReport3.copy(id = "${baseReport3.id} $uuid")
+    report1 = baseReport1.copy(id = "baseReport1.id")
+    report2 = baseReport2.copy(id = "baseReport2.id")
+    report3 = baseReport3.copy(id = "baseReport3.id")
   }
 
   @Test
@@ -126,6 +126,7 @@ class ReportRepositoryFirestoreTest : FirebaseTest() {
     repository.addReport(report2.copy(farmerId = vet1.uid))
     repository.addReport(report3.copy(farmerId = vet1.uid, officeId = vet1.officeId))
 
+    runBlocking { delay(1000) }
     var reports = repository.getAllReports(vet1.uid)
     Assert.assertEquals(2, reports.size)
 
