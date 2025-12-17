@@ -489,7 +489,7 @@ class E2ETest : FirebaseEmulatorsTest() {
       composeTestRule.onNodeWithText("Office successfully added!").isDisplayed()
     }
     goBack()
-    waitUntilTestTag(ProfileScreenTestTags.PROFILE_IMAGE)
+    waitUntilTestTag(ProfileScreenTestTags.PROFILE_PICTURE)
   }
 
   private fun vetJoinOffice(vetCode: String) {
@@ -701,7 +701,7 @@ class E2ETest : FirebaseEmulatorsTest() {
 
     composeTestRule.onNodeWithTag(ManageOfficeScreenTestTags.CONFIRM_LEAVE).performClick()
 
-    waitUntilTestTag(ProfileScreenTestTags.PROFILE_IMAGE)
+    waitUntilTestTag(ProfileScreenTestTags.PROFILE_PICTURE)
   }
 
   private fun checkLinkedVetIsNotEmpty() {
@@ -789,7 +789,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .assertIsDisplayed()
         .performClick()
 
-    waitUntilTestTag(ProfileScreenTestTags.PROFILE_IMAGE)
+    waitUntilTestTag(ProfileScreenTestTags.PROFILE_PICTURE)
   }
 
   private fun checkIsGoogleAccount() {
@@ -1002,7 +1002,7 @@ class E2ETest : FirebaseEmulatorsTest() {
         .onNodeWithTag(OverviewScreenTestTags.PROFILE_BUTTON)
         .assertIsDisplayed()
         .performClick()
-    waitUntilTestTag(ProfileScreenTestTags.PROFILE_IMAGE)
+    waitUntilTestTag(ProfileScreenTestTags.PROFILE_PICTURE)
   }
 
   private fun clickAddVetCode() {

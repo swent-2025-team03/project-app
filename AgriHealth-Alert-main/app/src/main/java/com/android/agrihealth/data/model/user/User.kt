@@ -12,7 +12,8 @@ sealed class User(
     open val isGoogleAccount: Boolean = false,
     open val description: String? = null,
     open val collected: Boolean = false,
-    open val deviceTokensFCM: Set<String> = emptySet()
+    open val deviceTokensFCM: Set<String> = emptySet(),
+    open val photoURL: String? = null
 )
 
 /** Copies fields common to farmers and vets, because User is a sealed class */
@@ -25,7 +26,8 @@ fun User.copyCommon(
     isGoogleAccount: Boolean = this.isGoogleAccount,
     description: String? = this.description,
     collected: Boolean = this.collected,
-    deviceTokensFCM: Set<String> = this.deviceTokensFCM
+    deviceTokensFCM: Set<String> = this.deviceTokensFCM,
+    photoURL: String? = this.photoURL
 ): User {
   return when (this) {
     is Farmer ->
@@ -38,7 +40,8 @@ fun User.copyCommon(
             collected = collected,
             isGoogleAccount = isGoogleAccount,
             description = description,
-            deviceTokensFCM = deviceTokensFCM)
+            deviceTokensFCM = deviceTokensFCM,
+            photoURL = photoURL)
     is Vet ->
         this.copy(
             uid,
@@ -49,7 +52,8 @@ fun User.copyCommon(
             collected = collected,
             isGoogleAccount = isGoogleAccount,
             description = description,
-            deviceTokensFCM = deviceTokensFCM)
+            deviceTokensFCM = deviceTokensFCM,
+            photoURL = photoURL)
   }
 }
 

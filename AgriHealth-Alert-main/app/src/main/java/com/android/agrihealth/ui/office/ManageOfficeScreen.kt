@@ -1,23 +1,19 @@
 package com.android.agrihealth.ui.office
 
 import android.annotation.SuppressLint
-import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -41,11 +37,9 @@ import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.OFFICE_VET_LI
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.SAVE_BUTTON
 import com.android.agrihealth.ui.profile.CodesViewModel
 import com.android.agrihealth.ui.profile.GenerateCode
-import com.android.agrihealth.ui.profile.LocalPhotoDisplay
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
-import com.android.agrihealth.ui.profile.RemotePhotoDisplay
-import com.android.agrihealth.ui.profile.UploadRemovePhotoButton
 import com.android.agrihealth.ui.user.UserViewModel
+import com.android.agrihealth.ui.utils.EditableProfilePictureWithImageCropper
 import kotlinx.coroutines.launch
 
 object ManageOfficeScreenTestTags {
@@ -77,13 +71,9 @@ fun ManageOfficeScreen(
 
   val snackbarHostState = remember { SnackbarHostState() }
   val uiState by manageOfficeViewModel.uiState.collectAsState()
-
   val connectionVm: CodesViewModel = viewModel(factory = codesVmFactory())
-
   val currentUser = userViewModel.uiState.collectAsState().value.user
-
   var showLeaveDialog by remember { mutableStateOf(false) }
-
   val isOwner = uiState.office?.ownerId == currentUser.uid
 
   LaunchedEffect(currentUser) { manageOfficeViewModel.loadOffice() }
@@ -132,13 +122,14 @@ fun ManageOfficeScreen(
                         Text("Join an Office")
                       }
                 } else {
-                  UploadRemoveOfficePhotoSection(
-                      isOwner = isOwner,
-                      photoAlreadyPicked = uiState.photoUri != null,
-                      onPhotoPicked = { manageOfficeViewModel.setPhoto(it) },
+
+                  EditableProfilePictureWithImageCropper(
+                      photo = uiState.displayedPhoto,
+                      isEditable = isOwner,
+                      imageViewModel = imageViewModel,
+                      onPhotoPicked = { bytes -> manageOfficeViewModel.setPhoto(bytes) },
                       onPhotoRemoved = { manageOfficeViewModel.removePhoto() },
-                      uiState = uiState,
-                      imageViewModel = imageViewModel)
+                  )
 
                   Spacer(modifier = Modifier.height(16.dp))
 
@@ -242,42 +233,4 @@ fun ManageOfficeScreen(
               }
         }
       }
-}
-
-@Composable
-fun UploadRemoveOfficePhotoSection(
-    isOwner: Boolean = false,
-    photoAlreadyPicked: Boolean,
-    onPhotoPicked: (Uri?) -> Unit,
-    onPhotoRemoved: () -> Unit,
-    uiState: ManageOfficeUiState,
-    imageViewModel: ImageViewModel = viewModel()
-) {
-
-  var initialLoad by rememberSaveable { mutableStateOf(true) }
-  val showRemote = initialLoad && uiState.photoUri == null
-
-  if (showRemote) {
-    RemotePhotoDisplay(
-        photoURL = uiState.office?.photoUrl,
-        imageViewModel = imageViewModel,
-        modifier = Modifier.size(120.dp).clip(CircleShape),
-        contentDescription = "Office photo",
-        showPlaceHolder = true)
-  } else {
-    LocalPhotoDisplay(
-        photoURI = uiState.photoUri,
-        modifier = Modifier.size(120.dp).clip(CircleShape),
-        showPlaceHolder = true)
-  }
-
-  if (isOwner) {
-    UploadRemovePhotoButton(
-        photoAlreadyPicked = photoAlreadyPicked,
-        onPhotoPicked = onPhotoPicked,
-        onPhotoRemoved = {
-          onPhotoRemoved()
-          initialLoad = false
-        })
-  }
 }

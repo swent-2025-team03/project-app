@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.android.agrihealth.data.model.images.ImageUIState
 import com.android.agrihealth.data.model.images.ImageViewModel
+import com.android.agrihealth.data.model.images.PhotoType
 import com.android.agrihealth.ui.utils.ImagePickerDialog
 
 object PhotoComponentsTestTags {
@@ -118,6 +119,31 @@ fun RemotePhotoDisplay(
   }
 }
 
+@Composable
+private fun ActualLocalPhotoDisplay(
+    photo: PhotoType?,
+    modifier: Modifier = Modifier,
+    showPlaceHolder: Boolean = false,
+    placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
+) {
+  val model: Any? =
+      when (photo) {
+        null -> null
+        is PhotoType.ByteArray -> photo.bytes
+        is PhotoType.Uri -> photo.uri
+      }
+
+  if (model == null) {
+    if (showPlaceHolder) placeholder(modifier)
+  } else {
+    AsyncImage(
+        model = model,
+        contentDescription = "Uploaded image",
+        modifier = modifier.testTag(PhotoComponentsTestTags.IMAGE_PREVIEW),
+        contentScale = ContentScale.Fit)
+  }
+}
+
 /**
  * Displays the photo picked by the user before it is uploaded
  * * (local image referenced by a URI).
@@ -135,24 +161,43 @@ fun LocalPhotoDisplay(
     modifier: Modifier = Modifier,
     showPlaceHolder: Boolean = false,
     placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
-) {
-  if (photoURI != null) {
-    AsyncImage(
-        model = photoURI,
-        contentDescription = "Uploaded image",
-        modifier = modifier.testTag(PhotoComponentsTestTags.IMAGE_PREVIEW),
-        contentScale = ContentScale.Fit)
-  } else if (showPlaceHolder) {
-    placeholder(modifier)
-  }
-}
+) =
+    ActualLocalPhotoDisplay(
+        photoURI?.let { PhotoType.Uri(it) }, modifier, showPlaceHolder, placeholder)
 
+/**
+ * Displays the photo picked by the user before it is uploaded
+ * * (local image referenced by a ByteArray).
+ *
+ * @param photoByteArray ByteArray of the local photo that has not yet been uploaded.
+ * @param modifier Modifier used to customize the layout (e.g. profile picture vs report image).
+ * @param showPlaceHolder If true and the photoURI is null, a default account icon is displayed
+ *   instead.
+ * @param placeholder Composable shown when `photoURI` is null and `showPlaceHolder` is true.
+ *   Defaults to a standard account icon.
+ */
+@Composable
+fun LocalPhotoDisplay(
+    photoByteArray: ByteArray?,
+    modifier: Modifier = Modifier,
+    showPlaceHolder: Boolean = false,
+    placeholder: @Composable (Modifier) -> Unit = { DefaultIconPlaceholder(it) }
+) =
+    ActualLocalPhotoDisplay(
+        photoByteArray?.let { PhotoType.ByteArray(it) }, modifier, showPlaceHolder, placeholder)
+
+/**
+ * A default profile picture icon shown when the user has no profile picture
+ *
+ * @param modifier Modifier used to customize the layout
+ */
 @Composable
 fun DefaultIconPlaceholder(modifier: Modifier = Modifier) {
   Icon(
       imageVector = Icons.Default.AccountCircle,
-      contentDescription = "Default icon",
-      modifier = modifier.testTag(PhotoComponentsTestTags.DEFAULT_ICON))
+      contentDescription = "Default Profile Picture",
+      modifier = modifier.testTag(PhotoComponentsTestTags.DEFAULT_ICON),
+      tint = MaterialTheme.colorScheme.primary)
 }
 
 /**

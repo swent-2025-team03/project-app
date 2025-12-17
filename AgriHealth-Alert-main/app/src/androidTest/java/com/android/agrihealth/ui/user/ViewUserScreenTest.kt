@@ -125,7 +125,7 @@ class ViewUserScreenTest {
     setScreen(vm)
 
     composeTestRule
-        .onNodeWithTag(ViewUserScreenTestTags.PROFILE_ICON)
+        .onNodeWithTag(ViewUserScreenTestTags.PROFILE_PICTURE)
         .assertExists()
         .assertIsDisplayed()
   }
@@ -266,7 +266,7 @@ class ViewUserScreenTest {
     setScreen(vm)
 
     composeTestRule.onNodeWithTag(ViewUserScreenTestTags.TOP_BAR).assertExists()
-    composeTestRule.onNodeWithTag(ViewUserScreenTestTags.PROFILE_ICON).assertExists()
+    composeTestRule.onNodeWithTag(ViewUserScreenTestTags.PROFILE_PICTURE).assertExists()
     composeTestRule.onNodeWithTag(ViewUserScreenTestTags.NAME_FIELD).assertExists()
     composeTestRule.onNodeWithTag(ViewUserScreenTestTags.ROLE_FIELD).assertExists()
     composeTestRule.onNodeWithTag(ViewUserScreenTestTags.CONTENT_COLUMN).assertExists()
