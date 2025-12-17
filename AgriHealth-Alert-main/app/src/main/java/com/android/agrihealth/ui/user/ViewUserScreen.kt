@@ -1,6 +1,7 @@
 package com.android.agrihealth.ui.user
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -51,6 +52,8 @@ fun ViewUserScreen(
       Toast.makeText(context, (uiState as ViewUserUiState.Error).message, Toast.LENGTH_LONG).show()
     }
   }
+
+  BackHandler { onBack() }
 
   Scaffold(
       topBar = {

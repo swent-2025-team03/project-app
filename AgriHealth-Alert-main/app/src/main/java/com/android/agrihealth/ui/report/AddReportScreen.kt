@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.report
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -172,6 +173,9 @@ fun AddReportScreen(
   }
 
   LaunchedEffect(Unit) { addReportViewModel.setOffice(selectedOption) }
+
+  BackHandler { onBack() }
+
   Scaffold(
       snackbarHost = {
         SnackbarHost(hostState = snackbarHostState, modifier = Modifier.imePadding())
