@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.authentification
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -98,6 +99,8 @@ fun VerifyEmailScreen(
       vm.clearError()
     }
   }
+
+  BackHandler { onBack() }
 
   Scaffold(
       snackbarHost = {

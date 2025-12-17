@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.profile
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -144,6 +145,8 @@ fun EditProfileScreen(
   var selectedDefaultOffice by rememberSaveable { mutableStateOf((user as? Farmer)?.defaultOffice) }
   var expandedVetDropdown by rememberSaveable { mutableStateOf(false) }
   var collected by rememberSaveable { mutableStateOf(user.collected) }
+
+  BackHandler { onGoBack() }
 
   Scaffold(
       topBar = {
