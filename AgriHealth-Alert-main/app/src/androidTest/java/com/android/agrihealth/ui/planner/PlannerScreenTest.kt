@@ -37,11 +37,11 @@ class PlannerScreenTest : UITest() {
   val report1 = TestReport.REPORT1
 
   private fun setPlannerScreen(
-    reportId: String? = null,
-    user: User = farmer,
-    goBack: () -> Unit = {},
-    tabClicked: (Screen) -> Unit = {},
-    reportClicked: (String) -> Unit = {},
+      reportId: String? = null,
+      user: User = farmer,
+      goBack: () -> Unit = {},
+      tabClicked: (Screen) -> Unit = {},
+      reportClicked: (String) -> Unit = {},
   ) {
     setContent {
       PlannerScreen(

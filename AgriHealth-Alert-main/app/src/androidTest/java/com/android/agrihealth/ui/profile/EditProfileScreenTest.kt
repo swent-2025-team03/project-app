@@ -13,7 +13,8 @@ import org.junit.Test
 class EditProfileScreenTest : UITest() {
   val linkedOffices = listOf("off123", "off456")
 
-  val farmer = TestUser.FARMER1.copy(linkedOffices = linkedOffices, defaultOffice = linkedOffices.first())
+  val farmer =
+      TestUser.FARMER1.copy(linkedOffices = linkedOffices, defaultOffice = linkedOffices.first())
   val vet = TestUser.VET1.copy()
 
   private fun setContent(role: UserRole, onSave: () -> Unit = {}) {

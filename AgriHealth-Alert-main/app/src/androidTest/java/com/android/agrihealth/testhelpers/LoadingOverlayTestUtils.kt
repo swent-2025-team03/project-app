@@ -39,8 +39,8 @@ object LoadingOverlayTestUtils {
    * - asserts overlay is hidden
    */
   fun ComposeContentTestRule.assertOverlayDuringLoading(
-    isLoading: () -> Boolean,
-    timeout: Long = TestTimeout.LONG_TIMEOUT,
+      isLoading: () -> Boolean,
+      timeout: Long = TestTimeout.LONG_TIMEOUT,
   ) {
     waitForLoadingToStart(timeout, isLoading)
     assertLoadingOverlayVisible()

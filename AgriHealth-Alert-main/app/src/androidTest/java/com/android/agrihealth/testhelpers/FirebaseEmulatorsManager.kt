@@ -1,13 +1,10 @@
 package com.android.agrihealth.testhelpers
 
 import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.functions.functions
 import com.google.firebase.storage.storage
-import kotlinx.coroutines.runBlocking
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.InetSocketAddress
