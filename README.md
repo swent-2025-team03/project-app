@@ -36,5 +36,5 @@ Farmers can quickly upload photos, a short description of symptoms and answer so
 ---
 
 ## More 
-If you are looking for more informations about our App, please go take a look at our [Wiki](https://github.com/swent-2025-team03/project-app/wiki), Here you can also find our [Figma](https://www.figma.com/design/c57y3MH6zUHQA119zAUud8/AgriHealth-Premium?version-id=2297843508636027296&node-id=2152-89&p=f&t=92zaoDoeEV3OpvOU-0) or our [Architecture Diagram](https://excalidraw.com/#json=VfNt-f0Y3s4Na_1-zNFu6,C-LmTDZbsqlhev7WD6QZbA)
+If you are looking for more informations about our App, please go take a look at our [Wiki](https://github.com/swent-2025-team03/project-app/wiki). Here you can also find our [Figma](https://www.figma.com/design/c57y3MH6zUHQA119zAUud8/AgriHealth-Premium?version-id=2297843508636027296&node-id=2152-89&p=f&t=92zaoDoeEV3OpvOU-0) or our [Architecture Diagram](https://excalidraw.com/#json=VfNt-f0Y3s4Na_1-zNFu6,C-LmTDZbsqlhev7WD6QZbA)
 
