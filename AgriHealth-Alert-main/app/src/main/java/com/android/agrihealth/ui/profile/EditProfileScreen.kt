@@ -5,13 +5,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -20,7 +18,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
@@ -28,6 +25,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.connection.ConnectionRepository
 import com.android.agrihealth.data.model.images.ImageViewModel
@@ -41,15 +39,16 @@ import com.android.agrihealth.ui.common.layout.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
 import com.android.agrihealth.ui.office.ManageOfficeViewModel
 import com.android.agrihealth.ui.profile.EditProfileScreenTestTags.PASSWORD_BUTTON
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
+import com.android.agrihealth.ui.common.image.EditableProfilePictureWithImageCropper
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
     userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
+    imageViewModel: ImageViewModel = viewModel(),
     pickedLocation: Location? = null,
     onChangeLocation: () -> Unit = {},
     onGoBack: () -> Unit = {},
@@ -75,11 +74,9 @@ fun EditProfileScreen(
   val farmerCodes by codesViewModel.farmerCodes.collectAsState()
   val vetCodes by codesViewModel.vetCodes.collectAsState()
 
-  val imageViewModel: ImageViewModel = viewModel()
-
   @Suppress("UNCHECKED_CAST")
   val createManageOfficeViewModel =
-      object : androidx.lifecycle.ViewModelProvider.Factory {
+      object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
           return ManageOfficeViewModel(
               userViewModel = userViewModel,
@@ -93,9 +90,11 @@ fun EditProfileScreen(
   val editProfileViewModel: EditProfileViewModel =
       viewModel(
           factory =
-              object : androidx.lifecycle.ViewModelProvider.Factory {
+              object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                  return EditProfileViewModel(officeRepository = OfficeRepositoryProvider.get())
+                  return EditProfileViewModel(
+                      officeRepository = OfficeRepositoryProvider.get(),
+                      imageViewModel = imageViewModel)
                       as T
                 }
               })
@@ -118,6 +117,10 @@ fun EditProfileScreen(
   var selectedDefaultOffice by rememberSaveable { mutableStateOf((user as? Farmer)?.defaultOffice) }
   var expandedVetDropdown by rememberSaveable { mutableStateOf(false) }
   var collected by rememberSaveable { mutableStateOf(user.collected) }
+
+  // Profile picture state (shared component style)
+  var removeRemotePhoto by rememberSaveable { mutableStateOf(false) }
+  var localPhotoByteArray: ByteArray? by rememberSaveable { mutableStateOf(null) }
 
   BackHandler { onGoBack() }
 
@@ -150,12 +153,22 @@ fun EditProfileScreen(
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
 
-              // Profile Image Placeholder
-              Icon(
-                  imageVector = Icons.Default.AccountCircle,
-                  contentDescription = "Profile Picture",
-                  modifier = Modifier.size(120.dp).clip(CircleShape).testTag(PROFILE_IMAGE),
-                  tint = MaterialTheme.colorScheme.primary)
+              EditableProfilePictureWithImageCropper(
+                  photo =
+                      editProfileViewModel.choosePhotoToDisplay(
+                          remotePhotoURL = user.photoURL,
+                          localPhotoBytes = localPhotoByteArray,
+                          removeRemotePhoto = removeRemotePhoto),
+                  isEditable = true,
+                  imageViewModel = imageViewModel,
+                  onPhotoPicked = { bytes ->
+                    localPhotoByteArray = bytes
+                    removeRemotePhoto = false
+                  },
+                  onPhotoRemoved = {
+                    localPhotoByteArray = null
+                    removeRemotePhoto = true
+                  })
 
               Spacer(modifier = Modifier.height(24.dp))
 
@@ -333,8 +346,13 @@ fun EditProfileScreen(
                               pickedLocation = pickedLocation,
                               selectedDefaultOffice = selectedDefaultOffice,
                               description = description,
-                              collected = collected)
-                      updatedUser?.let { onSave(it) }
+                              collected = collected,
+                              photoByteArray = localPhotoByteArray,
+                              removeRemotePhoto = removeRemotePhoto)
+                      updatedUser?.let {
+                        onSave(it)
+                        removeRemotePhoto = false
+                      }
                     }
                   },
                   modifier =

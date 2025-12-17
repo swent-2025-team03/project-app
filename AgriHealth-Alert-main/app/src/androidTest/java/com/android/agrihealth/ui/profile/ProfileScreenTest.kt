@@ -64,7 +64,7 @@ class ProfileScreenTest : UITest() {
 
     with(ProfileScreenTestTags) {
       nodesAreDisplayed(
-          PROFILE_IMAGE, ADDRESS_FIELD, DESCRIPTION_FIELD, EMAIL_FIELD, PASSWORD_FIELD, EDIT_BUTTON)
+          PROFILE_PICTURE, ADDRESS_FIELD, DESCRIPTION_FIELD, EMAIL_FIELD, PASSWORD_FIELD, EDIT_BUTTON)
 
       when (role) {
         UserRole.FARMER -> nodesAreDisplayed(DEFAULT_OFFICE_FIELD)

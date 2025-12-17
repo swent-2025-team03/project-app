@@ -1,5 +1,6 @@
-package com.android.agrihealth.ui.common
+package com.android.agrihealth.ui.common.image
 
+import android.Manifest
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -114,7 +115,7 @@ fun ImagePickerDialog(
                 tempPhotoUri =
                     FileProvider.getUriForFile(
                         context, FileProviderUtils.authority(context), imageFile)
-                cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
               },
               colors =
                   ButtonDefaults.textButtonColors(

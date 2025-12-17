@@ -2,6 +2,7 @@ package com.android.agrihealth.ui.user
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.displayString
 import com.android.agrihealth.testhelpers.TestUser
 import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
@@ -30,7 +31,7 @@ class ViewUserScreenTest : UITest() {
   private fun setScreen(uiState: ViewUserUiState) {
     val vm = FakeViewUserViewModel(uiState)
 
-    setContent { ViewUserScreen(viewModel = vm) }
+    setContent { ViewUserScreen(viewModel = vm, onBack = {}) }
   }
 
   @Test
@@ -53,7 +54,7 @@ class ViewUserScreenTest : UITest() {
     setScreen(ViewUserUiState.Success(user))
 
     with(ViewUserScreenTestTags) {
-      nodesAreDisplayed(TOP_BAR, CONTENT_COLUMN, PROFILE_ICON, ADDRESS_FIELD, DESCRIPTION_FIELD)
+      nodesAreDisplayed(TOP_BAR, CONTENT_COLUMN, PROFILE_PICTURE, ADDRESS_FIELD, DESCRIPTION_FIELD)
       textContains(NAME_FIELD, "${user.firstname} ${user.lastname}")
       textContains(ROLE_FIELD, user.role.displayString(), ignoreCase = true)
       nodesNotDisplayed(OFFICE_FIELD)
@@ -66,7 +67,7 @@ class ViewUserScreenTest : UITest() {
     setScreen(ViewUserUiState.Success(user))
 
     with(ViewUserScreenTestTags) {
-      nodesAreDisplayed(TOP_BAR, CONTENT_COLUMN, PROFILE_ICON, NAME_FIELD, ROLE_FIELD, OFFICE_FIELD)
+      nodesAreDisplayed(TOP_BAR, CONTENT_COLUMN, PROFILE_PICTURE, NAME_FIELD, ROLE_FIELD, OFFICE_FIELD)
       nodesNotDisplayed(ADDRESS_FIELD, DESCRIPTION_FIELD)
     }
   }

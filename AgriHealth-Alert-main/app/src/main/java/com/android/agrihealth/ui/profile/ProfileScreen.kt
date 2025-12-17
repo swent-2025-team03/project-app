@@ -3,13 +3,11 @@ package com.android.agrihealth.ui.profile
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -19,7 +17,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -27,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.connection.ConnectionRepositoryProvider
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.user.*
 import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.UserViewModelContract
@@ -43,14 +41,16 @@ import com.android.agrihealth.ui.profile.ProfileScreenTestTags.DESCRIPTION_FIELD
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.EDIT_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.MANAGE_OFFICE_BUTTON
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.NAME_TEXT
-import com.android.agrihealth.ui.profile.ProfileScreenTestTags.PROFILE_IMAGE
 import com.android.agrihealth.ui.profile.ProfileScreenTestTags.TOP_BAR
 import com.android.agrihealth.ui.report.CollectedSwitch
+import com.android.agrihealth.ui.common.image.PhotoUi
+import com.android.agrihealth.ui.common.image.ProfilePicture
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     userViewModel: UserViewModelContract = viewModel<UserViewModel>(),
+    imageViewModel: ImageViewModel = viewModel(),
     onGoBack: () -> Unit = {},
     onLogout: () -> Unit = {},
     onEditProfile: () -> Unit = {},
@@ -109,22 +109,23 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.Top) {
               HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
 
-              // Profile Image Placeholder
-              Box(modifier = Modifier, contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector =
-                        Icons.Default.AccountCircle, // To change to actual image when available
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier.size(120.dp).clip(CircleShape).testTag(PROFILE_IMAGE),
-                    tint = MaterialTheme.colorScheme.primary)
-                FloatingActionButton(
-                    onClick = onEditProfile,
-                    modifier = Modifier.testTag(EDIT_BUTTON).size(40.dp).align(Alignment.BottomEnd),
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
-                      Icon(Icons.Default.Edit, contentDescription = "Edit profile")
-                    }
-              }
+              Box(
+                  modifier = Modifier.testTag(ProfileScreenTestTags.PROFILE_PICTURE),
+                  contentAlignment = Alignment.Center) {
+                    ProfilePicture(
+                        if (user.photoURL != null) PhotoUi.Remote(user.photoURL!!)
+                        else PhotoUi.Empty,
+                        imageViewModel,
+                    )
+                    FloatingActionButton(
+                        onClick = onEditProfile,
+                        modifier =
+                            Modifier.testTag(EDIT_BUTTON).size(40.dp).align(Alignment.BottomEnd),
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
+                          Icon(Icons.Default.Edit, contentDescription = "Edit profile")
+                        }
+                  }
 
               Spacer(modifier = Modifier.height(8.dp))
 
@@ -242,7 +243,7 @@ fun ProfileScreen(
 object ProfileScreenTestTags {
 
   const val TOP_BAR = "TopBar"
-  const val PROFILE_IMAGE = "ProfileImage"
+  const val PROFILE_PICTURE = "ProfilePicture"
   const val NAME_TEXT = "NameText"
   const val EDIT_BUTTON = "EditButton"
   const val DESCRIPTION_FIELD = "DescriptionField"
