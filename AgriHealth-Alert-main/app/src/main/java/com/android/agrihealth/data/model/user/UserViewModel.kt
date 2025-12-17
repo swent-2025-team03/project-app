@@ -3,7 +3,7 @@ package com.android.agrihealth.data.model.user
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.agrihealth.ui.loading.withLoadingState
+import com.android.agrihealth.ui.common.layout.withLoadingState
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth

@@ -62,9 +62,9 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.ui.common.layout.BottomNavigationMenu
+import com.android.agrihealth.ui.common.layout.LoadingOverlay
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.common.layout.Tab
-import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.Screen
 import java.lang.IllegalArgumentException
 import java.time.DayOfWeek
@@ -723,110 +723,3 @@ object PlannerScreenTestTags {
 
   fun reportCardTag(reportId: String): String = "reportCard_$reportId"
 }
-
-/* Commented for sonar coverage
-@Preview
-@Composable
-fun PlannerScreenPreview() {
-  val startOfDay = LocalDate.now().atTime(0, 0)
-  val previewReport1 =
-      Report(
-          id = "1",
-          title = "Checkup with Farmer John",
-          description = "Regular health checkup for the cattle.",
-          questionForms = emptyList(),
-          photoUri = null,
-          farmerId = "farmer1",
-          officeId = "vet1",
-          status = ReportStatus.IN_PROGRESS,
-          answer = null,
-          location = Location(latitude = 12.34, longitude = 56.78, name = "Farmhouse A"),
-          startTime = startOfDay.plusHours(2).plusMinutes(30),
-          duration = LocalTime.of(0, 0))
-
-  val previewReport2 =
-      previewReport1.copy(
-          id = "2", startTime = startOfDay.plusHours(2), duration = LocalTime.of(1, 0))
-  val previewReport3 =
-      previewReport1.copy(
-          id = "3",
-          startTime = startOfDay.plusHours(2),
-          duration = LocalTime.of(2, 0),
-          status = ReportStatus.RESOLVED)
-  val previewReport4 =
-      previewReport1.copy(
-          id = "4",
-          status = ReportStatus.PENDING,
-          startTime = startOfDay.plusHours(3).plusMinutes(45),
-          duration = LocalTime.of(1, 30))
-
-  val previewReport5 =
-      previewReport1.copy(
-          id = "5",
-          startTime = startOfDay.plusHours(5).plusMinutes(45),
-          duration = LocalTime.of(3, 0))
-
-  val user =
-      Vet(
-          uid = "vet1",
-          firstname = "test",
-          lastname = "test",
-          email = "test",
-          address = null,
-          validCodes = emptyList(),
-          officeId = "vet1",
-          isGoogleAccount = false,
-          description = "test",
-          collected = false)
-
-  val reportRepo =
-      object : ReportRepository {
-        private val reports: MutableList<Report> =
-            mutableListOf(
-                previewReport1, previewReport2, previewReport3, previewReport4, previewReport5)
-
-        private var nextId = 0
-
-        override fun getNewReportId(): String {
-          return (nextId++).toString()
-        }
-
-        override suspend fun getAllReports(userId: String): List<Report> {
-          return reports.filter { it.farmerId == userId || it.officeId == userId }
-        }
-
-        override suspend fun getReportById(reportId: String): Report? {
-          return reports.find { it.id == reportId }
-              ?: throw NoSuchElementException("ReportRepositoryLocal: Report not found")
-        }
-
-        override suspend fun addReport(report: Report) {
-          try {
-            editReport(report.id, report)
-          } catch (e: Exception) {
-            reports.add(report)
-          }
-        }
-
-        override suspend fun editReport(reportId: String, newReport: Report) {
-          val index = reports.indexOfFirst { it.id == reportId }
-          if (index != -1) {
-            reports[index] = newReport
-          } else {
-            throw NoSuchElementException("ReportRepositoryLocal: Report not found")
-          }
-        }
-
-        override suspend fun deleteReport(reportId: String) {
-          val index = reports.indexOfFirst { it.id == reportId }
-          if (index != -1) {
-            reports.removeAt(index)
-          } else {
-            throw NoSuchElementException("ReportRepositoryLocal: Report not found")
-          }
-        }
-      }
-  val fakePlannerVM = PlannerViewModel(reportRepo)
-  AgriHealthAppTheme { PlannerScreen(user = user, reportId = null, plannerVM = fakePlannerVM) }
-}
-*/

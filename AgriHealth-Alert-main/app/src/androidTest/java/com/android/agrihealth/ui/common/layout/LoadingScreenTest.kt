@@ -14,7 +14,9 @@ class LoadingScreenTest : UITest() {
   private val testTag = "content"
 
   private fun setLoadingContent(isLoading: Boolean) {
-    setContent { LoadingOverlay(isLoading) { Box(Modifier.Companion.testTag(testTag)) { Text(":)") } } }
+    setContent {
+      LoadingOverlay(isLoading) { Box(Modifier.Companion.testTag(testTag)) { Text(":)") } }
+    }
   }
 
   @Test

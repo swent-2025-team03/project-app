@@ -7,7 +7,7 @@ import com.android.agrihealth.data.model.report.ReportRepository
 import com.android.agrihealth.data.model.report.ReportRepositoryProvider
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
-import com.android.agrihealth.ui.loading.withLoadingState
+import com.android.agrihealth.ui.common.layout.withLoadingState
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime

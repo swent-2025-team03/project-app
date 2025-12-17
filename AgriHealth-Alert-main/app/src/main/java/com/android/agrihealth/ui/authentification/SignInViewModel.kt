@@ -11,7 +11,7 @@ import com.android.agrihealth.data.model.authentification.AuthRepository
 import com.android.agrihealth.data.model.authentification.AuthRepositoryProvider
 import com.android.agrihealth.data.model.user.UserRepository
 import com.android.agrihealth.data.model.user.UserRepositoryProvider
-import com.android.agrihealth.ui.loading.withLoadingState
+import com.android.agrihealth.ui.common.layout.withLoadingState
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.firebase.auth.FirebaseAuthException
 import kotlinx.coroutines.flow.MutableStateFlow

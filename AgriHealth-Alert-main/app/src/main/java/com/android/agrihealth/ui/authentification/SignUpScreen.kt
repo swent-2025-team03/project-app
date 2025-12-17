@@ -20,7 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.UserViewModelContract
-import com.android.agrihealth.ui.loading.LoadingOverlay
+import com.android.agrihealth.ui.common.layout.LoadingOverlay
 
 @Composable
 fun SignUpScreen(
@@ -218,14 +218,3 @@ object SignUpScreenTestTags {
   const val VET_PILL = "VetPill"
   const val SNACKBAR = "Snackbar"
 }
-
-/*
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-@Composable
-private fun SignUpScreenPreview() {
-  val authRepo = FakeAuthRepository()
-  val vm = object : SignUpViewModel(authRepo) {}
-
-  AgriHealthAppTheme { SignUpScreen(signUpViewModel = vm, userViewModel = FakeUserViewModel()) }
-}
-*/

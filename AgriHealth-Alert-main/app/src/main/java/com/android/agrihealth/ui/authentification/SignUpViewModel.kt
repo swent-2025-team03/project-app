@@ -9,7 +9,8 @@ import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
-import com.android.agrihealth.ui.loading.withLoadingState
+import com.android.agrihealth.ui.common.layout.withLoadingState
+import com.google.firebase.auth.FirebaseAuthException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -119,8 +120,7 @@ open class SignUpViewModel(
                     { failure ->
                       setErrorMsg(
                           when (failure) {
-                            is com.google.firebase.auth.FirebaseAuthException ->
-                                SignUpErrorMsg.ALREADY_USED_EMAIL
+                            is FirebaseAuthException -> SignUpErrorMsg.ALREADY_USED_EMAIL
                             else -> SignUpErrorMsg.TIMEOUT
                           })
                     })

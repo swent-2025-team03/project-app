@@ -32,12 +32,6 @@ import com.android.agrihealth.core.design.theme.successColor
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.navigation.Screen
 
-// Preview imports
-/*
-import androidx.compose.ui.tooling.preview.Preview
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-*/
-
 /** Screen where a user can get an email to reset their password */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -151,11 +145,3 @@ object ResetPasswordScreenTestTags {
   const val FAIL_FEEDBACK = "resetPasswordFailFeedBack"
   const val WAITING_FEEDBACK = "resetPasswordWaitingFeedBack"
 }
-
-/*
-@Preview
-@Composable
-fun ResetPasswordScreenPreview() {
-  val vm = ResetPasswordViewModel(FakeAuthRepository())
-  AgriHealthAppTheme { ResetPasswordScreen(vm = vm) }
-}*/

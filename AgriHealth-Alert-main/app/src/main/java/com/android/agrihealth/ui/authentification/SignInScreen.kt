@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.agrihealth.R
-import com.android.agrihealth.ui.loading.LoadingOverlay
+import com.android.agrihealth.ui.common.layout.LoadingOverlay
 
 /** Screen where a user can sign in */
 @Composable
@@ -214,17 +214,3 @@ object SignInScreenTestTags {
   const val GOOGLE_LOGIN_BUTTON = "googleLoginButton"
   const val SNACKBAR = "snackbar"
 }
-
-/*
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-@Composable
-private fun SignInScreenPreview() {
-  val authRepo = FakeAuthRepository()
-  val userRepo = FakeUserRepository()
-  val vm = SignInViewModel(authRepo, userRepo)
-  AgriHealthAppTheme {
-    SignInScreen(
-        credentialManager = CredentialManager.create(LocalContext.current), signInViewModel = vm)
-  }
-}
-*/

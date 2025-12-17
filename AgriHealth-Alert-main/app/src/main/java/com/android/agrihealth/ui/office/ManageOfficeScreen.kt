@@ -28,9 +28,9 @@ import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.ui.common.LocalPhotoDisplay
 import com.android.agrihealth.ui.common.RemotePhotoDisplay
 import com.android.agrihealth.ui.common.UploadRemovePhotoButton
+import com.android.agrihealth.ui.common.layout.LoadingOverlay
 import com.android.agrihealth.ui.common.layout.NavigationTestTags.GO_BACK_BUTTON
 import com.android.agrihealth.ui.common.resolver.AuthorName
-import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.office.ManageOfficeScreenTestTags.CONFIRM_LEAVE

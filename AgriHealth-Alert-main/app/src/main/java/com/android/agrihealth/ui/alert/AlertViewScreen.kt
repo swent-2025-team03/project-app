@@ -158,23 +158,3 @@ object AlertViewScreenTestTags {
 
   fun containerTag(index: Int) = "SCREEN_CONTAINER_$index"
 }
-
-/*
-@Preview(showBackground = true)
-@Composable
-fun AlertViewScreenPreview() {
-    val fakeRepo = com.android.agrihealth.testhelpers.fakes.FakeAlertRepository()
-    val viewModel = AlertViewModel(fakeRepo)
-
-    val navController = androidx.navigation.compose.rememberNavController()
-    LaunchedEffect(Unit) {
-        viewModel.loadAlert("1")
-    }
-
-    AlertViewScreen(
-        navigationActions = NavigationActions(navController),
-        viewModel = viewModel,
-        alertId = "1"
-    )
-}
-*/

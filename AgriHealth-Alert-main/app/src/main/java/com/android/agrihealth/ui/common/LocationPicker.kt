@@ -182,35 +182,3 @@ object LocationPickerTestTags {
   const val PROMPT_CONFIRM_BUTTON = "confirmationPromptYesButton"
   const val PROMPT_CANCEL_BUTTON = "confirmationPromptNoButton"
 }
-
-/*
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-@Composable
-@Preview
-fun LocationPickerPreview() {
-  val context = LocalContext.current
-
-  LocationRepositoryProvider.repository = LocationRepository(context)
-  val mapViewModel = MapViewModel(locationViewModel = LocationViewModel(), showReports = false)
-
-  AgriHealthAppTheme {
-    LocationPicker(
-        mapViewModel, null, onAddress = { address -> Log.d("LocationPicker", "Address: $address") })
-  }
-}
-
-@Composable
-// @Preview
-fun LocationPickerScreenPreview() {
-  val context = LocalContext.current
-  LocationRepositoryProvider.repository = LocationRepository(context)
-  val mapViewModel = MapViewModel(locationViewModel = LocationViewModel(), showReports = false)
-  AgriHealthAppTheme {
-    LocationPickerScreen(
-        mapViewModel = mapViewModel,
-        onLocationPicked = { lat, lng ->
-          Log.d("LocationPicker", "Selected coordinates Lat = $lat, Lng = $lng")
-        })
-  }
-}
-*/

@@ -25,11 +25,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
 import com.android.agrihealth.data.model.connection.ConnectionRepository
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
@@ -342,50 +340,6 @@ fun EditProfileScreen(
       }
 }
 
-/*
-@Preview(showBackground = true)
-@Composable
-fun EditProfileScreenPreviewFarmer() {
-  val fakeViewModel =
-      object : UserViewModel() {
-        init {
-          userRole = UserRole.FARMER
-          user =
-              Farmer(
-                  uid = "1",
-                  firstname = "Alice",
-                  lastname = "Johnson",
-                  email = "alice@farmmail.com",
-                  address = Location(0.0, 0.0, "Farm"),
-                  linkedVets = listOf("vet123", "vet456"),
-                  defaultVet = "vet123")
-        }
-      }
-
-  EditProfileScreen(userViewModel = fakeViewModel, onGoBack = {}, onSave = {}, onAddVetCode = {})
-}
-
-@Preview(showBackground = true)
-@Composable
-fun EditProfileScreenPreviewVet() {
-  val fakeViewModel =
-      object : UserViewModel() {
-        init {
-          userRole = UserRole.VET
-          user =
-              Vet(
-                  uid = "2",
-                  firstname = "Bob",
-                  lastname = "Smith",
-                  email = "bob@vetcare.com",
-                  address = Location(0.0, 0.0, "Clinic")
-        }
-      }
-
-  EditProfileScreen(userViewModel = fakeViewModel, onGoBack = {}, onSave = {}, onAddVetCode = {})
-}
-*/
-
 @Composable
 /** Creates an expandable list of every given code, along a "copy to clipboard" button */
 fun ActiveCodeList(type: CodeType, codes: List<String>, snackbarHostState: SnackbarHostState) {
@@ -483,10 +437,4 @@ object EditProfileScreenTestTags {
   fun dropdownTag(type: String) = "ACTIVE_CODES_DROPDOWN_$type"
 
   fun dropdownElementTag(type: String) = "ACTIVE_CODE_ELEMENT_$type"
-}
-
-@Preview
-@Composable
-fun ActiveCodeListPreview() {
-  AgriHealthAppTheme { EditProfileScreen() }
 }

@@ -33,26 +33,17 @@ import com.android.agrihealth.data.model.report.displayString
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.layout.BottomNavigationMenu
+import com.android.agrihealth.ui.common.layout.LoadingOverlay
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.common.layout.Tab
 import com.android.agrihealth.ui.common.resolver.AuthorName
 import com.android.agrihealth.ui.common.resolver.OfficeName
 import com.android.agrihealth.ui.common.resolver.rememberOfficeName
 import com.android.agrihealth.ui.common.resolver.rememberUserName
-import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.overview.OverviewScreenTestTags.ASSIGNED_VET_TAG
 import kotlinx.coroutines.launch
-
-// -- imports for preview --
-/*
-import androidx.compose.ui.tooling.preview.Preview
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.data.model.location.Location
-import com.android.agrihealth.data.model.user.Farmer
-import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
-*/
 
 /**
  * Composable screen displaying the Overview UI. Shows latest alerts and a list of past reports.
@@ -601,32 +592,3 @@ object OverviewScreenTestTags {
 
   fun alertItemTag(page: Int) = "ALERT_ITEM_$page"
 }
-
-/*
-/** Preview of the OverviewScreen with dummy data. Temporarily commented out */
-@Preview(showBackground = true)
-@Composable
-fun PreviewOverviewScreen() {
-    val fakeFarmer = Farmer(
-        uid = "farmer_001",
-        firstname = "Test",
-        lastname = "Farmer",
-        email = "test@farmer.com",
-        address = Location(46.5191, 6.5668, "EPFL"),
-        linkedOffices = listOf("off_001"),
-        defaultOffice = "off_001"
-    )
-    val fakeViewModel = FakeOverviewViewModel(fakeFarmer)
-
-    AgriHealthAppTheme {
-        OverviewScreen(
-            userRole = UserRole.FARMER,
-            user = fakeFarmer,
-            overviewViewModel = fakeViewModel,
-            onAddReport = {},
-            onReportClick = {},
-            onAlertClick = {}
-        )
-    }
-}
-*/

@@ -41,19 +41,12 @@ import com.android.agrihealth.data.model.user.UserViewModel
 import com.android.agrihealth.data.model.user.UserViewModelContract
 import com.android.agrihealth.ui.common.LocalPhotoDisplay
 import com.android.agrihealth.ui.common.UploadRemovePhotoButton
+import com.android.agrihealth.ui.common.layout.LoadingOverlay
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.common.resolver.OfficeNameViewModel
-import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.Screen
 import kotlin.collections.forEachIndexed
 import kotlinx.coroutines.launch
-
-// -- imports for preview --
-/*
-import androidx.compose.ui.tooling.preview.Preview
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.testhelpers.fakes.FakeAddReportViewModel
- */
 
 /**
  * Displays the report creation screen for farmers
@@ -526,14 +519,3 @@ object AddReportScreenTestTags {
         QuestionType.MCQO -> "QUESTION_${index}_MCQO"
       }
 }
-
-/*
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-@Composable
-fun AddReportScreenPreview() {
-  AgriHealthAppTheme {
-    AddReportScreen(
-        userViewModel = FakeUserViewModel(), addReportViewModel = FakeAddReportViewModel())
-  }
-}
-*/

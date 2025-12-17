@@ -40,16 +40,6 @@ import kotlinx.coroutines.runBlocking
 import com.android.agrihealth.data.model.authentification.verifyUser
  */
 
-// imports for preview
-/*
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
-import com.android.agrihealth.core.design.theme.AgriHealthAppTheme
-import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
-import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
-import com.android.agrihealth.data.model.user.defaultUser
- */
-
 /**
  * Screen used to keep unverified users away from the main app, must be present for unverified users
  * right after authentication.
@@ -152,15 +142,3 @@ object VerifyEmailScreenTestTags {
   const val SEND_EMAIL = "SendEmail"
   const val SNACKBAR = "Snackbar"
 }
-
-/*
-@Preview
-@Composable
-fun VerifyEmailScreenPreview() {
-  AgriHealthAppTheme {
-    VerifyEmailScreen(
-        vm = VerifyEmailViewModel(FakeAuthRepository()),
-        userViewModel = FakeUserViewModel(defaultUser.copy(email = "ma@email.coom")))
-  }
-}
-*/

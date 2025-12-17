@@ -34,10 +34,10 @@ import com.android.agrihealth.data.model.report.form.YesOrNoQuestion
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.ui.common.RemotePhotoDisplay
+import com.android.agrihealth.ui.common.layout.LoadingOverlay
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
 import com.android.agrihealth.ui.common.resolver.AuthorName
 import com.android.agrihealth.ui.common.resolver.OfficeName
-import com.android.agrihealth.ui.loading.LoadingOverlay
 import com.android.agrihealth.ui.navigation.NavigationActions
 import com.android.agrihealth.ui.navigation.Screen
 import com.android.agrihealth.ui.report.ReportViewScreenTestTags.CLAIM_BUTTON
@@ -573,33 +573,3 @@ object ReportViewScreenTestTags {
 
   fun getTagForStatusOption(status: ReportStatus): String = "StatusOption_${status.name}"
 }
-
-/*  If you want to use the preview, just de-comment this block.
-@Preview(showBackground = true, name = "Farmer View")
-@Composable
-fun PreviewReportViewFarmer() {
-  MaterialTheme {
-    val navController = rememberNavController()
-    val viewModel = ReportViewModel()
-    ReportViewScreen(
-        navigationActions = NavigationActions(navController),
-        userRole = UserRole.FARMER,
-        viewModel = viewModel,
-        reportId = "RPT001")
-  }
-}
-
-@Preview(showBackground = true, name = "Vet View")
-@Composable
-fun PreviewReportViewVet() {
-  MaterialTheme {
-    val navController = rememberNavController()
-    val viewModel = ReportViewViewModel()
-    ReportViewScreen(
-        navigationActions = NavigationActions(navController),
-        userRole = UserRole.VET,
-        viewModel = viewModel,
-        reportId = "RPT001")
-  }
-}
-*/

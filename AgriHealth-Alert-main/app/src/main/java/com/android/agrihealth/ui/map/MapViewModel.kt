@@ -19,7 +19,7 @@ import com.android.agrihealth.data.model.report.ReportRepository
 import com.android.agrihealth.data.model.report.ReportRepositoryProvider
 import com.android.agrihealth.data.model.user.UserRepository
 import com.android.agrihealth.data.model.user.UserRepositoryProvider
-import com.android.agrihealth.ui.loading.withLoadingState
+import com.android.agrihealth.ui.common.layout.withLoadingState
 import com.google.android.gms.maps.model.LatLng
 import java.util.Locale
 import kotlin.collections.firstOrNull

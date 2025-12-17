@@ -15,7 +15,7 @@ import com.android.agrihealth.data.model.report.ReportRepository
 import com.android.agrihealth.data.model.report.ReportRepositoryProvider
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.User
-import com.android.agrihealth.ui.loading.withLoadingState
+import com.android.agrihealth.ui.common.layout.withLoadingState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
