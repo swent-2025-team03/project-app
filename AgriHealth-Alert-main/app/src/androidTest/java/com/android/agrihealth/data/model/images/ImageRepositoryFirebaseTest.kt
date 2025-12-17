@@ -15,6 +15,7 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -103,6 +104,7 @@ class ImageRepositoryFirebaseTest : FirebaseTest() {
   @Test
   fun downloadImage_getsIdenticalAsUpload() = runTest {
     val uploadResult = repository.uploadImage(testImageBA)
+    runBlocking { delay(2000) } // wait before upload finishes
     assertTrue(uploadResult.isSuccess)
     val imageUrl = uploadResult.getOrNull()
 

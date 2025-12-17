@@ -320,10 +320,9 @@ fun AgriHealthApp(
             mapViewModel = mapViewModel,
             onLatLng = { lat, lng -> locationPickedViewModel.setLatLng(lat, lng) },
             onAddress = { address ->
-              if (address != null) {
-                locationPickedViewModel.onAddress(address)
-                navigationActions.goBack()
-              }
+              locationPickedViewModel.onAddress(
+                  address ?: "Location name is only accessible when online")
+              navigationActions.goBack()
             })
       }
       composable(

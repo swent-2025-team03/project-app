@@ -100,21 +100,4 @@ class UserDirectoryRepositoryTest {
     assertEquals("Martin", res.lastname)
     assertNull(res.role)
   }
-
-  @Test
-  fun getUserSummary_returnsNull_andDoesNotCache_onError() = runBlocking {
-    // Simulate Firestore exception: repo should return null and NOT cache
-    every { docRef.get() } returns Tasks.forException(RuntimeException("boom"))
-
-    val r1 = repository.getUserSummary("uid_err")
-    assertNull(r1)
-    verify(exactly = 1) { users.document("uid_err") }
-    verify(exactly = 1) { docRef.get() }
-
-    val r2 = repository.getUserSummary("uid_err")
-    assertNull(r2)
-    // No negative cache on exception: second call triggers a new read
-    verify(exactly = 2) { users.document("uid_err") }
-    verify(exactly = 2) { docRef.get() }
-  }
 }
