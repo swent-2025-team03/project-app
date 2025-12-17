@@ -3,7 +3,9 @@ package com.android.agrihealth.ui.map
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -212,9 +214,13 @@ fun MapScreen(
             navigationActions?.navigateTo(Screen.ViewReport(it))
           }
 
-          ShowAlertInfo(selectedAlerts) { alert ->
-            navigationActions?.navigateTo(Screen.ViewAlert(alert.id))
-          }
+          ShowAlertInfo(
+              alerts = selectedAlerts,
+              modifier =
+                  Modifier.fillMaxWidth().fillMaxHeight(0.2f).align(Alignment.BottomCenter)) { alert
+                ->
+                navigationActions?.navigateTo(Screen.ViewAlert(alert.id))
+              }
         }
       })
 }
