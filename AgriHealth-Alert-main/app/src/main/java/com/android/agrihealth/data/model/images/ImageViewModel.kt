@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -24,6 +25,18 @@ sealed class ImageUIState {
 }
 
 /**
+ * A union type so that a photo can either be stored in a ByteArray or in a Uri.
+ *
+ * This is meant as an internal type, it should not appear in any public interface. It is meant to
+ * be used internally when overloading a function
+ */
+sealed interface PhotoType {
+  data class ByteArray(val bytes: kotlin.ByteArray) : PhotoType
+
+  data class Uri(val uri: android.net.Uri) : PhotoType
+}
+
+/**
  * View-model to handle image upload/download with the photo storage backend. Designed to use
  * upload() or download() and then use a "when ()" on the UI state to handle response.
  */
@@ -33,20 +46,66 @@ class ImageViewModel(private val repository: ImageRepository = ImageRepositoryPr
   val uiState: StateFlow<ImageUIState> = _uiState
 
   /**
+   * Uploads an image to the photos backend using a ByteArray directly. Updates UI state to
+   * UploadSuccess, containing the online path to the image
+   */
+  fun upload(byteArray: ByteArray) = uploadImplementation(PhotoType.ByteArray(byteArray))
+
+  /**
    * Uploads an image to the photos backend using a URI to the file content. Updates UI state to
    * UploadSuccess, containing the online path to the image
    */
-  fun upload(uri: Uri) =
-      viewModelScope.launch {
-        _uiState.value = ImageUIState.Loading
+  fun upload(uri: Uri) = uploadImplementation(PhotoType.Uri(uri))
 
-        val bytes = repository.reduceFileSize(repository.resolveUri(uri))
+  // Actual implementation of the upload function
+  private fun uploadImplementation(photo: PhotoType) {
+    viewModelScope.launch {
+      _uiState.value = ImageUIState.Loading
 
-        repository
-            .uploadImage(bytes)
-            .onSuccess { path -> _uiState.value = ImageUIState.UploadSuccess(path) }
-            .onFailure { e -> _uiState.value = ImageUIState.Error(e) }
-      }
+      var bytes =
+          when (photo) {
+            is PhotoType.ByteArray -> photo.bytes
+            is PhotoType.Uri -> repository.resolveUri(photo.uri)
+          }
+      bytes = repository.reduceFileSize(bytes)
+
+      repository
+          .uploadImage(bytes)
+          .onSuccess { path -> _uiState.value = ImageUIState.UploadSuccess(path) }
+          .onFailure { e -> _uiState.value = ImageUIState.Error(e) }
+    }
+  }
+
+  /**
+   * Starts uploading the given image bytes of the photo and suspends until the upload finishes.
+   *
+   * @return The URL of the uploaded photo on success.
+   * @throws Throwable If the upload fails (rethrows the underlying error).
+   */
+  suspend fun uploadAndWait(byteArray: ByteArray): String {
+    return uploadAndWaitImplementation(PhotoType.ByteArray(byteArray))
+  }
+
+  /**
+   * Starts uploading the photo referenced by the given [uri] and suspends until the upload
+   * finishes.
+   *
+   * @return The URL of the uploaded photo on success.
+   * @throws Throwable If the upload fails (rethrows the underlying error).
+   */
+  suspend fun uploadAndWait(uri: Uri): String {
+    return uploadAndWaitImplementation(PhotoType.Uri(uri))
+  }
+
+  private suspend fun uploadAndWaitImplementation(photo: PhotoType): String {
+    uploadImplementation(photo) // start the upload
+    val result = uiState.first { it is ImageUIState.UploadSuccess || it is ImageUIState.Error }
+    return when (result) {
+      is ImageUIState.UploadSuccess -> result.path
+      is ImageUIState.Error -> throw result.e
+      else -> throw IllegalStateException("Unexpected state")
+    }
+  }
 
   /**
    * Downloads an image from the photos backend using the online path. Updates UI state to

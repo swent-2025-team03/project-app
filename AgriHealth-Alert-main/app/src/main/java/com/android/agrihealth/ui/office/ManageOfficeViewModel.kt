@@ -1,9 +1,7 @@
 package com.android.agrihealth.ui.office
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.agrihealth.data.model.images.ImageUIState
 import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.Office
@@ -11,16 +9,10 @@ import com.android.agrihealth.data.model.office.OfficeRepository
 import com.android.agrihealth.data.model.user.Vet
 import com.android.agrihealth.ui.loading.withLoadingState
 import com.android.agrihealth.ui.user.UserViewModelContract
+import com.android.agrihealth.ui.utils.PhotoUi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-
-enum class PhotoChange {
-  UNCHANGED,
-  UPDATED,
-  REMOVED
-}
 
 data class ManageOfficeUiState(
     val office: Office? = null,
@@ -29,10 +21,22 @@ data class ManageOfficeUiState(
     val editableAddress: String = "",
     val isLoading: Boolean = false,
     val snackMessage: String? = null,
-    val photoUri: Uri? = null,
-    val uploadedImagePath: String? = null,
-    val photoChange: PhotoChange = PhotoChange.UNCHANGED
-)
+    val photoBytesToUpload: ByteArray? = null,
+    val removeRemotePhoto: Boolean = false,
+) {
+  /**
+   * Decides which photo to display depending on the state of the UI (i.e if a photo has been
+   * removed, picked, ...)
+   */
+  val displayedPhoto: PhotoUi
+    get() =
+        when {
+          photoBytesToUpload != null -> PhotoUi.Local(photoBytesToUpload)
+          removeRemotePhoto -> PhotoUi.Empty
+          office?.photoUrl != null -> PhotoUi.Remote(office.photoUrl)
+          else -> PhotoUi.Empty
+        }
+}
 
 class ManageOfficeViewModel(
     private val userViewModel: UserViewModelContract,
@@ -62,8 +66,7 @@ class ManageOfficeViewModel(
                     office = office,
                     editableName = office.name,
                     editableDescription = office.description ?: "",
-                    editableAddress = office.address?.toString() ?: "",
-                    photoUri = _uiState.value.photoUri)
+                    editableAddress = office.address?.toString() ?: "")
           }) { error ->
             _uiState.value =
                 _uiState.value.copy(
@@ -116,21 +119,12 @@ class ManageOfficeViewModel(
   ) {
     try {
       val office = _uiState.value.office ?: return
-      var uploadedPath = _uiState.value.uploadedImagePath ?: _uiState.value.office?.photoUrl
 
-      when (_uiState.value.photoChange) {
-        PhotoChange.UNCHANGED -> {
-          // keep existing photoUrl
-        }
-        PhotoChange.UPDATED -> {
-          val uri = _uiState.value.photoUri
-          if (uri != null) {
-            uploadedPath = imageViewModel.uploadAndWait(uri)
-          }
-        }
-        PhotoChange.REMOVED -> {
-          uploadedPath = null
-        }
+      var newPhotoUrl: String? = if (_uiState.value.removeRemotePhoto) null else office.photoUrl
+
+      _uiState.value.photoBytesToUpload?.let { bytes ->
+        newPhotoUrl = imageViewModel.uploadAndWait(bytes)
+        _uiState.value = _uiState.value.copy(photoBytesToUpload = null, removeRemotePhoto = false)
       }
 
       val updatedOffice =
@@ -138,36 +132,21 @@ class ManageOfficeViewModel(
               name = _uiState.value.editableName,
               description = _uiState.value.editableDescription,
               address = newAddress,
-              photoUrl = uploadedPath)
+              photoUrl = newPhotoUrl)
       officeRepository.updateOffice(updatedOffice)
-      _uiState.value =
-          _uiState.value.copy(
-              office = updatedOffice,
-              uploadedImagePath = uploadedPath,
-              photoUri = null,
-              photoChange = PhotoChange.UNCHANGED,
-              snackMessage = "Changes successfully saved")
+      _uiState.value = _uiState.value.copy(office = updatedOffice)
+      _uiState.value = _uiState.value.copy(snackMessage = "Changes successfully saved")
       onSuccess()
     } catch (e: Throwable) {
       onError(e)
     }
   }
 
-  suspend fun ImageViewModel.uploadAndWait(uri: Uri): String {
-    upload(uri) // start the upload
-    val result = uiState.first { it is ImageUIState.UploadSuccess || it is ImageUIState.Error }
-    return when (result) {
-      is ImageUIState.UploadSuccess -> result.path
-      is ImageUIState.Error -> throw result.e
-      else -> throw IllegalStateException("Unexpected state")
-    }
-  }
-
-  fun setPhoto(uri: Uri?) {
-    _uiState.value = _uiState.value.copy(photoUri = uri, photoChange = PhotoChange.UPDATED)
+  fun setPhoto(photobytes: ByteArray?) {
+    _uiState.value = _uiState.value.copy(photoBytesToUpload = photobytes, removeRemotePhoto = false)
   }
 
   fun removePhoto() {
-    _uiState.value = _uiState.value.copy(photoUri = null, photoChange = PhotoChange.REMOVED)
+    _uiState.value = _uiState.value.copy(photoBytesToUpload = null, removeRemotePhoto = true)
   }
 }

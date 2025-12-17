@@ -8,7 +8,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
@@ -18,7 +17,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.agrihealth.data.model.images.ImageViewModel
 import com.android.agrihealth.data.model.user.*
+import com.android.agrihealth.ui.utils.PhotoUi
+import com.android.agrihealth.ui.utils.ProfilePicture
 
 object ViewUserScreenTestTags {
   const val TOP_BAR = "ViewUserTopBar"
@@ -26,7 +28,7 @@ object ViewUserScreenTestTags {
   const val LOADING_INDICATOR = "ViewUserLoadingIndicator"
   const val ERROR_TEXT = "ViewUserErrorText"
   const val CONTENT_COLUMN = "ViewUserContentColumn"
-  const val PROFILE_ICON = "ViewUserProfileIcon"
+  const val PROFILE_PICTURE = "ViewUserProfilePicture"
   const val NAME_FIELD = "ViewUserNameField"
   const val ROLE_FIELD = "ViewUserRoleField"
   const val OFFICE_FIELD = "ViewUserOfficeField"
@@ -39,7 +41,8 @@ object ViewUserScreenTestTags {
 fun ViewUserScreen(
     viewModel: ViewUserViewModel,
     onBack: () -> Unit,
-    userViewModel: UserViewModel = viewModel()
+    userViewModel: UserViewModel = viewModel(),
+    imageViewModel: ImageViewModel = viewModel(),
 ) {
   val uiState by viewModel.uiState
 
@@ -91,7 +94,7 @@ fun ViewUserScreen(
                 }
             is ViewUserUiState.Success -> {
               val success = uiState as ViewUserUiState.Success
-              ViewUserContent(user = success.user, officeName = success.officeName)
+              ViewUserContent(user = success.user, officeName = success.officeName, imageViewModel)
             }
           }
         }
@@ -99,7 +102,7 @@ fun ViewUserScreen(
 }
 
 @Composable
-private fun ViewUserContent(user: User, officeName: String?) {
+private fun ViewUserContent(user: User, officeName: String?, imageViewModel: ImageViewModel) {
   val scroll = rememberScrollState()
   val noInteraction = remember { MutableInteractionSource() }
 
@@ -110,10 +113,14 @@ private fun ViewUserContent(user: User, officeName: String?) {
               .padding(16.dp)
               .testTag(ViewUserScreenTestTags.CONTENT_COLUMN),
       horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(
-            imageVector = Icons.Default.AccountCircle,
-            contentDescription = "Profile",
-            modifier = Modifier.size(120.dp).testTag(ViewUserScreenTestTags.PROFILE_ICON))
+
+        // Box needed for testing purpose
+        Box(modifier = Modifier.testTag(ViewUserScreenTestTags.PROFILE_PICTURE)) {
+          ProfilePicture(
+              photo = if (user.photoURL != null) PhotoUi.Remote(user.photoURL!!) else PhotoUi.Empty,
+              imageViewModel,
+          )
+        }
 
         Spacer(Modifier.height(24.dp))
 

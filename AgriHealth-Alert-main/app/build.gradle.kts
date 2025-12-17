@@ -206,6 +206,9 @@ dependencies {
     // ---- For EXIF data manipulation ------
     implementation("androidx.exifinterface:exifinterface:1.3.7")
 
+    // ---- Used for cropping images -----
+    implementation(libs.easycrop)
+
 }
 
 tasks.withType<Test> {
