@@ -1,9 +1,9 @@
 package com.android.agrihealth.ui.profile
 
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
-import com.android.agrihealth.testhelpers.TestPassword.password1
-import com.android.agrihealth.testhelpers.TestPassword.password2
-import com.android.agrihealth.testhelpers.TestPassword.weakestPassword
+import com.android.agrihealth.testhelpers.TestPassword.PASSWORD1
+import com.android.agrihealth.testhelpers.TestPassword.PASSWORD2
+import com.android.agrihealth.testhelpers.TestPassword.WEAK_PASSWORD
 import com.android.agrihealth.testhelpers.TestTimeout
 import com.android.agrihealth.testhelpers.fakes.FakeAuthRepository
 import com.android.agrihealth.testhelpers.templates.UITest
@@ -15,8 +15,8 @@ import org.junit.Test
 class ChangePasswordScreenTest : UITest() {
 
   var success = false
-  val oldPassword = password2
-  val newPassword = password1
+  val oldPassword = PASSWORD2
+  val newPassword = PASSWORD1
 
   @Before
   fun setup() {
@@ -60,7 +60,7 @@ class ChangePasswordScreenTest : UITest() {
       textIsDisplayed(OLD_WRONG)
       assertFalse(success)
 
-      fillPasswordFieldsAndSubmit(oldPassword, weakestPassword)
+      fillPasswordFieldsAndSubmit(oldPassword, WEAK_PASSWORD)
       textIsDisplayed(NEW_WEAK)
       textNotDisplayed(OLD_WRONG)
       assertFalse(success)

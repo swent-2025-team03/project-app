@@ -11,12 +11,10 @@ import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.testhelpers.FileTestUtils.FAKE_PHOTO_PATH
 import com.android.agrihealth.testhelpers.FileTestUtils.addPlaceholderPhotoToRepository
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
-import com.android.agrihealth.testhelpers.TestReport.report1
+import com.android.agrihealth.testhelpers.TestReport
 import com.android.agrihealth.testhelpers.TestTimeout.LONG_TIMEOUT
 import com.android.agrihealth.testhelpers.TestTimeout.SHORT_TIMEOUT
-import com.android.agrihealth.testhelpers.TestUser.farmer1
-import com.android.agrihealth.testhelpers.TestUser.vet1
-import com.android.agrihealth.testhelpers.TestUser.vet2
+import com.android.agrihealth.testhelpers.TestUser
 import com.android.agrihealth.testhelpers.fakes.FakeImageRepository
 import com.android.agrihealth.testhelpers.fakes.FakeOverviewViewModel
 import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
@@ -36,10 +34,10 @@ import org.junit.Test
  * behave as expected in both Farmer and Vet modes.
  */
 class ReportViewScreenTest : UITest() {
-  val farmer = farmer1
-  val vet = vet1
-  val unassignedVet = vet2
-  val report = report1.copy(assignedVet = vet.uid)
+  val farmer = TestUser.FARMER1.copy()
+  val vet = TestUser.VET1.copy()
+  val unassignedVet = TestUser.VET2.copy()
+  val report = TestReport.REPORT1.copy(assignedVet = vet.uid)
 
   val reportRepository = FakeReportRepository(initialReports = listOf(report))
 

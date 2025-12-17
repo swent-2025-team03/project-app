@@ -2,8 +2,7 @@ package com.android.agrihealth.ui.profile
 
 import androidx.compose.ui.test.*
 import com.android.agrihealth.data.model.user.*
-import com.android.agrihealth.testhelpers.TestUser.farmer1
-import com.android.agrihealth.testhelpers.TestUser.vet1
+import com.android.agrihealth.testhelpers.TestUser
 import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
 import com.android.agrihealth.testhelpers.templates.UITest
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
@@ -14,8 +13,8 @@ import org.junit.Test
 class EditProfileScreenTest : UITest() {
   val linkedOffices = listOf("off123", "off456")
 
-  val farmer = farmer1.copy(linkedOffices = linkedOffices, defaultOffice = linkedOffices.first())
-  val vet = vet1
+  val farmer = TestUser.FARMER1.copy(linkedOffices = linkedOffices, defaultOffice = linkedOffices.first())
+  val vet = TestUser.VET1.copy()
 
   private fun setContent(role: UserRole, onSave: () -> Unit = {}) {
     val initialUser =

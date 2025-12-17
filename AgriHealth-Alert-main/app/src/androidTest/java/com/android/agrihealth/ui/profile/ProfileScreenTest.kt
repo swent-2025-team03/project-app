@@ -1,8 +1,7 @@
 package com.android.agrihealth.ui.profile
 
 import com.android.agrihealth.data.model.user.*
-import com.android.agrihealth.testhelpers.TestUser.farmer1
-import com.android.agrihealth.testhelpers.TestUser.vet1
+import com.android.agrihealth.testhelpers.TestUser
 import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
 import com.android.agrihealth.testhelpers.templates.UITest
 import com.android.agrihealth.ui.authentification.SignInScreenTestTags.EMAIL_FIELD
@@ -17,8 +16,8 @@ class ProfileScreenTest : UITest() {
   private fun setContentWithVM(role: UserRole, onEdit: () -> Unit = {}, onCode: () -> Unit = {}) {
     val user =
         when (role) {
-          UserRole.FARMER -> farmer1
-          UserRole.VET -> vet1
+          UserRole.FARMER -> TestUser.FARMER1.copy()
+          UserRole.VET -> TestUser.VET1.copy()
         }
 
     setContent {

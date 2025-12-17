@@ -1,6 +1,7 @@
 package com.android.agrihealth.testhelpers.templates
 
 import com.android.agrihealth.testhelpers.FirebaseEmulatorsManager
+import org.junit.After
 import org.junit.Before
 
 abstract class FirebaseTest {
@@ -8,5 +9,5 @@ abstract class FirebaseTest {
     FirebaseEmulatorsManager.linkEmulators()
   }
 
-  @Before fun clean() = FirebaseEmulatorsManager.clearEmulators()
+  @After fun clean() = FirebaseEmulatorsManager.clearEmulators()
 }

@@ -11,7 +11,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.isNotDisplayed
-import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -28,8 +27,7 @@ import org.junit.rules.RuleChain
 import org.junit.rules.TestRule
 
 abstract class UITest(private val grantedPermissions: Array<String> = emptyArray()) {
-  val composeTestRule: ComposeContentTestRule = createComposeRule()
-  // open fun permissions(): Array<String> = emptyArray()
+  val composeTestRule = createComposeRule()
 
   @get:Rule
   val ruleChain: TestRule

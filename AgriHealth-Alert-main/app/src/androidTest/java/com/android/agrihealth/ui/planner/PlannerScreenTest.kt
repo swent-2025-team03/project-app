@@ -4,10 +4,9 @@ import com.android.agrihealth.data.model.report.Report
 import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.User
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
-import com.android.agrihealth.testhelpers.TestReport.report1
+import com.android.agrihealth.testhelpers.TestReport
 import com.android.agrihealth.testhelpers.TestTimeout.SHORT_TIMEOUT
-import com.android.agrihealth.testhelpers.TestUser.farmer1
-import com.android.agrihealth.testhelpers.TestUser.vet1
+import com.android.agrihealth.testhelpers.TestUser
 import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
 import com.android.agrihealth.testhelpers.templates.UITest
 import com.android.agrihealth.ui.common.layout.NavigationTestTags
@@ -33,12 +32,16 @@ class PlannerScreenTest : UITest() {
   val tuesday: LocalDate = today.with(DayOfWeek.TUESDAY)
   val sunday: LocalDate = today.with(DayOfWeek.SUNDAY)
 
+  val farmer = TestUser.FARMER1.copy()
+  val vet = TestUser.VET1.copy()
+  val report1 = TestReport.REPORT1
+
   private fun setPlannerScreen(
-      reportId: String? = null,
-      user: User = farmer1,
-      goBack: () -> Unit = {},
-      tabClicked: (Screen) -> Unit = {},
-      reportClicked: (String) -> Unit = {},
+    reportId: String? = null,
+    user: User = farmer,
+    goBack: () -> Unit = {},
+    tabClicked: (Screen) -> Unit = {},
+    reportClicked: (String) -> Unit = {},
   ) {
     setContent {
       PlannerScreen(
@@ -95,7 +98,7 @@ class PlannerScreenTest : UITest() {
 
     runBlocking { reportRepository.addReport(report1) }
 
-    setPlannerScreen(reportId = report1.id, user = vet1, goBack = { goBackCalled = true })
+    setPlannerScreen(reportId = report1.id, user = vet, goBack = { goBackCalled = true })
 
     with(PlannerScreenTestTags) {
       clickOn(NavigationTestTags.GO_BACK_BUTTON)
@@ -121,7 +124,7 @@ class PlannerScreenTest : UITest() {
   @Test
   fun reportsForSelectedDate_areCorrectlyDisplayed_andDatesCorrectlyDisplayed() = runTest {
     val otherDay = if (today == tuesday) sunday else tuesday
-    val user = farmer1
+    val user = farmer
 
     val testReport1 =
         report1.copy(id = "rep_id1", farmerId = user.uid, startTime = today.atTime(6, 0))
@@ -171,7 +174,7 @@ class PlannerScreenTest : UITest() {
 
     reportRepository.addReport(report)
 
-    setPlannerScreen(reportId = report.id, user = vet1)
+    setPlannerScreen(reportId = report.id, user = vet)
 
     with(PlannerScreenTestTags) {
       nodeIsDisplayed(SET_REPORT_DATE_BOX)
@@ -193,7 +196,7 @@ class PlannerScreenTest : UITest() {
 
     setContent {
       PlannerScreen(
-          user = farmer1,
+          user = farmer,
           reportId = null,
           goBack = {},
           tabClicked = {},

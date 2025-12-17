@@ -3,8 +3,7 @@ package com.android.agrihealth.ui.user
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.android.agrihealth.data.model.user.displayString
-import com.android.agrihealth.testhelpers.TestUser.farmer1
-import com.android.agrihealth.testhelpers.TestUser.vet1
+import com.android.agrihealth.testhelpers.TestUser
 import com.android.agrihealth.testhelpers.fakes.FakeOfficeRepository
 import com.android.agrihealth.testhelpers.fakes.FakeUserRepository
 import com.android.agrihealth.testhelpers.templates.UITest
@@ -25,6 +24,9 @@ class FakeViewUserViewModel(initial: ViewUserUiState) :
 }
 
 class ViewUserScreenTest : UITest() {
+  val farmer = TestUser.FARMER1.copy()
+  val vet = TestUser.VET1.copy()
+
   private fun setScreen(uiState: ViewUserUiState) {
     val vm = FakeViewUserViewModel(uiState)
 
@@ -47,7 +49,7 @@ class ViewUserScreenTest : UITest() {
 
   @Test
   fun successState_displayAllFarmerComponents() {
-    val user = farmer1
+    val user = farmer
     setScreen(ViewUserUiState.Success(user))
 
     with(ViewUserScreenTestTags) {
@@ -60,7 +62,7 @@ class ViewUserScreenTest : UITest() {
 
   @Test
   fun successState_displayAllVetComponents() {
-    val user = vet1.copy(address = null, description = null)
+    val user = vet.copy(address = null, description = null)
     setScreen(ViewUserUiState.Success(user))
 
     with(ViewUserScreenTestTags) {

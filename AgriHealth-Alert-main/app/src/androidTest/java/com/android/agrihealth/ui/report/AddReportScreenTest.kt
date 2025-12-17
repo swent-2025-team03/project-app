@@ -8,10 +8,9 @@ import com.android.agrihealth.data.model.report.form.QuestionType
 import com.android.agrihealth.testhelpers.FileTestUtils.TEST_IMAGE
 import com.android.agrihealth.testhelpers.FileTestUtils.getUriFrom
 import com.android.agrihealth.testhelpers.LoadingOverlayTestUtils.assertOverlayDuringLoading
-import com.android.agrihealth.testhelpers.TestReport.report1
+import com.android.agrihealth.testhelpers.TestReport
 import com.android.agrihealth.testhelpers.TestTimeout.SHORT_TIMEOUT
-import com.android.agrihealth.testhelpers.TestUser.farmer1
-import com.android.agrihealth.testhelpers.TestUser.office1
+import com.android.agrihealth.testhelpers.TestUser
 import com.android.agrihealth.testhelpers.fakes.FakeAddReportViewModel
 import com.android.agrihealth.testhelpers.fakes.FakeReportRepository
 import com.android.agrihealth.testhelpers.fakes.FakeUserViewModel
@@ -22,6 +21,8 @@ import com.android.agrihealth.ui.common.PhotoComponentsTexts
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+private val office1 = TestUser.OFFICE1
+
 private val linkedOffices =
     mapOf(
         office1.id to "Deleted office",
@@ -29,9 +30,9 @@ private val linkedOffices =
         "Great Office" to "Deleted office")
 
 class AddReportScreenTest : UITest() {
-  val report = report1
+  val report = TestReport.REPORT1
   val farmer =
-      farmer1.copy(
+      TestUser.FARMER1.copy(
           linkedOffices = linkedOffices.keys.toList(),
           defaultOffice = linkedOffices.keys.toList().first())
   val addReportVM = FakeAddReportViewModel()
