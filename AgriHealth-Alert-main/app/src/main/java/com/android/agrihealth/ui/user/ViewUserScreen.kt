@@ -41,7 +41,6 @@ object ViewUserScreenTestTags {
 fun ViewUserScreen(
     viewModel: ViewUserViewModel,
     onBack: () -> Unit,
-    userViewModel: UserViewModel = viewModel(),
     imageViewModel: ImageViewModel = viewModel(),
 ) {
   val uiState by viewModel.uiState
