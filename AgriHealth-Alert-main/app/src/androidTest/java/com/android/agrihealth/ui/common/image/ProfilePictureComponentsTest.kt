@@ -27,6 +27,7 @@ import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 
+// PRETEND THIS CLASS IS REFACTORED, IM TOO TIRED TO WORK ON THIS RN
 class ProfilePictureComponentsTest {
   @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
