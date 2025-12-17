@@ -1,4 +1,4 @@
-package com.android.agrihealth.ui.loading
+package com.android.agrihealth.ui.common.layout
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

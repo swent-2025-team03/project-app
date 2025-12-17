@@ -3,7 +3,7 @@ package com.android.agrihealth.testhelpers
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.onNodeWithTag
-import com.android.agrihealth.ui.loading.LoadingTestTags
+import com.android.agrihealth.ui.common.layout.LoadingTestTags
 
 object LoadingOverlayTestUtils {
 

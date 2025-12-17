@@ -1,4 +1,4 @@
-package com.android.agrihealth.ui.loading
+package com.android.agrihealth.ui.common.layout
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Text
@@ -14,7 +14,7 @@ class LoadingScreenTest : UITest() {
   private val testTag = "content"
 
   private fun setLoadingContent(isLoading: Boolean) {
-    setContent { LoadingOverlay(isLoading) { Box(Modifier.testTag(testTag)) { Text(":)") } } }
+    setContent { LoadingOverlay(isLoading) { Box(Modifier.Companion.testTag(testTag)) { Text(":)") } } }
   }
 
   @Test
