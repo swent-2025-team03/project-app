@@ -106,7 +106,7 @@ jobs:
           disable-animations: true
           script: |
             ls -alh
-            ./gradlew connectedCheck --parallel --build-cache
+            ./gradlew connectedCheck --parallel --build-cache -Pandroid.testInstrumentationRunnerArguments.numShards=4
 
       - name: Generate coverage
         run: |
