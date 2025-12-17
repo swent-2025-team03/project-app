@@ -13,7 +13,7 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class UserViewModelTest : FirebaseTest() {
 
-  val repository = FakeUserRepository()
+  private val repository = FakeUserRepository()
 
   val auth = FirebaseAuth.getInstance()
 
@@ -71,7 +71,7 @@ class UserViewModelTest : FirebaseTest() {
   }
 }
 
-class FakeUserRepository : UserRepository {
+private class FakeUserRepository : UserRepository {
   private val users = mutableMapOf<String, User>()
 
   override suspend fun getUserFromId(uid: String): Result<User> {
