@@ -1,6 +1,7 @@
 package com.android.agrihealth.ui.office
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -57,6 +58,7 @@ fun ViewOfficeScreen(
     }
   }
 
+  BackHandler { onBack() }
   Scaffold(
       topBar = {
         TopAppBar(
@@ -139,9 +141,9 @@ private fun ViewOfficeContent(
             enabled = false,
             modifier = Modifier.fillMaxWidth().testTag(ViewOfficeScreenTestTags.NAME_FIELD))
 
-        office.address?.let {
+        office.address?.name?.let {
           OutlinedTextField(
-              value = "Not implemented yet",
+              value = it,
               onValueChange = {},
               label = { Text("Address") },
               readOnly = true,

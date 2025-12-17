@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.profile
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -85,6 +86,8 @@ fun ProfileScreen(
   val codesViewModel: CodesViewModel = viewModel(factory = factory)
 
   val snackbarHostState = remember { SnackbarHostState() }
+
+  BackHandler { onGoBack() }
 
   Scaffold(
       topBar = {

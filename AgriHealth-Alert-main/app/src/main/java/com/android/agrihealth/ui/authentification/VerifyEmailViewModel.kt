@@ -1,5 +1,7 @@
 package com.android.agrihealth.ui.authentification
 
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.agrihealth.data.model.authentification.AuthRepository
@@ -66,6 +68,13 @@ class VerifyEmailViewModel(
       } catch (_: Exception) {
         /*don't make a pop up appear every 5 seconds*/
       }
+    }
+  }
+
+  fun signOut(credentialManager: CredentialManager) {
+    viewModelScope.launch {
+      authRepository.signOut()
+      credentialManager.clearCredentialState(ClearCredentialStateRequest())
     }
   }
 }
