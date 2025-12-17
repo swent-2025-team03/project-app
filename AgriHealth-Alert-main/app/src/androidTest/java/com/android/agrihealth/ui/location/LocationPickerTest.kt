@@ -25,10 +25,6 @@ class LocationPickerTest : UITest() {
     LocationRepositoryProvider.repository = locationRepository
   }
 
-  override fun displayAllComponents() {
-    TODO("Not yet implemented")
-  }
-
   @Test
   fun locationPicker_getsRightCoordinatesAndCity() {
     val position = Location(46.7815062, 6.6463836) // Station d'épuration d'Yverdon-les-Bains
@@ -68,4 +64,6 @@ class LocationPickerTest : UITest() {
 
     assertTrue(confirmClicked)
   }
+
+  override fun displayAllComponents() {}
 }
