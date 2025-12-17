@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.util.Log
 import com.android.agrihealth.data.model.firebase.emulators.FirebaseEmulatorsTest
+import com.google.firebase.auth.FirebaseAuth
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -14,6 +15,8 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -39,6 +42,12 @@ class ImageRepositoryTest : FirebaseEmulatorsTest() {
   @Before
   fun setup() {
     Dispatchers.setMain(StandardTestDispatcher())
+    runBlocking {
+      val auth = FirebaseAuth.getInstance()
+      if (auth.currentUser == null) {
+        auth.signInAnonymously().await()
+      }
+    }
   }
 
   @After

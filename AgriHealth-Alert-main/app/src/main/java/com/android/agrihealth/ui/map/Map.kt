@@ -3,7 +3,9 @@ package com.android.agrihealth.ui.map
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -124,6 +126,8 @@ fun MapScreen(
 
           val alertsToDisplay = alerts.filter { showAlerts }
 
+          val currentUserLocation by mapViewModel.currentUserLocation.collectAsState()
+
           GoogleMap(
               cameraPositionState = cameraPositionState,
               properties = googleMapMapProperties,
@@ -143,6 +147,8 @@ fun MapScreen(
                     onClick = { it.toggleSelect() })
 
                 AlertAreas(alerts = alertsToDisplay)
+
+                UserLocationMarker(location = currentUserLocation)
               }
 
           MapTestReportMarkers(reportsToDisplay) { it.toggleSelect() }
@@ -150,6 +156,7 @@ fun MapScreen(
             val newList = listOf(it)
             selectedAlerts = if (newList == selectedAlerts) listOf() else newList
           }
+          MapTestUserLocationMarker(currentUserLocation)
 
           // Control what to display
           Column(
@@ -204,9 +211,13 @@ fun MapScreen(
             navigationActions?.navigateTo(Screen.ViewReport(it))
           }
 
-          ShowAlertInfo(selectedAlerts) { alert ->
-            navigationActions?.navigateTo(Screen.ViewAlert(alert.id))
-          }
+          ShowAlertInfo(
+              alerts = selectedAlerts,
+              modifier =
+                  Modifier.fillMaxWidth().fillMaxHeight(0.2f).align(Alignment.BottomCenter)) { alert
+                ->
+                navigationActions?.navigateTo(Screen.ViewAlert(alert.id))
+              }
         }
       })
 }
@@ -221,6 +232,7 @@ object MapScreenTestTags {
   const val VISIBILITY_MENU = "mapDisplayVisibilityMenu"
   const val REPORT_VISIBILITY_SWITCH = "reportVisibilitySwitch"
   const val ALERT_VISIBILITY_SWITCH = "alertVisibilitySwitch"
+  const val USER_LOCATION_MARKER = "usersCurrentLocationMarker"
 
   // from bootcamp map
   fun getTestTagForReportMarker(reportId: String): String = "reportMarker_$reportId"

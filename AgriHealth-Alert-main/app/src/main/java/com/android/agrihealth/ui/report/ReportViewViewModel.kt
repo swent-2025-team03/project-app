@@ -62,8 +62,8 @@ class ReportViewViewModel(
   val saveCompleted: StateFlow<Boolean> = _saveCompleted.asStateFlow()
 
   /** Loads a report by its ID and updates the state. */
-  fun loadReport(reportID: String) {
-    if (_uiState.value.report.id == "RPT001") {
+  fun loadReport(reportID: String, force: Boolean = false) {
+    if (_uiState.value.report.id == "RPT001" || force) {
       viewModelScope.launch {
         _uiState.withLoadingState(
             applyLoading = { state, loading -> state.copy(isLoading = loading) }) {
@@ -163,7 +163,7 @@ class ReportViewViewModel(
       repository.assignReportToVet(reportId, vetId)
 
       // Refresh state after assignment
-      loadReport(reportId)
+      loadReport(reportId, true)
     }
   }
 
@@ -178,7 +178,7 @@ class ReportViewViewModel(
       repository.unassignReport(reportId)
 
       // Refresh state after unassignment
-      loadReport(reportId)
+      loadReport(reportId, true)
     }
   }
 }

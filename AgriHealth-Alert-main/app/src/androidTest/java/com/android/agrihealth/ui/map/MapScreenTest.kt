@@ -170,6 +170,7 @@ class MapScreenTest {
     val mapViewModel =
         MapViewModel(
             reportRepository = reportRepository,
+            alertRepository = alertRepository,
             locationViewModel = locationViewModel,
             selectedReportId = selectedReportId,
             userId = userId)
@@ -429,6 +430,7 @@ class MapScreenTest {
           val mapViewModel =
               MapViewModel(
                   reportRepository = reportRepository,
+                  alertRepository = alertRepository,
                   locationViewModel = locationViewModel,
                   userId = userId)
           MapScreen(mapViewModel = mapViewModel, navigationActions = navigation)
@@ -456,6 +458,7 @@ class MapScreenTest {
     val mapViewModel =
         MapViewModel(
             reportRepository = reportRepository,
+            alertRepository = alertRepository,
             locationViewModel = locationViewModel,
             userId = userId,
             selectedReportId = MapScreenTestReports.report1.id)
@@ -468,12 +471,8 @@ class MapScreenTest {
     advanceUntilIdle()
     mapViewModel.refreshReports()
 
-    val uiState = mapViewModel.uiState
+    val spiderifiedReport = mapViewModel.uiState.map { it.reports }.first { it.size == 19 }
 
-    uiState.map { it.reports }.first { it.isNotEmpty() }
-    advanceUntilIdle()
-
-    val spiderifiedReport = uiState.value.reports
     val groups = spiderifiedReport.groupBy { it.center }
 
     val group1 =
@@ -507,7 +506,7 @@ class MapScreenTest {
 
     coEvery { locationRepository.getLastKnownLocation() } coAnswers
         {
-          delay(2000) // simulate slow fetch
+          delay(TestConstants.SHORT_TIMEOUT) // simulate slow fetch
           Location(46.95, 7.44)
         }
 
@@ -519,5 +518,16 @@ class MapScreenTest {
       composeTestRule.onAllNodesWithText("Loading location...").fetchSemanticsNodes().isNotEmpty()
     }
     composeTestRule.onNodeWithText("Loading location...").assertIsDisplayed()
+  }
+
+  @Test
+  fun displaysCurrentUserLocationMarker() = runTest {
+    setContentToMapWithVM() // provides the currentUserLocation
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MapScreenTestTags.USER_LOCATION_MARKER)
+        .assertExists()
+        .assertIsDisplayed()
   }
 }

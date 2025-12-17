@@ -42,7 +42,7 @@ data class SpiderifiedReport(val report: Report, val position: LatLng, val cente
 
 class MapViewModel(
     private val reportRepository: ReportRepository = ReportRepositoryProvider.repository,
-    private val alertRepository: AlertRepository = AlertRepositoryProvider.repository,
+    private val alertRepository: AlertRepository = AlertRepositoryProvider.get(),
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
     private val locationViewModel: LocationViewModel,
     private val userId: String,
@@ -78,6 +78,9 @@ class MapViewModel(
   val startingLocation = _startingLocation.asStateFlow()
   private val _zoom = MutableStateFlow(10f)
   val zoom = _zoom.asStateFlow()
+
+  private val _currentUserLocation = MutableStateFlow<Location?>(null)
+  val currentUserLocation: StateFlow<Location?> = _currentUserLocation.asStateFlow()
 
   init {
     if (showReports) {
@@ -181,6 +184,7 @@ class MapViewModel(
                     locationViewModel.locationState.firstOrNull { it != null }
                   }
 
+              _currentUserLocation.value = gpsLocation
               _startingLocation.value =
                   gpsLocation ?: getLocationFromUserAddress() ?: return@withLoadingState
             }

@@ -4,6 +4,7 @@ import com.android.agrihealth.data.model.report.ReportStatus
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.UserRole
 import com.android.agrihealth.data.model.user.Vet
+import com.android.agrihealth.testutil.FakeAlertRepository
 import com.android.agrihealth.testutil.FakeOverviewRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,7 +32,8 @@ class OverviewViewModelTest {
   fun setup() {
     Dispatchers.setMain(StandardTestDispatcher())
     repository = FakeOverviewRepository()
-    viewModel = OverviewViewModel(repository)
+    val alertRepository = FakeAlertRepository()
+    viewModel = OverviewViewModel(repository, alertRepository)
   }
 
   @Test
