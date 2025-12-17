@@ -214,7 +214,7 @@ class ViewUserScreenTest {
             firstname = "No Inspiration",
             lastname = "Anymore",
             email = "mail@mail.com",
-            address = Location(latitude = 0.0, longitude = 0.0),
+            address = Location(latitude = 0.0, longitude = 0.0, "Location name"),
             linkedOffices = emptyList(),
             defaultOffice = null)
 
@@ -225,6 +225,7 @@ class ViewUserScreenTest {
         .onNodeWithTag(ViewUserScreenTestTags.ADDRESS_FIELD)
         .assertExists()
         .assertIsDisplayed()
+        .assertTextContains(farmer.address?.name ?: "")
   }
 
   @Test

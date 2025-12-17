@@ -8,6 +8,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.agrihealth.data.model.images.ImageViewModel
+import com.android.agrihealth.data.model.location.Location
 import com.android.agrihealth.data.model.office.Office
 import com.android.agrihealth.testutil.FakeImageRepository
 import com.android.agrihealth.testutil.FakeOfficeRepository
@@ -53,7 +54,7 @@ class ViewOfficeScreenTest {
         Office(
             id = "o1",
             name = "Agri Vet Clinic",
-            address = null,
+            address = Location(0.0, 0.0, "123 Farm Road, Countryside"),
             description = "Providing quality veterinary services for farm animals.",
             vets = listOf("vet1", "vet2"),
             ownerId = "owner1",
@@ -145,6 +146,16 @@ class ViewOfficeScreenTest {
         .onNodeWithTag(ViewOfficeScreenTestTags.DESCRIPTION_FIELD)
         .assertExists()
         .assertIsDisplayed()
+  }
+
+  @Test
+  fun addressField_showsWhenAddressExists() {
+    setBasicTestScreen()
+    composeTestRule
+        .onNodeWithTag(ViewOfficeScreenTestTags.ADDRESS_FIELD)
+        .assertExists()
+        .assertIsDisplayed()
+        .assertTextContains("123 Farm Road, Countryside")
   }
 
   @Test

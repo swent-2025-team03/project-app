@@ -1,5 +1,6 @@
 package com.android.agrihealth.ui.profile
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -56,6 +57,8 @@ fun ChangePasswordScreen(
   LaunchedEffect(Unit) { changePasswordViewModel.setEmail(userEmail) }
 
   LaunchedEffect(uiState.success) { if (uiState.success) onUpdatePassword.invoke() }
+
+  BackHandler { onBack() }
   Scaffold(
       topBar = {
         // Top bar with back arrow and title/status
