@@ -1,6 +1,6 @@
 package com.android.agrihealth.data.model.user
 
-import com.android.agrihealth.testhelpers.TestUser.VET1
+import com.android.agrihealth.testhelpers.TestUser
 import com.android.agrihealth.testhelpers.templates.FirebaseTest
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,6 +16,8 @@ class UserViewModelTest : FirebaseTest() {
   val repository = FakeUserRepository()
 
   val auth = FirebaseAuth.getInstance()
+
+  val vet = TestUser.VET1.copy()
 
   @Before
   fun signOut() {
@@ -38,18 +40,18 @@ class UserViewModelTest : FirebaseTest() {
   @Test
   fun loadUserUpdatesStateFlow() = runTest {
     // Given a user in the repository
-    repository.addUser(VET1)
+    repository.addUser(vet)
 
     val viewModel = UserViewModel(repository, auth)
     advanceUntilIdle()
 
     // When loading user role
-    viewModel.loadUser(VET1.uid)
+    viewModel.loadUser(vet.uid)
     advanceUntilIdle()
 
     // Then user State should be updated
     val role = viewModel.uiState.value.user
-    assertEquals(VET1, role)
+    assertEquals(vet, role)
   }
 
   @Test

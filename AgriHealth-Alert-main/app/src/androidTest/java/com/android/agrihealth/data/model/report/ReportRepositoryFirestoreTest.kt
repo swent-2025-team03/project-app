@@ -28,6 +28,7 @@ class ReportRepositoryFirestoreTest : FirebaseTest() {
   val baseReport = TestReport.REPORT1.copy(createdAt = now, questionForms = listOf(openQuestion))
 
   val currentUser = TestUser.FARMER1.copy()
+  val vet1 = TestUser.VET1.copy()
 
   val baseReport1 =
       baseReport.copy(
@@ -119,20 +120,17 @@ class ReportRepositoryFirestoreTest : FirebaseTest() {
   @Test
   fun canGetReportsByVet() = runTest {
     authRepository.signOut()
-    authRepository.signUpWithEmailAndPassword(
-        TestUser.VET1.email, TestPassword.PASSWORD3, TestUser.VET1)
+    authRepository.signUpWithEmailAndPassword(vet1.email, TestPassword.PASSWORD3, vet1)
 
-    repository.addReport(
-        report1.copy(farmerId = TestUser.VET1.uid, officeId = TestUser.VET1.officeId!!))
-    repository.addReport(report2.copy(farmerId = TestUser.VET1.uid))
-    repository.addReport(
-        report3.copy(farmerId = TestUser.VET1.uid, officeId = TestUser.VET1.officeId))
+    repository.addReport(report1.copy(farmerId = vet1.uid, officeId = vet1.officeId!!))
+    repository.addReport(report2.copy(farmerId = vet1.uid))
+    repository.addReport(report3.copy(farmerId = vet1.uid, officeId = vet1.officeId))
 
-    var reports = repository.getAllReports(TestUser.VET1.uid)
+    var reports = repository.getAllReports(vet1.uid)
     Assert.assertEquals(2, reports.size)
 
     reports.forEach {
-      Assert.assertEquals(TestUser.VET1.officeId, it.officeId)
+      Assert.assertEquals(vet1.officeId, it.officeId)
       Assert.assertEquals(listOf(openQuestion), it.questionForms)
     }
 

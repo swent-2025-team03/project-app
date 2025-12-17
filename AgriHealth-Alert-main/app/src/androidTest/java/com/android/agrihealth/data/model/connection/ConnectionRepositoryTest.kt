@@ -36,6 +36,7 @@ class ConnectionRepositoryTest : FirebaseTest() {
   private lateinit var repo: ConnectionRepository
 
   val authRepository = AuthRepositoryFirebase()
+
   val farmer1 = TestUser.FARMER1.copy()
   val farmer2 = TestUser.FARMER2.copy()
   val vet1 = TestUser.VET1.copy()
