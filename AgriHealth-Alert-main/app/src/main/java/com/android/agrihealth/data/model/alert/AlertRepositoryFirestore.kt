@@ -1,7 +1,7 @@
 package com.android.agrihealth.data.model.alert
 
 import android.util.Log
-import com.android.agrihealth.data.helper.runWithTimeout
+import com.android.agrihealth.data.helper.withDefaultTimeout
 import com.android.agrihealth.data.model.location.Location
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
@@ -29,7 +29,7 @@ class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fire
   override suspend fun getAlerts(): List<Alert> {
     val snapshot =
         try {
-          runWithTimeout(
+          withDefaultTimeout(
               db.collection(ALERTS_COLLECTION_PATH)
                   .orderBy("createdAt", Query.Direction.DESCENDING)
                   .get())
@@ -59,7 +59,7 @@ class AlertRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fire
 
     val snapshot =
         try {
-          runWithTimeout(db.collection(ALERTS_COLLECTION_PATH).document(alertId).get())
+          withDefaultTimeout(db.collection(ALERTS_COLLECTION_PATH).document(alertId).get())
         } catch (_: Exception) {
           try {
             db.collection(ALERTS_COLLECTION_PATH).document(alertId).get(Source.CACHE).await()

@@ -1,6 +1,6 @@
 package com.android.agrihealth.data.model.connection
 
-import com.android.agrihealth.data.helper.runWithTimeout
+import com.android.agrihealth.data.helper.withDefaultTimeout
 import com.android.agrihealth.data.model.authentification.UserRepository
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.user.Vet
@@ -150,7 +150,7 @@ class ConnectionRepository(
     return try {
       val snapshot =
           try {
-            runWithTimeout(
+            withDefaultTimeout(
                 db.collection(collectionName)
                     .whereIn(FieldPath.documentId(), targetList)
                     .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)
@@ -186,7 +186,7 @@ class ConnectionRepository(
     return try {
       val snapshot =
           try {
-            runWithTimeout(
+            withDefaultTimeout(
                 db.collection(collectionName)
                     .whereIn(FieldPath.documentId(), targetList)
                     .whereEqualTo(FirestoreSchema.ConnectCodes.STATUS, FirestoreSchema.Status.OPEN)

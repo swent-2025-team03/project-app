@@ -1,6 +1,6 @@
 package com.android.agrihealth.data.model.authentification
 
-import com.android.agrihealth.data.helper.runWithTimeout
+import com.android.agrihealth.data.helper.withDefaultTimeout
 import com.android.agrihealth.data.model.location.locationFromMap
 import com.android.agrihealth.data.model.user.Farmer
 import com.android.agrihealth.data.model.user.User
@@ -44,7 +44,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fires
     return try {
       val snapshot =
           try {
-            runWithTimeout(db.collection(USERS_COLLECTION_PATH).document(uid).get())
+            withDefaultTimeout(db.collection(USERS_COLLECTION_PATH).document(uid).get())
           } catch (_: Exception) {
             db.collection(USERS_COLLECTION_PATH).document(uid).get(Source.CACHE).await()
           }

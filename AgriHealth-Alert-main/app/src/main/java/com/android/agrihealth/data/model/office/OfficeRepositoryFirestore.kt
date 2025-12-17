@@ -1,7 +1,7 @@
 package com.android.agrihealth.data.model.office
 
 import android.util.Log
-import com.android.agrihealth.data.helper.runWithTimeout
+import com.android.agrihealth.data.helper.withDefaultTimeout
 import com.android.agrihealth.data.model.location.locationFromMap
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
@@ -34,7 +34,7 @@ class OfficeRepositoryFirestore(private val db: FirebaseFirestore = Firebase.fir
     return try {
       val snapshot =
           try {
-            runWithTimeout(db.collection(OFFICES_COLLECTION_PATH).document(id).get())
+            withDefaultTimeout(db.collection(OFFICES_COLLECTION_PATH).document(id).get())
           } catch (_: Exception) {
             db.collection(OFFICES_COLLECTION_PATH).document(id).get(Source.CACHE).await()
           }

@@ -324,7 +324,7 @@ fun AgriHealthApp(
             onLatLng = { lat, lng -> locationPickedViewModel.setLatLng(lat, lng) },
             onAddress = { address ->
               locationPickedViewModel.onAddress(
-                  address ?: "Location name is online accessible when online")
+                  address ?: "Location name is only accessible when online")
               navigationActions.goBack()
             })
       }

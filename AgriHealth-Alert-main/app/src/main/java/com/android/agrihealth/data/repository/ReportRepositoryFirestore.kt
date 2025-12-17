@@ -1,7 +1,7 @@
 package com.android.agrihealth.data.repository
 
 import android.util.Log
-import com.android.agrihealth.data.helper.runWithTimeout
+import com.android.agrihealth.data.helper.withDefaultTimeout
 import com.android.agrihealth.data.model.authentification.UserRepositoryProvider
 import com.android.agrihealth.data.model.location.locationFromMap
 import com.android.agrihealth.data.model.report.MCQ
@@ -39,7 +39,7 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
 
     val snapshot =
         try {
-          runWithTimeout(db.collection(REPORTS_COLLECTION_PATH).where(filter).get())
+          withDefaultTimeout(db.collection(REPORTS_COLLECTION_PATH).where(filter).get())
         } catch (_: Exception) {
           db.collection(REPORTS_COLLECTION_PATH).where(filter).get(Source.CACHE).await()
         }
@@ -50,7 +50,7 @@ class ReportRepositoryFirestore(private val db: FirebaseFirestore) : ReportRepos
   override suspend fun getReportById(reportId: String): Report? {
     val doc =
         try {
-          runWithTimeout(db.collection(REPORTS_COLLECTION_PATH).document(reportId).get())
+          withDefaultTimeout(db.collection(REPORTS_COLLECTION_PATH).document(reportId).get())
         } catch (_: Exception) {
           db.collection(REPORTS_COLLECTION_PATH).document(reportId).get(Source.CACHE).await()
         }
